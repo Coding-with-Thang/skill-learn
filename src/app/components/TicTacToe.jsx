@@ -328,7 +328,7 @@ const TicTacToe = () => {
     <>
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
-          <CardTitle className="text-center">Tic Tac Toe vs AI</CardTitle>
+          <CardTitle className="text-center text-2xl">Tic Tac Toe</CardTitle>
         </CardHeader>
         <CardContent>
           <ScoreDisplay />
@@ -373,6 +373,16 @@ const TicTacToe = () => {
             </Button>
           </div>
         </CardContent>
+      </Card>
+
+      <Card className="mt-5">
+        <CardHeader>
+          <CardTitle>Rules:</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>You are X player. You want to get 3 X in a line in any direction.
+          </p>
+          <p>If no player gets 3 in a line, game is  a draw.</p></CardContent>
       </Card>
 
       <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
