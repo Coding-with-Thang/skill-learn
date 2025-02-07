@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Plus, Save } from "lucide-react";
 
-const QuestionManager = ({ onAddQuestion }) => {
+export default function QuizManager(onAddQuestion) {
+
   const [newQuestion, setNewQuestion] = useState({
     question: '',
     answers: ['', '', '', ''],

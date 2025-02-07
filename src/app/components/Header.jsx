@@ -24,13 +24,13 @@ export default function Header() {
       <div className="flex items-center h-16 justify-between">
         <MainNav />
         <div className="flex items-center justify-end gap-6 mr-6 lg:mr-9">
-          <Link href="/dashboard" className="hover:underline">
+          <Link href="/discover" className="hover:underline">
             Discover
           </Link>
           <Link href="/training" className="hover:underline">
             Training
           </Link>
-          <Link href="/dashboard" className="hover:underline">
+          <Link href="/achivements" className="hover:underline">
             Achievements
           </Link>
           <Link href="/dashboard" className="hover:underline">
