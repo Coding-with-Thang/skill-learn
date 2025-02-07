@@ -1,4 +1,4 @@
-export default function GamesLayout({ children }) {
+export default function DashboardLayout({ children }) {
   return (
     <main>
       <div className="m-4">{children}</div>
