@@ -402,7 +402,8 @@ const TicTacToe = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-1 mb-4">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((index) => renderSquare(index))}
+            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((index) =>
+              renderSquare(index))}
           </div>
 
           <div className="text-center">

@@ -4,6 +4,9 @@ import icon from "../../public/icon.png";
 import empathy from "../../public/empathy.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+import DailyActivities from "./components/DailyActivities";
+
 export default function Home() {
   return (
     <div className="flex flex-col items-center justify-items-center min-h-screen">
@@ -15,6 +18,8 @@ export default function Home() {
         <Image className="" src={icon} width={150} height={150} alt="Icon" />
       </div>
       <div className="flex flex-col gap-1 items-center justify-center w-screen h-[500px] text-gray-900 mt-9">
+        <DailyActivities />
+        
         <h3 className="text-xl font-bold">More Training</h3>
         <Card className="max-w-[40ch]">
           <CardHeader>
