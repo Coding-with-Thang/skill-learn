@@ -27,10 +27,10 @@ export default function MainNav() {
         <CiSearch />
       </Button>
       <nav className="hidden lg:flex items-center justify-center gap-3 lg:gap-4 mx-3 lg:mx-9">
-        <Link href="/" className=" hover:underline">
+        <Link href="/about" className=" hover:underline">
           About
         </Link>
-        <Link href="/" className=" hover:underline">
+        <Link href="/latest-updates" className=" hover:underline">
           Latest Updates
         </Link>
       </nav>

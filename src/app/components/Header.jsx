@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from "next/link";
 import MainNav from "./MainNav";
+import { Star } from 'lucide-react';
 
 export default function Header() {
 
@@ -32,6 +33,9 @@ export default function Header() {
           </Link>
           <Link href="/achivements" className="hover:underline">
             Achievements
+          </Link>
+          <Link href="/rewards" className=" flex  gap-1 items-center hover:underline">
+            <Star /> Rewards
           </Link>
           <Link href="/dashboard" className="hover:underline">
             Dashboard

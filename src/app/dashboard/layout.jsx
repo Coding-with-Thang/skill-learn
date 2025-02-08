@@ -1,7 +1,7 @@
 export default function DashboardLayout({ children }) {
   return (
     <main>
-      <div className="m-4">{children}</div>
+      {children}
     </main>
   )
 };

@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from 'react';
-
 export default function NumberGuessingGame() {
   const [number, setNumber] = useState(Math.floor(Math.random() * 100) + 1);
   const [guess, setGuess] = useState('');

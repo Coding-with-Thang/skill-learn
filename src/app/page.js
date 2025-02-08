@@ -4,6 +4,7 @@ import DailyActivities from "./components/DailyActivities";
 import MoreTraining from "./components/MoreTraining";
 import HeroBanner from "./components/HeroBanner";
 import PerformanceLanding from "./components/PerformanceLanding";
+import LeaderboardLanding from "./components/LeaderboardLanding";
 
 export default function Home() {
   return (
@@ -12,9 +13,7 @@ export default function Home() {
       <DailyActivities />
       <MoreTraining />
       <PerformanceLanding />
-      <Link href="/games" className="text-center text-5xl underline my-9">
-        Play A Game
-      </Link>
+      <LeaderboardLanding />
     </div>
   );
 }
