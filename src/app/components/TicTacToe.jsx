@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
 
-import QuizManager from '../components/QuizManager';
+import QuestionManager from './QuestionManager';
 
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -108,6 +108,10 @@ const TicTacToe = () => {
   };
 
   useEffect(() => {
+    if (winner === 'X') {
+      const points = difficulty === 'easy' ? 1 : 2;
+      updatePlayerScore(points);
+    }
     if (winner === 'O' || winner === 'draw') {
       const question = getRandomQuestion();
       setCurrentQuestion(question);
@@ -126,21 +130,6 @@ const TicTacToe = () => {
       }, 500);
     }
   }, [board, isXNext, winner]);
-
-  useEffect(() => {
-    if (winner === 'X') {
-      const points = difficulty === 'easy' ? 1 : 2;
-      updatePlayerScore(points);
-    }
-    if (winner === "O" || winner === "draw") {
-      const randomQuestion =
-        questions[Math.floor(Math.random() * questions.length)];
-      setCurrentQuestion(randomQuestion);
-      setSelectedAnswer(null);
-      setIsAnswerCorrect(null);
-      setShowQuizModal(true);
-    }
-  }, [winner]);
 
   const updatePlayerScore = (points) => {
     setPlayerScore(prevScore => {
@@ -375,7 +364,7 @@ const TicTacToe = () => {
       </div>
 
       {showQuestionManager && (
-        <QuizManager onAddQuestion={addCustomQuestion} />
+        <QuestionManager onAddQuestion={addCustomQuestion} />
       )}
 
       <Card className="w-full max-w-md mx-auto">

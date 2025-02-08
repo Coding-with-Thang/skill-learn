@@ -1,9 +1,9 @@
-import QuizManagerComp from "../../../components/QuizManager"
+import QuestionManager from "../../../components/QuestionManager"
 
-export default function QuizManagerPage() {
+export default function QuizSettingsPage() {
   return (
     <>
-      <QuizManagerComp />
+      <QuestionManager />
     </>
   );
 }

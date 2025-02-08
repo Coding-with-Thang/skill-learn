@@ -13,14 +13,14 @@ const images = [
   {
     id: 2,
     src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuvU-iyIIIykVjDCiYitInpN_SAmCDESBVYg&s.jpg",
-    alt: "Coin Toss",
-    route: "/games/coin-toss",
+    alt: "Emoji Memory",
+    route: "/games/memory-game",
   },
   {
     id: 3,
-    src: "https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript/mdn-breakout-gameplay.png",
-    alt: "Brick Breaker",
-    route: "/games/brick-breaker",
+    src: "https://bloximages.newyork1.vip.townnews.com/gpkmedia.com/content/tncms/assets/v3/editorial/a/2d/a2d138e6-1dcc-11ef-836d-77c372bd89be/665743cd601a2.image.jpg?resize=389%2C243.jpg",
+    alt: "The Guessing Game",
+    route: "/games/guessing-game",
   },
 ];
 

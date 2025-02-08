@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,8 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Plus, Save } from "lucide-react";
 
-export default function QuizManager(onAddQuestion) {
-
+const QuestionManager = ({ onAddQuestion }) => {
   const [newQuestion, setNewQuestion] = useState({
     question: '',
     answers: ['', '', '', ''],
@@ -111,3 +108,5 @@ export default function QuizManager(onAddQuestion) {
     </Card>
   );
 };
+
+export default QuestionManager;
