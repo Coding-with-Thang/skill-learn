@@ -7,7 +7,7 @@ import { Play } from 'lucide-react';
 
 export default function DailyActivities() {
   return (
-    <section className="w-[50%] flex flex-col gap-4 bg-gray-50 border border-t-8 mt-[10rem] my-9 pl-4">
+    <section className="w-[50%] flex flex-col gap-4 bg-gray-50 border border-t-8 my-9 pl-4">
       <h1 className="text-3xl mt-3">Today's Activities</h1>
       <div className="flex gap-3 items-center">
         <div className="flex items-center justify-center w-12 h-12 rounded-md bg-green-500">
