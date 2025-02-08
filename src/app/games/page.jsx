@@ -12,7 +12,7 @@ const images = [
   },
   {
     id: 2,
-    src: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuvU-iyIIIykVjDCiYitInpN_SAmCDESBVYg&s.jpg",
+    src: "https://www.memozor.com/templates/memoire/images/zoom/memory_game_adults_emoji.jpg",
     alt: "Emoji Memory",
     route: "/games/memory-game",
   },
