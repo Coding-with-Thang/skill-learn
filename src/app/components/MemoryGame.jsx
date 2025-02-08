@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 const MemoryGame = () => {
   const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
@@ -147,18 +147,23 @@ const MemoryGame = () => {
 
       <AlertDialog open={gameOver}>
         <AlertDialogContent>
-          <AlertDialogDescription className="text-center py-4">
-            {gameResult}
-            {gameResult === 'Time\'s up!' ? (
-              <p className="mt-2">You matched {matched.length / 2} pairs in {moves} moves</p>
-            ) : (
-              <p className="mt-2">You won in {moves} moves with {timeLeft} seconds left!</p>
-            )}
-          </AlertDialogDescription>
-          <AlertDialogAction onClick={() => initializeGame(difficulty)}>Play Again</AlertDialogAction>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Game Results</AlertDialogTitle>
+            <AlertDialogDescription className="text-center py-4">
+              {gameResult}
+              {gameResult === 'Time\'s up!' ? (
+                <p className="mt-2">You matched {matched.length / 2} pairs in {moves} moves</p>
+              ) : (
+                <p className="mt-2">You won in {moves} moves with {timeLeft} seconds left!</p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => initializeGame(difficulty)}>Play Again</AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Card>
+    </Card >
   );
 };
 
