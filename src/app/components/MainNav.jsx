@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image"
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CiSearch } from "react-icons/ci";
+import logo from '../../../public/logo.svg'
 
 export default function MainNav() {
 
@@ -10,7 +12,12 @@ export default function MainNav() {
   };
 
   return (
-    <div className="hidden md:flex items-center">
+    <div className="hidden md:flex items-center pl-9">
+      <Image
+        src={logo}
+        width={48}
+        alt="Skill-Learn"
+      />
       <Link href="/" className="flex flex-1 font-bold text-2xl mx-2 lg:mx-4 ">
         Skill-Learn
       </Link>
