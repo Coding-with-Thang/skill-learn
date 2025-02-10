@@ -13,21 +13,21 @@ export default function UsersSettingPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [manager, setManager] = useState('')
+  const [role, setRole] = useState('')
   const [existingUsernames, setExistingUsernames] = useState([
     'john.doe', // Simulated existing usernames for testing
     'jane.smith',
   ])
   const [users, setUsers] = useState([
-    { id: 1, username: 'john.doe', firstName: 'John', lastName: 'Doe', manager: null },
-    { id: 2, username: 'jane.smith', firstName: 'Jane', lastName: 'Smith', manager: null },
+    { id: 1, username: 'john.doe', firstName: 'John', lastName: 'Doe', manager: null, role: null },
+    { id: 2, username: 'jane.smith', firstName: 'Jane', lastName: 'Smith', manager: null, role: null },
   ])
   const [editingUser, setEditingUser] = useState(null)
 
   const managerList = ["Steph Harrison", "Jack Bowman", "Laura Peleton", "Bob O Neil"]
+  const roles = ["Agent", "Service Leader", "Operations"]
 
   const [showForm, setShowForm] = useState(false);
-
-
 
   // Function to generate username from first and last name
   const generateUsername = (firstName, lastName) => {
@@ -72,7 +72,7 @@ export default function UsersSettingPage() {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user.id === editingUser.id
-            ? { ...user, username, firstName, lastName, manager }
+            ? { ...user, username, firstName, lastName, manager, role }
             : user
         )
       )
@@ -83,7 +83,7 @@ export default function UsersSettingPage() {
       setUsername(newUsername)
 
       // Add new user with manager assignment
-      const newUser = { id: Date.now(), username: newUsername, firstName, lastName, manager }
+      const newUser = { id: Date.now(), username: newUsername, firstName, lastName, manager, role }
       setUsers((prevUsers) => [...prevUsers, newUser])
     }
 
@@ -173,6 +173,22 @@ export default function UsersSettingPage() {
                   ))}
                 </select>
               </div>
+              <div>
+                <Label htmlFor="role" className="block text-sm font-medium text-gray-600">Role</Label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Role</option>
+                  {roles.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className='mt-[10rem]'>
                 <Label htmlFor="username" className="block text-sm font-medium text-gray-600">Username</Label>
                 <Input
@@ -217,13 +233,6 @@ export default function UsersSettingPage() {
         )}
 
 
-
-
-
-
-
-
-
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4">User List</h2>
           <table className="min-w-full table-auto bg-white shadow-md rounded-md overflow-hidden">
@@ -233,6 +242,7 @@ export default function UsersSettingPage() {
                 <th className="p-4 text-left">First Name</th>
                 <th className="p-4 text-left">Last Name</th>
                 <th className="p-4 text-left">Manager</th>
+                <th className="p-4 text-left">Role</th>
                 <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
@@ -243,9 +253,12 @@ export default function UsersSettingPage() {
                   <td className="p-4">{user.firstName}</td>
                   <td className="p-4">{user.lastName}</td>
                   <td className="p-4">{user.manager ? user.manager : 'No manager'}</td>
+                  <td className="p-4">{user.role ? user.role : ''}</td>
                   <td className="p-4 space-x-4">
                     <Button
-                      onClick={() => handleEdit(user)}
+                      onClick={() =>
+                        handleEdit(user)
+                      }
                       className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
                     >
                       Edit
