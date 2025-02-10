@@ -18,7 +18,7 @@ export const POST = async (req) => {
         data.category !== "undefined" && { category: data.category }),
       ...(data.subcategory &&
         data.subcategory !== "null" &&
-        data.subcategory !== "undefined" && { subcategory: data.subcategory }),
+        data.subcategory !== "undefined" && { subcategory: data.subcategory }),5
       ...(data.slug && { slug: data.slug }),
       ...(data.postId && { _id: data.postId }),
       ...(data.searchTerm && {

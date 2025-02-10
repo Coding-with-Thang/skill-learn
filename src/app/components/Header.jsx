@@ -15,6 +15,8 @@ export default function Header() {
     initials: 'JD',
   };
 
+  const isSignedIn = true;
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
@@ -37,49 +39,61 @@ export default function Header() {
           <Link href="/rewards" className=" flex  gap-1 items-center hover:underline">
             <Star /> Rewards
           </Link>
-          <Link href="/dashboard" className="hover:underline">
-            Dashboard
-          </Link>
 
-          <div className="relative">
-            <button
-              onClick={toggleDropdown}
-              className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white font-bold hover:bg-blue-600 focus:outline-none"
-            >
-              {user.initials}
-            </button>
+          {!isSignedIn ?
+            <>
+              <Link href="/dashboard" className="hover:underline">
+                Dashboard
+              </Link>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg">
-                <ul className="py-2">
-                  <li>
-                    <a
-                      href="/profile"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Profile
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/settings"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Settings
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="/logout"
-                      className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    >
-                      Log Out
-                    </a>
-                  </li>
-                </ul>
+              <div className="relative">
+                <button
+                  onClick={toggleDropdown}
+                  className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white font-bold hover:bg-blue-600 focus:outline-none"
+                >
+                  {user.initials}
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg">
+                    <ul className="py-2">
+                      <li>
+                        <a
+                          href="/profile"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                        >
+                          Profile
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/settings"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                        >
+                          Settings
+                        </a>
+                      </li>
+                      <li>
+                        <a
+                          href="/logout"
+                          className="block px-4 py-2 text-gray-800 hover:bg-gray-100"
+                        >
+                          Log Out
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+            :
+
+            <>
+              <Link href="/sign-in" className="hover:underline">
+                Sign In
+              </Link>
+            </>
+          }
         </div>
       </div>
     </header>
