@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback } from "react";
+// import { useCallback } from "react";
 import Image from "next/image";
 import empathy from "../../../public/empathy.png";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,9 @@ import {
   CardContent,
   CardHeader
 } from "@/components/ui/card";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { redirect } from 'next/navigation'
-import { Suspense } from 'react'
+// import { usePathname, useRouter, useSearchParams } from "next/navigation";
+// import { redirect } from 'next/navigation'
+// import { Suspense } from 'react'
 export default function TrainingPage() {
 
   const topics = [
@@ -65,19 +65,19 @@ export default function TrainingPage() {
     },
   ];
 
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  // const router = useRouter()
+  // const pathname = usePathname()
+  // const searchParams = useSearchParams()
 
-  const createQueryString = useCallback(
-    (name, value) => {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set(name, value)
+  // const createQueryString = useCallback(
+  //   (name, value) => {
+  //     const params = new URLSearchParams(searchParams.toString())
+  //     params.set(name, value)
 
-      return params.toString()
-    },
-    [searchParams]
-  )
+  //     return params.toString()
+  //   },
+  //   [searchParams]
+  // )
 
   return (
     <main className="flex flex-col items-center justify-items-center min-h-screen w-[90%]">
@@ -99,7 +99,7 @@ export default function TrainingPage() {
               <h4>{topic.subtitle}</h4>
               {/* <Link href={`/topic/${topic.slug}`}> */}
               {/* <Link href={pathname + '?' + createQueryString('topic', topic.slug)}> */}
-              <suspense>
+              {/* <suspense>
                 <Button
                   className="align-right"
                   onClick={() => {
@@ -109,7 +109,7 @@ export default function TrainingPage() {
                 >
                   {topic.btnText}
                 </Button>
-              </suspense>
+              </suspense> */}
               {/* </Link> */}
             </CardContent>
           </Card>
