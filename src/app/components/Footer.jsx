@@ -1,11 +1,12 @@
-"use client";
-
 export default function Footer() {
   return (
-    <footer className="flex w-full bg-gray-50 border border-t-8 mx-auto justify-center items-center relative z-[1000]">
-      <div className="my-3 text-center">
-        <h3>Skill-Learn 2025</h3>
-        <h3>All Rights Reserved.</h3>
+    <footer className="bg-gray-800 text-white py-6">
+      <div className="max-w-7xl mx-auto text-center">
+        <p>&copy; 2025 Skill-Learn. All rights reserved.</p>
+        <div className="mt-4 space-x-6">
+          <a href="#" className="hover:text-gray-400">Privacy Policy</a>
+          <a href="#" className="hover:text-gray-400">Terms of Service</a>
+        </div>
       </div>
     </footer>
   );

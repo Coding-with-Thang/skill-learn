@@ -4,10 +4,7 @@ import { useState } from 'react';
 import Link from "next/link";
 import MainNav from "./MainNav";
 import { Star } from 'lucide-react';
-
 export default function Header() {
-
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Example user data
   const user = {
@@ -17,10 +14,11 @@ export default function Header() {
 
   const isSignedIn = true;
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
-
 
   return (
     <header className="sticky top-0 w-full bg-white border-b-2 z-[1000]">
@@ -86,6 +84,7 @@ export default function Header() {
                 )}
               </div>
             </>
+
             :
 
             <>
