@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 export default function TrainingPage() {
 
   const topics = [
@@ -98,15 +99,17 @@ export default function TrainingPage() {
               <h4>{topic.subtitle}</h4>
               {/* <Link href={`/topic/${topic.slug}`}> */}
               {/* <Link href={pathname + '?' + createQueryString('topic', topic.slug)}> */}
-              <Button
-                className="align-right"
-                onClick={() => {
-                  router.push(pathname + '?' + createQueryString('topic', topic.slug))
-                  redirect(`/training/topic/${topic.slug}`) // Navigate to the new post page
-                }}
-              >
-                {topic.btnText}
-              </Button>
+              <suspense>
+                <Button
+                  className="align-right"
+                  onClick={() => {
+                    router.push(pathname + '?' + createQueryString('topic', topic.slug))
+                    redirect(`/training/topic/${topic.slug}`) // Navigate to the new post page
+                  }}
+                >
+                  {topic.btnText}
+                </Button>
+              </suspense>
               {/* </Link> */}
             </CardContent>
           </Card>
