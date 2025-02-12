@@ -30,7 +30,7 @@ export default function UsersSettingPage() {
 
   // Function to generate username from first and last name
   const generateUsername = (firstName, lastName) => {
-    const baseUsername = `${firstName.toLowerCase()}.${lastName.toLowerCase()}`
+    const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`
     let newUsername = baseUsername
     let suffix = 1
 
