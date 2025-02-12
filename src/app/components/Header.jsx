@@ -105,7 +105,7 @@ export default function Header() {
           </SignedIn>
 
           <SignedOut>
-            <SignInButton className="hover:underline" />
+            <Link href="sign-in" className="hover:underscore">Sign In</Link>
           </SignedOut>
         </div>
       </div>
