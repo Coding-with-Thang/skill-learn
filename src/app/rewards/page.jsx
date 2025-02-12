@@ -11,6 +11,8 @@ import Break from "../../../public/15break.jpg"
 import Lunch from "../../../public/lunch.jpg"
 import FlyingPie from "../../../public/flying-pie.jpg"
 import Chest from "../../../public/chest.png"
+import ChickenDance from "../../../public/chicken-dance.jpg"
+
 export default function RewardsPage() {
 
   const prizes = [
@@ -37,6 +39,12 @@ export default function RewardsPage() {
       prizeDesc: "Select a manager and throw a pie at their face!",
       prizePts: 10000,
       prizeImg: FlyingPie
+    },
+    {
+      prizeTitle: "Chicken Dance",
+      prizeDesc: "Sara does the chicken dance x3!",
+      prizePts: 50000,
+      prizeImg: ChickenDance
     }
   ]
 
@@ -99,24 +107,25 @@ export default function RewardsPage() {
           </div>
         </div>
 
+//Featured Reward
         <h1 className="flex text-5xl my-7 justify-center">Featured Reward</h1>
         <div className="mb-9">
           <Card className="flex min-w-[40ch] hover:scale(1.2)">
             <CardHeader className="">
               <Image
                 className=""
-                src={prizes[3].prizeImg}
+                src={prizes[4].prizeImg}
                 width={340}
                 height={150}
-                alt={prizes[3].prizeTitle}
+                alt={prizes[4].prizeTitle}
               />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 items-start">
-              <h4 className="pt-7 text-5xl font-semibold text-gray-900">{prizes[3].prizeTitle}</h4>
-              <p className="text-3xl">{prizes[3].prizeDesc}</p>
+              <h4 className="pt-7 text-5xl font-semibold text-gray-900">{prizes[4].prizeTitle}</h4>
+              <p className="text-3xl">{prizes[4].prizeDesc}</p>
               <p className="flex justify-end text-4xl mt-3">
                 <span className="text-yellow-500 mr-1">+</span>
-                {prizes[3].prizePts}</p>
+                {prizes[4].prizePts}</p>
             </CardContent>
             <CardFooter className="flex items-end justify-end pr-3">
               <Button className="text-xl rounded-lg">Redeem</Button>

@@ -34,7 +34,7 @@ export default function Home() {
         <>
           <Features />
           <HowItWorks />
-          <Testimonials />
+          {/* <Testimonials /> */}
         </>
       }
     </div>
