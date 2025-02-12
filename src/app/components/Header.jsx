@@ -4,7 +4,6 @@ import { useState } from 'react';
 import Link from "next/link";
 import MainNav from "./MainNav";
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
-import { Button } from "@/components/ui/button";
 import { Star } from 'lucide-react';
 
 export default function Header() {
@@ -47,12 +46,30 @@ export default function Header() {
             </Link>
 
             <div className="relative">
-              <button
+              <UserButton
+                userProfileProps={{
+                  // appearance: {
+                  //   elements: {
+                  //     profileSection: {
+                  //       display: 'none',
+                  //     }
+                  //   },
+                  // }
+                }}
+                appearance={{
+                  elements: {
+                    userButtonPopoverFooter: {
+                      display: 'none',
+                    },
+                  },
+                }}
+              />
+              {/* <button
                 onClick={toggleDropdown}
                 className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white font-bold hover:bg-blue-600 focus:outline-none"
               >
                 {user.initials}
-              </button>
+              </button> */}
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg">
