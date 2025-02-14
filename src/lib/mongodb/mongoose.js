@@ -11,7 +11,7 @@ export const connect = async () => {
   }
   try {
     await mongoose.connect(MONGODB_URI, {
-      dbName: "skill-learn-test",
+      dbName: "skill-learn",
     });
     console.log("Connected to MongoDB");
     initialized = true;
