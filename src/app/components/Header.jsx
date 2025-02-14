@@ -3,18 +3,10 @@
 import { useState } from 'react';
 import Link from "next/link";
 import MainNav from "./MainNav";
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs'
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Star } from 'lucide-react';
 
 export default function Header() {
-
-  // Example user data
-  const user = {
-    name: 'John Doe',
-    initials: 'JD',
-  };
-
-  const isSignedIn = true;
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -105,7 +97,7 @@ export default function Header() {
           </SignedIn>
 
           <SignedOut>
-            <Link href="sign-in" className="hover:underscore">Sign In</Link>
+            <Link href="sign-in" className="hover:underline">Sign In</Link>
           </SignedOut>
         </div>
       </div>

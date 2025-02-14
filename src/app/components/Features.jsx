@@ -44,10 +44,10 @@ export default function Features() {
 
   return (
     <section id="features" className="py-16 text-gray-800">
-      <div className="max-w-7xl mx-auto text-center">
+      <div className="max-w-7xl mx-auto text-center pxxc.cr-9 lg:px-4">
         <h2 className="text-3xl font-semibold">Discover your training activities with ease and efficiency with Skill-Learn</h2>
         <p className="mt-4 mb-9 text-xl">Skill-Learn is a learning platform that enables agents to unlock their learning potential with our gamified approach.</p>
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8 px-7">
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           {featureSet.map((feature, index) => (
             <Card key={index} className="rounded-none border-none outline-none bg-[#F0F4F8]">
               <CardHeader className="flex items-center">
