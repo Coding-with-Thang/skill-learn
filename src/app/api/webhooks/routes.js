@@ -1,5 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
+import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
 import { WebhookEvent } from "@clerk/nextjs/server";
 
 export async function POST(req) {
@@ -47,8 +48,6 @@ export async function POST(req) {
     });
   }
 
-  // Do something with payload
-  // For this guide, log payload to console
   const { id } = evt.data;
   const eventType = evt.type;
   console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
@@ -65,7 +64,7 @@ export async function POST(req) {
       );
       if (user && eventType === "user.created") {
         try {
-          await clerkClient.users.updateUserMetadata(id, {
+          await WebhookEvent.users.updateUserMetadata(id, {
             publicMetadata: {
               userMongoId: user._id,
               isAdmin: user.isAdmin,
