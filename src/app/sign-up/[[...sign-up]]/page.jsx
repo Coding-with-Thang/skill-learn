@@ -10,7 +10,7 @@ export default function SignUpPage() {
 
       {/* Sign In Form */}
       <div className="w-1/2 flex justify-center items-center px-8 py-12 bg-white shadow-md">
-        <SigUp />
+        <SignUp />
       </div>
     </div>
   )
