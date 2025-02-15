@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function DashboardLayout({ children }) {
   return (
     <main className="flex">
@@ -6,14 +8,17 @@ export default function DashboardLayout({ children }) {
         <h2 className="text-2xl font-semibold mb-4">Admin Dashboard</h2>
         <ul className="space-y-2">
           <li>
-            <a href="/dashboard" className="block text-gray-200 hover:text-blue-400">Dashboard</a>
+            <Link href="/dashboard" className="block text-gray-200 hover:text-blue-400">Dashboard</Link>
           </li>
           <li>
-            <a href="/dashboard/users" className="block text-gray-200 hover:text-blue-400">Manage Users</a>
+            <Link href="/dashboard/users" className="block text-gray-200 hover:text-blue-400">Manage Users</Link>
+          </li>
+          <li>
+            <Link href="/dashboard/quiz/quiz-manager" className="block text-gray-200 hover:text-blue-400">Manage Quizzes</Link>
           </li>
         </ul>
       </div>
-      <div className="flex min-h-screen w-full">
+      <div className="min-h-screen w-full">
         {children}
       </div>
     </main>
