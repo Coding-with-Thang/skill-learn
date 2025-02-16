@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }) {
             <Link href="/dashboard/users" className="block text-gray-200 hover:text-blue-400">Manage Users</Link>
           </li>
           <li>
-            <Link href="/dashboard/quiz/quiz-manager" className="block text-gray-200 hover:text-blue-400">Manage Quizzes</Link>
+            <Link href="/dashboard/quizzes/quiz-manager" className="block text-gray-200 hover:text-blue-400">Manage Quizzes</Link>
           </li>
         </ul>
       </div>
