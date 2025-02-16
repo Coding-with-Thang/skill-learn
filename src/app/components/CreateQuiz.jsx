@@ -10,7 +10,7 @@ import Button from './Button'
 export default function CreateQuiz() {
 
   const quizConfig = useQuizStore(state => state.config)
-  console.log(quizConfig)
+  const addNumberOfQuestions = useQuizStore(state => state.addNumberOfQuestions)
 
   return (
     <section className="flex flex-col justify-center items-center my-10">
@@ -21,6 +21,7 @@ export default function CreateQuiz() {
         <Input
           type="number"
           id="num-questions"
+          onChange={(e) => addNumberOfQuestions(e.target.value)}
           className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg"
           defaultValue={10}
           min={1}

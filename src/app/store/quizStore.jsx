@@ -12,6 +12,7 @@ const defaultQuizConfig = {
 }
 export const useQuizStore = create((set) => ({
   config: { ...defaultQuizConfig },
+  addId: (count) => set((state) => ({ config: { ...state.config, id: count } })),
   addNumberOfQuestions: (count) => set((state) => ({ config: { ...state.config, numberOfQuestions: count } })),
   addCategory: (id, name) => set((state) => ({ config: { ...state.config, category: { id, name } } })),
   addStatus: (status) => set((state) => ({ config: { ...state.config, status } })),

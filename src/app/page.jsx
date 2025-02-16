@@ -25,6 +25,6 @@ export default function Home() {
         <HowItWorks />
         {/* <Testimonials /> */}
       </SignedOut>
-    </div >
+    </div>
   );
 }
