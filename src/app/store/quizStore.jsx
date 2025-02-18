@@ -16,5 +16,5 @@ export const useQuizStore = create((set) => ({
   addNumberOfQuestions: (count) => set((state) => ({ config: { ...state.config, numberOfQuestions: count } })),
   addCategory: (id, name) => set((state) => ({ config: { ...state.config, category: { id, name } } })),
   changeStatus: (status) => set((state) => ({ config: { ...state.config, status } })),
-  addScore: (score) => set((state) => ({ config: { ...state.config, score } }))
+  setScore: (score) => set((state) => ({ config: { ...state.config, score } }))
 }))

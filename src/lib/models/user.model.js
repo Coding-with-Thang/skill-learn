@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: "agent",
     },
+    categoryStats: {
+      type: [],
+      required: false,
+    },
   },
   {
     timestamps: true,

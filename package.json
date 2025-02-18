@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.11.2",
+    "@prisma/client": "^6.3.1",
     "@radix-ui/react-alert-dialog": "^1.1.6",
     "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-dropdown-menu": "^2.1.6",
@@ -24,6 +25,7 @@
     "mongodb": "^6.13.0",
     "mongoose": "^8.9.7",
     "next": "15.1.6",
+    "prisma": "^6.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-firebase-hooks": "^5.1.1",

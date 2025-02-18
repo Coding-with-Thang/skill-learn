@@ -134,7 +134,7 @@ export default function RewardsPage() {
         </div>
 
         <h1 className="flex text-5xl my-7 justify-center">All Rewards</h1>
-        <div className="p-3 mb-[30rem] flex gap-7 mb-9">
+        <div className="p-3 mb-[30rem] flex gap-7">
           {prizes.map((prize, index) => (
             <Card key={index} className="max-w-[40ch]">
               <CardHeader className="h-[400px]">
