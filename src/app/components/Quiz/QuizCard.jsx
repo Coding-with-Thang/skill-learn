@@ -1,6 +1,7 @@
 "use client"
 
 import { Image } from "next/image"
+import { useQuizStartStore } from '@/app/store/quizStore'
 import {
   Card,
   CardContent,
@@ -13,7 +14,12 @@ export default function QuizCard({ quiz }) {
   const router = useRouter();
   const imageSrc = false
 
+  const config = useQuizStartStore(state => state.config)
+  const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
+
   const handleClick = () => {
+    console.log("Quiz: ", quiz)
+    setSelectedQuiz(quiz);
     router.push(`/quiz/start/${quiz.id}`)
   }
 
