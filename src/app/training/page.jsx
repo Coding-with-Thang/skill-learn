@@ -1,6 +1,5 @@
 "use client"
 
-// import { useCallback } from "react";
 import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation";
 import { Image } from "next/image"
@@ -27,7 +26,7 @@ export default function TrainingPage() {
   }, [categories])
 
   return (
-    <main className="flex flex-col min-h-screen w-[90%] px-20">
+    <section className="flex flex-col min-h-screen w-[90%] px-20">
       <h1 className="text-4xl font-bold my-10 flex self-center">More Training</h1>
       <h3 className="font-semibold text-2xl">Categories</h3>
       {loading && <p>Loading...</p>}
@@ -62,6 +61,6 @@ export default function TrainingPage() {
           </Card>
         ))}
       </div>
-    </main >
+    </section >
   );
 }
