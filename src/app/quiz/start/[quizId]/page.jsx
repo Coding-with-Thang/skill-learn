@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import axios from "axios";
 import { useQuizStartStore } from '@/app/store/quizStore'
 import { Label } from "@/components/ui/label"
 import { Input } from '@/components/ui/input';
@@ -28,7 +29,27 @@ export default function selectedQuizPage() {
     setQuestionCount((prev) => ({ ...prev, questionCount: newCount }))
   }
 
-  const startQuiz = async () => { }
+  const startQuiz = async () => {
+
+    const selectedQuestions = selectedQuiz?.questions.slice(0, questionCount)
+
+    console.log("selectedQuestions: ", selectedQuestions)
+
+    if (selectedQuestions.length > 0) {
+      //update the db for quiz attempt start
+
+      try {
+        await axios.post("/api/user/start", {
+          categoryId: selectedQuiz?.categoryId,
+          quizId: selectedQuiz?.id
+        })
+      } catch (error) {
+        console.log("Error starting quiz: ", error)
+      }
+    } else {
+      console.log("No questions found for the selected criteria")
+    }
+  }
 
   return (
     <section className="min-h-screen" >
@@ -50,7 +71,7 @@ export default function selectedQuizPage() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="category" className="text-xl">Category</Label>
-            <Select>
+            <Select disabled>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -65,6 +86,7 @@ export default function selectedQuizPage() {
           <div className="w-full pb-4 flex justify-center fixed bottom-0 left-0">
             <Button
               className="px-10 py-6 font-bold text-white bg-blue-500 text-xl rounded-xl"
+              onClick={startQuiz}
             >
               <span className="flex items-center gap-2"><Play /> Start</span>
             </Button>

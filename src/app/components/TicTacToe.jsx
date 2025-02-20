@@ -354,7 +354,7 @@ const TicTacToe = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end mb-4">
+      {/* <div className="flex justify-end mb-4">
         <Button
           variant="outline"
           onClick={() => setShowQuestionManager(!showQuestionManager)}
@@ -365,7 +365,7 @@ const TicTacToe = () => {
 
       {showQuestionManager && (
         <QuestionManager onAddQuestion={addCustomQuestion} />
-      )}
+      )} */}
 
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>
