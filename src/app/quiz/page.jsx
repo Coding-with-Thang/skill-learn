@@ -10,7 +10,7 @@ export default function QuizScreenPage() {
 
   const router = useRouter()
 
-  const { currentQuestionIndex, setCurrentQuestionIndex } = useState(0)
+  const { currentIndex, setCurrentIndex } = useState(0)
   const { activeQuestion, setActiveQuestion } = useState(null)
   const { responses, setResponses } = useState([])
   const { shuffledQuestions, setShuffledQuestions } = useState([])
@@ -49,6 +49,35 @@ export default function QuizScreenPage() {
     return array
   }
 
+  const handleActiveQuestion = (option) => {
+    if (!shuffledQuestions[currentIndex]) return;
+
+    const response = {
+      questionId: shuffledQuestions[currentIndex].id,
+      optionId: option.id,
+      isCorrect: option.isCorrect
+    }
+
+    setResponses((prev) => {
+      //check if the response already exists
+      const existingIndex = prev.findIndex((res) => {
+        return res.questionId === response.questionId
+      })
+
+      //update the response if it exists
+      if (existingIndex !== -1) {
+        //update the response
+        const updatedResponses = [...prev]
+        updatedResponses[existingIndex] = response;
+        return updatedResponses;
+      } else {
+        return [...prev, response]
+      }
+    })
+    //Set the active question
+    setActiveQuestion(option)
+  }
+
   return (
     <div className="py-[2.5rem]">
       // Question
@@ -72,11 +101,12 @@ export default function QuizScreenPage() {
                 key={index}
                 className={`relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
               ${option.text === activeQuestion?.text ?
-                    ("bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500")
+                    "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
                     :
-                    ("shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]")
+                    "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
                   }
                   `}
+                onClick={() => handleActionQuestion(option)}
               >
                 {option.text}
               </Button>
@@ -86,7 +116,7 @@ export default function QuizScreenPage() {
       )
         :
         (
-          <div></div>
+          <p className="text-lg">No questions found for this quiz</p>
         )
       }
     </div >
