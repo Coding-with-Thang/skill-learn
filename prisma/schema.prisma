@@ -10,7 +10,7 @@ datasource db {
 model User {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   clerkId String @unique
-  username String
+  username String @unique
   firstName String
   lastName String
   manager String @default("")
@@ -63,10 +63,10 @@ model CategoryStat {
   user          User     @relation(fields: [userId], references: [id])
   categoryId    String   @db.ObjectId
   category      Category @relation(fields: [categoryId], references: [id])
-  attempts      Int @default(0) // Total attempts in this category
-  completed     Int @default(0) // Total completed quizzes in this category
+  attempts      Int @default(0) //Total attempts in this category
+  completed     Int @default(0) //Total completed quizzes in this category
   averageScore  Float? 
-  lastAttempt   DateTime? // Last attempt in this category
+  lastAttempt   DateTime? //Last attempt in this category
 
   @@unique([userId, categoryId])
 }

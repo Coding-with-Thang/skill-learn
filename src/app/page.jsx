@@ -9,9 +9,9 @@ import LeaderboardLanding from "./components/LeaderboardLanding";
 import Features from './components/Features';
 import HowItWorks from './components/HowItWorks';
 import Testimonials from './components/Testimonials';
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-items-center min-h-screen">
+    <div className="flex flex-col items-center justify-items-center min-h-[80dvh]">
       <HeroBanner />
       <SignedIn>
         <DailyActivities />

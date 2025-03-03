@@ -1,19 +1,22 @@
-import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(NextRequest) {
-  const { userId } = await auth();
-  const { categoryId } = await NextRequest.json();
-  const prisma = new PrismaClient();
+const prisma = new PrismaClient();
+export async function POST(req) {
+  const { userId: clerkId } = await auth();
+  const { categoryId } = await req.json();
 
-  if (!userId) {
+  //Console.log("User ID: ", userId);
+  console.log("Clerk ID: ", clerkId);
+
+  if (!clerkId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { userId },
+      where: { clerkId },
     });
 
     if (!user) {
@@ -22,7 +25,7 @@ export async function POST(NextRequest) {
 
     const userId = user.id;
 
-    // find or create a categoryStat entry
+    //Find or create a categoryStat entry
 
     let stat = await prisma.categoryStat.findUnique({
       where: {

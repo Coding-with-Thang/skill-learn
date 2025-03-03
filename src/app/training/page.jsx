@@ -35,7 +35,7 @@ export default function TrainingPage() {
         {categories.map((category) => (
           <Card
             key={category.id}
-            className="max-w-[40ch] min-w-36 min-h-[200px]"
+            className="max-w-[40ch] min-w-36 min-h-[200px] cursor-pointer"
             onClick={() => router.push(`/categories/${category.id}`)}
           >
             <CardHeader>

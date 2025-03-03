@@ -14,7 +14,7 @@ export default function UsersSettingPage() {
   const [manager, setManager] = useState('')
   const [role, setRole] = useState('')
   const [existingUsernames, setExistingUsernames] = useState([
-    'john.doe', // Simulated existing usernames for testing
+    'john.doe', //Simulated existing usernames for testing
     'jane.smith',
   ])
   const [users, setUsers] = useState([
@@ -28,13 +28,13 @@ export default function UsersSettingPage() {
 
   const [showForm, setShowForm] = useState(false);
 
-  // Function to generate username from first and last name
+  //Function to generate username from first and last name
   const generateUsername = (firstName, lastName) => {
     const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`
     let newUsername = baseUsername
     let suffix = 1
 
-    // Check if the username already exists and regenerate if necessary
+    //Check if the username already exists and regenerate if necessary
     while (existingUsernames.includes(newUsername) || users.some((user) => user.username === newUsername)) {
       newUsername = `${baseUsername}${suffix}`
       suffix++
@@ -43,7 +43,7 @@ export default function UsersSettingPage() {
     return newUsername
   }
 
-  // Automatically generate username whenever first or last name changes
+  //Automatically generate username whenever first or last name changes
   useEffect(() => {
     if (firstName && lastName) {
       const newUsername = generateUsername(firstName, lastName)
@@ -66,7 +66,7 @@ export default function UsersSettingPage() {
 
     setError(null)
 
-    // If editing an existing user, update their info
+    //If editing an existing user, update their info
     if (editingUser) {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
@@ -77,16 +77,16 @@ export default function UsersSettingPage() {
       )
       setEditingUser(null)
     } else {
-      // Check if the username already exists and regenerate if necessary
+      //Check if the username already exists and regenerate if necessary
       const newUsername = generateUsername(firstName, lastName)
       setUsername(newUsername)
 
-      // Add new user with manager assignment
+      //Add new user with manager assignment
       const newUser = { id: Date.now(), username: newUsername, firstName, lastName, manager, role }
       setUsers((prevUsers) => [...prevUsers, newUser])
     }
 
-    // Clear the form
+    //Clear the form
     setUsername('')
     setFirstName('')
     setLastName('')
@@ -99,7 +99,7 @@ export default function UsersSettingPage() {
     setUsername(user.username)
     setFirstName(user.firstName)
     setLastName(user.lastName)
-    setManager(user.manager || '') // If no manager, set as empty
+    setManager(user.manager || '') //If no manager, set as empty
   }
 
   const handleDelete = (userId) => {

@@ -33,19 +33,21 @@ export default function selectedQuizPage() {
 
     const selectedQuestions = selectedQuiz?.questions.slice(0, questionCount)
 
-    console.log("selectedQuestions: ", selectedQuestions)
+    //console.log("selectedQuestions: ", selectedQuestions)
 
     if (selectedQuestions.length > 0) {
       //update the db for quiz attempt start
 
       try {
-        await axios.post("/api/user/start", {
+        await axios.post("/api/user/quiz/start", {
           categoryId: selectedQuiz?.categoryId,
-          quizId: selectedQuiz?.id
-        })
+          quizId: selectedQuiz?.id,
+        });
       } catch (error) {
-        console.log("Error starting quiz: ", error)
+        console.log("Error starting quiz: ", error);
       }
+      //Push to the quiz page
+      //router.push("/quiz");
     } else {
       console.log("No questions found for the selected criteria")
     }
@@ -58,7 +60,7 @@ export default function selectedQuizPage() {
 
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="questionCount" className="text-xl">{`Number of Questions (Max Questions: ${selectedQuiz.questions.length})`}</Label>
+            <Label htmlFor="questionCount" className="text-xl">{`Number of Questions (Max Questions: ${selectedQuiz?.questions.length})`}</Label>
             <Input
               type="number"
               min={5}

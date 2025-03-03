@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { Button } from "@/components/ui/button"
+import { ArrowBigRightDash } from 'lucide-react';
+import { CircleCheckBig } from 'lucide-react';
 export default function QuizScreenPage() {
 
   const { selectedQuiz, questionCount, setQuizResponses } = useQuizStartStore()
@@ -39,7 +41,7 @@ export default function QuizScreenPage() {
   //Fisher-Yates Shuffle Algorithm
   const shuffleArray = () => {
     for (let i = array.length - 1; i > 0; i--) {
-      // generate a random index between 0 and i
+      //generate a random index between 0 and i
       const j = Math.floor(Math.random() * (i + 1))
 
       //swap elements, array[i] and array[j]
@@ -78,9 +80,25 @@ export default function QuizScreenPage() {
     setActiveQuestion(option)
   }
 
+  //Progresses the active Question
+  const handleNextQuestion = () => {
+    if (currentIndex < shuffledQuestions.length - 1) {
+      setCurrentIndex((prev) => prev + 1)
+
+      //reset active question
+      setActiveQuestion(null)
+    } else {
+      router.push('/quiz/results')
+    }
+  }
+
+  const handleFinishQuiz = () => {
+    console.log("Finish")
+  }
+
   return (
     <div className="py-[2.5rem]">
-      // Question
+      //Question
       {shuffledQuestions[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
@@ -117,8 +135,37 @@ export default function QuizScreenPage() {
         :
         (
           <p className="text-lg">No questions found for this quiz</p>
-        )
-      }
+        )}
+
+      <div className="w-full py-[4rem] fixed bottom-0 left-0 border-t-2 flex items-center justify-center">
+        <Button
+          className="px-10 py-6 font-bold text-white text-xl rounded-xl"
+          onClick={() => {
+            if (currentIndex < shuffledQuestions.length - 1) {
+              if (activeQuestion?.id) {
+                handleNextQuestion()
+              } else {
+                const sound = new Audio("/sounds/error.mp3")
+                sound.play()
+                //TODO: add toast
+              }
+            } else {
+              if (activeQuestion?.id) {
+                handleFinishQuiz()
+              } else {
+                const sound = new Audio("/sounds/error.mp3")
+                sound.play()
+                //TODO: add toast
+              }
+            }
+          }}
+        >
+          {currentIndex < shuffledQuestions.length - 1 ?
+            (<span className="flex items-center gap-2"><ArrowBigRightDash /> Next</span>) :
+            (<span className="flex items-center gap-2"><CircleCheckBig /> Finish</span>)
+          }
+        </Button>
+      </div>
     </div >
   )
 }

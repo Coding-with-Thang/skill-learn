@@ -36,7 +36,7 @@ const TicTacToe = () => {
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScoreChange, setLastScoreChange] = useState(0);
 
-  // Quiz questions database
+  //Quiz questions database
   const [showQuestionManager, setShowQuestionManager] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('general');
   const [customQuestions, setCustomQuestions] = useState({
@@ -75,7 +75,7 @@ const TicTacToe = () => {
   });
 
   useEffect(() => {
-    // fetchGameHistory();
+    //fetchGameHistory();
     const savedScore = localStorage.getItem('ticTacToeScore');
     if (savedScore) {
       setPlayerScore(parseInt(savedScore));
@@ -83,7 +83,7 @@ const TicTacToe = () => {
   }, []);
 
   useEffect(() => {
-    // Load custom questions from localStorage
+    //Load custom questions from localStorage
     const savedQuestions = localStorage.getItem('customQuestions');
     if (savedQuestions) {
       setCustomQuestions(JSON.parse(savedQuestions));
@@ -142,34 +142,34 @@ const TicTacToe = () => {
     setTimeout(() => setShowScoreAnimation(false), 1500);
   };
 
-  // const fetchGameHistory = async () => {
-  //   try {
-  //     const response = await fetch("/api/gameHistory");
-  //     const data = await response.json();
-  //     setGameHistory(data);
-  //   } catch (error) {
-  //     console.error("Error fetching game history:", error);
-  //   }
-  // };
+  //const fetchGameHistory = async () => {
+  //  try {
+  //    const response = await fetch("/api/gameHistory");
+  //    const data = await response.json();
+  //    setGameHistory(data);
+  //  } catch (error) {
+  //    console.error("Error fetching game history:", error);
+  //  }
+  //};
 
-  // const updateGameHistory = async (result) => {
-  //   try {
-  //     const response = await fetch("/api/gameHistory", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({ result }),
-  //     });
+  //const updateGameHistory = async (result) => {
+  //  try {
+  //    const response = await fetch("/api/gameHistory", {
+  //      method: "POST",
+  //      headers: {
+  //        "Content-Type": "application/json",
+  //      },
+  //      body: JSON.stringify({ result }),
+  //    });
 
-  //     if (response.ok) {
-  //       const updatedHistory = await response.json();
-  //       setGameHistory(updatedHistory);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating game history:", error);
-  //   }
-  // };
+  //    if (response.ok) {
+  //      const updatedHistory = await response.json();
+  //      setGameHistory(updatedHistory);
+  //    }
+  //  } catch (error) {
+  //    console.error("Error updating game history:", error);
+  //  }
+  //};
 
   const calculateWinner = (squares) => {
     const lines = [
@@ -239,11 +239,11 @@ const TicTacToe = () => {
     let moveIndex;
 
     if (difficulty === "easy") {
-      // Random move for easy AI
+      //Random move for easy AI
       const emptySquares = getEmptySquares(newBoard);
       moveIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
     } else {
-      // Minimax for hard AI
+      //Minimax for hard AI
       let bestScore = -Infinity;
       moveIndex = -1;
 
@@ -276,11 +276,11 @@ const TicTacToe = () => {
     if (gameWinner) {
       setWinner(gameWinner);
       setWinningLine(line);
-      // updateGameHistory(gameWinner);
+      //updateGameHistory(gameWinner);
     } else if (!newBoard.includes(null)) {
       setWinner("draw");
       setWinningLine([]);
-      // updateGameHistory("draw");
+      //updateGameHistory("draw");
     } else {
       setIsXNext(!isXNext);
     }
@@ -332,7 +332,7 @@ const TicTacToe = () => {
     }
   };
 
-  // Add a score display component
+  //Add a score display component
   const ScoreDisplay = () => (
     <div className="relative flex items-center justify-center mb-4 text-center">
       <div className="flex items-center gap-2 text-xl font-bold">

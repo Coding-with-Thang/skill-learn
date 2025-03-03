@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image"
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Star, Telescope, Medal, BookOpenText, ChartBar, Search } from 'lucide-react';
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
 import logo from '../../../public/logo.svg'
 
@@ -38,8 +38,8 @@ export default function Header() {
               type="text"
               placeholder="Search..."
               className="flex items-center outline-none border-none shadow-none focus:border-none focus:outline-none"
-            //   value={searchTerm}
-            // onChange={(e) => setSearchTerm(e.target.value)}
+            //  value={searchTerm}
+            //onChange={(e) => setSearchTerm(e.target.value)}
             />
             <Button className="items-center outline-none border-none shadow-none">
               <Search />
@@ -77,13 +77,13 @@ export default function Header() {
             <div className="relative">
               <UserButton
                 userProfileProps={{
-                  // appearance: {
-                  //   elements: {
-                  //     profileSection: {
-                  //       display: 'none',
-                  //     }
-                  //   },
-                  // }
+                  //appearance: {
+                  //  elements: {
+                  //    profileSection: {
+                  //      display: 'none',
+                  //    }
+                  //  },
+                  //}
                 }}
                 appearance={{
                   elements: {

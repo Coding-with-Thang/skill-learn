@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "generate": "dotenv -e env.local -- npx prisma generate"
+    "generate": "dotenv -e env.local -- npx prisma generate",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.11.2",
@@ -23,7 +24,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv-cli": "^8.0.0",
-    "firebase": "^11.3.0",
     "lucide-react": "^0.474.0",
     "mongodb": "^6.13.0",
     "mongoose": "^8.9.7",
@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/react": "19.0.10",
     "eslint": "^9",
     "eslint-config-next": "15.1.6",
     "postcss": "^8",

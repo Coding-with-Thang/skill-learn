@@ -19,8 +19,16 @@ export default function DailyActivities() {
         <p>75 reward points</p>
         <p>5 questions</p>
       </div>
-      <Link href="/training"><Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4"><Play />Start</Button></Link>
-      <Link href="/games"><Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4"><Play />Play A Game</Button></Link>
+      <Link href="/training">
+        <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4">
+          <Play />Start
+        </Button>
+      </Link>
+      <Link href="/games">
+        <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4">
+          <Play />Play A Game
+        </Button>
+      </Link>
     </section>
   );
 }
