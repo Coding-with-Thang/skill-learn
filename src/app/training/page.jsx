@@ -14,6 +14,8 @@ export default function TrainingPage() {
   const { categories, loading, error, fetchCategories } = useCategoryStore();
 
   const [imageSrc, setImageSrc] = useState([])
+  const [imageSrcStatus, setImageSrcStatus] = useState(false)
+
 
   const router = useRouter();
 
@@ -39,7 +41,7 @@ export default function TrainingPage() {
             onClick={() => router.push(`/categories/${category.id}`)}
           >
             <CardHeader>
-              {imageSrc ? (
+              {imageSrcStatus ? (
                 <Image
                   src={imageSrc}
                   width={300}

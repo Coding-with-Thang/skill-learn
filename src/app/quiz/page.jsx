@@ -26,6 +26,9 @@ export default function QuizScreenPage() {
   //Shuffle Questions on Component Amount (Quiz Started)
   useEffect(() => {
     const filteredQuestions = selectedQuiz.questions.slice(0, questionCount)
+    console.log("Question Count: ", questionCount)
+    console.log("filteredQuestions: ", filteredQuestions)
+    console.log("selectedQuiz: ", selectedQuiz)
 
     setShuffledQuestions(shuffleArray(...filteredQuestions))
     console.log("Shuffled Questions:", shuffledQuestions)

@@ -13,11 +13,12 @@ model User {
   username String @unique
   firstName String
   lastName String
-  manager String @default("")
+  manager String? @default("")
   role Role @default(AGENT)
   categoryStats CategoryStat[]
-}
 
+  @@map("users")
+}
 model Category{
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String   

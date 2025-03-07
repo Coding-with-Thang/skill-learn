@@ -47,7 +47,7 @@ export default function selectedQuizPage() {
         console.log("Error starting quiz: ", error);
       }
       //Push to the quiz page
-      //router.push("/quiz");
+      router.push("/quiz");
     } else {
       console.log("No questions found for the selected criteria")
     }
