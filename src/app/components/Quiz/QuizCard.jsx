@@ -18,7 +18,6 @@ export default function QuizCard({ quiz }) {
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
 
   const handleClick = () => {
-    console.log("Quiz: ", quiz)
     setSelectedQuiz(quiz);
     router.push(`/quiz/start/${quiz.id}`)
   }

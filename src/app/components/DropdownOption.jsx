@@ -16,9 +16,6 @@ export default function DropdownOptions() {
 
   const config = useQuizStore((state) => state.config);
   const addCategory = useQuizStore((state) => state.addCategory)
-
-  console.log('config:', config)
-
   const listOfCategories = ["General Knowledge", "History", "Team", "Trivia", "Game Day"]
 
   useEffect(() => {

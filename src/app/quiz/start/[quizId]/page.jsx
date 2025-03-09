@@ -33,8 +33,6 @@ export default function selectedQuizPage() {
 
     const selectedQuestions = selectedQuiz?.questions.slice(0, questionCount)
 
-    //console.log("selectedQuestions: ", selectedQuestions)
-
     if (selectedQuestions.length > 0) {
       //update the db for quiz attempt start
 

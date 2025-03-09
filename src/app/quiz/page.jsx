@@ -12,26 +12,24 @@ export default function QuizScreenPage() {
 
   const router = useRouter()
 
-  const { currentIndex, setCurrentIndex } = useState(0)
-  const { activeQuestion, setActiveQuestion } = useState(null)
-  const { responses, setResponses } = useState([])
-  const { shuffledQuestions, setShuffledQuestions } = useState([])
-  const { shuffledOptions, setShuffledOptions } = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [activeQuestion, setActiveQuestion] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [shuffledOptions, setShuffledOptions] = useState([]);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   if (!selectedQuiz) {
-    router.push("/")
+    router.push("/training")
     return null
   }
 
   //Shuffle Questions on Component Amount (Quiz Started)
   useEffect(() => {
     const filteredQuestions = selectedQuiz.questions.slice(0, questionCount)
-    console.log("Question Count: ", questionCount)
-    console.log("filteredQuestions: ", filteredQuestions)
-    console.log("selectedQuiz: ", selectedQuiz)
 
-    setShuffledQuestions(shuffleArray(...filteredQuestions))
-    console.log("Shuffled Questions:", shuffledQuestions)
+    console.log("Question Count: ", questionCount)
+
+    setShuffledQuestions(shuffleArray([...filteredQuestions]));
   }, [selectedQuiz])
 
   //Shuffle options when the active changes
@@ -42,18 +40,17 @@ export default function QuizScreenPage() {
   }, [shuffledQuestions, currentIndex])
 
   //Fisher-Yates Shuffle Algorithm
-  const shuffleArray = () => {
-    for (let i = array.length - 1; i > 0; i--) {
-      //generate a random index between 0 and i
-      const j = Math.floor(Math.random() * (i + 1))
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; --i) {
+      // generate a random index between 0 and i
+      const j = Math.floor(Math.random() * (i + 1));
 
-      //swap elements, array[i] and array[j]
-      [array[i], array[j]] = [array[j], array[i]]
+      // swap elements --> destructuring assignment
+      [array[i], array[j]] = [array[j], array[i]];
     }
 
-    return array
-  }
-
+    return array;
+  };
   const handleActiveQuestion = (option) => {
     if (!shuffledQuestions[currentIndex]) return;
 
@@ -100,65 +97,62 @@ export default function QuizScreenPage() {
   }
 
   return (
-    <div className="py-[2.5rem]">
-      //Question
+    <main className="py-[2.5rem] px-[5rem] min-h-screen">
       {shuffledQuestions[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
             <p className="py-3 px-6 border-2 text-xl font-bold self-end rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-              Question: <span className="text-xl">{currentIndex + 1}</span>
-              / {" "}
-              <span>{shuffledQuestions.length}</span>
+              Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
+              <span className="text-xl">{shuffledQuestions.length}</span>
             </p>
             <h1 className="mt-4 px-10 text-5xl font-bold text-center">
               {shuffledQuestions[currentIndex].text}
             </h1>
           </div>
 
-          //Options
+          {/* Options */}
           <div className="pt-14 space-y-4">
             {shuffledOptions.map((option, index) => (
-              <Button
+              <button
                 key={index}
-                className={`relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
-              ${option.text === activeQuestion?.text ?
-                    "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
-                    :
-                    "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
+                className={`relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
+                    hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
+                ${option.text === activeQuestion?.text
+                    ? "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
+                    : "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
                   }
-                  `}
-                onClick={() => handleActionQuestion(option)}
+                    `}
+                onClick={() => handleActiveQuestion(option)}
               >
                 {option.text}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
-      )
-        :
-        (
-          <p className="text-lg">No questions found for this quiz</p>
-        )}
+      ) : (
+        <p className="text-lg">No questions found for this quiz</p>
+      )}
 
-      <div className="w-full py-[4rem] fixed bottom-0 left-0 border-t-2 flex items-center justify-center">
+      <div className="w-full py-[4rem] border-t-2 flex items-center justify-center">
         <Button
-          className="px-10 py-6 font-bold text-white text-xl rounded-xl"
+          className="px-10 py-6 font-bold text-xl rounded-xl"
+          variant="destructive"
           onClick={() => {
             if (currentIndex < shuffledQuestions.length - 1) {
               if (activeQuestion?.id) {
-                handleNextQuestion()
+                handleNextQuestion();
               } else {
-                const sound = new Audio("/sounds/error.mp3")
-                sound.play()
-                //TODO: add toast
+                const sound = new Audio("/sounds/error.mp3");
+                sound.play();
+                toast.error("Please select an option to continue");
               }
             } else {
               if (activeQuestion?.id) {
-                handleFinishQuiz()
+                handleFinishQuiz();
               } else {
-                const sound = new Audio("/sounds/error.mp3")
-                sound.play()
-                //TODO: add toast
+                const sound = new Audio("/sounds/error.mp3");
+                sound.play();
+                toast.error("Please select an option to continue");
               }
             }
           }}
@@ -169,6 +163,6 @@ export default function QuizScreenPage() {
           }
         </Button>
       </div>
-    </div >
-  )
+    </main>
+  );
 }

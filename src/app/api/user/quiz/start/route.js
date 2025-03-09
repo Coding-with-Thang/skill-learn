@@ -64,7 +64,6 @@ export async function POST(req) {
 
     return NextResponse.json(stat);
   } catch (error) {
-    console.log("Error starting quiz: ", error);
     return NextResponse.json({ error: "Error starting quiz" }, { status: 500 });
   }
 }
