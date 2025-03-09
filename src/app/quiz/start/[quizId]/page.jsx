@@ -7,8 +7,8 @@ import { useQuizStartStore } from '@/app/store/quizStore'
 import { Label } from "@/components/ui/label"
 import { Input } from '@/components/ui/input';
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Play } from 'lucide-react'
+
 export default function selectedQuizPage() {
 
   const router = useRouter();
@@ -17,14 +17,15 @@ export default function selectedQuizPage() {
 
   useEffect(() => {
     if (!selectedQuiz) {
-      router.push("/")
+      router.push("/training")
     }
   }, [selectedQuiz, router])
 
   const handleQuestionChange = (e) => {
-    const value = parseInt(e.target.value, 10)
-    const maxQuestions = selectedQuiz?.questions.length || 5;
-    const newCount = isNaN(value) || value < 5 ? 5 : Math.min(value, maxQuestions)
+    const value = parseInt(e.target.value, 10);
+    const maxQuestions = selectedQuiz?.questions.length || 1;
+
+    const newCount = isNaN(value) || value < 1 ? 1 : Math.min(value, maxQuestions);
 
     setQuestionCount((prev) => ({ ...prev, questionCount: newCount }))
   }
@@ -54,7 +55,8 @@ export default function selectedQuizPage() {
   return (
     <section className="min-h-screen" >
       <div className="py-[6rem] w-[50%] fixed left-1/2 top-[45%] translate-x-[-50%] translate-y-[-50%] p-6 border-2 rounded-xl shadow-[0_.5rem_0_0_rgba(0,0,0,0.1)] mx-auto">
-        <h1 className="text-4xl font-bold mb-4">Quiz</h1>
+        <h1 className="text-4xl font-bold mb-4">{selectedQuiz?.title}</h1>
+        <h2 className="text-xl mb-3">{selectedQuiz?.description}</h2>
 
         <div className="space-y-6">
           <div className="space-y-2">
@@ -69,19 +71,8 @@ export default function selectedQuizPage() {
               onChange={handleQuestionChange}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="category" className="text-xl">Category</Label>
-            <Select disabled>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem>1</SelectItem>
-                <SelectItem>2</SelectItem>
-                <SelectItem>3</SelectItem>
-                <SelectItem>4</SelectItem>
-              </SelectContent>
-            </Select>
+          <div>
+            <p>Last attempted: {selectedQuiz?.lastAttempt}</p>
           </div>
           <div className="w-full pb-4 flex justify-center fixed bottom-0 left-0">
             <Button
