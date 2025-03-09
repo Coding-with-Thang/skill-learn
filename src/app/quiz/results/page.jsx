@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { Button } from "@/components/ui/button"
-import { Play } from 'lucide-react'
+import { Play, ChartNoAxesCombined } from 'lucide-react'
 export default function ResultsPage() {
   const router = useRouter();
   const { quizResponses, selectedQuiz } = useQuizStartStore()
@@ -51,14 +51,20 @@ export default function ResultsPage() {
 
       <p className="text-2xl text-center mt-2 font-semibold">{message}</p>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex gap-2 justify-center mt-8">
         <Button
           className="px-10 py-6 font-bold text-xl rounded-xl"
           onClick={() => router.push("/quiz/start/" + `${selectedQuiz.id}`)}
         >
           <Play /> Play Again
         </Button>
+        <Button
+          className="px-10 py-6 font-bold text-xl rounded-xl"
+          onClick={() => router.push("/stats")}
+        >
+          <ChartNoAxesCombined /> View Stats
+        </Button>
       </div>
-    </main>
+    </main >
   )
 }

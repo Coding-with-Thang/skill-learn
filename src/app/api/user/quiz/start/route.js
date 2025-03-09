@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { currentUser, auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 export async function POST(req) {
@@ -10,22 +10,16 @@ export async function POST(req) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const user = await currentUser();
-  if (!user) {
-    return NextResponse("User does not exist", { status: 404 });
-  }
-
   try {
-    let dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
+    const user = await prisma.user.findUnique({
+      where: { clerkId },
     });
 
-    if (!dbUser) {
+    if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const userId = dbUser.id;
+    const userId = user.id;
 
     //Find or create a categoryStat entry
 
