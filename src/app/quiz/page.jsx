@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
+import axios from "axios"
 import { Button } from "@/components/ui/button"
-import { ArrowBigRightDash } from 'lucide-react';
-import { CircleCheckBig } from 'lucide-react';
+import { ArrowBigRightDash } from 'lucide-react'
+import { CircleCheckBig } from 'lucide-react'
+
 export default function QuizScreenPage() {
 
   const { selectedQuiz, questionCount, setQuizResponses } = useQuizStartStore()
@@ -92,8 +94,25 @@ export default function QuizScreenPage() {
     }
   }
 
-  const handleFinishQuiz = () => {
+  const handleFinishQuiz = async () => {
     console.log("Finish")
+    setQuizResponses(responses)
+
+    const score = responses.filter((res) => res.isCorrect).length
+
+    try {
+      await axios.post("/api/user/quiz/finish", {
+        categoryId: selectedQuiz.categoryId,
+        quizId: selectedQuiz.id,
+        score,
+        responses
+      })
+    } catch (error) {
+      console.log("Error finishing quiz: ", error)
+    }
+
+    router.push("/quiz/results")
+
   }
 
   return (
