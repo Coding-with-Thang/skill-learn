@@ -49,7 +49,7 @@ export default function UserStats({ userStats }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="h-[15rem] px-8 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
+      <div className="min-h-[15rem] px-8 py-6 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)] flex-col gap-4">
         <Image
           src={user?.imageUrl || "/user.png"}
           alt="Profile Image"
@@ -57,6 +57,7 @@ export default function UserStats({ userStats }) {
           height={200}
           className="rounded-full border-2 shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
         />
+        <h2 className="font-bold text-xl mt-4">{user?.firstName} {" "} {user?.lastName}</h2>
       </div>
       <div className="mt-4">
         <h1 className="font-bold text-2xl">Overview</h1>
@@ -66,7 +67,6 @@ export default function UserStats({ userStats }) {
       </div>
       <div className="grid grid-cols-3 gap-6 font-semibold">
         <div className="py-4 px-4 flex flex-col gap-1 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <h2 className="font-bold text-xl">{user?.firstName}</h2>
           <p className="text-gray-400 font-semibold">Recent Attempt</p>
           <p className="text-sm text-gray-400 font-semibold">
             {formatTime(recentAttemptDate)}
