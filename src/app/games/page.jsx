@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import BreadCrumbCom from "../components/BreadCrumb"
 
 const images = [
   {
@@ -29,11 +30,12 @@ const images = [
 
 export default function GameSelectPage() {
   return (
-    <div className="flex flex-col items-center text-center min-h-screen w-full pt-9 bg-gray-100">
-      <h2 className="my-9 text-2xl font-bold border-b-2 border-teal-500">
-        Select a Game to play
-      </h2>
-      <div className=" flex items-center justify-center p-4">
+    <section className="px-10 min-h-screen w-full pt-9 bg-gray-100">
+      <BreadCrumbCom endtrail="Games" />
+      <div className=" flex flex-col items-center justify-center p-4">
+        <h2 className="my-10 text-2xl font-bold border-b-2 border-teal-500">
+          Select a Game to play
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {images.map((image) => (
             <Link key={image.id} href={image.route}>
@@ -52,6 +54,6 @@ export default function GameSelectPage() {
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

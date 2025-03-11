@@ -9,6 +9,8 @@ import {
   CardContent,
   CardHeader
 } from "@/components/ui/card";
+import BreadCrumbCom from "../components/BreadCrumb"
+
 export default function TrainingPage() {
 
   const { categories, loading, error, fetchCategories } = useCategoryStore();
@@ -29,7 +31,8 @@ export default function TrainingPage() {
 
   return (
     <section className="flex flex-col min-h-screen w-[90%] px-20">
-      <h1 className="text-4xl font-bold my-10 flex self-center">More Training</h1>
+      <BreadCrumbCom endtrail="My Training" />
+      <h1 className="text-4xl font-bold my-10 flex self-center">My Training</h1>
       <h3 className="font-semibold text-2xl">Categories</h3>
       {loading && <p>Loading...</p>}
       {error && <p>{error}</p>}
@@ -50,7 +53,7 @@ export default function TrainingPage() {
                   className="h-full rounded-xl"
                 />
               ) : (
-                <p>Loading...</p>
+                <p>Image Loading...</p>
               )
               }
             </CardHeader>

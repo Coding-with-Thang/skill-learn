@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label"
-import { generateRandomPassword } from '../../utils/generatePassword'
+import { generateRandomPassword } from '../../../utils/generatePassword'
 export default function UsersSettingPage() {
   const [username, setUsername] = useState('')
   const [firstName, setFirstName] = useState('')

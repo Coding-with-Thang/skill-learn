@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image"
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-import { Star, Telescope, Medal, BookOpenText, ChartBar, Search } from 'lucide-react';
+import { Star, Telescope, Medal, BookOpenText, LayoutDashboard, Search, ChartColumnBig } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
 import logo from '../../../public/logo.svg'
@@ -33,7 +33,7 @@ export default function Header() {
             />
             Skill-Learn
           </Link>
-          <form onSubmit={handleSubmit} className="flex border border-gray-400 shadow-md rounded-lg">
+          {/* <form onSubmit={handleSubmit} className="flex border border-gray-400 shadow-md rounded-lg">
             <Input
               type="text"
               placeholder="Search..."
@@ -44,7 +44,7 @@ export default function Header() {
             <Button className="items-center outline-none border-none shadow-none">
               <Search />
             </Button>
-          </form>
+          </form> */}
 
           {/* <nav className="hidden lg:flex items-center justify-center gap-3 lg:gap-4 mx-3 lg:mx-9">
         <Link href="/about" className=" hover:underline">
@@ -65,13 +65,16 @@ export default function Header() {
           <Link href="/achievements" className="flex gap-1 items-center hover:underline">
             <Medal /> Achievements
           </Link>
+          <Link href="/stats" className="flex gap-1 items-center hover:underline">
+            <ChartColumnBig /> My Stats
+          </Link>
           <Link href="/rewards" className="flex gap-1 items-center hover:underline">
             <Star /> Rewards
           </Link>
 
           <SignedIn>
             <Link href="/dashboard" className="flex gap-1 items-center hover:underline">
-              <ChartBar />Dashboard
+              <LayoutDashboard /> Dashboard
             </Link>
 
             <div className="relative">

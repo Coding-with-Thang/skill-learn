@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import BreadCrumbCom from "./BreadCrumb"
+
 export default function UserStats({ userStats }) {
   const { user, isLoaded } = useUser();
 
@@ -49,6 +51,7 @@ export default function UserStats({ userStats }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <BreadCrumbCom endtrail="User Stats" />
       <div className="min-h-[15rem] px-8 py-6 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)] flex-col gap-4">
         <Image
           src={user?.imageUrl || "/user.png"}

@@ -7,7 +7,8 @@ import {
   BreadcrumbSeparator,
 } from "../../components/ui/breadcrumb";
 
-export default function BreadCrumb() {
+export default function BreadCrumbCom({ crumbs, endtrail }) {
+
   return (
     <div className="my-4 px-5">
       <Breadcrumb>
@@ -16,12 +17,18 @@ export default function BreadCrumb() {
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
+          {crumbs &&
+            crumbs.map((crumb) => (
+              <>
+                <BreadcrumbItem key={crumb.name}>
+                  <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </>
+            ))
+          }
           <BreadcrumbItem>
-            <BreadcrumbLink href="/components">Components</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+            <BreadcrumbPage>{endtrail}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>

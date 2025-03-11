@@ -38,7 +38,7 @@ export default function QuizCard({ quiz }) {
             className="h-full rounded-xl"
           />
         ) : (
-          <p>Loading...</p>
+          <p>Image Loading...</p>
         )
         }
       </CardHeader>
