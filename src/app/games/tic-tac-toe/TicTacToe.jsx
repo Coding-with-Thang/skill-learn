@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
 
-import QuestionManager from './QuestionManager';
+import QuestionManager from "@/app/components/Admin/QuestionManager";
 
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
