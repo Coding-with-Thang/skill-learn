@@ -25,7 +25,7 @@ export default function QuizCard({ quiz }) {
   return (
     <Card
       key={quiz.id}
-      className="min-w-48 min-h-[300px] border-2 rounded-xl p-1 cursor-pointer shadow-[0_.3rem_0_0_rgba(0,0,0,0.8)] hover:-translate-y-1 transition-transform duration-300 ease-in-out"
+      className="min-w-48 min-h-[300px] flex flex-col border-2 rounded-xl p-1 cursor-pointer shadow-[0_.3rem_0_0_rgba(0,0,0,0.8)] hover:-translate-y-1 transition-transform duration-300 ease-in-out"
       onClick={() => handleClick()}
     >
       <CardHeader className="rounded-xl h-[55%] py-1 bg-[#97dbff]/65 w-full">
@@ -35,15 +35,15 @@ export default function QuizCard({ quiz }) {
             width={300}
             height={200}
             alt={quiz.title}
-            className="h-full rounded-xl"
+            className="h-full w-full rounded-xl "
           />
         ) : (
           <p>Image Loading...</p>
         )
         }
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 items-start mt-6">
-        <h4 className="text-xl font-bold">{quiz.title}</h4>
+      <CardContent className="flex flex-col gap-7 items-start">
+        <h4 className="text-xl font-bold mt-2">{quiz.title}</h4>
         <p className="text-gray-600 text-sm leading-none font-semibold">
           {quiz.description}
         </p>

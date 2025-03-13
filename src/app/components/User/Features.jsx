@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import quiz from "../../../public/quiz.png"
-import progressTracking from "../../../public/progress-tracking.png"
-import leaderboard from "../../../public/leaderboard.png"
-import multiSource from "../../../public/multi-source.png"
-import customize from "../../../public/customize.png"
-import uptime from "../../../public/uptime.png"
+import quiz from "../../../../public/quiz.png"
+import progressTracking from "../../../../public/progress-tracking.png"
+import leaderboard from "../../../../public/leaderboard.png"
+import multiSource from "../../../../public/multi-source.png"
+import customize from "../../../../public/customize.png"
+import uptime from "../../../../public/uptime.png"
 
 export default function Features() {
 

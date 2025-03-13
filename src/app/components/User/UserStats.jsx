@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { formatTime } from "@/utils/formatTime";
 import { Crosshair, ListChecks } from 'lucide-react';
-import CategoryBarChart from "../components/CategoryBarChart"
+import CategoryBarChart from "../User/CategoryBarChart"
 import {
   Table,
   TableBody,
@@ -11,8 +11,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../components/ui/table";
-import BreadCrumbCom from "./BreadCrumb"
+} from "../../../components/ui/table";
+import BreadCrumbCom from "../BreadCrumb"
 
 export default function UserStats({ userStats }) {
   const { user, isLoaded } = useUser();

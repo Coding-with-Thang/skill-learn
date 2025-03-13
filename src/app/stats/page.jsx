@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server"
 import { error } from "console"
 import { PrismaClient } from "@prisma/client";
-import UserStats from "../components/UserStats";
+import UserStats from "../components/User/UserStats";
 
 const prisma = new PrismaClient();
 

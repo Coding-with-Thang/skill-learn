@@ -1,7 +1,7 @@
 import Image from "next/image";
-import courses from "../../../public/courses.png";
-import games from "../../../public/games.png";
-import redeemRewards from "../../../public/redeem-rewards.png";
+import courses from "../../../../public/courses.png";
+import games from "../../../../public/games.png";
+import redeemRewards from "../../../../public/redeem-rewards.png";
 
 export default function HowItWorks() {
   const steps = [

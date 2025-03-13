@@ -1,9 +1,9 @@
 'use client'
 
-import { useQuizStore } from '../store/quizStore'
+import { useQuizStore } from '../../store/quizStore'
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label"
-import DropdownOptions from './DropdownOption';
+import DropdownOptions from '../DropdownOption';
 import Button from './Button'
 
 export default function CreateQuiz() {

@@ -1,5 +1,5 @@
-import CreateQuiz from "@/app/components/CreateQuiz";
-import QuestionManager from "../../../components/QuestionManager"
+import CreateQuiz from "@/app/components/Admin/CreateQuiz";
+import QuestionManager from "../../../components/Admin/QuestionManager"
 
 export default function QuizSettingsPage() {
   return (
