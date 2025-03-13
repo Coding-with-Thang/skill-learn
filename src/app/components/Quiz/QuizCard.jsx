@@ -14,7 +14,6 @@ export default function QuizCard({ quiz }) {
   const router = useRouter();
   const imageSrc = false
 
-  const config = useQuizStartStore(state => state.config)
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
 
   const handleClick = () => {

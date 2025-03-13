@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { formatTime } from "@/utils/formatTime";
-import { Crosshair, ListChecks } from 'lucide-react';
+import { PencilLine, Crosshair, ListChecks } from 'lucide-react';
 import CategoryBarChart from "../User/CategoryBarChart"
 import {
   Table,
@@ -69,9 +69,12 @@ export default function UserStats({ userStats }) {
         </p>
       </div>
       <div className="grid grid-cols-3 gap-6 font-semibold">
-        <div className="py-4 px-4 flex flex-col gap-1 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <p className="text-gray-400 font-semibold">Recent Attempt</p>
-          <p className="text-sm text-gray-400 font-semibold">
+        <div className="py-4 px-4 flex flex-col gap-3 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
+          <div className="flex gap-2 text-2xl text-blue-400">
+            <PencilLine />
+            <p className="text-gray-900 text-lg font-semibold">Recent Attempt</p>
+          </div>
+          <p className="font-bold text-2xl">
             {formatTime(recentAttemptDate)}
           </p>
         </div>

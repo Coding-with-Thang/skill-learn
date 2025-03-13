@@ -59,7 +59,8 @@ export default function selectedQuizPage() {
 
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="questionCount" className="text-xl">{`Number of Questions (Max Questions: ${selectedQuiz?.questions.length})`}</Label>
+          <Label htmlFor="questionCount" className="text-xl">Number of Questions: {selectedQuiz?.questions.length}</Label>
+          {/* <Label htmlFor="questionCount" className="text-xl">{`Number of Questions (Max Questions: ${selectedQuiz?.questions.length})`}</Label>
           <Input
             type="number"
             min={5}
@@ -68,7 +69,7 @@ export default function selectedQuizPage() {
             id="questionCount"
             value={questionCount}
             onChange={handleQuestionChange}
-          />
+          /> */}
         </div>
         <div>
           <p>Last attempted: {selectedQuiz?.lastAttempt}</p>
