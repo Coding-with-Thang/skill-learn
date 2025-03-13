@@ -36,7 +36,7 @@ export default function ResultsPage() {
   }
 
   return (
-    <main className="py-[2.5rem] px-[5rem] min-h-screen">
+    <main className="py-[2.5rem] px-[5rem]">
       <h1 className="text-4xl font-bold text-center">Quiz Results</h1>
 
       <p className="text-2xl text-center mt-4">

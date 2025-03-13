@@ -116,7 +116,7 @@ export default function QuizScreenPage() {
   }
 
   return (
-    <main className="py-[2.5rem] px-[5rem] min-h-screen">
+    <main className="py-[2.5rem] px-[5rem]">
       {shuffledQuestions[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">

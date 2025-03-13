@@ -30,7 +30,7 @@ const images = [
 
 export default function GameSelectPage() {
   return (
-    <section className="px-10 min-h-screen w-full pt-9 bg-gray-100">
+    <section className="px-10 w-full pt-9 bg-gray-100">
       <BreadCrumbCom endtrail="Games" />
       <div className=" flex flex-col items-center justify-center p-4">
         <h2 className="my-10 text-2xl font-bold border-b-2 border-teal-500">

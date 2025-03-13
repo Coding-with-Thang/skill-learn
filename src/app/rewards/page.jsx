@@ -49,7 +49,7 @@ export default function RewardsPage() {
   ]
 
   return (
-    <div className="flex flex-col items-center justify-items-center min-h-screen">
+    <div className="flex flex-col items-center justify-items-center">
       <div className="flex flex-col gap-1 items-center justify-center w-full h-[300px] bg-green-400 bg-gradient-to-br from-green-500 to-yellow-200 text-gray-100 relative">
         <Image
           src={Gifts}

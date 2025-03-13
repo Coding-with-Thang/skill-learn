@@ -36,7 +36,7 @@ export default async function QuizSelectPage({ params }) {
   })
 
   return (
-    <section className="flex flex-col min-h-screen w-[90%] px-20">
+    <section className="flex flex-col w-[90%] px-20">
       <BreadCrumbCom crumbs={[{ name: "My Training", href: "training" }]} endtrail="Quiz Selection" />
       <h1 className="mb-6 text-4xl font-bold mt-20">Quizzes</h1>
 

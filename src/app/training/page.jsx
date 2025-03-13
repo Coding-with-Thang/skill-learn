@@ -30,7 +30,7 @@ export default function TrainingPage() {
   }, [categories])
 
   return (
-    <section className="flex flex-col min-h-screen w-[90%] px-20">
+    <section className="flex flex-col w-[90%] px-20">
       <BreadCrumbCom endtrail="My Training" />
       <h1 className="text-4xl font-bold my-10 flex self-center">My Training</h1>
       <h3 className="font-semibold text-2xl">Categories</h3>
