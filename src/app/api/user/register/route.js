@@ -10,7 +10,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // check if the user exits in the db
+    //check if the user exits in the db
     let user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });

@@ -9,11 +9,13 @@ import LeaderboardLanding from "./components/User/LeaderboardLanding";
 import Features from './components/User/Features';
 import HowItWorks from './components/User/HowItWorks';
 import Testimonials from './components/User/Testimonials';
+import UserBadge from './components/User/UserBadge';
 export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-items-center min-h-[80dvh]">
       <HeroBanner />
       <SignedIn>
+        <UserBadge />
         <DailyActivities />
         <MoreTraining />
         <PerformanceLanding />

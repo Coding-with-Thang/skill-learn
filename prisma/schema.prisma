@@ -15,10 +15,13 @@ model User {
   lastName String
   manager String? @default("")
   role Role @default(AGENT)
+  lifetimePoints Int @default(0)
+  pointLogs PointLog[]
   categoryStats CategoryStat[]
 
   @@map("users")
 }
+
 model Category{
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   name          String   
@@ -70,6 +73,15 @@ model CategoryStat {
   lastAttempt   DateTime? //Last attempt in this category
 
   @@unique([userId, categoryId])
+}
+
+model PointLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  amount    Int
+  reason    String //Reason for awarding points
+  createdAt DateTime @default(now())
 }
 
 enum Role {

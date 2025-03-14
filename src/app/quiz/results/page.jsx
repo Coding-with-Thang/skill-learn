@@ -9,7 +9,7 @@ export default function ResultsPage() {
   const { quizResponses, selectedQuiz } = useQuizStartStore()
 
   if (!quizResponses || quizResponses.length === 0) {
-    return router.push("/training"); /// redirect to home page
+    return router.push("/training"); ///Redirect to home page
   }
 
   //Calculate the score

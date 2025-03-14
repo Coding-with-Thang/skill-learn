@@ -12,7 +12,7 @@ export async function POST(req) {
 
     const { categoryId, quizId, score, responses } = await req.json();
 
-    // validate the fields
+    //Validate the fields
     if (
       !categoryId ||
       !quizId ||
@@ -28,7 +28,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // fetch or create a categoryStat entry
+    //Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
       where: {
         userId_categoryId: {
@@ -39,11 +39,11 @@ export async function POST(req) {
     });
 
     if (stat) {
-      // calculate the average score
+      //Calculate the average score
       const totalScore = (stat.averageScore || 0) * stat.completed + score;
       const newAverageScore = totalScore / (stat.completed + 1);
 
-      // update the categoryStat entry
+      //Update the categoryStat entry
       stat = await prisma.categoryStat.update({
         where: { id: stat.id },
         data: {
@@ -53,7 +53,7 @@ export async function POST(req) {
         },
       });
     } else {
-      // create a new categoryStat entry
+      //Create a new categoryStat entry
       stat = await prisma.categoryStat.create({
         data: {
           userId: user.id,

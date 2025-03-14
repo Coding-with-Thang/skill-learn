@@ -37,7 +37,7 @@
 //     });
 
 //     if (stat) {
-//       // calculate the average score
+//       //calculate the average score
 //       const totalScore = (stat.averageScore || 0) * stat.completed + score;
 //       const newAverageScore = totalScore / (stat.completed + 1);
 
@@ -51,7 +51,7 @@
 //         },
 //       });
 //     } else {
-//       // create a new categoryStat entry
+//       //create a new categoryStat entry
 //       stat = await prisma.categoryStat.create({
 //         data: {
 //           userId: user.id,

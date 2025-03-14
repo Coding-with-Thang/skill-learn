@@ -44,10 +44,10 @@ export default function QuizScreenPage() {
   //Fisher-Yates Shuffle Algorithm
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; --i) {
-      // generate a random index between 0 and i
+      //Generate a random index between 0 and i
       const j = Math.floor(Math.random() * (i + 1));
 
-      // swap elements --> destructuring assignment
+      //Swap elements --> destructuring assignment
       [array[i], array[j]] = [array[j], array[i]];
     }
 
