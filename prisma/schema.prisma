@@ -17,6 +17,7 @@ model User {
   role Role @default(AGENT)
   lifetimePoints Int @default(0)
   pointLogs PointLog[]
+  rewardRedeemed RewardRedeemed[]
   categoryStats CategoryStat[]
 
   @@map("users")
@@ -82,6 +83,15 @@ model PointLog {
   amount    Int
   reason    String //Reason for awarding points
   createdAt DateTime @default(now())
+}
+
+model rewards {
+id        String   @id @default(auto()) @map("_id") @db.ObjectId
+title     String
+cost      Int
+imageUrl String
+promo Boolean
+promoAmount Int
 }
 
 enum Role {
