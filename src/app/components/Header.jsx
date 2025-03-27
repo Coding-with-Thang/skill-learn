@@ -5,8 +5,6 @@ import Link from "next/link";
 import Image from "next/image"
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { Star, Telescope, Medal, BookOpenText, LayoutDashboard, Search, ChartColumnBig } from 'lucide-react';
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button";
 import logo from '../../../public/logo.svg'
 
 export default function Header() {
