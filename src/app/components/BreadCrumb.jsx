@@ -19,14 +19,12 @@ export default function BreadCrumbCom({ crumbs, endtrail }) {
           <BreadcrumbSeparator />
           {crumbs &&
             crumbs.map((crumb) => (
-              <>
-                <BreadcrumbItem key={crumb.name}>
-                  <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-              </>
+              <BreadcrumbItem key={crumb.name}>
+                <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
+              </BreadcrumbItem>
             ))
           }
+          {endtrail && <BreadcrumbSeparator />}
           <BreadcrumbItem>
             <BreadcrumbPage>{endtrail}</BreadcrumbPage>
           </BreadcrumbItem>

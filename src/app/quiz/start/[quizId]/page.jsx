@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from "axios";
+import api from "@/utils/axios";
 import { useQuizStartStore } from '@/app/store/quizStore'
 import { Label } from "@/components/ui/label"
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ export default function selectedQuizPage() {
       //update the db for quiz attempt start
 
       try {
-        await axios.post("/api/user/quiz/start", {
+        await api.post("/user/quiz/start", {
           categoryId: selectedQuiz?.categoryId,
           quizId: selectedQuiz?.id,
         });

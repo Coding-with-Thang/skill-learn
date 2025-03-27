@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
-import axios from "axios"
+import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
 import { ArrowBigRightDash } from 'lucide-react'
 import { CircleCheckBig } from 'lucide-react'
@@ -101,7 +101,7 @@ export default function QuizScreenPage() {
     const score = responses.filter((res) => res.isCorrect).length
 
     try {
-      await axios.post("/api/user/quiz/finish", {
+      await api.post("/user/quiz/finish", {
         categoryId: selectedQuiz.categoryId,
         quizId: selectedQuiz.id,
         score,
@@ -163,7 +163,7 @@ export default function QuizScreenPage() {
               } else {
                 const sound = new Audio("/sounds/error.mp3");
                 sound.play();
-                toast.error("Please select an option to continue");
+                // toast.error("Please select an option to continue");
               }
             } else {
               if (activeQuestion?.id) {
@@ -171,7 +171,7 @@ export default function QuizScreenPage() {
               } else {
                 const sound = new Audio("/sounds/error.mp3");
                 sound.play();
-                toast.error("Please select an option to continue");
+                // toast.error("Please select an option to continue");
               }
             }
           }}

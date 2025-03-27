@@ -68,7 +68,6 @@ export async function POST(req) {
 
     return NextResponse.json(stat);
   } catch (error) {
-    console.log("Error finishing quiz: ", error);
     return NextResponse.json(
       { error: "Error finishing quiz" },
       { status: 500 }

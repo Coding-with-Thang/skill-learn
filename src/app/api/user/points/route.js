@@ -1,6 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
+
 export async function GET() {
   try {
     const { userId } = await auth();
@@ -9,17 +10,24 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    //Find the user in the db
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
+      select: { points: true, lifetimePoints: true },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json({
+      points: user.points,
+      lifetimePoints: user.lifetimePoints,
+    });
   } catch (error) {
-    return NextResponse.json({ error: "Error getting user" }, { status: 500 });
+    console.error("Error fetching points:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

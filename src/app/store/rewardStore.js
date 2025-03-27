@@ -1,19 +1,17 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
-export const usePointsStore = create((set, get) => ({
-  points: 0,
-  lifetimePoints: 0,
+export const useRewardStore = create((set, get) => ({
+  rewards: [],
   isLoading: false,
 
-  fetchPoints: async () => {
+  fetchRewards: async () => {
     try {
       set({ isLoading: true });
 
-      const response = await api.get("/user/points");
+      const response = await api.get("/user/rewards");
 
       set({
-        points: response.data.points,
-        lifetimePoints: response.data.lifetimePoints,
+        rewards: response.data.rewards,
         isLoading: false,
       });
     } catch (error) {
@@ -22,29 +20,30 @@ export const usePointsStore = create((set, get) => ({
     }
   },
 
-  addPoints: async (amount, reason) => {
+  addReward: async (prize, description, cost, imageUrl) => {
     try {
       set({ isLoading: true });
 
       // Make API call to add points using axios
-      const response = await api.post("/user/points/add", {
-        amount,
-        reason,
+      const response = await api.post("/user/rewards/add", {
+        prize,
+        description,
+        cost,
+        imageUrl,
       });
 
       // Update local state
       set({
-        points: response.data.points,
-        lifetimePoints: response.data.lifetimePoints,
+        rewards: response.data.rewards,
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error adding points:", error);
+      console.error("Error adding reward:", error);
       set({ isLoading: false });
     }
   },
 
-  spendPoints: async (amount, reason) => {
+  redeemReward: async (amount, reason) => {
     try {
       const { points } = get();
 

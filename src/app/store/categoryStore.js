@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import api from "@/utils/axios";
 
 const useCategoryStore = create((set) => ({
   categories: [],
@@ -9,7 +9,7 @@ const useCategoryStore = create((set) => ({
   fetchCategories: async () => {
     set({ loading: true, error: null });
     try {
-      const response = await axios.get("/api/categories"); //Calls Next.js API
+      const response = await api.get("/categories"); //Calls Next.js API
       set({ categories: response.data.categories, loading: false });
     } catch (error) {
       set({ error: "Failed to fetch categories", loading: false });

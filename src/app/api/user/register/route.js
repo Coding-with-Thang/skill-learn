@@ -29,7 +29,6 @@ export async function POST(req) {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.log("Error starting quiz: ", error);
     return NextResponse.json({ error: "Error creating user" }, { status: 500 });
   }
 }

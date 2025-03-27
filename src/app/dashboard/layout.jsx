@@ -4,8 +4,8 @@ export default function DashboardLayout({ children }) {
   return (
     <main className="flex">
       {/* Sidebar */}
-      <div className="w-1/6 bg-gray-800 text-white p-4">
-        <h2 className="text-2xl font-semibold mb-4">Admin Dashboard</h2>
+      <div className="w-[15rem] bg-gray-800 text-white p-4">
+        <h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
         <ul className="space-y-2">
           <li>
             <Link href="/dashboard" className="block text-gray-200 hover:text-blue-400">Dashboard</Link>
@@ -16,9 +16,12 @@ export default function DashboardLayout({ children }) {
           <li>
             <Link href="/dashboard/quizzes/quiz-manager" className="block text-gray-200 hover:text-blue-400">Manage Quizzes</Link>
           </li>
+          <li>
+            <Link href="/dashboard/rewards" className="block text-gray-200 hover:text-blue-400">Manage Rewards</Link>
+          </li>
         </ul>
       </div>
-      <div className="min-h-screen w-full">
+      <div className="min-h-screen w-full bg-gray-100">
         {children}
       </div>
     </main>

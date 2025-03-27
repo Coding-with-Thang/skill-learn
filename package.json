@@ -28,7 +28,7 @@
     "moment": "^2.30.1",
     "mongodb": "^6.13.0",
     "mongoose": "^8.9.7",
-    "next": "^15.2.2",
+    "next": "^15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.4.0",
