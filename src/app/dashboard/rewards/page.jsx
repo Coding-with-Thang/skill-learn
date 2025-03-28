@@ -13,6 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import AddRewards from '@/app/components/Admin/rewards/addRewards';
+
 export default function RewardsAdminPage() {
 
   const [showForm, setShowForm] = useState(false);
@@ -118,25 +129,28 @@ export default function RewardsAdminPage() {
           <div className="mt-10">
             {/* Table */}
             <Table>
-              <TableHeader>
+              <TableHeader className="whitespace-nowrap">
                 <TableRow>
                   <TableHead className="w-[100px]">Prize</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Cost</TableHead>
-                  <TableHead className="text-right">Image URL</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>Image URL</TableHead>
+                  <TableHead className="text-center">Action</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
+              <TableBody className="whitespace-nowrap">
                 {rewards.map((reward) => (
                   <TableRow key={reward.id}>
-                    <TableCell className="font-medium">{reward.prize}</TableCell>
+                    <TableCell className="font-semibold">{reward.prize}</TableCell>
                     <TableCell>{reward.description}</TableCell>
                     <TableCell>{reward.cost}</TableCell>
-                    <TableCell className="text-right">{reward.imageUrl}</TableCell>
-                    <TableCell className="text-right">
-                      <Button className=" bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">Edit Reward</Button>
-                      <Button className=" bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">Delete Reward</Button>
+                    <TableCell className="">{reward.imageUrl}</TableCell>
+                    <TableCell className="flex gap-2 justify-center">
+                      <Dialog>
+                        <DialogTrigger><Button className=" bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">Edit</Button></DialogTrigger>
+                        <AddRewards />
+                      </Dialog>
+                      <Button className=" bg-red-800 text-white hover:bg-red-400 hover:text-gray-800">Delete</Button>
                     </TableCell>
                   </TableRow>
                 ))}
