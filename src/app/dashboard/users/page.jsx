@@ -141,7 +141,7 @@ export default function UsersSettingPage() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter first name"
               />
             </div>
@@ -152,7 +152,7 @@ export default function UsersSettingPage() {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter last name"
               />
             </div>
@@ -163,7 +163,7 @@ export default function UsersSettingPage() {
                 id="manager"
                 value={manager}
                 onChange={(e) => setManager(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select a Manager</option>
                 {managerList.map((manager, index) => (
@@ -179,7 +179,7 @@ export default function UsersSettingPage() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Role</option>
                 {roles.map((role, index) => (
@@ -197,7 +197,7 @@ export default function UsersSettingPage() {
                 value={username}
                 readOnly
                 disabled
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -209,7 +209,7 @@ export default function UsersSettingPage() {
                   value={password}
                   readOnly
                   disabled
-                  className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
                 <Button
                   type="button"

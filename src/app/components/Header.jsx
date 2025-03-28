@@ -20,7 +20,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 w-full bg-white border-b-2 z-[1000]">
+    <header className="sticky top-0 w-full bg-white border-b-2 z-1000">
       <div className="flex items-center h-16 justify-between">
         <div className="hidden md:flex items-center pl-5">
           <Link href="/" className="flex flex-1 gap-2 font-bold text-2xl mx-2 lg:mx-4 text-nowrap">
@@ -35,11 +35,11 @@ export default function Header() {
             <Input
               type="text"
               placeholder="Search..."
-              className="flex items-center outline-none border-none shadow-none focus:border-none focus:outline-none"
+              className="flex items-center outline-hidden border-none shadow-none focus:border-none focus:outline-hidden"
             //  value={searchTerm}
             //onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button className="items-center outline-none border-none shadow-none">
+            <Button className="items-center outline-hidden border-none shadow-none">
               <Search />
             </Button>
           </form> */}
@@ -96,7 +96,7 @@ export default function Header() {
               />
               {/* <button
                 onClick={toggleDropdown}
-                className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white font-bold hover:bg-blue-600 focus:outline-none"
+                className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-full text-white font-bold hover:bg-blue-600 focus:outline-hidden"
               >
                 {user.initials}
               </button> */}

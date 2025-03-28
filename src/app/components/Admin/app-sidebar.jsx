@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import {
   BookOpen,
   Bot,
@@ -8,8 +7,7 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "@/components/Admin/nav-main";
-import { NavUser } from "@/components/Admin/nav-user";
+import { NavMain } from "./nav-main";
 import {
   Sidebar,
   SidebarContent,
@@ -18,50 +16,47 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
-      title: "Playground",
-      url: "#",
+      title: "Quizzes",
+      url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Manage Quizzes",
+          url: "/dashboard/quizzes",
         },
         {
-          title: "Starred",
-          url: "#",
+          title: "Quiz Creator",
+          url: "/dashboard/quizzes/quiz-manager",
+        },
+      ],
+    },
+    {
+      title: "Rewards",
+      url: "#",
+      icon: Bot,
+      items: [
+        {
+          title: "Manage Rewards",
+          url: "/dashboard/rewards",
         },
         {
-          title: "Settings",
+          title: "Reward Redeem Logs",
           url: "#",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Users",
       url: "#",
-      icon: Bot,
+      icon: BookOpen,
       items: [
         {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
+          title: "Manage User",
+          url: "users",
         },
       ],
     },
@@ -113,9 +108,6 @@ export function AppSidebar({ ...props }) {
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

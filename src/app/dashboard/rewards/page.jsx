@@ -35,7 +35,7 @@ export default function RewardsAdminPage() {
   }
 
   return (
-    <div className="p-4">
+    <div className="p-4 w-full">
       <h2 className="text-4xl font-semibold">Rewards Management</h2>
 
 
@@ -64,7 +64,7 @@ export default function RewardsAdminPage() {
                     type="text"
                     value={prize}
                     onChange={(e) => setPrize(e.target.value)}
-                    className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder=""
                   />
                 </div>
@@ -75,7 +75,7 @@ export default function RewardsAdminPage() {
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder=""
                   />
                 </div>
@@ -86,7 +86,7 @@ export default function RewardsAdminPage() {
                     type="text"
                     value={cost}
                     onChange={(e) => setCost(e.target.value)}
-                    className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder="10000"
                   />
                 </div>
@@ -97,7 +97,7 @@ export default function RewardsAdminPage() {
                     type="text"
                     value={imageLink}
                     onChange={(e) => setImageLink(e.target.value)}
-                    className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                     placeholder=""
                   />
                 </div>
