@@ -1,19 +1,12 @@
 "use client"
 
-import { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
-import { usePointsStore } from "@/app/store/pointsStore"
 import { Button } from "@/components/ui/button"
 import { Play, ChartNoAxesCombined } from 'lucide-react'
 export default function ResultsPage() {
   const router = useRouter();
   const { quizResponses, selectedQuiz } = useQuizStartStore()
-  const { addPoints, isLoading } = usePointsStore();
-
-  const ptsAwardedParticipation = 5;
-  const ptsAwardedGood = 10;
-  const pointsAdded = useRef(false); // Tracks if points have already been added
 
   const correctAnswers = quizResponses.filter(
     (res) => res.isCorrect
@@ -24,32 +17,17 @@ export default function ResultsPage() {
 
   //Show message for the score
   let message = "";
-  let points = ptsAwardedParticipation
-
   if (scorePercentage < 25) {
     message = "You need to try harder!";
   } else if (scorePercentage >= 25 && scorePercentage < 50) {
     message = "You're getting there! Keep practicing.";
   } else if (scorePercentage >= 50 && scorePercentage < 75) {
     message = "Good effort! You're above average.";
-    points = ptsAwardedGood
   } else if (scorePercentage >= 75 && scorePercentage < 100) {
     message = "Great job! You're so close to perfect!";
   } else if (scorePercentage === 100) {
     message = "Outstanding! You got everything right!";
-    points = ptsAwardedGood
   }
-
-  const handleAddPoints = async () => {
-    if (pointsAdded.current) return; // Prevent duplicate API calls or premature calls
-
-    try {
-      await addPoints(points, 'quiz_completion');
-      pointsAdded.current = true; // Mark points as added
-    } catch (error) {
-      console.error('Error adding points:', error);
-    }
-  };
 
   if (!quizResponses || quizResponses.length === 0) {
     return router.push("/training"); ///Redirect to home page
@@ -70,11 +48,6 @@ export default function ResultsPage() {
       </p>
 
       <p className="text-2xl text-center mt-2 font-semibold">{message}</p>
-      {!isLoading ?
-        <p className="text-lg text-center mt-2">Points earned: {points}</p>
-        :
-        <p>Loading...</p>
-      }
       <div className="flex gap-2 justify-center mt-8">
         <Button
           className="px-10 py-6 font-bold text-xl rounded-xl"
