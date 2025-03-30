@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from "next/navigation";
-import { Image } from "next/image"
+import Image from "next/image"
 import useCategoryStore from "../store/categoryStore";
 import {
   Card,
@@ -15,19 +15,11 @@ export default function TrainingPage() {
 
   const { categories, loading, error, fetchCategories } = useCategoryStore();
 
-  const [imageSrc, setImageSrc] = useState([])
-  const [imageSrcStatus, setImageSrcStatus] = useState(false)
-
-
   const router = useRouter();
 
   useEffect(() => {
     fetchCategories()
   }, [])
-
-  useEffect(() => {
-    setImageSrc(categories.image)
-  }, [categories])
 
   return (
     <section className="flex flex-col w-[90%] px-20">
@@ -44,18 +36,13 @@ export default function TrainingPage() {
             onClick={() => router.push(`/categories/${category.id}`)}
           >
             <CardHeader>
-              {imageSrcStatus ? (
-                <Image
-                  src={imageSrc}
-                  width={300}
-                  height={200}
-                  alt={category.name}
-                  className="h-full rounded-xl"
-                />
-              ) : (
-                <p>Image Loading...</p>
-              )
-              }
+              <Image
+                src={category?.image}
+                width={300}
+                height={200}
+                alt={category?.name}
+                className="h-full rounded-xl"
+              />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 items-start">
               <h4 className="text-xl font-bold text-gray-400">{`${category.name} Training`}</h4>

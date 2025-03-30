@@ -1,7 +1,6 @@
 import QuizCard from '@/app/components/Quiz/QuizCard';
 import prisma from "@/utils/connect"
 import BreadCrumbCom from "../../components/BreadCrumb"
-
 export default async function QuizSelectPage({ params }) {
 
   const { categoryId } = await params

@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { usePointsStore } from "@/app/store/pointsStore"
 import { Button } from "@/components/ui/button"
-import api from "@/utils/axios";
 import { Play, ChartNoAxesCombined } from 'lucide-react'
 export default function ResultsPage() {
   const router = useRouter();
@@ -14,13 +13,28 @@ export default function ResultsPage() {
 
   const ptsAwardedParticipation = 5;
   const ptsAwardedGood = 10;
-
-  const [pointsAwarded, setPointsAwarded] = useState(false);
-
   const pointsAdded = useRef(false); // Tracks if points have already been added
 
+  //Show message for the score
+  let message = "";
+  let points = ptsAwardedParticipation
+
+  if (scorePercentage < 25) {
+    message = "You need to try harder!";
+  } else if (scorePercentage >= 25 && scorePercentage < 50) {
+    message = "You're getting there! Keep practicing.";
+  } else if (scorePercentage >= 50 && scorePercentage < 75) {
+    message = "Good effort! You're above average.";
+    points = ptsAwardedGood
+  } else if (scorePercentage >= 75 && scorePercentage < 100) {
+    message = "Great job! You're so close to perfect!";
+  } else if (scorePercentage === 100) {
+    message = "Outstanding! You got everything right!";
+    points = ptsAwardedGood
+  }
+
   const handleAddPoints = async () => {
-    if (pointsAdded.current || !quizCompleted) return; // Prevent duplicate API calls or premature calls
+    if (pointsAdded.current) return; // Prevent duplicate API calls or premature calls
 
     try {
       await addPoints(points, 'quiz_completion');
@@ -30,9 +44,7 @@ export default function ResultsPage() {
     }
   };
 
-  useEffect(() => {
-    handleAddPoints(); // Automatically call addPoints when the page loads
-  }, [quizCompleted]); // Dependency ensures it runs only when quizCompleted changes
+  handleAddPoints()
 
   if (!quizResponses || quizResponses.length === 0) {
     return router.push("/training"); ///Redirect to home page
@@ -44,26 +56,6 @@ export default function ResultsPage() {
 
   const totalQuestions = quizResponses.length;
   const scorePercentage = (correctAnswers / totalQuestions) * 100;
-
-  //Show message for the score
-  let message = "";
-  let points = ptsAwardedParticipation
-
-  if (scorePercentage < 25) {
-    message = "You need to try harder!";
-    // addPoints(ptsAwardedParticipation, 'quiz_completion');
-  } else if (scorePercentage >= 25 && scorePercentage < 50) {
-    message = "You're getting there! Keep practicing.";
-  } else if (scorePercentage >= 50 && scorePercentage < 75) {
-    message = "Good effort! You're above average.";
-    points = ptsAwardedGood
-  } else if (scorePercentage >= 75 && scorePercentage < 100) {
-    message = "Great job! You're so close to perfect!";
-
-  } else if (scorePercentage === 100) {
-    message = "Outstanding! You got everything right!";
-    points = ptsAwardedGood
-  }
 
   return (
     <main className="py-[2.5rem] px-[5rem]">

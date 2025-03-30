@@ -8,7 +8,7 @@ import {
 } from "../../components/ui/breadcrumb";
 
 export default function BreadCrumbCom({ crumbs, endtrail }) {
-
+  console.log("Crumb: ", crumbs)
   return (
     <div className="my-4 px-5">
       <Breadcrumb>
