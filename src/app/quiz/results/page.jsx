@@ -36,17 +36,14 @@ export default function ResultsPage() {
   return (
     <main className="py-[2.5rem] px-[5rem]">
       <h1 className="text-4xl font-bold text-center mt-10 lg:mt-20">Quiz Results</h1>
-
       <p className="text-2xl text-center mt-4">
         You scored <span className="text-3xl font-bold">{correctAnswers}</span> out of{" "}
         {""}
         <span className="font-bold">{totalQuestions}</span> {""}
       </p>
-
       <p className="text-blue-400 font-bold text-4xl text-center">
         {scorePercentage.toFixed()}%
       </p>
-
       <p className="text-2xl text-center mt-2 font-semibold">{message}</p>
       <div className="flex gap-2 justify-center mt-8">
         <Button
@@ -62,6 +59,6 @@ export default function ResultsPage() {
           <ChartNoAxesCombined /> View Stats
         </Button>
       </div>
-    </main >
+    </main>
   )
 }
