@@ -17,12 +17,12 @@ export default function BreadCrumbCom({ crumbs, endtrail }) {
           </BreadcrumbItem>
           {crumbs !== undefined && crumbs !== null &&
             crumbs.map((crumb) => (
-              <>
+              <span key={crumb.name} className="flex gap-2 items-center justify-center">
                 <BreadcrumbSeparator />
-                <BreadcrumbItem key={crumb.name}>
+                <BreadcrumbItem>
                   <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
                 </BreadcrumbItem>
-              </>
+              </span>
             ))
           }
           {endtrail && <BreadcrumbSeparator />}

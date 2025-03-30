@@ -4,9 +4,9 @@ import prisma from "@/utils/connect";
 
 export async function POST(req) {
   try {
-    const { userId: clerkId } = await auth();
+    const { userId } = await auth();
 
-    if (!clerkId) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

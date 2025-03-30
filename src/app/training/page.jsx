@@ -32,13 +32,12 @@ export default function TrainingPage() {
       <BreadCrumbCom endtrail="My Training" />
       <h1 className="text-4xl font-bold my-10 flex self-center">My Training</h1>
       <h3 className="font-semibold text-2xl">Categories</h3>
-      {error && <p>{error}</p>}
       {!loading ?
         <div className="mt-10 px-20 grid grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map((category, index) => (
             <Card
               key={category.id}
-              className="max-w-[40ch] min-w-36 min-h-[200px] cursor-pointer flex"
+              className="max-w-[40ch] min-w-36 min-h-[200px] cursor-pointer flex  hover:-translate-y-1 transition-transform duration-300 ease-in-out"
               onClick={() => router.push(`/categories/${category.id}`)}
             >
               <CardHeader className="w-[300px]">

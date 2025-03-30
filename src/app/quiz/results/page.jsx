@@ -15,6 +15,13 @@ export default function ResultsPage() {
   const ptsAwardedGood = 10;
   const pointsAdded = useRef(false); // Tracks if points have already been added
 
+  const correctAnswers = quizResponses.filter(
+    (res) => res.isCorrect
+  ).length;
+
+  const totalQuestions = quizResponses.length;
+  const scorePercentage = (correctAnswers / totalQuestions) * 100;
+
   //Show message for the score
   let message = "";
   let points = ptsAwardedParticipation
@@ -49,13 +56,6 @@ export default function ResultsPage() {
   if (!quizResponses || quizResponses.length === 0) {
     return router.push("/training"); ///Redirect to home page
   }
-
-  const correctAnswers = quizResponses.filter(
-    (res) => res.isCorrect
-  ).length;
-
-  const totalQuestions = quizResponses.length;
-  const scorePercentage = (correctAnswers / totalQuestions) * 100;
 
   return (
     <main className="py-[2.5rem] px-[5rem]">

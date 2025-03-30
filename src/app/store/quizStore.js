@@ -1,24 +1,15 @@
 import { create } from "zustand";
-
-const defaultQuizConfig = {
-  id: "",
-  numberOfQuestions: 10,
-  category: {
-    id: 0,
-    name: "",
-  },
-  status: "",
-  score: 0,
-};
-
-const defaultQuizStartConfig = {
-  questionCount: 1,
-  category: null,
-  selectedQuiz: null,
-  quizResponses: [],
-};
 export const useQuizStore = create((set) => ({
-  config: { ...defaultQuizConfig },
+  config: {
+    id: "",
+    numberOfQuestions: 10,
+    category: {
+      id: 0,
+      name: "",
+    },
+    status: "",
+    score: 0,
+  },
   addId: (count) =>
     set((state) => ({ config: { ...state.config, id: count } })),
   addNumberOfQuestions: (count) =>
@@ -31,11 +22,10 @@ export const useQuizStore = create((set) => ({
 }));
 
 export const useQuizStartStore = create((set) => ({
-  config: { ...defaultQuizStartConfig },
-  setQuestionCount: (count) =>
-    set((state) => ({ config: { ...state.config, questionCount: count } })),
-  setCategory: (id, name) =>
-    set((state) => ({ config: { ...state.config, category: { id, name } } })),
+  config: {
+    selectedQuiz: null,
+    quizResponses: [],
+  },
   setSelectedQuiz: (quiz) => set({ selectedQuiz: quiz }),
   setQuizResponses: (newResponses) => set({ quizResponses: newResponses }),
 }));

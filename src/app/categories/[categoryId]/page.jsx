@@ -36,7 +36,7 @@ export default async function QuizSelectPage({ params }) {
       <BreadCrumbCom crumbs={[{ name: "My Training", href: "training" }]} endtrail="Quiz Selection" />
       <h1 className="mb-6 text-4xl font-bold mt-20">Quizzes</h1>
       {quizzes.length > 0 ? (
-        <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6">
           {quizzes.map((quiz) => (
             <QuizCard key={quiz.id} quiz={quiz} />
           ))}
