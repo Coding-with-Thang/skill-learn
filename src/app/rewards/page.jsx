@@ -1,9 +1,11 @@
 "use client"
 
+import { useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Circle, Ellipsis } from "lucide-react";
+import { useRewardStore } from "@/app/store/rewardStore";
 import Gifts from "../../../public/gifts.png"
 import Rewards from "../../../public/rewards2.png"
 import Play from "../../../public/play.jpg"
@@ -12,33 +14,16 @@ import Lunch from "../../../public/lunch.jpg"
 import FlyingPie from "../../../public/flying-pie.jpg"
 import Chest from "../../../public/chest.png"
 import ChickenDance from "../../../public/chicken-dance.jpg"
+import Loader from "../components/loader";
 export default function RewardsPage() {
 
+  const { fetchRewards, rewards, isLoading } = useRewardStore();
+
+  useEffect(() => {
+    fetchRewards();
+  }, [])
+
   const prizes = [
-    {
-      prizeTitle: "5-minute Play Session",
-      prizeDesc: "Play the games available under Games for 5 minutes  (*manager approved required)",
-      prizePts: 50,
-      prizeImg: Play
-    },
-    {
-      prizeTitle: "15-minute Break",
-      prizeDesc: "Redeem an additional 15-minute break (*manager approved required)",
-      prizePts: 150,
-      prizeImg: Break
-    },
-    {
-      prizeTitle: "Free Lunch",
-      prizeDesc: "Redeem a free lunch from SkipTheWalkIn (value $10)",
-      prizePts: 500,
-      prizeImg: Lunch
-    },
-    {
-      prizeTitle: "Flying Pie",
-      prizeDesc: "Select a manager and throw a pie at their face!",
-      prizePts: 10000,
-      prizeImg: FlyingPie
-    },
     {
       prizeTitle: "Chicken Dance",
       prizeDesc: "Sara does the chicken dance x3!",
@@ -112,18 +97,18 @@ export default function RewardsPage() {
             <CardHeader className="">
               <Image
                 className=""
-                src={prizes[4].prizeImg}
+                src={prizes[0].prizeImg}
                 width={340}
                 height={150}
-                alt={prizes[4].prizeTitle}
+                alt={prizes[0].prizeTitle}
               />
             </CardHeader>
             <CardContent className="flex flex-col gap-2 items-start">
-              <h4 className="pt-7 text-5xl font-semibold text-gray-900">{prizes[4].prizeTitle}</h4>
-              <p className="text-3xl">{prizes[4].prizeDesc}</p>
+              <h4 className="pt-7 text-5xl font-semibold text-gray-900">{prizes[0].prizeTitle}</h4>
+              <p className="text-3xl">{prizes[0].prizeDesc}</p>
               <p className="flex justify-end text-4xl mt-3">
                 <span className="text-yellow-500 mr-1">+</span>
-                {prizes[4].prizePts}</p>
+                {prizes[0].prizePts}</p>
             </CardContent>
             <CardFooter className="flex items-end justify-end pr-3">
               <Button className="text-xl rounded-lg">Redeem</Button>
@@ -132,31 +117,35 @@ export default function RewardsPage() {
         </div>
 
         <h1 className="flex text-5xl my-7 justify-center">All Rewards</h1>
-        <div className="p-3 mb-[30rem] flex gap-7">
-          {prizes.map((prize, index) => (
-            <Card key={index} className="max-w-[40ch]">
-              <CardHeader className="h-[400px]">
-                <p className="flex justify-end text-2xl">
-                  <span className="text-yellow-500 mr-1">+</span>
-                  {prize.prizePts}</p>
-                <Image
-                  className=""
-                  src={prize.prizeImg}
-                  width={340}
-                  height={150}
-                  alt={prize.prizeTitle}
-                />
-              </CardHeader>
-              <CardContent className="flex flex-col gap-2 items-start">
-                <h4 className="mx-auto font-semibold text-gray-900">{prize.prizeTitle}</h4>
-                <p>{prize.prizeDesc}</p>
-              </CardContent>
-              <CardFooter>
-                <Button className="font-bold">Redeem</Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        {!isLoading ?
+          <div className="p-3 mb-[30rem] flex gap-7">
+            {rewards.map((prize, index) => (
+              <Card key={index} className="max-w-[40ch]">
+                <CardHeader className="h-[400px]">
+                  <p className="flex justify-end text-2xl">
+                    <span className="text-yellow-500 mr-1">+</span>
+                    {prize.cost}</p>
+                  <Image
+                    className=""
+                    src={prize.imageUrl}
+                    width={340}
+                    height={150}
+                    alt={prize.prize}
+                  />
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2 items-start">
+                  <h4 className="mx-auto font-semibold text-gray-900">{prize.prize}</h4>
+                  <p>{prize.description}</p>
+                </CardContent>
+                <CardFooter>
+                  <Button className="font-bold">Redeem</Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+          :
+          <Loader />
+        }
       </div>
     </div >
   );
