@@ -12,7 +12,6 @@ import Lunch from "../../../public/lunch.jpg"
 import FlyingPie from "../../../public/flying-pie.jpg"
 import Chest from "../../../public/chest.png"
 import ChickenDance from "../../../public/chicken-dance.jpg"
-
 export default function RewardsPage() {
 
   const prizes = [
@@ -68,7 +67,7 @@ export default function RewardsPage() {
         <div className="p-9">
           <h1 className="text-6xl font-bold text-black mb-2">Redeem prizes</h1>
           <h2 className="text-lg font-semibold text-black">
-            Points you earn daily completing training and playing games can be redeemed for amazing prizes!
+            Points you earn by completing training courses and playing games can be redeemed for amazing prizes!
           </h2>
         </div>
         {/* <Image
@@ -77,12 +76,12 @@ export default function RewardsPage() {
           alt="Reward"
         /> */}
       </div>
-      <div className="flex flex-col w-full justify-center items-center bg-gray-50">
+      <div className="flex flex-col w-full justify-center items-center bg-white border border-gray-200 shadow-xs rounded-lg">
         <h1 className="flex text-5xl my-7 justify-center">Daily Streak</h1>
         <div className="flex gap-3 items-center justify-center mb-9">
           <div className="flex flex-col items-center">
-            <h1 className="rounded-[100%] bg-yellow-300 border-8 border-y-yellow-600 text-6xl py-3 px-6 text-white">3</h1>
-            <p className="text-lg font-semibold">Current</p>
+            <h1 className="rounded-[100%] bg-yellow-300 border-8 border-y-yellow-600 text-6xl py-3 px-6 text-white">0</h1>
+            <p className="text-lg font-semibold">Current Streak</p>
           </div>
           <div className="flex flex-col mx-4">
             <div className="flex gap-6 justify-center">
@@ -94,7 +93,7 @@ export default function RewardsPage() {
               <Ellipsis />
               <Circle />
             </div>
-            <p className="max-w-[45ch] mt-3 text-lg">Nice work! <strong>2 days away </strong> from unlocking your 500-point bonus.</p>
+            <p className="max-w-[45ch] mt-3 text-lg">Nice work! <strong>5 days away </strong> from unlocking your 500-point bonus.</p>
           </div>
           <div>
             <Image
@@ -107,7 +106,6 @@ export default function RewardsPage() {
           </div>
         </div>
 
-//Featured Reward
         <h1 className="flex text-5xl my-7 justify-center">Featured Reward</h1>
         <div className="mb-9">
           <Card className="flex min-w-[40ch] hover:scale(1.2)">

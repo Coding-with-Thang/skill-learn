@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { usePointsStore } from "@/app/store/pointsStore"
@@ -50,8 +50,6 @@ export default function ResultsPage() {
       console.error('Error adding points:', error);
     }
   };
-
-  handleAddPoints()
 
   if (!quizResponses || quizResponses.length === 0) {
     return router.push("/training"); ///Redirect to home page
