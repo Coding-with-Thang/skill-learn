@@ -8,6 +8,10 @@ export default function ResultsPage() {
   const router = useRouter();
   const { quizResponses, selectedQuiz } = useQuizStartStore()
 
+  if (!quizResponses || quizResponses.length === 0) {
+    return router.push("/training"); ///Redirect to home page
+  }
+
   const correctAnswers = quizResponses.filter(
     (res) => res.isCorrect
   ).length;
@@ -27,10 +31,6 @@ export default function ResultsPage() {
     message = "Great job! You're so close to perfect!";
   } else if (scorePercentage === 100) {
     message = "Outstanding! You got everything right!";
-  }
-
-  if (!quizResponses || quizResponses.length === 0) {
-    return router.push("/training"); ///Redirect to home page
   }
 
   return (
