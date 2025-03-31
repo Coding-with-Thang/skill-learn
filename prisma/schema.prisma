@@ -20,11 +20,7 @@ model User {
   points Int @default(0)
   lifetimePoints Int @default(0)
   pointLogs PointLog[]
-<<<<<<< HEAD
-  rewardRedeemed RewardRedeemed[]
-=======
   rewardsRedeemed RewardLog[]
->>>>>>> 429e600a26185bb2e67ad869bfe1f96f1939a127
   categoryStats CategoryStat[]
 
   @@map("users")
