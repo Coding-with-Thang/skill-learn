@@ -5,26 +5,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label"
 import { generateRandomPassword } from '../../../utils/generatePassword'
+import useUsersStore from "../../store/usersStore";
+
 export default function UsersSettingPage() {
+
+  const { users, loading, error, fetchUsers } = useUsersStore();
+
+  useEffect(() => {
+    fetchUsers();
+    console.log("users: ", users)
+  }, [])
+
+  useEffect(() => {
+    console.log("users: ", users)
+  }, [users])
+
   const [username, setUsername] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
+  const [errorUsers, setErrorUsers] = useState(null)
   const [manager, setManager] = useState('')
   const [role, setRole] = useState('')
   const [existingUsernames, setExistingUsernames] = useState([
     'john.doe', //Simulated existing usernames for testing
     'jane.smith',
   ])
-  const [users, setUsers] = useState([
-    { id: 1, username: 'john.doe', firstName: 'John', lastName: 'Doe', manager: null, role: null },
-    { id: 2, username: 'jane.smith', firstName: 'Jane', lastName: 'Smith', manager: null, role: null },
-  ])
   const [editingUser, setEditingUser] = useState(null)
 
   const managerList = ["Steph Harrison", "Jack Bowman", "Laura Peleton", "Bob O Neil"]
-  const roles = ["Agent", "Service Leader", "Operations"]
+  const roles = ["AGENT", "MANAGER", "OPERATIONS"]
 
   const [showForm, setShowForm] = useState(false);
 
@@ -60,16 +70,16 @@ export default function UsersSettingPage() {
     e.preventDefault()
 
     if (!firstName || !lastName) {
-      setError('First name and last name are required')
+      setErrorUsers('First name and last name are required')
       return
     }
 
-    setError(null)
+    setErrorUsers(null)
 
     //If editing an existing user, update their info
     if (editingUser) {
       setUsers((prevUsers) =>
-        prevUsers.map((user) =>
+        users.map((user) =>
           user.id === editingUser.id
             ? { ...user, username, firstName, lastName, manager, role }
             : user
@@ -131,7 +141,7 @@ export default function UsersSettingPage() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter first name"
               />
             </div>
@@ -142,7 +152,7 @@ export default function UsersSettingPage() {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter last name"
               />
             </div>
@@ -153,7 +163,7 @@ export default function UsersSettingPage() {
                 id="manager"
                 value={manager}
                 onChange={(e) => setManager(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select a Manager</option>
                 {managerList.map((manager, index) => (
@@ -169,7 +179,7 @@ export default function UsersSettingPage() {
                 id="role"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select Role</option>
                 {roles.map((role, index) => (
@@ -187,7 +197,7 @@ export default function UsersSettingPage() {
                 value={username}
                 readOnly
                 disabled
-                className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
@@ -199,7 +209,7 @@ export default function UsersSettingPage() {
                   value={password}
                   readOnly
                   disabled
-                  className="mt-2 p-3 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 />
                 <Button
                   type="button"
@@ -211,7 +221,7 @@ export default function UsersSettingPage() {
               </div>
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {errorUsers && <p className="text-red-500 text-sm">{errorUsers}</p>}
 
             <div className="flex justify-center">
               <Button type="submit" className="bg-blue-600 text-white py-3 px-8 rounded-md hover:bg-blue-700">
@@ -226,45 +236,49 @@ export default function UsersSettingPage() {
 
       <div className="mt-10">
         <h2 className="text-2xl font-semibold mb-4">User List</h2>
-        <table className="min-w-full table-auto bg-white shadow-md rounded-md overflow-hidden">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-4 text-left">Username</th>
-              <th className="p-4 text-left">First Name</th>
-              <th className="p-4 text-left">Last Name</th>
-              <th className="p-4 text-left">Manager</th>
-              <th className="p-4 text-left">Role</th>
-              <th className="p-4 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id} className="border-b">
-                <td className="p-4">{user.username}</td>
-                <td className="p-4">{user.firstName}</td>
-                <td className="p-4">{user.lastName}</td>
-                <td className="p-4">{user.manager ? user.manager : 'No manager'}</td>
-                <td className="p-4">{user.role ? user.role : ''}</td>
-                <td className="p-4 space-x-4">
-                  <Button
-                    onClick={() =>
-                      handleEdit(user)
-                    }
-                    className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    onClick={() => handleDelete(user.id)}
-                    className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600"
-                  >
-                    Delete
-                  </Button>
-                </td>
+        {!loading ?
+          <table className="min-w-full table-auto bg-white shadow-md rounded-md overflow-hidden">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="p-4 text-left">Username</th>
+                <th className="p-4 text-left">First Name</th>
+                <th className="p-4 text-left">Last Name</th>
+                <th className="p-4 text-left">Manager</th>
+                <th className="p-4 text-left">Role</th>
+                <th className="p-4 text-left">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users && users.map && users.map((user) => (
+                <tr key={user?.id} className="border-b">
+                  <td className="p-4">{user?.username}</td>
+                  <td className="p-4">{user?.firstName}</td>
+                  <td className="p-4">{user?.lastName}</td>
+                  <td className="p-4">{user?.manager ? user?.manager : 'No manager'}</td>
+                  <td className="p-4">{user?.role ? user?.role : ''}</td>
+                  <td className="p-4 space-x-4">
+                    <Button
+                      onClick={() =>
+                        handleEdit(user)
+                      }
+                      className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onClick={() => handleDelete(user.id)}
+                      className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600"
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          :
+          <p>Loading...</p>
+        }
       </div>
     </div >
   )

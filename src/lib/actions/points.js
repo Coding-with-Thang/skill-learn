@@ -60,7 +60,7 @@ export async function getDailyPointStatus() {
   };
 }
 
-export async function awardDailyPoints(amount, reason) {
+export async function awardPoints(amount, reason) {
   if (amount <= 0 || amount > 100) {
     throw new Error("Invalid point amount");
   }

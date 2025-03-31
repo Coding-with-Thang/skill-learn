@@ -1,6 +1,6 @@
 require("dotenv").config({ path: "env.local" });
 
-const questions = require("./quizzes/quizOneQuestions");
+const questions = require("./quizzes/quizTwoQuestions");
 
 let questionsPrisma;
 
@@ -15,7 +15,7 @@ async function seedQuestions() {
     const createdQuestion = await questionsPrisma.question.create({
       data: {
         text: question.text,
-        quizId: "67b5502c32660b4f108e01c1", //EwplXW
+        quizId: "67b5502d32660b4f108e01c2",
         options: {
           create: question.options,
         },

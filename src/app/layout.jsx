@@ -1,7 +1,9 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/sonner"
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import "./globals.css";
+
 
 export const metadata = {
   title: "Skill-Learn",
@@ -15,6 +17,7 @@ export default function RootLayout({ children }) {
         <body className="flex flex-col min-h-screen">
           <Header />
           {children}
+          <Toaster />
           <Footer />
         </body>
       </html>

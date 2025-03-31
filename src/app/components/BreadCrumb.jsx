@@ -8,7 +8,6 @@ import {
 } from "../../components/ui/breadcrumb";
 
 export default function BreadCrumbCom({ crumbs, endtrail }) {
-
   return (
     <div className="my-4 px-5">
       <Breadcrumb>
@@ -16,17 +15,17 @@ export default function BreadCrumbCom({ crumbs, endtrail }) {
           <BreadcrumbItem>
             <BreadcrumbLink href="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          {crumbs &&
+          {crumbs !== undefined && crumbs !== null &&
             crumbs.map((crumb) => (
-              <>
-                <BreadcrumbItem key={crumb.name}>
+              <span key={crumb.name} className="flex gap-2 items-center justify-center">
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
                   <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
                 </BreadcrumbItem>
-                <BreadcrumbSeparator />
-              </>
+              </span>
             ))
           }
+          {endtrail && <BreadcrumbSeparator />}
           <BreadcrumbItem>
             <BreadcrumbPage>{endtrail}</BreadcrumbPage>
           </BreadcrumbItem>

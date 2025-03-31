@@ -1,53 +1,74 @@
 import { create } from "zustand";
-import axios from "axios";
+import api from "@/utils/axios";
+export const usePointsStore = create((set, get) => ({
+  points: 0,
+  lifetimePoints: 0,
+  isLoading: false,
 
-const usePointsStore = create((set) => ({
-  pointStatus: null,
-  loading: false,
-  earning: false,
-
-  fetchStatus: async () => {
-    set({ loading: true });
+  fetchPoints: async () => {
     try {
-      const response = await axios.get("/api/points");
-      console.log("Response", response.data);
-      set({ pointStatus: response.data });
+      set({ isLoading: true });
+
+      const response = await api.get("/user/points");
+
+      set({
+        points: response.data.points,
+        lifetimePoints: response.data.lifetimePoints,
+        isLoading: false,
+      });
     } catch (error) {
-      console.error(
-        "Error fetching point status:",
-        error.response?.data?.error || error.message
-      );
-    } finally {
-      set({ loading: false });
+      console.error("Error fetching points:", error);
+      set({ isLoading: false });
     }
   },
 
-  earnPoints: async (amount, reason) => {
-    set({ earning: true });
+  addPoints: async (amount, reason) => {
     try {
-      const response = await axios.post("/api/points", {
+      set({ isLoading: true });
+
+      // Make API call to add points using axios
+      const response = await api.post("/user/points/add", {
         amount,
         reason,
       });
 
-      // Refresh point status
-      const statusResponse = await axios.get("/api/points");
-      set({ pointStatus: statusResponse.data });
-
-      return { success: true, data: response.data };
+      // Update local state
+      set({
+        points: response.data.points,
+        lifetimePoints: response.data.lifetimePoints,
+        isLoading: false,
+      });
     } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error || "Network error",
-      };
-    } finally {
-      set({ earning: false });
+      console.error("Error adding points:", error);
+      set({ isLoading: false });
     }
   },
 
-  reset: () => {
-    set({ pointStatus: null, loading: false, earning: false });
+  spendPoints: async (amount, reason) => {
+    try {
+      const { points } = get();
+
+      // Check if user has enough points
+      if (points < amount) {
+        return false;
+      }
+
+      set({ isLoading: true });
+
+      // Make API call to spend points using axios
+      const response = await api.post("/user/points/spend", { amount, reason });
+
+      // Update local state
+      set({
+        points: response.data.points,
+        isLoading: false,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error spending points:", error);
+      set({ isLoading: false });
+      return false;
+    }
   },
 }));
-
-export default usePointsStore;

@@ -23,8 +23,6 @@ export default async function StatsPage() {
     }
   })
 
-  console.log("Category?: ", user)
-
   return (
     <main className="px-[5rem] py-[2.5rem]">
       <UserStats userStats={user} />

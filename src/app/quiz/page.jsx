@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
-import axios from "axios"
+import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
 import { ArrowBigRightDash } from 'lucide-react'
 import { CircleCheckBig } from 'lucide-react'
 
 export default function QuizScreenPage() {
 
-  const { selectedQuiz, questionCount, setQuizResponses } = useQuizStartStore()
+  const { selectedQuiz, setQuizResponses } = useQuizStartStore()
 
   const router = useRouter()
 
@@ -27,10 +28,7 @@ export default function QuizScreenPage() {
 
   //Shuffle Questions on Component Amount (Quiz Started)
   useEffect(() => {
-    const filteredQuestions = selectedQuiz.questions.slice(0, questionCount)
-
-    console.log("Question Count: ", questionCount)
-
+    const filteredQuestions = selectedQuiz.questions.slice(0, selectedQuiz.questions.length)
     setShuffledQuestions(shuffleArray([...filteredQuestions]));
   }, [selectedQuiz])
 
@@ -95,13 +93,12 @@ export default function QuizScreenPage() {
   }
 
   const handleFinishQuiz = async () => {
-    console.log("Finish")
     setQuizResponses(responses)
 
     const score = responses.filter((res) => res.isCorrect).length
 
     try {
-      await axios.post("/api/user/quiz/finish", {
+      await api.post("/user/quiz/finish", {
         categoryId: selectedQuiz.categoryId,
         quizId: selectedQuiz.id,
         score,
@@ -177,8 +174,8 @@ export default function QuizScreenPage() {
           }}
         >
           {currentIndex < shuffledQuestions.length - 1 ?
-            (<span className="flex items-center gap-2"><ArrowBigRightDash /> Next</span>) :
-            (<span className="flex items-center gap-2"><CircleCheckBig /> Finish</span>)
+            (<span className="flex items-center gap-2 bg-green-600"><ArrowBigRightDash /> Next</span>) :
+            (<span className="flex items-center gap-2 bg-white text-black"><CircleCheckBig /> Finish</span>)
           }
         </Button>
       </div>

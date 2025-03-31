@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-
 export default function LeaderboardLanding() {
 
   const leaderboard = [
@@ -41,6 +40,16 @@ export default function LeaderboardLanding() {
                   <hr />
                 </li>
               ))}
+              {/* {users.map((user, index) => (
+                <li key={user.id}
+                  className="py-4 font-bold">
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-1 justify-between items-center">
+                      <span className="text-xl-mb-1">{index + 1}</span>
+                    </div>
+                  </div>
+                </li>
+              ))} */}
             </ul>
           </CardContent>
         </Card>

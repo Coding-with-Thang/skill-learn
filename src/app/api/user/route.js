@@ -20,7 +20,6 @@ export async function GET() {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.log("Error starting quiz: ", error);
     return NextResponse.json({ error: "Error getting user" }, { status: 500 });
   }
 }

@@ -2,18 +2,16 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from "axios";
+import api from "@/utils/axios";
 import { useQuizStartStore } from '@/app/store/quizStore'
 import { Label } from "@/components/ui/label"
-import { Input } from '@/components/ui/input';
 import { Button } from "@/components/ui/button"
 import { Play } from 'lucide-react'
-
 export default function selectedQuizPage() {
 
   const router = useRouter();
 
-  const { selectedQuiz, setQuestionCount, questionCount } = useQuizStartStore();
+  const { selectedQuiz } = useQuizStartStore();
 
   useEffect(() => {
     if (!selectedQuiz) {
@@ -21,24 +19,13 @@ export default function selectedQuizPage() {
     }
   }, [selectedQuiz, router])
 
-  const handleQuestionChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    const maxQuestions = selectedQuiz?.questions.length || 1;
-
-    const newCount = isNaN(value) || value < 1 ? 1 : Math.min(value, maxQuestions);
-
-    setQuestionCount((prev) => ({ ...prev, questionCount: newCount }))
-  }
-
   const startQuiz = async () => {
 
-    const selectedQuestions = selectedQuiz?.questions.slice(0, questionCount)
-
-    if (selectedQuestions.length > 0) {
+    if (selectedQuiz?.questions.length > 0) {
       //update the db for quiz attempt start
 
       try {
-        await axios.post("/api/user/quiz/start", {
+        await api.post("/user/quiz/start", {
           categoryId: selectedQuiz?.categoryId,
           quizId: selectedQuiz?.id,
         });
@@ -60,16 +47,6 @@ export default function selectedQuizPage() {
       <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="questionCount" className="text-xl">Number of Questions: {selectedQuiz?.questions.length}</Label>
-          {/* <Label htmlFor="questionCount" className="text-xl">{`Number of Questions (Max Questions: ${selectedQuiz?.questions.length})`}</Label>
-          <Input
-            type="number"
-            min={5}
-            max={selectedQuiz?.questions.length}
-            defaultValue={Math.floor(selectedQuiz?.questions.length / 2)}
-            id="questionCount"
-            value={questionCount}
-            onChange={handleQuestionChange}
-          /> */}
         </div>
         <div>
           <p>Last attempted: {selectedQuiz?.lastAttempt}</p>

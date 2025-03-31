@@ -35,7 +35,7 @@ export default function HowItWorks() {
       {steps.map((step, index) => (
         <div
           key={index}
-          className="flex justify-center px-9 border-none outline-none shadow-none mb-[5rem]"
+          className="flex justify-center px-9 border-none outline-hidden shadow-none mb-[5rem]"
         >
           <div className="flex justify-end w-[100%]">
             <Image

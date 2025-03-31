@@ -1,26 +1,46 @@
-import Link from "next/link";
+import { AppSidebar } from "../components/Admin/app-sidebar"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
 export default function DashboardLayout({ children }) {
   return (
-    <main className="flex">
-      {/* Sidebar */}
-      <div className="w-1/6 bg-gray-800 text-white p-4">
-        <h2 className="text-2xl font-semibold mb-4">Admin Dashboard</h2>
-        <ul className="space-y-2">
-          <li>
-            <Link href="/dashboard" className="block text-gray-200 hover:text-blue-400">Dashboard</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/users" className="block text-gray-200 hover:text-blue-400">Manage Users</Link>
-          </li>
-          <li>
-            <Link href="/dashboard/quizzes/quiz-manager" className="block text-gray-200 hover:text-blue-400">Manage Quizzes</Link>
-          </li>
-        </ul>
-      </div>
-      <div className="min-h-screen w-full">
-        {children}
-      </div>
-    </main>
+    <SidebarProvider>
+      <AppSidebar className="mt-15" />
+      <SidebarInset>
+        <div className="min-h-screen w-full bg-gray-100">
+          <header className="flex h-16 mb-3 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <SidebarTrigger className="ml-2" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="#">
+                    Admin Dashboard
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Landing Page</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </header>
+          <div className="flex gap-1 px-4">
+            {children}
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

@@ -28,7 +28,7 @@ export default function NumberGuessingGame() {
       />
       <button
         onClick={handleGuess}
-        className="ml-2 px-4 py-2 bg-green-500 text-white rounded"
+        className="ml-2 px-4 py-2 bg-green-500 text-white rounded-sm"
       >
         Guess
       </button>

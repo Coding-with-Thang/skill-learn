@@ -49,7 +49,7 @@ export default function Features() {
         <p className="mt-4 mb-9 text-xl">Skill-Learn is a learning platform that enables agents to unlock their learning potential with our gamified approach.</p>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           {featureSet.map((feature, index) => (
-            <Card key={index} className="rounded-none border-none outline-none bg-[#F0F4F8]">
+            <Card key={index} className="rounded-none border-none outline-hidden bg-[#F0F4F8]">
               <CardHeader className="flex items-center">
                 <Image
                   src={feature.icon}

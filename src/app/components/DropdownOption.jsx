@@ -25,7 +25,7 @@ export default function DropdownOptions() {
   return (
     <section className='flex justify-center items-center py-5'>
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex outline-none justify-between w-full px-10 py-3 rounded-lg shadow-lg hover:bg-blue-600 hover:text-gray-100">
+        <DropdownMenuTrigger className="flex outline-hidden justify-between w-full px-10 py-3 rounded-lg shadow-lg hover:bg-blue-600 hover:text-gray-100">
           {config.category.name ? "Category: " + config.category.name : "Select A Category"}{"   "}
           <ChevronDown />
         </DropdownMenuTrigger>

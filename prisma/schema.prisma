@@ -15,9 +15,16 @@ model User {
   lastName String
   manager String? @default("")
   role Role @default(AGENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  points Int @default(0)
   lifetimePoints Int @default(0)
   pointLogs PointLog[]
+<<<<<<< HEAD
   rewardRedeemed RewardRedeemed[]
+=======
+  rewardsRedeemed RewardLog[]
+>>>>>>> 429e600a26185bb2e67ad869bfe1f96f1939a127
   categoryStats CategoryStat[]
 
   @@map("users")
@@ -85,13 +92,28 @@ model PointLog {
   createdAt DateTime @default(now())
 }
 
-model rewards {
-id        String   @id @default(auto()) @map("_id") @db.ObjectId
-title     String
-cost      Int
-imageUrl String
-promo Boolean
-promoAmount Int
+model Reward {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  prize     String
+  description String?
+  cost      Int
+  imageUrl  String?
+  featured  Boolean @default(false)
+  enabled   Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  rewardLogs RewardLog[]
+}
+
+model RewardLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  rewardId  String   @db.ObjectId
+  reward    Reward   @relation(fields: [rewardId], references: [id])
+  redeemed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
