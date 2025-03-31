@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
 import { clerkClient } from "@clerk/nextjs/server";
+import prisma from "@/utils/connect";
 
 export async function POST(req) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -56,18 +57,25 @@ export async function POST(req) {
   if (eventType === "user.created" || eventType === "user.updated") {
     const { id, first_name, last_name, username } = evt?.data;
     try {
-      const user = await createOrUpdateUser(
-        id,
-        first_name,
-        last_name,
-        username
-      );
+      const user = await prisma.user.upsert({
+        where: { clerkId: id },
+        update: {
+          first_name: first_name,
+          last_name: last_name,
+          username: username,
+        },
+        create: {
+          clerkId: id,
+          first_name: first_name,
+          last_name: last_name,
+          username: username,
+        },
+      });
       if (user && eventType === "user.created") {
         try {
           await clerkClient().users.updateUserMetadata(id, {
             publicMetadata: {
               userMongoId: user._id,
-              isAdmin: user.isAdmin,
             },
           });
         } catch (error) {
@@ -85,7 +93,9 @@ export async function POST(req) {
   if (eventType === "user.deleted") {
     const { id } = evt?.data;
     try {
-      await deleteUser(id);
+      await prisma.user.delete({
+        where: { clerkId: id },
+      });
     } catch (error) {
       console.log("Error deleting user:", error);
       return new Response("Error occurred", {
