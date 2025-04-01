@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import useLocalStorage from "../../../lib/hooks/useLocalStorage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -35,6 +36,17 @@ const TicTacToe = () => {
   const [playerScore, setPlayerScore] = useState(0);
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScoreChange, setLastScoreChange] = useState(0);
+
+  //Local Storage
+  const [round, setRound] = useLocalStorage('round', 1)
+
+  function handleRoundChange(prevRound) {
+    if (prevRound >= 3 || prevRound < 1) {
+      return 1;
+    } else {
+      return prevRound + 1;
+    }
+  }
 
   //Quiz questions database
   const [showQuestionManager, setShowQuestionManager] = useState(false);
@@ -366,6 +378,13 @@ const TicTacToe = () => {
       {showQuestionManager && (
         <QuestionManager onAddQuestion={addCustomQuestion} />
       )} */}
+
+      <div>
+        <p>Game Round: {round}</p>
+        <button onClick={() => setRound((prevRound) => handleRoundChange(prevRound))}>
+          + Round
+        </button>
+      </div>
 
       <Card className="w-full max-w-md mx-auto">
         <CardHeader>

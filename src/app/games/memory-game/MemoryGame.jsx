@@ -1,11 +1,25 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import useLocalStorage from "../../../lib/hooks/useLocalStorage";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
 
 const MemoryGame = () => {
+
+  //Local Storage
+  const [round, setRound] = useLocalStorage('round', 1)
+
+  function handleRoundChange(prevRound) {
+    if (prevRound >= 3 || prevRound < 1) {
+      return 1;
+    } else {
+      return prevRound + 1;
+    }
+  }
+
+  //Emoji Match Game
   const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
 
   const difficulties = {
@@ -95,6 +109,13 @@ const MemoryGame = () => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto p-6">
+
+      <div>
+        <p>Game Round: {round}</p>
+        <button onClick={() => setRound((prevRound) => handleRoundChange(prevRound))}>
+          + Round
+        </button>
+      </div>
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2">Memory Game</h2>
         <div className="flex justify-center gap-4 items-center mb-4">
