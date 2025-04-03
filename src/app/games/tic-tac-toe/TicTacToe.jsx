@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import useLocalStorage from "../../../lib/hooks/useLocalStorage";
+import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,15 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
-
-import QuestionManager from "@/app/components/Admin/QuestionManager";
+import QuizModal from "../../components/Quiz/QuizModal"
 
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
@@ -29,63 +23,25 @@ const TicTacToe = () => {
   const [gameHistory, setGameHistory] = useState({ xWins: 0, oWins: 0, draws: 0 });
   const [difficulty, setDifficulty] = useState('easy');
   const [isAIThinking, setIsAIThinking] = useState(false);
-  const [showQuizModal, setShowQuizModal] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(null);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
   const [playerScore, setPlayerScore] = useState(0);
   const [showScoreAnimation, setShowScoreAnimation] = useState(false);
   const [lastScoreChange, setLastScoreChange] = useState(0);
 
   //Local Storage
-  const [round, setRound] = useLocalStorage('round', 1)
+  const [round, setRound] = useLocalStorage("round", 1);
+  const [score, setScore] = useLocalStorage("score", 0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const pathname = usePathname();
 
-  function handleRoundChange(prevRound) {
-    if (prevRound >= 3 || prevRound < 1) {
-      return 1;
-    } else {
-      return prevRound + 1;
+  useEffect(() => {
+    if (round >= 3) {
+      setIsOpen(true);
+      setSelectedCategory(""); // Reset category selection
     }
-  }
+  }, [round, pathname]);
 
-  //Quiz questions database
-  const [showQuestionManager, setShowQuestionManager] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('general');
-  const [customQuestions, setCustomQuestions] = useState({
-    general: [
-      {
-        question: "What is the maximum number of possible different games of Tic Tac Toe?",
-        answers: ["255,168", "362,880", "549,946", "138,240"],
-        correctAnswer: 1,
-        category: 'general'
-      }
-    ],
-    history: [
-      {
-        question: "What was Tic Tac Toe originally called?",
-        answers: ["Noughts and Crosses", "Three in a Row", "Nine Men's Morris", "The Match Game"],
-        correctAnswer: 0,
-        category: 'history'
-      }
-    ],
-    strategy: [
-      {
-        question: "In a standard 3x3 Tic Tac Toe game, how many winning combinations are there?",
-        answers: ["6", "7", "8", "9"],
-        correctAnswer: 2,
-        category: 'strategy'
-      }
-    ],
-    math: [
-      {
-        question: "What is the minimum number of moves needed for a player to win?",
-        answers: ["3", "4", "5", "6"],
-        correctAnswer: 2,
-        category: 'math'
-      }
-    ]
-  });
-
+  //Tic Tac Toe Logic
   useEffect(() => {
     //fetchGameHistory();
     const savedScore = localStorage.getItem('ticTacToeScore');
@@ -95,41 +51,12 @@ const TicTacToe = () => {
   }, []);
 
   useEffect(() => {
-    //Load custom questions from localStorage
-    const savedQuestions = localStorage.getItem('customQuestions');
-    if (savedQuestions) {
-      setCustomQuestions(JSON.parse(savedQuestions));
-    }
-  }, []);
-
-  const addCustomQuestion = (question) => {
-    setCustomQuestions(prev => {
-      const newQuestions = {
-        ...prev,
-        [question.category]: [...(prev[question.category] || []), question]
-      };
-      localStorage.setItem('customQuestions', JSON.stringify(newQuestions));
-      return newQuestions;
-    });
-  };
-
-  const getRandomQuestion = () => {
-    const categoryQuestions = customQuestions[selectedCategory] || [];
-    if (categoryQuestions.length === 0) return null;
-    return categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
-  };
-
-  useEffect(() => {
     if (winner === 'X') {
       const points = difficulty === 'easy' ? 1 : 2;
       updatePlayerScore(points);
     }
     if (winner === 'O' || winner === 'draw') {
-      const question = getRandomQuestion();
-      setCurrentQuestion(question);
-      setSelectedAnswer(null);
-      setIsAnswerCorrect(null);
-      setShowQuizModal(true);
+      resetBoard()
     }
   }, [winner]);
 
@@ -335,15 +262,6 @@ const TicTacToe = () => {
     return `${isXNext ? "Your turn (X)" : "AI turn (O)"}`;
   };
 
-  const handleAnswerSelect = (answerIndex) => {
-    setSelectedAnswer(answerIndex);
-    const correct = answerIndex === currentQuestion.correctAnswer;
-    setIsAnswerCorrect(correct);
-    if (correct) {
-      updatePlayerScore(1);
-    }
-  };
-
   //Add a score display component
   const ScoreDisplay = () => (
     <div className="relative flex items-center justify-center mb-4 text-center">
@@ -359,31 +277,12 @@ const TicTacToe = () => {
     </div>
   );
 
-  const closeQuizModal = () => {
-    setShowQuizModal(false);
-    resetBoard();
-  };
-
   return (
     <div className="space-y-6">
-      {/* <div className="flex justify-end mb-4">
-        <Button
-          variant="outline"
-          onClick={() => setShowQuestionManager(!showQuestionManager)}
-        >
-          {showQuestionManager ? 'Hide' : 'Show'} Question Manager
-        </Button>
-      </div>
-
-      {showQuestionManager && (
-        <QuestionManager onAddQuestion={addCustomQuestion} />
-      )} */}
-
-      <div>
-        <p>Game Round: {round}</p>
-        <button onClick={() => setRound((prevRound) => handleRoundChange(prevRound))}>
-          + Round
-        </button>
+      <div className='my-5'>
+        <p className="text-xl font-semibold">Round: {round}</p>
+        <p className="text-xl font-semibold">Score: {score}</p>
+        <Button onClick={() => setRound((prev) => (prev >= 3 ? 3 : prev + 1))} disabled={round >= 3}>Next Round</Button>
       </div>
 
       <Card className="w-full max-w-md mx-auto">
@@ -446,42 +345,14 @@ const TicTacToe = () => {
           <p>If no player gets 3 in a line, game is  a draw.</p></CardContent>
       </Card>
 
-      <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl mb-4">
-              {winner === 'O' ? 'Better luck next time!' : "It's a draw!"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Select Category:</label>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="general">General Knowledge</SelectItem>
-                <SelectItem value="history">History</SelectItem>
-                <SelectItem value="strategy">Game Strategy</SelectItem>
-                <SelectItem value="math">Mathematics</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {currentQuestion ? (
-            <div className="py-4">
-              {/* ... (previous question display code) ... */}
-            </div>
-          ) : (
-            <div className="py-4 text-center text-gray-500">
-              No questions available in this category. Add some questions using the Question Manager!
-            </div>
-          )}
-
-          {/* ... (rest of Dialog content) ... */}
-        </DialogContent>
-      </Dialog>
+      <QuizModal
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setRound={setRound}
+        setScore={setScore}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
     </div>
   )
 }

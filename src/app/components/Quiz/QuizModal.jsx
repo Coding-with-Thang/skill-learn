@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
@@ -8,8 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import clsx from "clsx";
 
-export default function QuizModal({ isOpen, setIsOpen, setRound, setScore }) {
-    const [selectedCategory, setSelectedCategory] = useState("");
+export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selectedCategory, setSelectedCategory }) {
     const [randomQuestion, setRandomQuestion] = useState(null);
     const [selectedAnswer, setSelectedAnswer] = useState("");
     const [answered, setAnswered] = useState(false);
@@ -32,6 +31,13 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore }) {
             { question: "Which country won the first FIFA World Cup?", options: ["Germany", "Brazil", "Argentina", "Uruguay"], correct: "Uruguay" }
         ]
     };
+
+    useEffect(() => {
+        if (!isOpen) {
+            setSelectedCategory("");
+            setRandomQuestion(null);
+        }
+    }, [isOpen]);
 
     function confirmCategory(category) {
         setSelectedCategory(category);

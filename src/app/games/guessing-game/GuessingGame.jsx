@@ -8,14 +8,16 @@ import QuizModal from "../../components/Quiz/QuizModal"
 export default function NumberGuessingGame() {
 
   //Local Storage
-  const [round, setRound] = useLocalStorage("quizRound", 1);
-  const [score, setScore] = useLocalStorage("quizScore", 0);
+  const [round, setRound] = useLocalStorage("round", 1);
+  const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const pathname = usePathname();
 
   useEffect(() => {
-    if (round === 3) {
+    if (round >= 3) {
       setIsOpen(true);
+      setSelectedCategory(""); // Reset category selection
     }
   }, [round, pathname]);
 
@@ -70,6 +72,8 @@ export default function NumberGuessingGame() {
         setIsOpen={setIsOpen}
         setRound={setRound}
         setScore={setScore}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
       />
     </div>
   );
