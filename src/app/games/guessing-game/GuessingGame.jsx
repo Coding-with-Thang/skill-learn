@@ -37,12 +37,18 @@ export default function NumberGuessingGame() {
     }
   };
 
+  const resetBoard = () => {
+    setNumber(Math.floor(Math.random() * 100) + 1)
+    setRound((prev) => (prev >= 3 ? 3 : prev + 1))
+    setMessage('')
+    setGuess('')
+  }
+
   return (
-    <div className="text-center">
+    <div className="text-center flex flex-col justify-center items-center gap-5">
       <div className='my-5'>
         <p className="text-xl font-semibold">Round: {round}</p>
-        <p className="text-xl font-semibold">Score: {score}</p>
-        <Button onClick={() => setRound((prev) => (prev >= 3 ? 3 : prev + 1))} disabled={round >= 3}>Next Round</Button>
+        {/* <p className="text-xl font-semibold">Score: {score}</p> */}
       </div>
       <h2 className="text-2xl font-bold mb-4">Number Guessing Game</h2>
       <input
@@ -51,13 +57,21 @@ export default function NumberGuessingGame() {
         onChange={(e) => setGuess(e.target.value)}
         className="border p-2"
       />
-      <button
+      <Button
         onClick={handleGuess}
         className="ml-2 px-4 py-2 bg-green-500 text-white rounded-sm"
       >
         Guess
-      </button>
+      </Button>
       {message && <p className="mt-4">{message}</p>}
+
+      {/* Resets board */}
+      <Button
+        onClick={resetBoard}
+        className="my-5"
+      >
+        New Game
+      </Button>
 
       <div className='mt-20 border rounded-xl py-4 px-8'>
         <h3 className='text-lg font-semibold'>Rules: </h3>
