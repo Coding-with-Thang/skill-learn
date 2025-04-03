@@ -230,6 +230,7 @@ const TicTacToe = () => {
     setIsXNext(true);
     setWinner(null);
     setWinningLine([]);
+    setRound((prev) => (prev >= 3 ? 3 : prev + 1))
   };
 
   const handleDifficultyChange = (value) => {
@@ -281,8 +282,7 @@ const TicTacToe = () => {
     <div className="space-y-6">
       <div className='my-5'>
         <p className="text-xl font-semibold">Round: {round}</p>
-        <p className="text-xl font-semibold">Score: {score}</p>
-        <Button onClick={() => setRound((prev) => (prev >= 3 ? 3 : prev + 1))} disabled={round >= 3}>Next Round</Button>
+        {/* <p className="text-xl font-semibold">Score: {score}</p> */}
       </div>
 
       <Card className="w-full max-w-md mx-auto">
@@ -340,9 +340,9 @@ const TicTacToe = () => {
           <CardTitle>Rules:</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>You are X player. You want to get 3 X in a line in any direction.
-          </p>
-          <p>If no player gets 3 in a line, game is  a draw.</p></CardContent>
+          <p>You are X player. You want to get 3 X in a line in any direction.</p>
+          <p>If no player gets 3 in a line, game is a draw.</p>
+        </CardContent>
       </Card>
 
       <QuizModal

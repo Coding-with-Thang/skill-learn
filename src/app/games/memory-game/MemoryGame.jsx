@@ -82,6 +82,19 @@ const MemoryGame = () => {
     setGameStarted(true);
   };
 
+  const newGame = () => {
+    if (round >= 3) {
+      setGameOver(true);
+      setTimeLeft(0);
+      setIsPlaying(false);
+      setGameStarted(false);
+      setGameResult('');
+    } else {
+      setRound((prev) => (prev >= 3 ? 3 : prev + 1))
+      initializeGame(difficulty)
+    }
+  }
+
   const handleCardClick = (id) => {
     if (!gameStarted) {
       setIsPlaying(true);
@@ -114,8 +127,7 @@ const MemoryGame = () => {
     <Card className="w-full max-w-4xl mx-auto p-6">
       <div className='my-5'>
         <p className="text-xl font-semibold">Round: {round}</p>
-        <p className="text-xl font-semibold">Score: {score}</p>
-        <Button onClick={() => setRound((prev) => (prev >= 3 ? 3 : prev + 1))} disabled={round >= 3}>Next Round</Button>
+        {/* <p className="text-xl font-semibold">Score: {score}</p> */}
       </div>
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2">Memory Game</h2>
@@ -164,7 +176,12 @@ const MemoryGame = () => {
       </CardContent>
 
       <div className="mt-4 text-center">
-        <Button onClick={() => initializeGame(difficulty)}>New Game</Button>
+        <Button
+          onClick={newGame}
+          disabled={round >= 3}
+        >
+          New Game
+        </Button>
       </div>
 
       <QuizModal
