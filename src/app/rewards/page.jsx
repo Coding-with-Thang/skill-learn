@@ -7,11 +7,6 @@ import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
 import { Circle, Ellipsis } from "lucide-react";
 import { useRewardStore } from "@/app/store/rewardStore";
 import Gifts from "../../../public/gifts.png"
-import Rewards from "../../../public/rewards2.png"
-import Play from "../../../public/play.jpg"
-import Break from "../../../public/15break.jpg"
-import Lunch from "../../../public/lunch.jpg"
-import FlyingPie from "../../../public/flying-pie.jpg"
 import Chest from "../../../public/chest.png"
 import ChickenDance from "../../../public/chicken-dance.jpg"
 import Loader from "../components/loader";
