@@ -22,14 +22,14 @@ export default function Header() {
   return (
     <header className="sticky top-0 w-full bg-white border-b-2 z-1000">
       <div className="flex items-center h-16 justify-between">
-        <div className="hidden md:flex items-center pl-5">
-          <Link href="/" className="flex flex-1 gap-2 font-bold text-2xl mx-2 lg:mx-4 text-nowrap">
+        <div className="hidden md:flex items-center justify-center pl-5">
+          <Link href="/" className="flex gap-1 items-center justify-center">
             <Image
               src={logo}
               width={48}
               alt="Skill-Learn"
             />
-            Skill-Learn
+            <h1 className='font-bold text-2xl text-nowrap'>Skill-Learn</h1>
           </Link>
           {/* <form onSubmit={handleSubmit} className="flex border border-gray-400 shadow-md rounded-lg">
             <Input
@@ -43,37 +43,29 @@ export default function Header() {
               <Search />
             </Button>
           </form> */}
-
-          {/* <nav className="hidden lg:flex items-center justify-center gap-3 lg:gap-4 mx-3 lg:mx-9">
-        <Link href="/about" className=" hover:underline">
-          About
-        </Link>
-        <Link href="/latest-updates" className=" hover:underline">
-          Latest Updates
-        </Link>
-      </nav> */}
         </div>
-        <div className="flex items-center justify-end gap-6 mr-6 lg:mr-9">
-          <Link href="/discover" className="flex gap-1 items-center hover:underline">
-            <Telescope /> Discover
-          </Link>
-          <Link href="/training" className="flex gap-1 items-center hover:underline">
-            <BookOpenText /> Training
-          </Link>
-          <Link href="/achievements" className="flex gap-1 items-center hover:underline">
-            <Medal /> Achievements
-          </Link>
-          <Link href="/stats" className="flex gap-1 items-center hover:underline">
-            <ChartColumnBig /> My Stats
-          </Link>
-          <Link href="/rewards" className="flex gap-1 items-center hover:underline">
-            <Star /> Rewards
-          </Link>
 
+        <div className="flex items-center justify-end gap-6 mr-6 lg:mr-9">
           <SignedIn>
-            <Link href="/dashboard" className="flex gap-1 items-center hover:underline">
-              <LayoutDashboard /> Dashboard
+            {/* <Link href="/discover" className="flex gap-1 items-center hover:underline">
+              <Telescope /> Discover
+            </Link> */}
+            <Link href="/training" className="flex gap-1 items-center hover:underline">
+              <BookOpenText /> Training
             </Link>
+            {/* <Link href="/achievements" className="flex gap-1 items-center hover:underline">
+              <Medal /> Achievements
+            </Link> */}
+            <Link href="/stats" className="flex gap-1 items-center hover:underline">
+              <ChartColumnBig /> My Stats
+            </Link>
+            <Link href="/rewards" className="flex gap-1 items-center hover:underline">
+              <Star /> Rewards
+            </Link>
+
+            {/* <Link href="/dashboard" className="flex gap-1 items-center hover:underline">
+              <LayoutDashboard /> Dashboard
+            </Link> */}
 
             <div className="relative">
               <UserButton
@@ -101,7 +93,7 @@ export default function Header() {
                 {user.initials}
               </button> */}
 
-              {isDropdownOpen && (
+              {/* {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg">
                   <ul className="py-2">
                     <li>
@@ -130,7 +122,7 @@ export default function Header() {
                     </li>
                   </ul>
                 </div>
-              )}
+              )} */}
             </div>
           </SignedIn>
 

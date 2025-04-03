@@ -1,11 +1,28 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import useLocalStorage from "../../../lib/hooks/useLocalStorage";
+import { usePathname } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter, AlertDialogTitle, AlertDialogDescription, AlertDialogAction } from "@/components/ui/alert-dialog";
-
+import QuizModal from "../../components/Quiz/QuizModal"
 const MemoryGame = () => {
+
+  //Local Storage
+  const [round, setRound] = useLocalStorage("round", 1);
+  const [score, setScore] = useLocalStorage("score", 0);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (round >= 3) {
+      setIsOpen(true);
+      setSelectedCategory(""); // Reset category selection
+    }
+  }, [round, pathname]);
+
+  //Emoji Match Game
   const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
 
   const difficulties = {
@@ -65,6 +82,19 @@ const MemoryGame = () => {
     setGameStarted(true);
   };
 
+  const newGame = () => {
+    if (round >= 3) {
+      setGameOver(true);
+      setTimeLeft(0);
+      setIsPlaying(false);
+      setGameStarted(false);
+      setGameResult('');
+    } else {
+      setRound((prev) => (prev >= 3 ? 3 : prev + 1))
+      initializeGame(difficulty)
+    }
+  }
+
   const handleCardClick = (id) => {
     if (!gameStarted) {
       setIsPlaying(true);
@@ -95,6 +125,10 @@ const MemoryGame = () => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto p-6">
+      <div className='my-5'>
+        <p className="text-xl font-semibold">Round: {round}</p>
+        {/* <p className="text-xl font-semibold">Score: {score}</p> */}
+      </div>
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2">Memory Game</h2>
         <div className="flex justify-center gap-4 items-center mb-4">
@@ -142,28 +176,23 @@ const MemoryGame = () => {
       </CardContent>
 
       <div className="mt-4 text-center">
-        <Button onClick={() => initializeGame(difficulty)}>New Game</Button>
+        <Button
+          onClick={newGame}
+          disabled={round >= 3}
+        >
+          New Game
+        </Button>
       </div>
 
-      <AlertDialog open={gameOver}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Game Results</AlertDialogTitle>
-            <AlertDialogDescription className="text-center py-4">
-              {gameResult}
-              {gameResult === 'Time\'s up!' ? (
-                <p className="mt-2">You matched {matched.length / 2} pairs in {moves} moves</p>
-              ) : (
-                <p className="mt-2">You won in {moves} moves with {timeLeft} seconds left!</p>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => initializeGame(difficulty)}>Play Again</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card >
+      <QuizModal
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setRound={setRound}
+        setScore={setScore}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+    </Card>
   );
 };
 

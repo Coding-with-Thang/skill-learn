@@ -10,7 +10,6 @@ import Features from './components/User/Features';
 import HowItWorks from './components/User/HowItWorks';
 import Testimonials from './components/User/Testimonials';
 import UserBadge from './components/User/UserBadge';
-import Loading from './components/loader';
 export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-items-center min-h-[80dvh]">

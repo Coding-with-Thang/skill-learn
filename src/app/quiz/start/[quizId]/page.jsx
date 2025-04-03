@@ -41,6 +41,15 @@ export default function selectedQuizPage() {
 
   return (
     <section className="py-[6rem] w-[50%] fixed left-1/2 top-[45%] translate-x-[-50%] translate-y-[-50%] p-6 border-2 rounded-xl shadow-[0_.5rem_0_0_rgba(0,0,0,0.1)] mx-auto">
+      {/* <div>
+        <Image
+          src={selectedQuiz?.image}
+          width={500}
+          height={300}
+          alt={quiz?.title}
+          className="rounded-xl"
+        />
+      </div> */}
       <h1 className="text-4xl font-bold mb-4">{selectedQuiz?.title}</h1>
       <h2 className="text-xl mb-3">{selectedQuiz?.description}</h2>
 
