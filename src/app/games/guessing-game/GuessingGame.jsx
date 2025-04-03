@@ -1,93 +1,23 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useLocalStorage from "../../../lib/hooks/useLocalStorage";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner"
-import clsx from "clsx";
+import QuizModal from "../../components/Quiz/QuizModal"
 export default function NumberGuessingGame() {
 
   //Local Storage
-  const [round, setRound] = useState(1);
-  const [score, setScore] = useState(0);
+  const [round, setRound] = useLocalStorage("quizRound", 1);
+  const [score, setScore] = useLocalStorage("quizScore", 0);
   const [isOpen, setIsOpen] = useState(false);
-  const [step, setStep] = useState(1); // Step 1: Select category, Step 2: Show question
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [randomQuestion, setRandomQuestion] = useState(null);
-  const [selectedAnswer, setSelectedAnswer] = useState("");
-  const [answered, setAnswered] = useState(false); // Tracks if user has answered
+  const pathname = usePathname();
 
-  //Random Quiz Question
-  const quizCategories = {
-    "Science": [
-      { question: "What is the chemical symbol for water?", options: ["H2O", "O2", "CO2", "H2"], correct: "H2O" },
-      { question: "What planet is known as the Red Planet?", options: ["Earth", "Mars", "Venus", "Jupiter"], correct: "Mars" },
-      { question: "What gas do plants absorb from the atmosphere?", options: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], correct: "Carbon Dioxide" }
-    ],
-    "History": [
-      { question: "Who was the first President of the United States?", options: ["Abraham Lincoln", "George Washington", "John Adams", "Thomas Jefferson"], correct: "George Washington" },
-      { question: "In which year did World War II end?", options: ["1940", "1945", "1950", "1939"], correct: "1945" },
-      { question: "What was the name of the ship that carried the Pilgrims to America?", options: ["Titanic", "Santa Maria", "Mayflower", "Endeavour"], correct: "Mayflower" }
-    ],
-    "Sports": [
-      { question: "How many players are on a standard soccer team?", options: ["9", "10", "11", "12"], correct: "11" },
-      { question: "What sport uses a shuttlecock?", options: ["Tennis", "Badminton", "Squash", "Table Tennis"], correct: "Badminton" },
-      { question: "Which country won the first FIFA World Cup?", options: ["Germany", "Brazil", "Argentina", "Uruguay"], correct: "Uruguay" }
-    ]
-  };
-
-  function handleRoundChange() {
-    setRound((prevRound) => {
-      const newRound = prevRound >= 3 ? 1 : prevRound + 1;
-      if (newRound === 3) {
-        setIsOpen(true);
-        setSelectedCategory("");
-        setRandomQuestion(null);
-        setAnswered(false);
-      }
-      return newRound;
-    });
-  }
-
-  function handleCategoryChange(category) {
-    setSelectedCategory(category);
-  }
-
-  function confirmCategory(category) {
-    setSelectedCategory(category);
-    generateRandomQuestion(category);
-  }
-
-  function generateRandomQuestion(category) {
-    const questions = quizCategories[category];
-    const randomQ = questions[Math.floor(Math.random() * questions.length)];
-    setRandomQuestion(randomQ);
-    setSelectedAnswer("");
-    setAnswered(false);
-  }
-
-  function submitAnswer() {
-    if (!selectedAnswer) return;
-    const isCorrect = selectedAnswer === randomQuestion.correct;
-    setAnswered(true);
-
-    if (isCorrect) {
-      setScore((prev) => prev + 1);
-    } else {
-      generateRandomQuestion(selectedCategory);
+  useEffect(() => {
+    if (round === 3) {
+      setIsOpen(true);
     }
-  }
-
-  function closeModal() {
-    setIsOpen(false); // Close modal
-    setRound(1); // Reset round to 1
-    setSelectedAnswer(""); // Reset selected answer
-    setAnswered(false); // Reset answered state
-  }
+  }, [round, pathname]);
 
   //Guessing Game
   const [number, setNumber] = useState(Math.floor(Math.random() * 100) + 1);
@@ -109,7 +39,8 @@ export default function NumberGuessingGame() {
     <div className="text-center">
       <div className='my-5'>
         <p className="text-xl font-semibold">Round: {round}</p>
-        <Button onClick={handleRoundChange}>Next Round</Button>
+        <p className="text-xl font-semibold">Score: {score}</p>
+        <Button onClick={() => setRound((prev) => (prev >= 3 ? 3 : prev + 1))} disabled={round >= 3}>Next Round</Button>
       </div>
       <h2 className="text-2xl font-bold mb-4">Number Guessing Game</h2>
       <input
@@ -130,49 +61,16 @@ export default function NumberGuessingGame() {
         <h3 className='text-lg font-semibold'>Rules: </h3>
         <div>
           <p>1. Guess a number from 1-100</p>
-          <p2>2. Guess the right number and WIN!</p2>
+          <p>2. Guess the right number and WIN!</p>
         </div>
       </div>
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-md mx-auto rounded-lg shadow-lg">
-          <DialogHeader>
-            <DialogTitle>Select a Quiz Category</DialogTitle>
-          </DialogHeader>
-          <Select onValueChange={confirmCategory}>
-            <SelectTrigger className="w-full mt-2">
-              <SelectValue placeholder="Choose a category" />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.keys(quizCategories).map((category) => (
-                <SelectItem key={category} value={category}>{category}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </DialogContent>
-      </Dialog>
-
-      {randomQuestion && (
-        <div>
-          <p className="text-md font-semibold">{randomQuestion.question}</p>
-          <RadioGroup onValueChange={setSelectedAnswer} className="mt-3 space-y-2">
-            {randomQuestion.options.map((option) => (
-              <Label key={option} className={clsx(
-                "flex items-center space-x-2 p-2 rounded-lg cursor-pointer transition-all",
-                answered && option === randomQuestion.correct && "bg-green-500 text-white",
-                answered && option === selectedAnswer && option !== randomQuestion.correct && "bg-red-500 text-white",
-                !answered && "hover:bg-gray-200"
-              )}>
-                <RadioGroupItem value={option} disabled={answered} />
-                <span>{option}</span>
-              </Label>
-            ))}
-          </RadioGroup>
-          <Button onClick={submitAnswer} disabled={!selectedAnswer || answered} className="mt-4 w-full">
-            Submit Answer
-          </Button>
-        </div>
-      )}
+      <QuizModal
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setRound={setRound}
+        setScore={setScore}
+      />
     </div>
   );
 }
