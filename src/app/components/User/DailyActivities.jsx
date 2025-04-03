@@ -16,19 +16,17 @@ export default function DailyActivities() {
         <h2 className="text-2xl text-gray-900">Daily Questions</h2>
       </div>
       <div className="flex gap-5">
-        <p>75 reward points</p>
-        <p>5 questions</p>
+        <p>Earnable 100 reward points remaining today!</p>
       </div>
-      <Link href="/training">
-        <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4">
-          <Play />Start
-        </Button>
-      </Link>
-      <Link href="/games">
-        <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4">
-          <Play />Play A Game
-        </Button>
-      </Link>
+
+      <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4 hover:cursor-pointer">
+        <Link href="/training" className="flex gap-2 justify-center items-center"><Play />Start Questions</Link>
+      </Button>
+
+      <Button className="bg-blue-900 text-gray-50 w-48 text-lg mb-4 hover:cursor-pointer">
+        <Link href="/games" className="flex gap-2 justify-center items-center"><Play />Play A Game</Link>
+      </Button>
+
     </section>
   );
 }
