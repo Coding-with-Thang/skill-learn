@@ -1,108 +1,56 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { createOrUpdateUser, deleteUser } from "@/lib/actions/user";
-import { clerkClient } from "@clerk/nextjs/server";
+import { NextResponse } from 'next/server';
 import prisma from "@/utils/connect";
 
 export async function POST(req) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
   if (!SIGNING_SECRET) {
-    throw new Error(
-      "Error: Please add SIGNING_SECRET from Clerk Dashboard to .env or .env.local"
-    );
+    return new Response('Webhook secret not configured', { status: 500 })
   }
 
-  //Create new Svix instance with secret
-  const wh = new Webhook(SIGNING_SECRET);
+  const payload = await req.text()
+  const headerPayload = Object.fromEntries(headers())
 
-  //Get headers
-  const headerPayload = await headers();
-  const svix_id = headerPayload.get("svix-id");
-  const svix_timestamp = headerPayload.get("svix-timestamp");
-  const svix_signature = headerPayload.get("svix-signature");
-
-  //If there are no headers, error out
-  if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response("Error: Missing Svix headers", {
-      status: 400,
-    });
-  }
-
-  //Get body
-  const payload = await req.json();
-  const body = JSON.stringify(payload);
-
-  let evt;
-
-  //Verify payload with headers
   try {
-    evt = wh.verify(body, {
-      "svix-id": svix_id,
-      "svix-timestamp": svix_timestamp,
-      "svix-signature": svix_signature,
-    });
-  } catch (err) {
-    console.error("Error: Could not verify webhook:", err);
-    return new Response("Error: Verification error", {
-      status: 400,
-    });
-  }
+    // Verify signature using svix (Clerk uses Svix under the hood)
+    const wh = new Webhook(SIGNING_SECRET)
+    const evt = wh.verify(payload, headerPayload)
+    const eventType = evt.type
+    const user = evt.data
 
-  const { id } = evt.data;
-  const eventType = evt.type;
-  console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
-  console.log("Webhook payload:", body);
-
-  if (eventType === "user.created" || eventType === "user.updated") {
-    const { id, first_name, last_name, username } = evt?.data;
-    try {
-      const user = await prisma.user.upsert({
-        where: { clerkId: id },
-        update: {
-          first_name: first_name,
-          last_name: last_name,
-          username: username,
+    if (eventType === 'user.created') {
+      await prisma.user.create({
+        data: {
+          clerkId: user.id,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          imageUrl: user.image_url,
         },
-        create: {
-          clerkId: id,
-          first_name: first_name,
-          last_name: last_name,
-          username: username,
+      })
+    } else if (eventType === 'user.updated') {
+      await prisma.user.update({
+        where: { clerkId: user.id },
+        data: {
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          imageUrl: user.image_url,
         },
-      });
-      if (user && eventType === "user.created") {
-        try {
-          await clerkClient().users.updateUserMetadata(id, {
-            publicMetadata: {
-              userMongoId: user._id,
-            },
-          });
-        } catch (error) {
-          console.log("Error updating user metadata:", error);
-        }
-      }
-    } catch (error) {
-      console.log("Error creating or updating user:", error);
-      return new Response("Error occurred", {
-        status: 400,
-      });
-    }
-  }
-
-  if (eventType === "user.deleted") {
-    const { id } = evt?.data;
-    try {
+      })
+    } else if (eventType === 'user.deleted') {
       await prisma.user.delete({
-        where: { clerkId: id },
-      });
-    } catch (error) {
-      console.log("Error deleting user:", error);
-      return new Response("Error occurred", {
-        status: 400,
-      });
+        where: { clerkId: user.id },
+      })
+    } else {
+      console.log('Unhandled Clerk event:', eventType)
     }
-  }
 
-  return new Response("Webhook received", { status: 200 });
+    return NextResponse.json({ message: 'Webhook processed securely' }, { status: 200 })
+  } catch (err) {
+    console.error('❌ Webhook verification failed:', err)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 400 })
+  }
 }
