@@ -11,12 +11,18 @@ export async function POST(req) {
   }
 
   const payload = await req.text()
-  const headerPayload = Object.fromEntries(headers())
+  const headerList = headers()
+
+  // Explicitly extract the required headers
+  const svixHeaders = {
+    'svix-id': headerList.get('svix-id'),
+    'svix-timestamp': headerList.get('svix-timestamp'),
+    'svix-signature': headerList.get('svix-signature'),
+  }
 
   try {
-    // Verify signature using svix (Clerk uses Svix under the hood)
     const wh = new Webhook(SIGNING_SECRET)
-    const evt = wh.verify(payload, headerPayload)
+    const evt = wh.verify(payload, svixHeaders) // will throw if invalid
     const eventType = evt.type
     const user = evt.data
 
@@ -44,8 +50,6 @@ export async function POST(req) {
       await prisma.user.delete({
         where: { clerkId: user.id },
       })
-    } else {
-      console.log('Unhandled Clerk event:', eventType)
     }
 
     return NextResponse.json({ message: 'Webhook processed securely' }, { status: 200 })
