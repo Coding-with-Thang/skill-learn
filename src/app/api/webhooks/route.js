@@ -15,7 +15,7 @@ export async function POST(req) {
 
   try {
     // Verify signature using svix (Clerk uses Svix under the hood)
-    const wh = new Webhook(WEBHOOK_SECRET)
+    const wh = new Webhook(SIGNING_SECRET)
     const evt = wh.verify(payload, headerPayload)
     const eventType = evt.type
     const user = evt.data
