@@ -112,6 +112,23 @@ model RewardLog {
   updatedAt DateTime @updatedAt
 }
 
+model Game {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
+  slug        String
+  genre       String?
+  rules       Rule[] // One-to-many relationship
+}
+
+model Rule {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  text   String
+  gameId String @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id])
+}
+
 enum Role {
   AGENT
   MANAGER
