@@ -13,7 +13,6 @@ import UserBadge from './components/User/UserBadge';
 export default function HomePage() {
   return (
     <div className="flex flex-col items-center justify-items-center min-h-[80dvh]">
-      <HeroBanner />
       <SignedIn>
         <UserBadge />
         <DailyActivities />
@@ -21,8 +20,8 @@ export default function HomePage() {
         <PerformanceLanding />
         <LeaderboardLanding />
       </SignedIn>
-
       <SignedOut>
+        <HeroBanner />
         <Features />
         <HowItWorks />
         {/* <Testimonials /> */}

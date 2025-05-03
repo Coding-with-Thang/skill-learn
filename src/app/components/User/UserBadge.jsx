@@ -69,12 +69,11 @@ export default function UserBadge() {
 
           <Button
             onClick={handleClick}
-            className="text-xl font-semibold mt-10"
+            className="text-xl font-semibold mt-10 rounded-full bg-white/20 px-8 py-3 text-white"
             disabled={cooldown > 0 || isLoading}
           >
-            {cooldown > 0 ? `Wait ${cooldown}s` : "Earn 10 Points"}
+            {cooldown > 0 ? `Wait ${cooldown}s` : "Click here to earn 10 Points (Test)"}
           </Button>
-
         </>
       ) : (
         <Card className="w-full max-w-md mx-auto">
