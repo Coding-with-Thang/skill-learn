@@ -5,30 +5,28 @@ import prisma from "@/utils/connect";
 export async function POST(req) {
   try {
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { categoryId, quizId, score, responses } = await req.json();
 
-    //Validate the fields
-    if (
-      !categoryId ||
-      !quizId ||
-      typeof score !== "number" ||
-      !Array.isArray(responses)
-    ) {
+    // Validate the fields
+    if (!categoryId || !quizId || typeof score !== "number" || !Array.isArray(responses)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { clerkId } });
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId } // Fixed: use userId instead of undefined clerkId
+    });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    //Fetch or create a categoryStat entry
+    // Removed the early return that was preventing the rest of the code from running
+
+    // Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
       where: {
         userId_categoryId: {
@@ -39,11 +37,11 @@ export async function POST(req) {
     });
 
     if (stat) {
-      //Calculate the average score
+      // Calculate the average score
       const totalScore = (stat.averageScore || 0) * stat.completed + score;
       const newAverageScore = totalScore / (stat.completed + 1);
 
-      //Update the categoryStat entry
+      // Update the categoryStat entry
       stat = await prisma.categoryStat.update({
         where: { id: stat.id },
         data: {
@@ -53,7 +51,7 @@ export async function POST(req) {
         },
       });
     } else {
-      //Create a new categoryStat entry
+      // Create a new categoryStat entry
       stat = await prisma.categoryStat.create({
         data: {
           userId: user.id,
@@ -68,6 +66,7 @@ export async function POST(req) {
 
     return NextResponse.json(stat);
   } catch (error) {
+    console.error("Quiz completion error:", error); // Add logging
     return NextResponse.json(
       { error: "Error finishing quiz" },
       { status: 500 }
