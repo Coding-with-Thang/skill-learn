@@ -9,8 +9,8 @@ export async function POST(req) {
     const testMode = req.headers.get('x-test-mode');
     if (testMode === 'true') {
       console.log('Test mode - bypassing verification');
-      return new Response(JSON.stringify({ 
-        status: 'success', 
+      return new Response(JSON.stringify({
+        status: 'success',
         message: 'Endpoint is reachable',
         timestamp: new Date().toISOString()
       }), {
@@ -25,6 +25,13 @@ export async function POST(req) {
       console.error('CLERK_WEBHOOK_SECRET not found');
       return new Response('Webhook secret not configured', { status: 500 });
     }
+
+    // Check secret format
+    console.log('Webhook secret check:', {
+      exists: !!process.env.SIGNING_SECRET,
+      startsCorrectly: process.env.SIGNING_SECRET?.startsWith('whsec_'),
+      length: process.env.SIGNING_SECRET?.length
+    });
 
     const headers = {
       'svix-id': req.headers.get('svix-id'),
@@ -41,10 +48,10 @@ export async function POST(req) {
     const body = await req.text();
     const wh = new Webhook(webhookSecret);
     const evt = wh.verify(body, headers);
-    
+
     console.log('Webhook verified:', evt.type);
     // Your webhook logic here
-    
+
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
@@ -52,7 +59,7 @@ export async function POST(req) {
 
   } catch (error) {
     console.error('Webhook error:', error.message);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error.message,
       timestamp: new Date().toISOString()
     }), {
