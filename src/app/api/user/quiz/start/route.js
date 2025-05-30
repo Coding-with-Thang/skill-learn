@@ -12,19 +12,18 @@ export async function POST(req) {
 
   try {
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }, // Fixed: use userId from auth
+      where: { clerkId: userId },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Use user.id directly instead of redeclaring userId
     let stat = await prisma.categoryStat.findUnique({
       where: {
         userId_categoryId: {
           categoryId,
-          userId: user.id, // Use user.id directly
+          userId: user.id,
         },
       },
     });
@@ -32,17 +31,17 @@ export async function POST(req) {
     if (!stat) {
       stat = await prisma.categoryStat.create({
         data: {
-          userId: user.id, // Use user.id directly
+          userId: user.id,
           categoryId,
           attempts: 1,
           lastAttempt: new Date(),
         },
       });
     } else {
-      stat = await prisma.categoryStat.update({ // Assign the result back to stat
+      stat = await prisma.categoryStat.update({
         where: {
           userId_categoryId: {
-            userId: user.id, // Use user.id directly
+            userId: user.id,
             categoryId,
           },
         },
@@ -55,7 +54,7 @@ export async function POST(req) {
 
     return NextResponse.json(stat);
   } catch (error) {
-    console.error("Start quiz error:", error); // Add logging to see the actual error
+    console.error("Start quiz error:", error);
     return NextResponse.json({ error: "Error starting quiz" }, { status: 500 });
   }
 }
