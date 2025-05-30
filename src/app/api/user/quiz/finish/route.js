@@ -27,15 +27,6 @@ export async function POST(req) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    
-    if (user) {
-      return NextResponse.json(`User found: ${user.username} +
-        categoryId: ${categoryId} +
-        quizId: ${quizId} +
-        score: ${score} +
-        responses: ${responses} +
-        `, { status: 200 });
-    }
 
     //Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
