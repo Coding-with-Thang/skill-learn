@@ -17,14 +17,12 @@ export async function POST(req) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId } // Fixed: use userId instead of undefined clerkId
+      where: { clerkId: userId }
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-
-    // Removed the early return that was preventing the rest of the code from running
 
     // Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
@@ -66,7 +64,7 @@ export async function POST(req) {
 
     return NextResponse.json(stat);
   } catch (error) {
-    console.error("Quiz completion error:", error); // Add logging
+    console.error("Quiz completion error:", error);
     return NextResponse.json(
       { error: "Error finishing quiz" },
       { status: 500 }
