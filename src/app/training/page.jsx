@@ -42,7 +42,7 @@ export default function TrainingPage() {
             >
               <CardHeader className="w-[300px]">
                 <Image
-                  src={category?.image}
+                  src={category?.imageUrl}
                   width={700}
                   height={200}
                   alt={category?.name}

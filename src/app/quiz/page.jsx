@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
@@ -18,7 +18,6 @@ export default function QuizScreenPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [shuffledOptions, setShuffledOptions] = useState([]);
   const [shuffledQuestions, setShuffledQuestions] = useState([]);
 
   if (!selectedQuiz) {
@@ -51,11 +50,23 @@ export default function QuizScreenPage() {
 
     return array;
   };
+
+  // Add memoization for shuffled questions and options
+  const shuffledQuestionsMemo = useMemo(() =>
+    shuffleArray([...selectedQuiz.questions.slice(0, selectedQuiz.questions.length)]),
+    [selectedQuiz]
+  );
+
+  const shuffledOptions = useMemo(() =>
+    shuffleArray([...shuffledQuestionsMemo[currentIndex]?.options || []]),
+    [shuffledQuestionsMemo, currentIndex]
+  );
+
   const handleActiveQuestion = (option) => {
-    if (!shuffledQuestions[currentIndex]) return;
+    if (!shuffledQuestionsMemo[currentIndex]) return;
 
     const response = {
-      questionId: shuffledQuestions[currentIndex].id,
+      questionId: shuffledQuestionsMemo[currentIndex].id,
       optionId: option.id,
       isCorrect: option.isCorrect
     }
@@ -82,47 +93,67 @@ export default function QuizScreenPage() {
 
   //Progresses the active Question
   const handleNextQuestion = () => {
-    if (currentIndex < shuffledQuestions.length - 1) {
-      setCurrentIndex((prev) => prev + 1)
+    // if (currentIndex < shuffledQuestions.length - 1) {
+    setCurrentIndex((prev) => prev + 1)
 
-      //reset active question
-      setActiveQuestion(null)
-    } else {
-      router.push('/quiz/results')
-    }
+    //reset active question
+    setActiveQuestion(null)
+    // } else {
+    //   router.push('/quiz/results')
+    // }
   }
 
+  // Add batch processing for quiz responses
   const handleFinishQuiz = async () => {
-    setQuizResponses(responses)
-
-    const score = responses.filter((res) => res.isCorrect).length
+    setQuizResponses(responses);
+    const score = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
 
     try {
-      await api.post("/user/quiz/finish", {
-        categoryId: selectedQuiz.categoryId,
-        quizId: selectedQuiz.id,
-        score,
-        responses
-      })
+      const [quizResult, pointsUpdate] = await Promise.all([
+        api.post("/user/quiz/finish", {
+          categoryId: selectedQuiz.categoryId,
+          quizId: selectedQuiz.id,
+          score,
+          responses
+        }),
+        api.post("/user/points/add", {
+          amount: score * 10, // Points per correct answer
+          reason: "quiz_completion"
+        })
+      ]);
+
+      router.push("/quiz/results");
     } catch (error) {
-      console.log("Error finishing quiz: ", error)
+      console.error("Error finishing quiz:", error);
+      toast.error("Failed to submit quiz results");
+    }
+  };
+
+  const handleQuizNavigation = () => {
+    if (!activeQuestion?.id) {
+      playSound('error');
+      toast.error("Please select an option to continue");
+      return;
     }
 
-    router.push("/quiz/results")
-
-  }
+    if (currentIndex < shuffledQuestionsMemo.length - 1) {
+      handleNextQuestion();
+    } else {
+      handleFinishQuiz();
+    }
+  };
 
   return (
     <main className="py-[2.5rem] px-[5rem]">
-      {shuffledQuestions[currentIndex] ? (
+      {shuffledQuestionsMemo[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
             <p className="py-3 px-6 border-2 text-xl font-bold self-end rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
               Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
-              <span className="text-xl">{shuffledQuestions.length}</span>
+              <span className="text-xl">{shuffledQuestionsMemo.length}</span>
             </p>
             <h1 className="mt-4 px-10 text-5xl font-bold text-center">
-              {shuffledQuestions[currentIndex].text}
+              {shuffledQuestionsMemo[currentIndex].text}
             </h1>
           </div>
 
@@ -153,30 +184,17 @@ export default function QuizScreenPage() {
         <Button
           className="px-10 py-6 font-bold text-xl rounded-xl"
           variant="destructive"
-          onClick={() => {
-            if (currentIndex < shuffledQuestions.length - 1) {
-              if (activeQuestion?.id) {
-                handleNextQuestion();
-              } else {
-                const sound = new Audio("/sounds/error.mp3");
-                sound.play();
-                toast.error("Please select an option to continue");
-              }
-            } else {
-              if (activeQuestion?.id) {
-                handleFinishQuiz();
-              } else {
-                const sound = new Audio("/sounds/error.mp3");
-                sound.play();
-                toast.error("Please select an option to continue");
-              }
-            }
-          }}
+          onClick={handleQuizNavigation}
         >
-          {currentIndex < shuffledQuestions.length - 1 ?
-            (<span className="flex items-center gap-2 bg-green-600"><ArrowBigRightDash /> Next</span>) :
-            (<span className="flex items-center gap-2 bg-white text-black"><CircleCheckBig /> Finish</span>)
-          }
+          {currentIndex < shuffledQuestionsMemo.length - 1 ? (
+            <span className="flex items-center gap-2 bg-green-600">
+              <ArrowBigRightDash /> Next
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 bg-white text-black">
+              <CircleCheckBig /> Finish
+            </span>
+          )}
         </Button>
       </div>
     </main>

@@ -14,5 +14,29 @@ const nextConfig = {
       },
     ],
   },
+  // Add caching headers
+  async headers() {
+    return [
+      {
+        source: "/api/categories",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=60, stale-while-revalidate=300",
+          },
+        ],
+      },
+      {
+        source: "/api/user/rewards",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, s-maxage=300, stale-while-revalidate=600",
+          },
+        ],
+      },
+    ];
+  },
 };
+
 export default nextConfig;

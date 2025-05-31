@@ -2,7 +2,7 @@ require("dotenv").config({ path: "env.local" });
 
 let rewardPrisma;
 
-async function seedQuizzes() {
+async function seedRewards() {
   const { PrismaClient } = require("@prisma/client");
 
   rewardPrisma = new PrismaClient();
@@ -59,9 +59,9 @@ async function seedQuizzes() {
   console.log("Seeding rewards completed");
 }
 
-seedQuizzes()
+seedRewards()
   .catch((e) => {
-    console.log("Error Adding Rewards: ", e);
+    console.log("Error seeding rewards: ", e);
   })
   .finally(async () => {
     await rewardPrisma.$disconnect();

@@ -61,14 +61,22 @@ export async function getDailyPointStatus() {
 }
 
 export async function awardPoints(amount, reason) {
+  if (!amount || typeof amount !== "number") {
+    throw new Error("Point amount must be a number");
+  }
+
   if (amount <= 0 || amount > 100) {
-    throw new Error("Invalid point amount");
+    throw new Error("Point amount must be between 1 and 100");
+  }
+
+  if (!reason || typeof reason !== "string") {
+    throw new Error("Reason must be provided");
   }
 
   const { userId } = await auth();
 
   if (!userId) {
-    throw new Error("Unauthorized");
+    throw new Error("Authentication required");
   }
 
   const status = await getDailyPointStatus();
@@ -77,25 +85,48 @@ export async function awardPoints(amount, reason) {
     throw new Error("Daily point limit reached");
   }
 
-  //Calculate how many points can be awarded
   const pointsToAward = Math.min(amount, 100 - status.todaysPoints);
-  console.log("pointsToAward", pointsToAward);
-  //Update user and create log
-  const updatedUser = await prisma.user.update({
-    where: { clerkId: userId },
-    data: {
-      lifetimePoints: { increment: pointsToAward },
-      pointLogs: {
-        create: {
+
+  try {
+    // Use transaction to ensure atomic updates
+    const result = await prisma.$transaction(async (tx) => {
+      // First, verify user exists and get current points
+      const user = await tx.user.findUnique({
+        where: { clerkId: userId },
+        select: { id: true, lifetimePoints: true },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Create point log entry
+      const pointLog = await tx.pointLog.create({
+        data: {
+          userId: user.id,
           amount: pointsToAward,
           reason,
         },
-      },
-    },
-  });
+      });
 
-  return {
-    awarded: pointsToAward,
-    newTotal: updatedUser.lifetimePoints,
-  };
+      // Update user points
+      const updatedUser = await tx.user.update({
+        where: { id: user.id },
+        data: {
+          lifetimePoints: { increment: pointsToAward },
+        },
+      });
+
+      return {
+        awarded: pointsToAward,
+        newTotal: updatedUser.lifetimePoints,
+        logId: pointLog.id,
+      };
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Point award error:", error);
+    throw new Error(`Failed to award points: ${error.message}`);
+  }
 }

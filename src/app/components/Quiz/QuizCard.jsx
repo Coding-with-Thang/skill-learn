@@ -27,7 +27,7 @@ export default function QuizCard({ quiz }) {
     >
       <CardHeader className="rounded-xl py-2 w-full">
         <Image
-          src={quiz?.image}
+          src={quiz?.imageUrl}
           width={500}
           height={300}
           alt={quiz?.title}
