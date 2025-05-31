@@ -82,14 +82,14 @@ export default function QuizScreenPage() {
 
   //Progresses the active Question
   const handleNextQuestion = () => {
-    if (currentIndex < shuffledQuestions.length - 1) {
-      setCurrentIndex((prev) => prev + 1)
+    // if (currentIndex < shuffledQuestions.length - 1) {
+    setCurrentIndex((prev) => prev + 1)
 
-      //reset active question
-      setActiveQuestion(null)
-    } else {
-      router.push('/quiz/results')
-    }
+    //reset active question
+    setActiveQuestion(null)
+    // } else {
+    //   router.push('/quiz/results')
+    // }
   }
 
   const handleFinishQuiz = async () => {
@@ -109,8 +109,21 @@ export default function QuizScreenPage() {
     }
 
     router.push("/quiz/results")
-
   }
+
+  const handleQuizNavigation = () => {
+    if (!activeQuestion?.id) {
+      playSound('error');
+      toast.error("Please select an option to continue");
+      return;
+    }
+
+    if (currentIndex < shuffledQuestions.length - 1) {
+      handleNextQuestion();
+    } else {
+      handleFinishQuiz();
+    }
+  };
 
   return (
     <main className="py-[2.5rem] px-[5rem]">
@@ -153,30 +166,17 @@ export default function QuizScreenPage() {
         <Button
           className="px-10 py-6 font-bold text-xl rounded-xl"
           variant="destructive"
-          onClick={() => {
-            if (currentIndex < shuffledQuestions.length - 1) {
-              if (activeQuestion?.id) {
-                handleNextQuestion();
-              } else {
-                const sound = new Audio("/sounds/error.mp3");
-                sound.play();
-                toast.error("Please select an option to continue");
-              }
-            } else {
-              if (activeQuestion?.id) {
-                handleFinishQuiz();
-              } else {
-                const sound = new Audio("/sounds/error.mp3");
-                sound.play();
-                toast.error("Please select an option to continue");
-              }
-            }
-          }}
+          onClick={handleQuizNavigation}
         >
-          {currentIndex < shuffledQuestions.length - 1 ?
-            (<span className="flex items-center gap-2 bg-green-600"><ArrowBigRightDash /> Next</span>) :
-            (<span className="flex items-center gap-2 bg-white text-black"><CircleCheckBig /> Finish</span>)
-          }
+          {currentIndex < shuffledQuestions.length - 1 ? (
+            <span className="flex items-center gap-2 bg-green-600">
+              <ArrowBigRightDash /> Next
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 bg-white text-black">
+              <CircleCheckBig /> Finish
+            </span>
+          )}
         </Button>
       </div>
     </main>

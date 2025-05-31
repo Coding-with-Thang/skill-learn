@@ -10,28 +10,26 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { id: true },
-    });
+    // Combine queries into a single operation
+    const [user, history] = await prisma.$transaction([
+      prisma.user.findUnique({
+        where: { clerkId: userId },
+        select: { id: true },
+      }),
+      prisma.pointLog.findMany({
+        where: {
+          user: { clerkId: userId }, // Use nested where clause
+        },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      }),
+    ]);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const history = await prisma.pointLog.findMany({
-      where: {
-        userId: user.id,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: 20, // Limit to recent 20 entries
-    });
-
-    return NextResponse.json({
-      history,
-    });
+    return NextResponse.json({ history });
   } catch (error) {
     console.error("Error fetching points history:", error);
     return NextResponse.json(
