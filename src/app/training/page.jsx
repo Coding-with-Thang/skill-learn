@@ -19,13 +19,29 @@ export default function TrainingPage() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchCategories()
-    fetchQuizzesPerCategory()
-  }, [])
+    const loadData = async () => {
+      try {
+        await fetchCategories(true); // Force fresh fetch
+        await fetchQuizzesPerCategory();
+      } catch (err) {
+        console.error("Error loading categories:", err);
+      }
+    };
+
+    loadData();
+  }, [fetchCategories, fetchQuizzesPerCategory]);
 
   useEffect(() => {
     console.log("Quizzes per category:", quizzesPerCategory);
   }, [quizzesPerCategory])
+
+  if (error) {
+    return (
+      <section className="flex flex-col w-[90%] px-20">
+        <div className="text-red-500">Error loading categories: {error}</div>
+      </section>
+    );
+  }
 
   return (
     <section className="flex flex-col w-[90%] px-20">

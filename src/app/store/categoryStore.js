@@ -12,18 +12,6 @@ const useCategoryStore = create(
       lastFetch: null,
 
       fetchCategories: async (force = false) => {
-        const state = get();
-        const now = Date.now();
-
-        // Return cached data if it's less than 5 minutes old
-        if (
-          !force &&
-          state.lastFetch &&
-          now - state.lastFetch < 5 * 60 * 1000
-        ) {
-          return;
-        }
-
         set({ loading: true, error: null });
         try {
           const response = await api.get("/categories");
@@ -33,7 +21,7 @@ const useCategoryStore = create(
           set({
             categories: response.data.categories,
             loading: false,
-            lastFetch: now,
+            lastFetch: Date.now(),
           });
         } catch (error) {
           console.error("Category fetch error:", error);
@@ -78,7 +66,6 @@ const useCategoryStore = create(
       name: "category-store",
       partialize: (state) => ({
         categories: state.categories,
-        quizzesPerCategory: state.quizzesPerCategory,
         lastFetch: state.lastFetch,
       }),
     }
