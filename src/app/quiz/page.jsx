@@ -28,25 +28,39 @@ export default function QuizScreenPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Initialize from saved progress
+  // Initialize from saved progress only if it's the same quiz
   useEffect(() => {
     const savedProgress = sessionStorage.getItem('quizProgress');
     if (savedProgress) {
-      const { currentIndex: savedIndex, responses: savedResponses } = JSON.parse(savedProgress);
-      setCurrentIndex(savedIndex);
-      setResponses(savedResponses);
+      const { quizId, currentIndex: savedIndex, responses: savedResponses } = JSON.parse(savedProgress);
+      // Only restore progress if it's for the same quiz
+      if (quizId === selectedQuiz?.id) {
+        setCurrentIndex(savedIndex);
+        setResponses(savedResponses);
+      } else {
+        // Clear saved progress if it's a different quiz
+        sessionStorage.removeItem('quizProgress');
+      }
     }
-  }, []);
+  }, [selectedQuiz]);
 
-  // Save progress when it changes
+  // Save progress when it changes, including the quiz ID
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && selectedQuiz) {
       sessionStorage.setItem('quizProgress', JSON.stringify({
+        quizId: selectedQuiz.id,
         currentIndex,
         responses
       }));
     }
-  }, [currentIndex, responses, isLoading]);
+  }, [currentIndex, responses, isLoading, selectedQuiz]);
+
+  // Clear progress when starting a new quiz
+  useEffect(() => {
+    if (selectedQuiz && currentIndex === 0 && responses.length === 0) {
+      sessionStorage.removeItem('quizProgress');
+    }
+  }, [selectedQuiz]);
 
   // Initial loading check
   useEffect(() => {
