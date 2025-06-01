@@ -7,7 +7,7 @@ import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
-import Loader from '@/components/ui/loader'
+import Loader from "../components/loader"
 
 // Move button styles to a constant
 const getButtonStyles = (isActive) => `
