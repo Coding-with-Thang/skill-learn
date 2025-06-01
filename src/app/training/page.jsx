@@ -21,7 +21,7 @@ export default function TrainingPage() {
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
+  }, []);
 
   if (error) {
     return (
