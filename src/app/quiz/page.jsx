@@ -6,59 +6,97 @@ import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { ArrowBigRightDash } from 'lucide-react'
-import { CircleCheckBig } from 'lucide-react'
+import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
+import Loader from '@/components/ui/loader'
+
+// Move button styles to a constant
+const getButtonStyles = (isActive) => `
+  relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
+  hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
+  ${isActive
+    ? "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
+    : "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
+  }
+`;
 
 export default function QuizScreenPage() {
-
-  const { selectedQuiz, setQuizResponses } = useQuizStartStore()
-
-  const router = useRouter()
-
+  const router = useRouter();
+  const { selectedQuiz, setQuizResponses } = useQuizStartStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [responses, setResponses] = useState([]);
-  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  if (!selectedQuiz) {
-    router.push("/training")
-    return null
-  }
-
-  //Shuffle Questions on Component Amount (Quiz Started)
+  // Initialize from saved progress
   useEffect(() => {
-    const filteredQuestions = selectedQuiz.questions.slice(0, selectedQuiz.questions.length)
-    setShuffledQuestions(shuffleArray([...filteredQuestions]));
-  }, [selectedQuiz])
-
-  //Shuffle options when the active changes
-  useEffect(() => {
-    if (shuffledQuestions[currentIndex]) {
-      setShuffledOptions(shuffleArray([...shuffledQuestions[currentIndex].options]))
+    const savedProgress = sessionStorage.getItem('quizProgress');
+    if (savedProgress) {
+      const { currentIndex: savedIndex, responses: savedResponses } = JSON.parse(savedProgress);
+      setCurrentIndex(savedIndex);
+      setResponses(savedResponses);
     }
-  }, [shuffledQuestions, currentIndex])
+  }, []);
 
-  //Fisher-Yates Shuffle Algorithm
+  // Save progress when it changes
+  useEffect(() => {
+    if (!isLoading) {
+      sessionStorage.setItem('quizProgress', JSON.stringify({
+        currentIndex,
+        responses
+      }));
+    }
+  }, [currentIndex, responses, isLoading]);
+
+  // Initial loading check
+  useEffect(() => {
+    if (!selectedQuiz) {
+      router.push("/training");
+    } else {
+      setIsLoading(false);
+    }
+  }, [selectedQuiz, router]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter' && activeQuestion) {
+        handleQuizNavigation();
+      }
+      // Allow selecting options with number keys 1-4
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const index = parseInt(e.key) - 1;
+        if (shuffledOptions[index]) {
+          handleActiveQuestion(shuffledOptions[index]);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [activeQuestion]);
+
+  // Fisher-Yates Shuffle Algorithm
   const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; --i) {
-      //Generate a random index between 0 and i
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; --i) {
       const j = Math.floor(Math.random() * (i + 1));
-
-      //Swap elements --> destructuring assignment
-      [array[i], array[j]] = [array[j], array[i]];
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-
-    return array;
+    return shuffled;
   };
 
-  // Add memoization for shuffled questions and options
+  // Memoize shuffled questions
   const shuffledQuestionsMemo = useMemo(() =>
-    shuffleArray([...selectedQuiz.questions.slice(0, selectedQuiz.questions.length)]),
+    selectedQuiz ? shuffleArray(selectedQuiz.questions) : [],
     [selectedQuiz]
   );
 
+  // Memoize shuffled options for current question
   const shuffledOptions = useMemo(() =>
-    shuffleArray([...shuffledQuestionsMemo[currentIndex]?.options || []]),
+    shuffledQuestionsMemo[currentIndex]?.options
+      ? shuffleArray(shuffledQuestionsMemo[currentIndex].options)
+      : [],
     [shuffledQuestionsMemo, currentIndex]
   );
 
@@ -69,47 +107,39 @@ export default function QuizScreenPage() {
       questionId: shuffledQuestionsMemo[currentIndex].id,
       optionId: option.id,
       isCorrect: option.isCorrect
-    }
+    };
 
     setResponses((prev) => {
-      //check if the response already exists
-      const existingIndex = prev.findIndex((res) => {
-        return res.questionId === response.questionId
-      })
+      const existingIndex = prev.findIndex((res) =>
+        res.questionId === response.questionId
+      );
 
-      //update the response if it exists
       if (existingIndex !== -1) {
-        //update the response
-        const updatedResponses = [...prev]
+        const updatedResponses = [...prev];
         updatedResponses[existingIndex] = response;
         return updatedResponses;
-      } else {
-        return [...prev, response]
       }
-    })
-    //Set the active question
-    setActiveQuestion(option)
-  }
+      return [...prev, response];
+    });
 
-  //Progresses the active Question
-  const handleNextQuestion = () => {
-    // if (currentIndex < shuffledQuestions.length - 1) {
-    setCurrentIndex((prev) => prev + 1)
+    setActiveQuestion(option);
+  };
 
-    //reset active question
-    setActiveQuestion(null)
-    // } else {
-    //   router.push('/quiz/results')
-    // }
-  }
+  const handleNextQuestion = async () => {
+    setIsTransitioning(true);
+    await new Promise(resolve => setTimeout(resolve, 300)); // Smooth transition
+    setCurrentIndex((prev) => prev + 1);
+    setActiveQuestion(null);
+    setIsTransitioning(false);
+  };
 
-  // Add batch processing for quiz responses
   const handleFinishQuiz = async () => {
-    setQuizResponses(responses);
-    const score = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
-
     try {
-      const [quizResult, pointsUpdate] = await Promise.all([
+      setIsLoading(true);
+      setQuizResponses(responses);
+      const score = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
+
+      await Promise.all([
         api.post("/user/quiz/finish", {
           categoryId: selectedQuiz.categoryId,
           quizId: selectedQuiz.id,
@@ -117,59 +147,75 @@ export default function QuizScreenPage() {
           responses
         }),
         api.post("/user/points/add", {
-          amount: score * 10, // Points per correct answer
+          amount: score * 10,
           reason: "quiz_completion"
         })
       ]);
 
+      sessionStorage.removeItem('quizProgress'); // Clear progress
       router.push("/quiz/results");
     } catch (error) {
       console.error("Error finishing quiz:", error);
-      toast.error("Failed to submit quiz results");
+      toast.error("Failed to submit quiz results. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleQuizNavigation = () => {
+  const handleQuizNavigation = async () => {
     if (!activeQuestion?.id) {
-      playSound('error');
       toast.error("Please select an option to continue");
       return;
     }
 
     if (currentIndex < shuffledQuestionsMemo.length - 1) {
-      handleNextQuestion();
+      await handleNextQuestion();
     } else {
-      handleFinishQuiz();
+      await handleFinishQuiz();
     }
   };
 
+  if (isLoading) return <Loader />;
+
   return (
-    <main className="py-[2.5rem] px-[5rem]">
+    <main
+      className={`py-[2.5rem] px-[5rem] ${isTransitioning ? 'opacity-50' : ''}`}
+      role="main"
+      aria-label="Quiz Page"
+    >
       {shuffledQuestionsMemo[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
-            <p className="py-3 px-6 border-2 text-xl font-bold self-end rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
+            <p
+              className="py-3 px-6 border-2 text-xl font-bold self-end rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
+              role="status"
+              aria-live="polite"
+            >
               Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
               <span className="text-xl">{shuffledQuestionsMemo.length}</span>
             </p>
-            <h1 className="mt-4 px-10 text-5xl font-bold text-center">
+            <h1
+              className="mt-4 px-10 text-5xl font-bold text-center"
+              role="heading"
+              aria-level="1"
+            >
               {shuffledQuestionsMemo[currentIndex].text}
             </h1>
           </div>
 
-          {/* Options */}
-          <div className="pt-14 space-y-4">
+          <div
+            className="pt-14 space-y-4"
+            role="radiogroup"
+            aria-label="Quiz options"
+          >
             {shuffledOptions.map((option, index) => (
               <button
-                key={index}
-                className={`relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
-                    hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
-                ${option.text === activeQuestion?.text
-                    ? "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
-                    : "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-                  }
-                    `}
+                key={option.id}
+                className={getButtonStyles(option.text === activeQuestion?.text)}
                 onClick={() => handleActiveQuestion(option)}
+                aria-pressed={option.text === activeQuestion?.text}
+                aria-label={`Option ${index + 1}: ${option.text}`}
+                disabled={isTransitioning}
               >
                 {option.text}
               </button>
@@ -177,7 +223,7 @@ export default function QuizScreenPage() {
           </div>
         </div>
       ) : (
-        <p className="text-lg">No questions found for this quiz</p>
+        <p className="text-lg" role="alert">No questions found for this quiz</p>
       )}
 
       <div className="w-full py-[4rem] border-t-2 flex items-center justify-center">
@@ -185,6 +231,7 @@ export default function QuizScreenPage() {
           className="px-10 py-6 font-bold text-xl rounded-xl"
           variant="destructive"
           onClick={handleQuizNavigation}
+          disabled={isTransitioning || !activeQuestion}
         >
           {currentIndex < shuffledQuestionsMemo.length - 1 ? (
             <span className="flex items-center gap-2 bg-green-600">

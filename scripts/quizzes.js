@@ -9,19 +9,9 @@ async function seedQuizzes() {
 
   const quizzes = [
     {
-      title: "Quiz 1",
-      description: "First quiz",
-      categoryId: "67b401fc1d7876c47bdb0379", //Replace with your actual Category ID
-    },
-    {
-      title: "Quiz 2",
-      description: "Second quiz",
-      categoryId: "67b401fc1d7876c47bdb0379",
-    },
-    {
-      title: "Quiz 3",
-      description: "Third quiz",
-      categoryId: "67b401fc1d7876c47bdb0379",
+      title: "Dental Quiz",
+      description: "5 fun dental questions to test your knowledge",
+      categoryId: "67b401fc1d7876c47bdb037a", //Replace with your actual Category ID
     },
   ];
 
