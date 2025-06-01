@@ -284,7 +284,16 @@ export default function QuizScreenPage() {
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
-      if (responses.length > 0 && currentIndex < shuffledQuestionsMemo.length - 1) {
+      if (responses.length > 0) {
+        // Save progress
+        sessionStorage.setItem('quizProgress', JSON.stringify({
+          quizId: selectedQuiz.id,
+          currentIndex,
+          responses,
+          timestamp: Date.now()
+        }));
+
+        // Show confirmation dialog
         e.preventDefault();
         e.returnValue = '';
       }
@@ -292,7 +301,7 @@ export default function QuizScreenPage() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [responses, currentIndex, shuffledQuestionsMemo]);
+  }, [responses, currentIndex, selectedQuiz]);
 
   // Handle timer expiration
   const handleTimeUp = useCallback(async () => {
@@ -326,28 +335,6 @@ export default function QuizScreenPage() {
       }
     };
   }, [responses]);
-
-  const handleQuizInterruption = () => {
-    return new Promise((resolve) => {
-      // Save current progress
-      if (responses.length > 0) {
-        sessionStorage.setItem('quizProgress', JSON.stringify({
-          quizId: selectedQuiz.id,
-          currentIndex,
-          responses,
-          timestamp: Date.now()
-        }));
-      }
-      resolve();
-    });
-  };
-
-  useEffect(() => {
-    router.events.on('routeChangeStart', handleQuizInterruption);
-    return () => {
-      router.events.off('routeChangeStart', handleQuizInterruption);
-    };
-  }, [router, currentIndex, responses]);
 
   if (isLoading) return <Loader />;
 
