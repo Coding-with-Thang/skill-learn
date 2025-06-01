@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
+import Image from "next/image"
 
 // Move button styles to a constant
 const getButtonStyles = (isActive) => `
@@ -19,6 +20,32 @@ const getButtonStyles = (isActive) => `
   }
 `;
 
+const QuestionMedia = ({ question }) => {
+  const [mediaError, setMediaError] = useState(false);
+
+  if (!question.imageUrl || mediaError) {
+    return null;
+  }
+
+  return (
+    <div className="relative w-full h-48 mb-4">
+      <Image
+        src={question.imageUrl}
+        alt="Question illustration"
+        layout="fill"
+        objectFit="contain"
+        onError={() => setMediaError(true)}
+      />
+    </div>
+  );
+};
+
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
 export default function QuizScreenPage() {
   const router = useRouter();
   const { selectedQuiz, setQuizResponses } = useQuizStartStore();
@@ -27,26 +54,26 @@ export default function QuizScreenPage() {
   const [responses, setResponses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(
+    selectedQuiz?.timeLimit ? selectedQuiz.timeLimit * 60 : 0
+  );
 
-  // Initialize from saved progress only if it's the same quiz
+  // Clear any existing progress when component mounts with a new quiz
   useEffect(() => {
-    const savedProgress = sessionStorage.getItem('quizProgress');
-    if (savedProgress) {
-      const { quizId, currentIndex: savedIndex, responses: savedResponses } = JSON.parse(savedProgress);
-      // Only restore progress if it's for the same quiz
-      if (quizId === selectedQuiz?.id) {
-        setCurrentIndex(savedIndex);
-        setResponses(savedResponses);
-      } else {
-        // Clear saved progress if it's a different quiz
-        sessionStorage.removeItem('quizProgress');
-      }
+    if (selectedQuiz) {
+      sessionStorage.removeItem('quizProgress');
+      setCurrentIndex(0);
+      setResponses([]);
+      setActiveQuestion(null);
+      setIsLoading(false);
+    } else {
+      router.push("/training");
     }
-  }, [selectedQuiz]);
+  }, [selectedQuiz, router]);
 
-  // Save progress when it changes, including the quiz ID
+  // Save progress during the quiz
   useEffect(() => {
-    if (!isLoading && selectedQuiz) {
+    if (!isLoading && selectedQuiz && currentIndex < shuffledQuestionsMemo.length - 1) {
       sessionStorage.setItem('quizProgress', JSON.stringify({
         quizId: selectedQuiz.id,
         currentIndex,
@@ -54,22 +81,6 @@ export default function QuizScreenPage() {
       }));
     }
   }, [currentIndex, responses, isLoading, selectedQuiz]);
-
-  // Clear progress when starting a new quiz
-  useEffect(() => {
-    if (selectedQuiz && currentIndex === 0 && responses.length === 0) {
-      sessionStorage.removeItem('quizProgress');
-    }
-  }, [selectedQuiz]);
-
-  // Initial loading check
-  useEffect(() => {
-    if (!selectedQuiz) {
-      router.push("/training");
-    } else {
-      setIsLoading(false);
-    }
-  }, [selectedQuiz, router]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -151,22 +162,104 @@ export default function QuizScreenPage() {
     try {
       setIsLoading(true);
       setQuizResponses(responses);
-      const score = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
 
-      await Promise.all([
-        api.post("/user/quiz/finish", {
-          categoryId: selectedQuiz.categoryId,
-          quizId: selectedQuiz.id,
-          score,
-          responses
-        }),
-        api.post("/user/points/add", {
-          amount: score * 10,
-          reason: "quiz_completion"
-        })
-      ]);
+      // Calculate score and percentage
+      const totalQuestions = shuffledQuestionsMemo.length;
+      const correctAnswers = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
+      const scorePercentage = (correctAnswers / totalQuestions) * 100;
+      const isPerfectScore = scorePercentage === 100;
 
-      sessionStorage.removeItem('quizProgress'); // Clear progress
+      // Determine if quiz has a passing score requirement
+      const hasPassingRequirement = selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null;
+      const passingScore = selectedQuiz.passingScore || 0;
+      const hasPassed = hasPassingRequirement ? scorePercentage >= passingScore : true;
+
+      // Calculate points
+      let pointsEarned = 0;
+      let pointsBreakdown = {
+        correct: 0,
+        bonus: 0
+      };
+
+      if (hasPassingRequirement) {
+        // With passing score requirement
+        if (hasPassed) {
+          pointsBreakdown.correct = correctAnswers * 10; // 10 points per correct answer
+          if (isPerfectScore) {
+            pointsBreakdown.bonus = pointsBreakdown.correct; // Double points for perfect score
+          }
+        }
+      } else {
+        // No passing score - half points per correct answer
+        pointsBreakdown.correct = correctAnswers * 5; // 5 points per correct answer
+        if (isPerfectScore) {
+          pointsBreakdown.bonus = pointsBreakdown.correct; // Double points for perfect score
+        }
+      }
+
+      // Calculate total points
+      pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
+
+      const timeSpent = selectedQuiz?.timeLimit
+        ? (selectedQuiz.timeLimit * 60) - timeRemaining
+        : 0;
+
+      // Save quiz results
+      await api.post("/user/quiz/finish", {
+        categoryId: selectedQuiz.categoryId,
+        quizId: selectedQuiz.id,
+        score: scorePercentage,
+        responses,
+        timeSpent,
+        hasPassed,
+        isPerfectScore,
+        pointsBreakdown
+      });
+
+      // Award points
+      if (pointsEarned > 0) {
+        await api.post("/user/points/add", {
+          amount: pointsEarned,
+          reason: isPerfectScore ? "perfect_quiz_completion" : "quiz_completion",
+          breakdown: pointsBreakdown
+        });
+      }
+
+      // Show appropriate success message
+      let message = '';
+      if (hasPassingRequirement) {
+        if (hasPassed) {
+          message = isPerfectScore
+            ? `Perfect score! You earned ${pointsEarned} points (2x bonus)! 🎉`
+            : `Quiz passed! You earned ${pointsBreakdown.correct} points! 🎉`;
+        } else {
+          message = `Quiz not passed. Required score: ${passingScore}%. Your score: ${scorePercentage.toFixed(1)}%. No points earned.`;
+        }
+      } else {
+        if (isPerfectScore) {
+          message = `Perfect score! You earned ${pointsEarned} points (2x bonus)! 🎉`;
+        } else {
+          message = `Quiz completed! You earned ${pointsBreakdown.correct} points!`;
+        }
+      }
+
+      toast.success(message);
+
+      // Store results for the results page
+      sessionStorage.setItem('lastQuizResults', JSON.stringify({
+        score: scorePercentage,
+        pointsEarned,
+        pointsBreakdown,
+        hasPassed,
+        isPerfectScore,
+        hasPassingRequirement,
+        passingScore,
+        totalQuestions,
+        correctAnswers,
+        timeSpent
+      }));
+
+      sessionStorage.removeItem('quizProgress');
       router.push("/quiz/results");
     } catch (error) {
       console.error("Error finishing quiz:", error);
@@ -189,6 +282,73 @@ export default function QuizScreenPage() {
     }
   };
 
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (responses.length > 0 && currentIndex < shuffledQuestionsMemo.length - 1) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [responses, currentIndex, shuffledQuestionsMemo]);
+
+  // Handle timer expiration
+  const handleTimeUp = useCallback(async () => {
+    toast.error("Time's up! Submitting your quiz.");
+    await handleFinishQuiz();
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (selectedQuiz?.timeLimit && timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [selectedQuiz, timeRemaining, handleTimeUp]);
+
+  useEffect(() => {
+    return () => {
+      // Clean up when component unmounts
+      if (!responses.length) {
+        sessionStorage.removeItem('quizProgress');
+      }
+    };
+  }, [responses]);
+
+  const handleQuizInterruption = () => {
+    return new Promise((resolve) => {
+      // Save current progress
+      if (responses.length > 0) {
+        sessionStorage.setItem('quizProgress', JSON.stringify({
+          quizId: selectedQuiz.id,
+          currentIndex,
+          responses,
+          timestamp: Date.now()
+        }));
+      }
+      resolve();
+    });
+  };
+
+  useEffect(() => {
+    router.events.on('routeChangeStart', handleQuizInterruption);
+    return () => {
+      router.events.off('routeChangeStart', handleQuizInterruption);
+    };
+  }, [router, currentIndex, responses]);
+
   if (isLoading) return <Loader />;
 
   return (
@@ -200,14 +360,28 @@ export default function QuizScreenPage() {
       {shuffledQuestionsMemo[currentIndex] ? (
         <div className="space-y-6">
           <div className="flex flex-col gap-6">
-            <p
-              className="py-3 px-6 border-2 text-xl font-bold self-end rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-              role="status"
-              aria-live="polite"
-            >
-              Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
-              <span className="text-xl">{shuffledQuestionsMemo.length}</span>
-            </p>
+            <div className="flex justify-between items-center">
+              <p
+                className="py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
+                role="status"
+                aria-live="polite"
+              >
+                Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
+                <span className="text-xl">{shuffledQuestionsMemo.length}</span>
+              </p>
+
+              {/* Timer Display */}
+              {selectedQuiz?.timeLimit && (
+                <div
+                  className={`py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]
+                    ${timeRemaining <= 60 ? 'text-red-500 animate-pulse' : ''}`}
+                  role="timer"
+                  aria-label="Time remaining"
+                >
+                  Time: {formatTime(timeRemaining)}
+                </div>
+              )}
+            </div>
             <h1
               className="mt-4 px-10 text-5xl font-bold text-center"
               role="heading"
@@ -235,6 +409,22 @@ export default function QuizScreenPage() {
               </button>
             ))}
           </div>
+
+          {/* Points Info */}
+          <div className="text-center text-sm text-gray-600">
+            {selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null ? (
+              <>
+                <p>Must achieve {selectedQuiz.passingScore}% to earn points</p>
+                <p>Earn 10 points per correct answer when passing score is achieved</p>
+                <p>Perfect score doubles your points! 🌟</p>
+              </>
+            ) : (
+              <>
+                <p>Earn 5 points per correct answer</p>
+                <p>Perfect score doubles your points! 🌟</p>
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <p className="text-lg" role="alert">No questions found for this quiz</p>
@@ -248,11 +438,11 @@ export default function QuizScreenPage() {
           disabled={isTransitioning || !activeQuestion}
         >
           {currentIndex < shuffledQuestionsMemo.length - 1 ? (
-            <span className="flex items-center gap-2 bg-green-600">
+            <span className="flex items-center gap-2">
               <ArrowBigRightDash /> Next
             </span>
           ) : (
-            <span className="flex items-center gap-2 bg-white text-black">
+            <span className="flex items-center gap-2 text-black">
               <CircleCheckBig /> Finish
             </span>
           )}
