@@ -23,6 +23,14 @@ export default function TrainingPage() {
     fetchCategories();
   }, [fetchCategories]);
 
+  if (error) {
+    return (
+      <section className="flex flex-col w-[90%] px-20">
+        <div className="text-red-500">Error loading categories: {error}</div>
+      </section>
+    );
+  }
+
   return (
     <section className="flex flex-col w-[90%] px-20">
       <BreadCrumbCom endtrail="My Training" />
