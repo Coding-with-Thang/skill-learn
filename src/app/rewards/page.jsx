@@ -4,19 +4,34 @@ import { useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { Circle, Ellipsis } from "lucide-react";
+import { Circle, Ellipsis, Gift } from "lucide-react";
 import { useRewardStore } from "@/app/store/rewardStore";
+import { usePointsStore } from "@/app/store/pointsStore";
 import Gifts from "../../../public/gifts.png"
 import Chest from "../../../public/chest.png"
 import ChickenDance from "../../../public/chicken-dance.jpg"
 import Loader from "../components/loader";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 export default function RewardsPage() {
 
-  const { fetchRewards, rewards, isLoading } = useRewardStore();
+  const { fetchRewards, fetchRewardHistory, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore();
+  const { points, fetchPoints } = usePointsStore();
 
   useEffect(() => {
     fetchRewards();
-  }, [])
+    fetchPoints();
+    fetchRewardHistory();
+  }, [fetchRewards, fetchPoints, fetchRewardHistory]);
 
   const prizes = [
     {
@@ -26,6 +41,19 @@ export default function RewardsPage() {
       prizeImg: ChickenDance
     }
   ]
+
+  const handleRedeem = async (reward) => {
+    if (points < reward.cost) {
+      toast.error("You don't have enough points for this reward");
+      return;
+    }
+
+    const success = await redeemReward(reward.id);
+    if (success) {
+      // Refresh rewards list
+      fetchRewards();
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-items-center">
@@ -133,7 +161,13 @@ export default function RewardsPage() {
                   <p>{prize.description}</p>
                 </CardContent>
                 <CardFooter>
-                  <Button className="font-bold">Redeem</Button>
+                  <Button
+                    className="font-bold"
+                    onClick={() => handleRedeem(prize)}
+                    disabled={points < prize.cost || isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Redeem"}
+                  </Button>
                 </CardFooter>
               </Card>
             ))}
@@ -141,6 +175,105 @@ export default function RewardsPage() {
           :
           <Loader />
         }
+      </div>
+
+      <div className="w-full bg-white border border-gray-200 shadow-xs rounded-lg px-8 mb-20">
+        <h1 className="flex text-5xl my-7 justify-center">Redemption History</h1>
+        {!isLoading ? (
+          rewardHistory.length > 0 ? (
+            <div className="rounded-xl border bg-card">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-gray-200 bg-gray-50/50">
+                    <TableHead className="py-4 text-base font-semibold">Prize</TableHead>
+                    <TableHead className="text-base font-semibold">Points</TableHead>
+                    <TableHead className="text-base font-semibold">Status</TableHead>
+                    <TableHead className="text-base font-semibold">Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rewardHistory.map((redemption) => (
+                    <TableRow
+                      key={redemption.id}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-4">
+                          {redemption.reward.imageUrl && (
+                            <div className="relative h-16 w-16 overflow-hidden rounded-lg border-2 border-gray-100 shadow-sm">
+                              <Image
+                                src={redemption.reward.imageUrl}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                alt={redemption.reward.prize}
+                                className="transition-transform hover:scale-110"
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-1">
+                            <p className="font-semibold text-lg text-gray-900">
+                              {redemption.reward.prize}
+                            </p>
+                            <p className="text-sm text-gray-500 max-w-[30ch]">
+                              {redemption.reward.description}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <span className="text-yellow-500 font-bold text-lg">⭐</span>
+                          <span className="font-semibold text-lg">
+                            {redemption.pointsSpent.toLocaleString()}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`
+                          px-4 py-2 rounded-full text-sm font-medium
+                          ${redemption.redeemed
+                            ? "bg-green-100 text-green-800 border border-green-200"
+                            : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                          }
+                        `}>
+                          {redemption.redeemed ? "Fulfilled" : "Pending"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {format(new Date(redemption.createdAt), "MMM d, yyyy")}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {format(new Date(redemption.createdAt), "h:mm a")}
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-16 bg-gray-50/50 rounded-xl border border-dashed border-gray-200 mb-10">
+              <div className="flex flex-col items-center gap-3">
+                <div className="rounded-full bg-gray-100 p-3">
+                  <Gift className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  No Rewards Redeemed Yet
+                </h3>
+                <p className="text-gray-500 max-w-[40ch] text-center">
+                  Complete quizzes and earn points to redeem exciting rewards!
+                </p>
+              </div>
+            </div>
+          )
+        ) : (
+          <div className="flex justify-center py-20">
+            <Loader />
+          </div>
+        )}
       </div>
     </div >
   );

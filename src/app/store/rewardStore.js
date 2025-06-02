@@ -1,21 +1,22 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+import { toast } from "sonner";
+
 export const useRewardStore = create((set, get) => ({
   rewards: [],
+  rewardHistory: [],
   isLoading: false,
 
   fetchRewards: async () => {
     try {
       set({ isLoading: true });
-
       const response = await api.get("/user/rewards");
-
       set({
         rewards: response.data.rewards,
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching points:", error);
+      console.error("Error fetching rewards:", error);
       set({ isLoading: false });
     }
   },
@@ -43,31 +44,38 @@ export const useRewardStore = create((set, get) => ({
     }
   },
 
-  redeemReward: async (amount, reason) => {
+  redeemReward: async (rewardId) => {
     try {
-      const { points } = get();
-
-      // Check if user has enough points
-      if (points < amount) {
-        return false;
-      }
-
       set({ isLoading: true });
+      const response = await api.post("/user/rewards/redeem", { rewardId });
 
-      // Make API call to spend points using axios
-      const response = await api.post("/user/points/spend", { amount, reason });
+      toast.success(response.data.message);
 
-      // Update local state
-      set({
-        points: response.data.points,
-        isLoading: false,
-      });
+      // Update points in the points store
+      const pointsStore = usePointsStore.getState();
+      pointsStore.fetchPoints(); // Refresh points after redemption
 
       return true;
     } catch (error) {
-      console.error("Error spending points:", error);
-      set({ isLoading: false });
+      console.error("Error redeeming reward:", error);
+      toast.error(error.response?.data?.error || "Failed to redeem reward");
       return false;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  fetchRewardHistory: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await api.get("/user/rewards/history");
+      set({
+        rewardHistory: response.data.history,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error("Error fetching reward history:", error);
+      set({ isLoading: false });
     }
   },
 }));
