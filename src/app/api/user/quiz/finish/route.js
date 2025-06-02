@@ -12,12 +12,17 @@ export async function POST(req) {
     const { categoryId, quizId, score, responses } = await req.json();
 
     // Validate the fields
-    if (!categoryId || !quizId || typeof score !== "number" || !Array.isArray(responses)) {
+    if (
+      !categoryId ||
+      !quizId ||
+      typeof score !== "number" ||
+      !Array.isArray(responses)
+    ) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
+      where: { clerkId: userId },
     });
 
     if (!user) {
@@ -39,12 +44,18 @@ export async function POST(req) {
       const totalScore = (stat.averageScore || 0) * stat.completed + score;
       const newAverageScore = totalScore / (stat.completed + 1);
 
+      // Update best score if current score is higher
+      const newBestScore = stat.bestScore
+        ? Math.max(stat.bestScore, score)
+        : score;
+
       // Update the categoryStat entry
       stat = await prisma.categoryStat.update({
         where: { id: stat.id },
         data: {
           completed: stat.completed + 1,
           averageScore: newAverageScore,
+          bestScore: newBestScore,
           lastAttempt: new Date(),
         },
       });
@@ -57,6 +68,7 @@ export async function POST(req) {
           attempts: 1,
           completed: 1,
           averageScore: score,
+          bestScore: score,
           lastAttempt: new Date(),
         },
       });
