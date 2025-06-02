@@ -36,8 +36,8 @@ export default function RewardsPage() {
   const prizes = [
     {
       prizeTitle: "Chicken Dance",
-      prizeDesc: "Sara does the chicken dance x3!",
-      prizePts: 50000,
+      prizeDesc: "{WIP - Please don't redeem} Sara does the chicken dance x3!",
+      prizePts: 5000,
       prizeImg: ChickenDance
     }
   ]

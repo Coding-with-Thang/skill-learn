@@ -419,7 +419,7 @@ export default function QuizScreenPage() {
 
       <div className="w-full py-[4rem] border-t-2 flex items-center justify-center">
         <Button
-          className="px-10 py-6 font-bold text-xl rounded-xl"
+          className="px-10 py-6 font-bold text-xl rounded-xl bg-teal-600"
           variant="destructive"
           onClick={handleQuizNavigation}
           disabled={isTransitioning || !activeQuestion}

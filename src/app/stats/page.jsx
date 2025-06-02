@@ -1,5 +1,4 @@
 import { auth } from "@clerk/nextjs/server"
-import { error } from "console"
 import prisma from "@/utils/connect";
 import UserStats from "../components/User/UserStats";
 

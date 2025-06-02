@@ -72,7 +72,7 @@ export default function UserStats({ userStats }) {
         <div className="py-4 px-4 flex flex-col gap-3 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
           <div className="flex gap-2 text-2xl text-blue-400">
             <PencilLine />
-            <p className="text-gray-900 text-lg font-semibold">Recent Attempt</p>
+            <p className="text-gray-900 text-lg font-semibold">Most Recent Attempt</p>
           </div>
           <p className="font-bold text-2xl">
             {formatTime(recentAttemptDate)}
@@ -81,14 +81,14 @@ export default function UserStats({ userStats }) {
         <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
           <div className="text-2xl text-blue-400"><Crosshair /></div>
           <div>
-            <p className="font-bold">Total Attempts</p>
+            <p className="font-bold">Total Quizzes Attempted</p>
             <p className="mt-2 font-bold text-3xl">{totalAttempts}</p>
           </div>
         </div>
         <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
           <div className="text-2xl text-blue-400"><ListChecks /></div>
           <div>
-            <p className="font-bold">Total Completed</p>
+            <p className="font-bold">Total Quizzes Completed</p>
             <p className="mt-2 font-bold text-3xl">{totalCompleted}</p>
           </div>
         </div>

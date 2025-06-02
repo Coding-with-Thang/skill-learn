@@ -49,7 +49,7 @@ export default function UserBadge() {
         className="rounded-full border-2 shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
       />
       <h2 className="text-4xl my-6">Welcome,{user?.firstName} {" "} {user?.lastName}!</h2>
-      <p className="text-xl">You can earn up to 100 reward points today.</p>
+      {/* <p className="text-xl">You can earn up to 100 reward points today.</p> */}
       {!isLoading ? (
         <>
           <div className="mt-10 px-10 bg-[rgba(0,0,0,0.25)] grid grid-cols-3 gap-6 rounded-md">
@@ -67,13 +67,13 @@ export default function UserBadge() {
             </div>
           </div>
 
-          <Button
+          {/* <Button
             onClick={handleClick}
             className="text-xl font-semibold mt-10 rounded-full bg-white/20 px-8 py-3 text-white"
             disabled={cooldown > 0 || isLoading}
           >
             {cooldown > 0 ? `Wait ${cooldown}s` : "Click here to earn 10 Points (Test)"}
-          </Button>
+          </Button> */}
         </>
       ) : (
         <Card className="w-full max-w-md mx-auto">
