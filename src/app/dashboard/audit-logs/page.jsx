@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Calendar, Filter, Download } from "lucide-react"
+import { Download } from "lucide-react"
 import { useAuditLogStore } from "@/app/store/auditLogStore"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select } from "@/components/ui/select"
 import {
   Card,
