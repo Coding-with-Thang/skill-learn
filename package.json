@@ -53,9 +53,8 @@
   },
   "devDependencies": {
     "@types/react": "19.0.10",
-    "babel-eslint": "^10.1.0",
-    "eslint": "8.56.0",
-    "eslint-config-next": "14.1.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.1.0",
     "prisma": "^6.6.0-dev.17"
   }
 }
