@@ -12,20 +12,29 @@ import Testimonials from './components/User/Testimonials';
 import UserBadge from './components/User/UserBadge';
 export default function HomePage() {
   return (
-    <div className="flex flex-col items-center justify-items-center min-h-[80dvh]">
+    <main className="container mx-auto px-4 py-8 min-h-[80dvh]">
       <SignedIn>
-        <UserBadge />
-        <DailyActivities />
-        <MoreTraining />
-        <PerformanceLanding />
-        <LeaderboardLanding />
+        <section className="mb-8">
+          <UserBadge />
+        </section>
+        <section className="grid gap-8">
+          <DailyActivities />
+          <MoreTraining />
+          <PerformanceLanding />
+          <LeaderboardLanding />
+        </section>
       </SignedIn>
       <SignedOut>
-        <HeroBanner />
-        <Features />
-        <HowItWorks />
-        {/* <Testimonials /> */}
+        <section className="mb-8">
+          <HeroBanner />
+        </section>
+        <section className="grid gap-8">
+          <Features />
+          <HowItWorks />
+          <Testimonials />
+        </section>
       </SignedOut>
-    </div>
+      {/* TODO: Add loading states, dark mode toggle, and improve accessibility */}
+    </main>
   );
 }
