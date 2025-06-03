@@ -1,16 +1,63 @@
 export default function DashboardPage() {
   return (
-    <>
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-          <div className="aspect-video rounded-xl bg-red-100">
-            <h3 className="mt-3 px-3 text-lg">Test</h3>
-          </div>
-          <div className="aspect-video rounded-xl bg-red-100" />
-          <div className="aspect-video rounded-xl bg-red-100" />
-        </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-red-100 md:min-h-min" />
+    <div className="p-6 space-y-6">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Users"
+          value={totalUsers}
+          icon={<Users />}
+          trend={+12}
+        />
+        <StatCard
+          title="Active Rewards"
+          value={activeRewards}
+          icon={<Gift />}
+          trend={+3}
+        />
+        <StatCard
+          title="Points Awarded"
+          value={totalPointsAwarded}
+          icon={<Star />}
+          trend={+2500}
+        />
+        <StatCard
+          title="Rewards Claimed"
+          value={rewardsClaimed}
+          icon={<Check />}
+          trend={+8}
+        />
       </div>
-    </>
+
+      {/* Activity Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>User Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart data={userActivityData} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Points Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PieChart data={pointsDistributionData} />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ActivityLog items={recentActivity} />
+        </CardContent>
+      </Card>
+    </div>
   );
 }

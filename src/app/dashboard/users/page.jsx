@@ -6,9 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from "@/components/ui/label"
 import { generateRandomPassword } from '../../../utils/generatePassword'
 import useUsersStore from "../../store/usersStore";
+import { Card, CardContent } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
+import { Table } from "@/components/ui/table";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import UserDetails from "@/components/UserDetails";
 
-export default function UsersSettingPage() {
-
+export default function UsersPage() {
   const { users, loading, error, fetchUsers } = useUsersStore();
 
   useEffect(() => {
@@ -32,6 +36,7 @@ export default function UsersSettingPage() {
     'jane.smith',
   ])
   const [editingUser, setEditingUser] = useState(null)
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const managerList = ["Steph Harrison", "Jack Bowman", "Laura Peleton", "Bob O Neil"]
   const roles = ["AGENT", "MANAGER", "OPERATIONS"]
@@ -117,169 +122,82 @@ export default function UsersSettingPage() {
   }
 
   return (
-    <div className="bg-gray-100 p-8 min-w-full">
-      <h1 className="text-3xl font-semibold mb-6">Manage Users</h1>
-      <Button
-        onClick={() => setShowForm(true)}
-        className="bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700">
-        + Add User
-      </Button>
-      {showForm && (
-        <>
-          {/* User Form */}
-          <form onSubmit={handleSubmit} className="bg-white mt-5 p-6 shadow-md rounded-lg max-w-lg mx-auto space-y-6 transition duration-100 ease-in-out relative">
-            <Button
-              className="flex absolute right-4 top-3 rounded-lg font-bold p-3 hover:bg-blue-900 hover:text-white transition duration-300 ease-in-out"
-              onClick={() => setShowForm(false)}
-            >
-              X
-            </Button>
-            <div>
-              <Label htmlFor="firstName" className="block text-sm font-medium text-gray-600">First Name</Label>
-              <Input
-                id="firstName"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter first name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="lastName" className="block text-sm font-medium text-gray-600">Last Name</Label>
-              <Input
-                id="lastName"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter last name"
-              />
-            </div>
-            {/* Manager Dropdown */}
-            <div>
-              <Label htmlFor="manager" className="block text-sm font-medium text-gray-600">Manager</Label>
-              <select
-                id="manager"
-                value={manager}
-                onChange={(e) => setManager(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a Manager</option>
-                {managerList.map((manager, index) => (
-                  <option key={index} value={manager}>
-                    {manager}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <Label htmlFor="role" className="block text-sm font-medium text-gray-600">Role</Label>
-              <select
-                id="role"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select Role</option>
-                {roles.map((role, index) => (
-                  <option key={index} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className=''>
-              <Label htmlFor="username" className="block text-sm font-medium text-gray-600">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                readOnly
-                disabled
-                className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-600">Generated Password</Label>
-              <div className="flex items-center">
-                <Input
-                  id="password"
-                  type="text"
-                  value={password}
-                  readOnly
-                  disabled
-                  className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                />
-                <Button
-                  type="button"
-                  onClick={handleGeneratePassword}
-                  className="ml-4 bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700"
-                >
-                  Generate Password
-                </Button>
-              </div>
-            </div>
-
-            {errorUsers && <p className="text-red-500 text-sm">{errorUsers}</p>}
-
-            <div className="flex justify-center">
-              <Button type="submit" className="bg-blue-600 text-white py-3 px-8 rounded-md hover:bg-blue-700">
-                {editingUser ? 'Update User' : 'Add User'}
-              </Button>
-            </div>
-          </form>
-        </>
-      )
-      }
-
-
-      <div className="mt-10">
-        <h2 className="text-2xl font-semibold mb-4">User List</h2>
-        {!loading ?
-          <table className="min-w-full table-auto bg-white shadow-md rounded-md overflow-hidden">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="p-4 text-left">Username</th>
-                <th className="p-4 text-left">First Name</th>
-                <th className="p-4 text-left">Last Name</th>
-                <th className="p-4 text-left">Manager</th>
-                <th className="p-4 text-left">Role</th>
-                <th className="p-4 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users && users.map && users.map((user) => (
-                <tr key={user?.id} className="border-b">
-                  <td className="p-4">{user?.username}</td>
-                  <td className="p-4">{user?.firstName}</td>
-                  <td className="p-4">{user?.lastName}</td>
-                  <td className="p-4">{user?.manager ? user?.manager : 'No manager'}</td>
-                  <td className="p-4">{user?.role ? user?.role : ''}</td>
-                  <td className="p-4 space-x-4">
-                    <Button
-                      onClick={() =>
-                        handleEdit(user)
-                      }
-                      className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(user.id)}
-                      className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600"
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          :
-          <p>Loading...</p>
-        }
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">User Management</h1>
+        <div className="flex gap-3">
+          <Button>Export Users</Button>
+          <Button>Bulk Actions</Button>
+        </div>
       </div>
-    </div >
+
+      {/* Advanced Filters */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input placeholder="Search users..." />
+            <Select>
+              <option>Filter by Role</option>
+              <option>Admin</option>
+              <option>User</option>
+            </Select>
+            <Select>
+              <option>Sort by</option>
+              <option>Points (High to Low)</option>
+              <option>Recent Activity</option>
+              <option>Join Date</option>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* User Table */}
+      <Table>
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="p-4 text-left">Username</th>
+            <th className="p-4 text-left">First Name</th>
+            <th className="p-4 text-left">Last Name</th>
+            <th className="p-4 text-left">Manager</th>
+            <th className="p-4 text-left">Role</th>
+            <th className="p-4 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users && users.map && users.map((user) => (
+            <tr key={user?.id} className="border-b">
+              <td className="p-4">{user?.username}</td>
+              <td className="p-4">{user?.firstName}</td>
+              <td className="p-4">{user?.lastName}</td>
+              <td className="p-4">{user?.manager ? user?.manager : 'No manager'}</td>
+              <td className="p-4">{user?.role ? user?.role : ''}</td>
+              <td className="p-4 space-x-4">
+                <Button
+                  onClick={() =>
+                    handleEdit(user)
+                  }
+                  className="bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600"
+                >
+                  Edit
+                </Button>
+                <Button
+                  onClick={() => handleDelete(user.id)}
+                  className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600"
+                >
+                  Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+
+      {/* User Details Modal */}
+      <Dialog open={selectedUser !== null} onOpenChange={() => setSelectedUser(null)}>
+        <DialogContent>
+          <UserDetails user={selectedUser} />
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

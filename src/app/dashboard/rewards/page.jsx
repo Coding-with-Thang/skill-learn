@@ -21,6 +21,19 @@ import { Star, StarOff, ExternalLink, Search, Plus } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { RewardForm } from "@/app/components/Admin/rewards/RewardForm"
 import { toast } from "sonner"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select"
+import { StatCard } from "@/components/ui/stat-card"
 
 export default function RewardsAdminPage() {
   const { fetchRewards, rewards, isLoading, updateReward, deleteReward } = useRewardStore()
@@ -70,36 +83,59 @@ export default function RewardsAdminPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Rewards Management</h1>
-        <Button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-5 w-5" />
-          Add Reward
-        </Button>
+    <div className="p-6">
+      {/* Reward Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <StatCard
+          title="Total Redemptions"
+          value={totalRedemptions}
+          trend={+15}
+        />
+        <StatCard
+          title="Pending Claims"
+          value={pendingClaims}
+          trend={-2}
+        />
+        <StatCard
+          title="Popular Reward"
+          value={mostPopularReward}
+        />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-4 border-b border-gray-200">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <Input
-              placeholder="Search rewards..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+      {/* Reward Management */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Rewards Management</CardTitle>
+            <Button
+              onClick={() => setShowModal(true)}
+            >
+              Add New Reward
+            </Button>
           </div>
-        </div>
+        </CardHeader>
+        <CardContent>
+          {/* Advanced Filters */}
+          <div className="flex gap-4 mb-4">
+            <Input placeholder="Search rewards..." />
+            <Select>
+              <option>Status</option>
+              <option>Active</option>
+              <option>Disabled</option>
+            </Select>
+            <Select>
+              <option>Sort by</option>
+              <option>Most Redeemed</option>
+              <option>Cost</option>
+              <option>Recent</option>
+            </Select>
+          </div>
 
-        <div className="overflow-x-auto">
+          {/* Rewards Table */}
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Reward</TableHead>
+                <TableHead>Rewardd</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
                 <TableHead>Status</TableHead>
@@ -195,8 +231,23 @@ export default function RewardsAdminPage() {
               ))}
             </TableBody>
           </Table>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+
+      {/* Batch Operations */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Batch Operations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button>Enable Selected</Button>
+            <Button>Disable Selected</Button>
+            <Button>Delete Selected</Button>
+            <Button>Export Data</Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
