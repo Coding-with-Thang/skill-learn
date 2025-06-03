@@ -93,7 +93,7 @@ export async function POST(request) {
           userId: user.id,
           rewardId: reward.id,
           pointsSpent: reward.cost,
-          redeemed: false, // Initially false until approved/fulfilled
+          redeemed: true,
         },
       });
 
