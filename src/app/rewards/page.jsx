@@ -28,7 +28,7 @@ import Loader from "../components/loader"
 
 // Sub-components
 const PageHeader = () => (
-  <div className="flex flex-col gap-1 items-center justify-center w-full h-[300px] bg-gradient-to-br from-green-400 to-green-600 text-white relative">
+  <div className="flex flex-col gap-1 items-center justify-center w-full h-[300px] bg-gradient-to-br from-green-400 to-yellow-200 text-white relative">
     <Image
       src={Gifts}
       height={300}
@@ -53,7 +53,9 @@ const PointsBalance = ({ points }) => (
           <span className="text-4xl">⭐</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-5xl font-bold text-gray-900">{points?.toLocaleString() || 0}</span>
+          <span className="text-5xl font-bold text-gray-900">
+            {new Intl.NumberFormat('en-US').format(points || 0)}
+          </span>
           <span className="text-gray-600 text-lg">Available Points</span>
         </div>
       </div>
@@ -115,7 +117,7 @@ const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
         />
         <div className="absolute top-2 right-2 bg-black/70 text-white px-3 py-1 rounded-full">
           <span className="text-yellow-400 mr-1">⭐</span>
-          {reward.cost}
+          {new Intl.NumberFormat('en-US').format(reward.cost)}
         </div>
       </div>
     </CardHeader>
