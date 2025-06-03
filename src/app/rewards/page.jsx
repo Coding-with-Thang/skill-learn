@@ -81,7 +81,7 @@ const DailyStreak = () => (
             {[...Array(7)].map((_, i) => (
               <div key={i} className="flex items-center">
                 <Circle className="text-gray-400" />
-                {i < 6 && <Ellipsis className="text-gray-300" />}
+                {i < 4 && <Ellipsis className="text-gray-300" />}
               </div>
             ))}
           </div>
