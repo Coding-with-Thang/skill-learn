@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Star, StarOff, ExternalLink, Search, Plus } from "lucide-react"
+import { Star, StarOff } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { RewardForm } from "@/app/components/Admin/rewards/RewardForm"
 import { toast } from "sonner"
@@ -70,6 +70,11 @@ export default function RewardsAdminPage() {
       toast.error('Failed to delete reward')
     }
   }
+
+  // Add mock statistics to prevent ReferenceError
+  const totalRedemptions = 0;
+  const pendingClaims = 0;
+  const mostPopularReward = "N/A";
 
   if (isLoading) {
     return (
@@ -135,7 +140,7 @@ export default function RewardsAdminPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Rewardd</TableHead>
+                <TableHead>Reward</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
                 <TableHead>Status</TableHead>
