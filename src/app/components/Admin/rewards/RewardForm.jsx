@@ -65,13 +65,13 @@ export function RewardForm({ reward, onClose }) {
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="prize" className="text-sm font-medium text-gray-700">
-            Prize Name <span className="text-red-500">*</span>
+            Reward Name <span className="text-red-500">*</span>
           </Label>
           <Input
             id="prize"
             value={formData.prize}
             onChange={handleChange('prize')}
-            placeholder="Enter prize name"
+            placeholder="Enter reward name"
             className="transition-colors focus:border-blue-500"
             required
           />

@@ -99,7 +99,7 @@ export default function RewardsAdminPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Prize</TableHead>
+                <TableHead>Reward</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead className="text-right">Cost</TableHead>
                 <TableHead>Status</TableHead>

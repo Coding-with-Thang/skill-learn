@@ -39,7 +39,7 @@ const PageHeader = () => (
     />
     <h1 className="text-6xl font-bold mb-2 drop-shadow-lg">Get Rewards</h1>
     <h2 className="text-2xl font-bold text-green-100 uppercase tracking-wide">
-      Unlock prizes and redeem rewards from a wide variety of choices!
+      Earn points to unlock and redeem rewards from a wide variety of choices!
     </h2>
   </div>
 )
@@ -222,7 +222,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Prize</TableHead>
+            <TableHead>Reward</TableHead>
             <TableHead>Points</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>

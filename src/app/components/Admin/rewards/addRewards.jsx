@@ -47,7 +47,7 @@ export default function AddRewards({ reward, onClose }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-4 py-4">
           <div className="grid gap-4">
-            <Label htmlFor="prize">Prize Name</Label>
+            <Label htmlFor="prize">Reward Name</Label>
             <Input
               id="prize"
               value={formData.prize}
