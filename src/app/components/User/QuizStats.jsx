@@ -36,7 +36,7 @@ export default function QuizStats({ quizStats, categories }) {
         <div>
           <h2 className="text-2xl font-bold">Quiz Performance</h2>
           <p className="text-muted-foreground">
-            Track your progress across all available quizzes
+            Track your quiz progress and performance
           </p>
         </div>
 
