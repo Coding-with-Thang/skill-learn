@@ -1,6 +1,5 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { WebhookEvent } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
 import { NextResponse } from "next/server";
 
@@ -8,7 +7,9 @@ export async function POST(req) {
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
-    throw new Error('Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local');
+    throw new Error(
+      "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
+    );
   }
 
   // Get the headers
@@ -19,8 +20,8 @@ export async function POST(req) {
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
-    return new Response('Error occurred -- no svix headers', {
-      status: 400
+    return new Response("Error occurred -- no svix headers", {
+      status: 400,
     });
   }
 
@@ -38,18 +39,18 @@ export async function POST(req) {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,
       "svix-signature": svix_signature,
-    }) as WebhookEvent;
+    });
   } catch (err) {
-    console.error('Error verifying webhook:', err);
-    return new Response('Error occurred', {
-      status: 400
+    console.error("Error verifying webhook:", err);
+    return new Response("Error occurred", {
+      status: 400,
     });
   }
 
   const eventType = evt.type;
   const { id, ...attributes } = evt.data;
 
-  if (eventType === 'user.created' || eventType === 'user.updated') {
+  if (eventType === "user.created" || eventType === "user.updated") {
     try {
       await prisma.user.upsert({
         where: { clerkId: id },
@@ -62,30 +63,30 @@ export async function POST(req) {
         create: {
           clerkId: id,
           username: attributes.username || id,
-          firstName: attributes.first_name || '',
-          lastName: attributes.last_name || '',
+          firstName: attributes.first_name || "",
+          lastName: attributes.last_name || "",
           imageUrl: attributes.image_url,
           points: 0,
           lifetimePoints: 0,
         },
       });
     } catch (error) {
-      console.error('Error upserting user:', error);
-      return new Response('Error occurred', {
-        status: 500
+      console.error("Error upserting user:", error);
+      return new Response("Error occurred", {
+        status: 500,
       });
     }
   }
 
-  if (eventType === 'user.deleted') {
+  if (eventType === "user.deleted") {
     try {
       await prisma.user.delete({
         where: { clerkId: id },
       });
     } catch (error) {
-      console.error('Error deleting user:', error);
-      return new Response('Error occurred', {
-        status: 500
+      console.error("Error deleting user:", error);
+      return new Response("Error occurred", {
+        status: 500,
       });
     }
   }
