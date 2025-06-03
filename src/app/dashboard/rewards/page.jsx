@@ -38,6 +38,9 @@ export default function RewardsAdminPage() {
   const [enabled, setEnabled] = useState(true)
   const [claimUrl, setClaimUrl] = useState('')
 
+  // Add a state to track which reward is being edited
+  const [editingReward, setEditingReward] = useState(null)
+
   useEffect(() => {
     fetchRewards();
   }, [fetchRewards])
@@ -54,6 +57,30 @@ export default function RewardsAdminPage() {
       console.error("Error toggling featured status:", error);
     }
   };
+
+  // Update the form state when a reward is selected for editing
+  const handleEdit = (reward) => {
+    setEditingReward(reward)
+    setPrize(reward.prize)
+    setDescription(reward.description)
+    setImageLink(reward.imageUrl)
+    setCost(reward.cost)
+    setEnabled(reward.enabled)
+    setClaimUrl(reward.claimUrl || '')
+    setShowForm(true)
+  }
+
+  // Clear form when closing
+  const handleCloseForm = () => {
+    setShowForm(false)
+    setEditingReward(null)
+    setPrize('')
+    setDescription('')
+    setImageLink('')
+    setCost(null)
+    setEnabled(true)
+    setClaimUrl('')
+  }
 
   return (
     <div className="p-4 w-full">
@@ -74,7 +101,7 @@ export default function RewardsAdminPage() {
               <form onSubmit={handleSubmit} className="bg-white mt-5 p-6 shadow-md rounded-lg max-w-lg mx-auto space-y-6 transition duration-100 ease-in-out relative">
                 <Button
                   className="flex absolute right-4 top-3 rounded-lg font-bold p-3 hover:bg-blue-900 hover:text-white transition duration-300 ease-in-out"
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCloseForm}
                 >
                   X
                 </Button>
@@ -86,7 +113,7 @@ export default function RewardsAdminPage() {
                     value={prize}
                     onChange={(e) => setPrize(e.target.value)}
                     className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    placeholder=""
+                    placeholder={editingReward ? editingReward.prize : "Enter prize name"}
                   />
                 </div>
                 <div>
@@ -97,18 +124,18 @@ export default function RewardsAdminPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    placeholder=""
+                    placeholder={editingReward ? editingReward.description : "Enter description"}
                   />
                 </div>
                 <div>
                   <Label htmlFor="cost" className="block text-sm font-medium text-gray-600">Points Required</Label>
                   <Input
-                    id="description"
+                    id="cost"
                     type="text"
                     value={cost}
                     onChange={(e) => setCost(e.target.value)}
                     className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    placeholder="10000"
+                    placeholder={editingReward ? editingReward.cost.toString() : "10000"}
                   />
                 </div>
                 <div>
@@ -119,7 +146,7 @@ export default function RewardsAdminPage() {
                     value={imageLink}
                     onChange={(e) => setImageLink(e.target.value)}
                     className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    placeholder=""
+                    placeholder={editingReward ? editingReward.imageUrl : "Enter image URL"}
                   />
                 </div>
                 <div>
@@ -133,7 +160,7 @@ export default function RewardsAdminPage() {
                     value={claimUrl}
                     onChange={(e) => setClaimUrl(e.target.value)}
                     className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/claim"
+                    placeholder={editingReward ? editingReward.claimUrl : "https://example.com/claim"}
                   />
                   <p className="mt-1 text-xs text-gray-500">
                     Add a URL that users will be directed to after claiming this reward
@@ -236,11 +263,14 @@ export default function RewardsAdminPage() {
                     <TableCell className="flex gap-2 justify-center">
                       <Dialog>
                         <DialogTrigger>
-                          <Button className="bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">
+                          <Button
+                            className="bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800"
+                            onClick={() => handleEdit(reward)}
+                          >
                             Edit
                           </Button>
                         </DialogTrigger>
-                        <AddRewards />
+                        <AddRewards reward={editingReward} />
                       </Dialog>
                       <Button className="bg-red-800 text-white hover:bg-red-400 hover:text-gray-800">
                         Delete
