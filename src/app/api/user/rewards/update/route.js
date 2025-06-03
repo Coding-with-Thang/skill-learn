@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { logAuditEvent } from "@/utils/auditLogger";
 
 export async function PUT(request) {
   try {
@@ -40,6 +41,15 @@ export async function PUT(request) {
         return updatedReward;
       });
 
+      // Log the audit event
+      await logAuditEvent(
+        userId,
+        "update",
+        "reward",
+        id,
+        `Updated reward: ${updateData.prize} (set as featured)`
+      );
+
       return NextResponse.json({
         success: true,
         reward: result,
@@ -50,6 +60,15 @@ export async function PUT(request) {
         where: { id },
         data: updateData,
       });
+
+      // Log the audit event
+      await logAuditEvent(
+        userId,
+        "update",
+        "reward",
+        id,
+        `Updated reward: ${updateData.prize}`
+      );
 
       return NextResponse.json({
         success: true,
