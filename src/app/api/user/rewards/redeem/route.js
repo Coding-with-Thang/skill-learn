@@ -19,7 +19,14 @@ export async function POST(request) {
       }),
       prisma.reward.findUnique({
         where: { id: rewardId },
-        select: { id: true, prize: true, cost: true, enabled: true },
+        select: {
+          id: true,
+          prize: true,
+          cost: true,
+          enabled: true,
+          allowMultiple: true,
+          maxRedemptions: true,
+        },
       }),
     ]);
 
@@ -41,6 +48,41 @@ export async function POST(request) {
         { error: "Insufficient points" },
         { status: 400 }
       );
+    }
+
+    // Check redemption limits
+    if (!reward.allowMultiple) {
+      // Check if user has already redeemed this reward
+      const existingRedemption = await prisma.rewardLog.findFirst({
+        where: {
+          userId: user.id,
+          rewardId: reward.id,
+        },
+      });
+
+      if (existingRedemption) {
+        return NextResponse.json(
+          { error: "You have already redeemed this reward" },
+          { status: 400 }
+        );
+      }
+    } else if (reward.maxRedemptions !== null) {
+      // Check if user has reached the maximum redemptions
+      const redemptionCount = await prisma.rewardLog.count({
+        where: {
+          userId: user.id,
+          rewardId: reward.id,
+        },
+      });
+
+      if (redemptionCount >= reward.maxRedemptions) {
+        return NextResponse.json(
+          {
+            error: `You have reached the maximum redemptions (${reward.maxRedemptions}) for this reward`,
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Create redemption in a transaction

@@ -162,16 +162,19 @@ model PointLog {
 }
 
 model Reward {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  prize     String
-  description String?
-  cost      Int
-  imageUrl  String?
-  featured  Boolean @default(false)
-  enabled   Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  rewardLogs RewardLog[]
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  prize         String
+  description   String?
+  cost          Int
+  imageUrl      String?
+  featured      Boolean   @default(false)
+  enabled       Boolean   @default(true)
+  allowMultiple Boolean   @default(false)
+  maxRedemptions Int      @default(1)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  rewardLogs    RewardLog[]
+  claimUrl      String?   // Optional URL for digital rewards
 
   @@index([enabled])
   @@index([featured])
@@ -189,6 +192,9 @@ model RewardLog {
   notes String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  claimed Boolean @default(false)
+  claimUrl String?
+  claimedAt DateTime?
 
   // REWARD TRACKING INDEXES
   @@index([userId])                  // User's redemption history

@@ -15,6 +15,8 @@ async function seedRewards() {
       cost: 50,
       imageUrl: "../../../public/play.jpg",
       featured: false,
+      allowMultiple: true,
+      maxRedemptions: null,
     },
     {
       prize: "15-minute Break",
@@ -23,6 +25,8 @@ async function seedRewards() {
       cost: 150,
       imageUrl: "../../../public/15break.jpg",
       featured: false,
+      allowMultiple: true,
+      maxRedemptions: 1,
     },
     {
       prize: "Free Lunch",
@@ -30,6 +34,8 @@ async function seedRewards() {
       cost: 500,
       imageUrl: "../../../public/lunch.jpg",
       featured: false,
+      allowMultiple: false,
+      maxRedemptions: 1,
     },
     {
       prize: "Flying Pie",
@@ -37,6 +43,8 @@ async function seedRewards() {
       cost: 10000,
       imageUrl: "../../../public/flying-pie.jpg",
       featured: false,
+      allowMultiple: false,
+      maxRedemptions: 1,
     },
     {
       prize: "Chicken Dance",
@@ -44,6 +52,8 @@ async function seedRewards() {
       cost: 50000,
       imageUrl: "../../../public/chicken-dance.jpg",
       featured: true,
+      allowMultiple: false,
+      maxRedemptions: 1,
     },
   ];
 

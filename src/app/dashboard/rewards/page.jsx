@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Star, StarOff } from "lucide-react";
+import { Star, StarOff, ExternalLink } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ export default function RewardsAdminPage() {
   const [imageLink, setImageLink] = useState('')
   const [cost, setCost] = useState(null)
   const [enabled, setEnabled] = useState(true)
+  const [claimUrl, setClaimUrl] = useState('')
 
   useEffect(() => {
     fetchRewards();
@@ -121,6 +122,23 @@ export default function RewardsAdminPage() {
                     placeholder=""
                   />
                 </div>
+                <div>
+                  <Label htmlFor="claimUrl" className="block text-sm font-medium text-gray-600">
+                    Claim URL
+                    <span className="ml-1 text-gray-400 text-xs">(Optional)</span>
+                  </Label>
+                  <Input
+                    id="claimUrl"
+                    type="url"
+                    value={claimUrl}
+                    onChange={(e) => setClaimUrl(e.target.value)}
+                    className="mt-2 p-3 w-full border rounded-md focus:outline-hidden focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://example.com/claim"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Add a URL that users will be directed to after claiming this reward
+                  </p>
+                </div>
 
                 <div className="flex gap-2 items-center">
                   <Label htmlFor="enabled" className="text-sm font-medium text-gray-600">Enabled?</Label>
@@ -144,7 +162,10 @@ export default function RewardsAdminPage() {
                   <TableHead>Description</TableHead>
                   <TableHead>Cost</TableHead>
                   <TableHead>Image URL</TableHead>
+                  <TableHead>Claim URL</TableHead>
                   <TableHead className="text-center">Featured</TableHead>
+                  <TableHead className="text-center">Multiple</TableHead>
+                  <TableHead className="text-center">Max Redemptions</TableHead>
                   <TableHead className="text-center">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -155,6 +176,21 @@ export default function RewardsAdminPage() {
                     <TableCell>{reward.description}</TableCell>
                     <TableCell>{reward.cost}</TableCell>
                     <TableCell className="max-w-[200px] truncate">{reward.imageUrl}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">
+                      {reward.claimUrl ? (
+                        <a
+                          href={reward.claimUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                        >
+                          {reward.claimUrl}
+                          <ExternalLink size={14} />
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 italic">Not set</span>
+                      )}
+                    </TableCell>
                     <TableCell className="text-center">
                       <Button
                         variant="ghost"
@@ -171,6 +207,31 @@ export default function RewardsAdminPage() {
                           <StarOff className="h-5 w-5" />
                         )}
                       </Button>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Switch
+                        checked={reward.allowMultiple}
+                        onCheckedChange={async (checked) => {
+                          await updateReward(reward.id, {
+                            allowMultiple: checked,
+                            maxRedemptions: checked ? null : 1
+                          });
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Input
+                        type="number"
+                        min="1"
+                        className="w-20 mx-auto text-center"
+                        value={reward.maxRedemptions || ''}
+                        placeholder="-"
+                        disabled={!reward.allowMultiple}
+                        onChange={async (e) => {
+                          const value = e.target.value ? parseInt(e.target.value) : null;
+                          await updateReward(reward.id, { maxRedemptions: value });
+                        }}
+                      />
                     </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Dialog>

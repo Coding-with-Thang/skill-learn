@@ -12,6 +12,8 @@ export async function GET() {
         imageUrl: true,
         featured: true,
         enabled: true,
+        allowMultiple: true,
+        maxRedemptions: true,
       },
     });
 
