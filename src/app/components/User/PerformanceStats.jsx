@@ -1,4 +1,4 @@
-a"use client"
+"use client"
 
 import { useEffect, useState } from "react"
 import { Clock, Timer, Calendar, TrendingUp, TrendingDown } from "lucide-react"
@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import api from "@/utils/axios";
 
 const StatItem = ({ title, value, subValue, icon: Icon, trend }) => (
   <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-sm">
@@ -38,8 +39,7 @@ export default function PerformanceStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/user/performance')
-        const data = await response.json()
+        const data = await api.get('/api/user/performance')
         setStats(data)
       } catch (error) {
         console.error('Failed to fetch performance stats:', error)

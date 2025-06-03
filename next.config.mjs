@@ -37,14 +37,6 @@ const nextConfig = {
       },
     ];
   },
-  // Add allowed development origins
-  experimental: {
-    allowedDevOrigins: [
-      "localhost:4000",
-      "127.0.0.1:4000",
-      // Add any other local development origins you need
-    ],
-  },
 };
 
 export default nextConfig;

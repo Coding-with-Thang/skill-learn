@@ -1,5 +1,4 @@
-import QuizScoreLeaderboard from "@/components/leaderboard/QuizScoreLeaderboard";
-
+import QuizScoreLeaderboard from "@/app/components/leaderboard/QuizScoreLeaderboard";
 export default function QuizScoreLeaderboardPage() {
   return (
     <div className="container mx-auto p-4">

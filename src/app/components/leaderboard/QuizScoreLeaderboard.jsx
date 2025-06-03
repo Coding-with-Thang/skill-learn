@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import api from "@/utils/axios";
 
 export default function QuizScoreLeaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -9,8 +10,7 @@ export default function QuizScoreLeaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch("/api/leaderboard/quiz-score");
-        const data = await response.json();
+        const { data } = await api.get("/api/leaderboard/quiz-score");
         setLeaderboard(data);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);

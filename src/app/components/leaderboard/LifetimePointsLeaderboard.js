@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import api from "@/utils/axios";
 
 export default function LifetimePointsLeaderboard({
   limit,
@@ -13,8 +14,7 @@ export default function LifetimePointsLeaderboard({
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await fetch("/api/leaderboard/points");
-        const data = await response.json();
+        const data = await api.get("/api/leaderboard/points");
         const filteredData = data.slice(skip, limit ? skip + limit : undefined);
         setLeaderboard(filteredData);
       } catch (error) {

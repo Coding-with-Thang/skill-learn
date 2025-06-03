@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import api from "@/utils/axios";
 
 const PodiumPosition = ({ user, position }) => {
   const medals = {
@@ -57,17 +58,10 @@ export default function LeaderboardLanding() {
         setIsLoading(true);
         setError(null);
 
-        const [pointsRes, quizRes] = await Promise.all([
-          fetch("/api/leaderboard/points"),
-          fetch("/api/leaderboard/quiz-score"),
+        const [pointsData, quizData] = await Promise.all([
+          api.get("/api/leaderboard/points"),
+          api.get("/api/leaderboard/quiz-score"),
         ]);
-
-        if (!pointsRes.ok || !quizRes.ok) {
-          throw new Error("Failed to fetch leaderboard data");
-        }
-
-        const pointsData = await pointsRes.json();
-        const quizData = await quizRes.json();
 
         setPointsLeaderboard(pointsData.slice(0, 3));
         setQuizLeaderboard(quizData.slice(0, 3));

@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import api from "@/utils/axios";
 
 // Import images
 import Gifts from "../../../public/gifts.png"
@@ -373,14 +374,7 @@ export default function RewardsPage() {
 
   const handleClaimReward = async (redemption) => {
     try {
-      const response = await fetch(`/api/user/rewards/claim/${redemption.id}`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to claim reward')
-      }
+      await api.post(`/api/user/rewards/claim/${redemption.id}`);
 
       // Refresh the reward history after claiming
       await fetchRewardHistory()
