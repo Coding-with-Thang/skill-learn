@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "../../../components/ui/table";
 import BreadCrumbCom from "../BreadCrumb"
+import QuizStats from "./QuizStats"
 
 export default function UserStats({ userStats }) {
   const { user, isLoaded } = useUser();
@@ -128,6 +129,13 @@ export default function UserStats({ userStats }) {
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="mt-8">
+        <QuizStats
+          quizStats={userStats?.quizStats}
+          categories={userStats?.categories}
+        />
       </div>
     </div>
   );
