@@ -1,24 +1,23 @@
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
 export async function POST(req) {
   try {
-    const { userId } = await auth();
+    const { userId } = auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     const { categoryId, quizId, score, responses } = await req.json();
 
-    // Validate the fields
     if (
       !categoryId ||
       !quizId ||
       typeof score !== "number" ||
       !Array.isArray(responses)
     ) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return new Response("Invalid request", { status: 400 });
     }
 
     const user = await prisma.user.findUnique({
@@ -26,7 +25,7 @@ export async function POST(req) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return new Response("User not found", { status: 404 });
     }
 
     // Fetch or create a categoryStat entry
@@ -74,12 +73,9 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json(stat);
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Quiz completion error:", error);
-    return NextResponse.json(
-      { error: "Error finishing quiz" },
-      { status: 500 }
-    );
+    console.error("Error finishing quiz:", error);
+    return new Response("Internal server error", { status: 500 });
   }
 }

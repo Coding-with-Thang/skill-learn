@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner"
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -11,7 +12,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: dark // Optional: if you want to use the dark theme
+      }}
+    >
       <html lang="en" suppressHydrationWarning>
         <body className="flex flex-col min-h-screen">
           <Header />

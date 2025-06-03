@@ -2,42 +2,73 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { usePointsStore } from "@/app/store/pointsStore"
 import formatNumber from "@/utils/formatNumbers";
+import { LoadingUserBadge } from "@/components/ui/loading"
+import { ErrorCard } from "@/components/ui/error-boundary"
 
 export default function UserBadge() {
-  const { user, isLoaded } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
+  const { getToken } = useAuth();
   const { points, lifetimePoints, fetchPoints, addPoints, isLoading, fetchDailyStatus } = usePointsStore();
   const [cooldown, setCooldown] = useState(0);
+  const [error, setError] = useState(null);
   const pointsToAward = 10;
   const cooldownInSeconds = 5;
 
-  // Fetch points status on component mount
   useEffect(() => {
-    fetchPoints();
-  }, [fetchPoints]);
+    if (isSignedIn) {
+      fetchPoints().catch(err => {
+        setError(err);
+        console.error("Failed to fetch points:", err);
+      });
+    }
+  }, [fetchPoints, isSignedIn]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
-
     const timer = setTimeout(() => {
       setCooldown(prev => prev - 1);
     }, 1000);
-
     return () => clearTimeout(timer);
   }, [cooldown]);
 
   useEffect(() => {
-    fetchDailyStatus();
-  }, [fetchDailyStatus]);
+    if (isSignedIn) {
+      fetchDailyStatus().catch(err => {
+        console.error("Failed to fetch daily status:", err);
+        // Don't set error state here as it's not critical
+      });
+    }
+  }, [fetchDailyStatus, isSignedIn]);
+
+  if (!isLoaded) {
+    return <LoadingUserBadge />
+  }
+
+  if (!isSignedIn) {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <ErrorCard
+        error={error}
+        message="Failed to load user data"
+        reset={() => {
+          setError(null);
+          fetchPoints();
+        }}
+      />
+    );
+  }
 
   const handleClick = async () => {
     if (cooldown > 0 || isLoading) return;
-
     await addPoints(pointsToAward, 'button_click');
     setCooldown(cooldownInSeconds);
   };
