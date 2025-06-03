@@ -86,7 +86,7 @@ export default function RockPaperScissors() {
         <Button
           onClick={() => resetGame()}
           className="px-4 py-2 bg-gray-900 text-white rounded"
-          disabled={playerChoice !== null} // Disable buttons after a choice is made
+
         >
           New Game
         </Button>
