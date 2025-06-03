@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
+import { Star, StarOff } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,13 +22,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch";
 import AddRewards from '@/app/components/Admin/rewards/addRewards';
 
 export default function RewardsAdminPage() {
 
   const [showForm, setShowForm] = useState(false);
 
-  const { fetchRewards, rewards, isLoading } = useRewardStore();
+  const { fetchRewards, rewards, isLoading, updateReward } = useRewardStore();
 
   const [prize, setPrize] = useState('')
   const [description, setDescription] = useState('')
@@ -38,12 +39,20 @@ export default function RewardsAdminPage() {
 
   useEffect(() => {
     fetchRewards();
-  }, [])
+  }, [fetchRewards])
 
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log("Adding new reward")
   }
+
+  const handleToggleFeatured = async (reward) => {
+    try {
+      await updateReward(reward.id, { featured: !reward.featured });
+    } catch (error) {
+      console.error("Error toggling featured status:", error);
+    }
+  };
 
   return (
     <div className="p-4 w-full">
@@ -135,22 +144,46 @@ export default function RewardsAdminPage() {
                   <TableHead>Description</TableHead>
                   <TableHead>Cost</TableHead>
                   <TableHead>Image URL</TableHead>
+                  <TableHead className="text-center">Featured</TableHead>
                   <TableHead className="text-center">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="whitespace-nowrap">
                 {rewards.map((reward) => (
-                  <TableRow key={reward.id}>
+                  <TableRow key={reward.id} className={reward.featured ? "bg-yellow-50" : ""}>
                     <TableCell className="font-semibold">{reward.prize}</TableCell>
                     <TableCell>{reward.description}</TableCell>
                     <TableCell>{reward.cost}</TableCell>
-                    <TableCell className="">{reward.imageUrl}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{reward.imageUrl}</TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`${reward.featured
+                          ? "text-yellow-600 hover:text-yellow-700"
+                          : "text-gray-400 hover:text-gray-500"
+                          }`}
+                        onClick={() => handleToggleFeatured(reward)}
+                      >
+                        {reward.featured ? (
+                          <Star className="h-5 w-5 fill-current" />
+                        ) : (
+                          <StarOff className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Dialog>
-                        <DialogTrigger><Button className=" bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">Edit</Button></DialogTrigger>
+                        <DialogTrigger>
+                          <Button className="bg-blue-800 text-white hover:bg-blue-400 hover:text-gray-800">
+                            Edit
+                          </Button>
+                        </DialogTrigger>
                         <AddRewards />
                       </Dialog>
-                      <Button className=" bg-red-800 text-white hover:bg-red-400 hover:text-gray-800">Delete</Button>
+                      <Button className="bg-red-800 text-white hover:bg-red-400 hover:text-gray-800">
+                        Delete
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -78,4 +78,26 @@ export const useRewardStore = create((set, get) => ({
       set({ isLoading: false });
     }
   },
+
+  updateReward: async (id, updateData) => {
+    try {
+      set({ isLoading: true });
+      const response = await api.put("/user/rewards/update", {
+        id,
+        ...updateData,
+      });
+
+      // Refresh the rewards list after update
+      await get().fetchRewards();
+
+      toast.success("Reward updated successfully");
+      return true;
+    } catch (error) {
+      console.error("Error updating reward:", error);
+      toast.error(error.response?.data?.error || "Failed to update reward");
+      return false;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));

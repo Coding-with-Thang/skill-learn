@@ -33,25 +33,12 @@ export default function RewardsPage() {
     fetchRewardHistory();
   }, [fetchRewards, fetchPoints, fetchRewardHistory]);
 
-  const prizes = [
-    {
-      prizeTitle: "Chicken Dance",
-      prizeDesc: "{WIP - Please don't redeem} Sara does the chicken dance x3!",
-      prizePts: 5000,
-      prizeImg: ChickenDance
-    }
-  ]
+  const featuredReward = rewards.find(reward => reward.featured === true);
 
   const handleRedeem = async (reward) => {
     if (points < reward.cost) {
       toast.error("You don't have enough points for this reward");
       return;
-    }
-
-    const success = await redeemReward(reward.id);
-    if (success) {
-      // Refresh rewards list
-      fetchRewards();
     }
   };
 
@@ -116,27 +103,39 @@ export default function RewardsPage() {
 
         <h1 className="flex text-5xl my-7 justify-center">Featured Reward</h1>
         <div className="mb-9">
-          <Card className="flex min-w-[40ch] hover:scale(1.2)">
-            <CardHeader className="">
-              <Image
-                className=""
-                src={prizes[0].prizeImg}
-                width={340}
-                height={150}
-                alt={prizes[0].prizeTitle}
-              />
-            </CardHeader>
-            <CardContent className="flex flex-col gap-2 items-start">
-              <h4 className="pt-7 text-5xl font-semibold text-gray-900">{prizes[0].prizeTitle}</h4>
-              <p className="text-3xl">{prizes[0].prizeDesc}</p>
-              <p className="flex justify-end text-4xl mt-3">
-                <span className="text-yellow-500 mr-1">+</span>
-                {prizes[0].prizePts}</p>
-            </CardContent>
-            <CardFooter className="flex items-end justify-end pr-3">
-              <Button className="text-xl rounded-lg">Redeem</Button>
-            </CardFooter>
-          </Card>
+          {featuredReward ? (
+            <Card className="flex min-w-[40ch] hover:scale(1.2)">
+              <CardHeader className="">
+                <Image
+                  className=""
+                  src={featuredReward.imageUrl}
+                  width={340}
+                  height={150}
+                  alt={featuredReward.prize}
+                />
+              </CardHeader>
+              <CardContent className="flex flex-col gap-2 items-start">
+                <h4 className="pt-7 text-5xl font-semibold text-gray-900">{featuredReward.prize}</h4>
+                <p className="text-3xl">{featuredReward.description}</p>
+                <p className="flex justify-end text-4xl mt-3">
+                  <span className="text-yellow-500 mr-1">+</span>
+                  {featuredReward.cost}</p>
+              </CardContent>
+              <CardFooter className="flex items-end justify-end pr-3">
+                <Button
+                  className="text-xl rounded-lg"
+                  onClick={() => handleRedeem(featuredReward)}
+                  disabled={points < featuredReward.cost || isLoading}
+                >
+                  {isLoading ? "Processing..." : "Redeem"}
+                </Button>
+              </CardFooter>
+            </Card>
+          ) : (
+            <div className="text-center py-8">
+              <p>No featured reward available</p>
+            </div>
+          )}
         </div>
 
         <h1 className="flex text-5xl my-7 justify-center">All Rewards</h1>
