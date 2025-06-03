@@ -13,6 +13,26 @@ export async function POST(req) {
     return NextResponse.json("Invalid request", { status: 400 });
   }
 
+  // Rate limiting
+  const clientIp =
+    req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for") ||
+    req.socket.remoteAddress;
+  const rateLimitKey = `rate-limit:${clientIp}`;
+  const rateLimit = await prisma.rateLimit.findUnique({
+    where: { id: rateLimitKey },
+  });
+
+  if (rateLimit && rateLimit.count >= 100) {
+    return NextResponse.json("Too many requests", { status: 429 });
+  }
+
+  // IP whitelisting
+  const WHITELISTED_IPS = process.env.WHITELISTED_IPS?.split(",") || [];
+  if (!WHITELISTED_IPS.includes(clientIp)) {
+    return NextResponse.json("Forbidden", { status: 403 });
+  }
+
   // Add retry logic for database operations
   const MAX_RETRIES = 3;
   let retries = 0;
@@ -66,6 +86,18 @@ export async function POST(req) {
         console.log("🗑️ Deleting user from DB:", user.id);
         await prisma.user.deleteMany({
           where: { clerkId: user.id },
+        });
+      }
+
+      // Update or create rate limit entry
+      if (rateLimit) {
+        await prisma.rateLimit.update({
+          where: { id: rateLimitKey },
+          data: { count: { increment: 1 } },
+        });
+      } else {
+        await prisma.rateLimit.create({
+          data: { id: rateLimitKey, count: 1 },
         });
       }
 

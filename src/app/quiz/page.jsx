@@ -99,7 +99,7 @@ export default function QuizScreenPage() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [activeQuestion]);
+  }, [activeQuestion, handleQuizNavigation]);
 
   // Fisher-Yates Shuffle Algorithm
   const shuffleArray = (array) => {

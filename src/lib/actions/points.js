@@ -104,7 +104,7 @@ export async function awardPoints(amount, reason) {
       const pointLog = await tx.pointLog.create({
         data: {
           userId: user.id,
-          amount: pointsToAward,
+          amount, // Use the amount parameter directly
           reason,
         },
       });

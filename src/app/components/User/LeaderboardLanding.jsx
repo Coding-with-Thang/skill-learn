@@ -4,17 +4,67 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 
+const PodiumPosition = ({ user, position }) => {
+  const medals = {
+    1: { color: "bg-yellow-500", size: "w-24 h-24" },
+    2: { color: "bg-gray-400", size: "w-20 h-20" },
+    3: { color: "bg-amber-700", size: "w-16 h-16" },
+  };
+
+  return (
+    <div
+      className={`flex flex-col items-center ${position === 1
+        ? "order-2"
+        : position === 2
+          ? "order-1"
+          : "order-3"
+        }`}
+    >
+      <div
+        className={`${medals[position].color
+          } rounded-full w-8 h-8 flex items-center justify-center text-white font-bold mb-2`}
+      >
+        {position}
+      </div>
+      <div className="flex flex-col items-center">
+        <Image
+          src={user.image}
+          alt={user.name}
+          width={position === 1 ? 96 : position === 2 ? 80 : 64}
+          height={position === 1 ? 96 : position === 2 ? 80 : 64}
+          className="rounded-full"
+        />
+        <p className="font-bold mt-2">{user.name}</p>
+        <p className="text-sm">
+          {user.totalPoints
+            ? `${user.totalPoints} pts`
+            : `${user.averageScore.toFixed(1)}%`}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 export default function LeaderboardLanding() {
   const [pointsLeaderboard, setPointsLeaderboard] = useState([]);
   const [quizLeaderboard, setQuizLeaderboard] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchLeaderboards = async () => {
       try {
+        setIsLoading(true);
+        setError(null);
+
         const [pointsRes, quizRes] = await Promise.all([
           fetch("/api/leaderboard/points"),
           fetch("/api/leaderboard/quiz-score"),
         ]);
+
+        if (!pointsRes.ok || !quizRes.ok) {
+          throw new Error("Failed to fetch leaderboard data");
+        }
 
         const pointsData = await pointsRes.json();
         const quizData = await quizRes.json();
@@ -23,17 +73,36 @@ export default function LeaderboardLanding() {
         setQuizLeaderboard(quizData.slice(0, 3));
       } catch (error) {
         console.error("Error fetching leaderboards:", error);
+        setError("Failed to load leaderboards");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchLeaderboards();
   }, []);
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        Loading leaderboards...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px] text-red-500">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center">
       <h3 className="text-xl font-bold">Leaderboards</h3>
       <div className="flex gap-5 flex-wrap">
-        <Card className="w-[350px]">
+        <Card className="w-[400px]">
           <CardHeader className="flex flex-row gap-5 items-center place-content-between">
             <h4 className="text-gray-900 font-bold m-0 p-0">
               Top Points Leaders
@@ -45,27 +114,16 @@ export default function LeaderboardLanding() {
               View All
             </Link>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <ul className="flex flex-col gap-5">
+          <CardContent>
+            <div className="flex justify-center items-end gap-4 py-8">
               {pointsLeaderboard.map((user, index) => (
-                <li key={user.id} className="flex items-center gap-4">
-                  <span className="w-6 text-center">{index + 1}</span>
-                  <Image
-                    src={user.image}
-                    alt={user.name}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
-                  <span className="flex-1">{user.name}</span>
-                  <span>{user.totalPoints} pts</span>
-                </li>
+                <PodiumPosition key={user.id} user={user} position={index + 1} />
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="w-[350px]">
+        <Card className="w-[400px]">
           <CardHeader className="flex flex-row gap-5 items-center place-content-between">
             <h4 className="text-gray-900 font-bold m-0 p-0">
               Top Quiz Performers
@@ -77,23 +135,12 @@ export default function LeaderboardLanding() {
               View All
             </Link>
           </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <ul className="flex flex-col gap-5">
+          <CardContent>
+            <div className="flex justify-center items-end gap-4 py-8">
               {quizLeaderboard.map((user, index) => (
-                <li key={user.id} className="flex items-center gap-4">
-                  <span className="w-6 text-center">{index + 1}</span>
-                  <Image
-                    src={user.image}
-                    alt={user.name}
-                    width={32}
-                    height={32}
-                    className="rounded-full"
-                  />
-                  <span className="flex-1">{user.name}</span>
-                  <span>{user.averageScore.toFixed(1)}%</span>
-                </li>
+                <PodiumPosition key={user.id} user={user} position={index + 1} />
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
       </div>

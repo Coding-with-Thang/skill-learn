@@ -20,7 +20,7 @@ const MemoryGame = () => {
       setIsOpen(true);
       setSelectedCategory(""); // Reset category selection
     }
-  }, [round, pathname]);
+  }, [round, pathname, setIsOpen, setSelectedCategory]);
 
   //Emoji Match Game
   const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
