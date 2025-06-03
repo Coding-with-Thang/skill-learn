@@ -1,4 +1,4 @@
-import LifetimePointsLeaderboard from "@/components/leaderboard/LifetimePointsLeaderboard";
+import LifetimePointsLeaderboard from "@/app/components/leaderboard/LifetimePointsLeaderboard";
 
 export default function PointsLeaderboardPage() {
   return (
