@@ -26,6 +26,7 @@ export async function GET() {
             prize: true,
             description: true,
             imageUrl: true,
+            claimUrl: true,
           },
         },
       },

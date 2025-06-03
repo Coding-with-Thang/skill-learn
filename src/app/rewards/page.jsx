@@ -200,6 +200,34 @@ const ClaimButton = ({ redemption, onClaim }) => {
   )
 }
 
+const BlurredClaimUrl = ({ url }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 group relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <span className={cn(
+        "text-blue-600 hover:text-blue-700 text-sm transition-all duration-200",
+        !isHovered && "blur-sm select-none"
+      )}>
+        {url}
+      </span>
+      <ExternalLink size={14} className="text-blue-600 flex-shrink-0" />
+      {!isHovered && (
+        <span className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+          Hover to reveal
+        </span>
+      )}
+    </a>
+  );
+};
+
 const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
   if (!rewardHistory.length) {
     return (
@@ -227,6 +255,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Action</TableHead>
+            <TableHead>Claim URL</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -287,11 +316,21 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
                 </div>
               </TableCell>
               <TableCell>
-                {redemption.redeemed && !redemption.claimed && (
+                {redemption.redeemed && !redemption.claimed ? (
                   <ClaimButton
                     redemption={redemption}
                     onClaim={onClaimReward}
                   />
+                ) : redemption.claimed ? (
+                  <span className="text-green-600 flex items-center gap-1">
+                    <Check size={16} />
+                    Claimed
+                  </span>
+                ) : null}
+              </TableCell>
+              <TableCell>
+                {redemption.claimed && redemption.reward.claimUrl && (
+                  <BlurredClaimUrl url={redemption.reward.claimUrl} />
                 )}
               </TableCell>
             </TableRow>
