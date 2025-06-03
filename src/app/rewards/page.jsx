@@ -358,7 +358,17 @@ export default function RewardsPage() {
       toast.error("You don't have enough points for this reward")
       return
     }
-    // Add redemption logic here
+
+    try {
+      const success = await redeemReward(reward.id)
+      if (success) {
+        // Refresh the reward history to show the new redemption
+        await fetchRewardHistory()
+      }
+    } catch (error) {
+      console.error('Error redeeming reward:', error)
+      toast.error('Failed to redeem reward')
+    }
   }
 
   const handleClaimReward = async (redemption) => {

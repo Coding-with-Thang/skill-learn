@@ -36,7 +36,13 @@ export function RewardForm({ reward, onClose }) {
   }, [reward])
 
   const handleChange = (field) => (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
+    let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
+
+    // Handle number fields
+    if (field === 'cost' || field === 'maxRedemptions') {
+      value = value === '' ? '' : parseInt(value, 10)
+    }
+
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -48,8 +54,20 @@ export function RewardForm({ reward, onClose }) {
         throw new Error('Please fill in all required fields')
       }
 
-      const action = reward ? updateReward : addReward
-      await action(reward?.id, formData)
+      // Format the data before sending
+      const submitData = {
+        ...formData,
+        cost: parseInt(formData.cost, 10),
+        maxRedemptions: formData.allowMultiple && formData.maxRedemptions
+          ? parseInt(formData.maxRedemptions, 10)
+          : null
+      };
+
+      if (reward) {
+        await updateReward(reward.id, submitData);
+      } else {
+        await addReward(submitData);
+      }
 
       toast.success(reward ? 'Reward updated successfully' : 'Reward added successfully')
       onClose()

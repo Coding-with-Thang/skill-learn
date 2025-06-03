@@ -21,25 +21,19 @@ export const useRewardStore = create((set, get) => ({
     }
   },
 
-  addReward: async (prize, description, cost, imageUrl) => {
+  addReward: async (data) => {
     try {
       set({ isLoading: true });
+      const response = await api.post("/user/rewards/add", data);
 
-      // Make API call to add points using axios
-      const response = await api.post("/user/rewards/add", {
-        prize,
-        description,
-        cost,
-        imageUrl,
-      });
+      // Refresh rewards list
+      await get().fetchRewards();
 
-      // Update local state
-      set({
-        rewards: response.data.rewards,
-        isLoading: false,
-      });
+      return true;
     } catch (error) {
       console.error("Error adding reward:", error);
+      throw error;
+    } finally {
       set({ isLoading: false });
     }
   },
@@ -82,20 +76,27 @@ export const useRewardStore = create((set, get) => ({
   updateReward: async (id, updateData) => {
     try {
       set({ isLoading: true });
+
+      // Format the data
+      const formattedData = {
+        ...updateData,
+        cost: parseInt(updateData.cost, 10),
+        maxRedemptions: updateData.maxRedemptions
+          ? parseInt(updateData.maxRedemptions, 10)
+          : null,
+      };
+
       const response = await api.put("/user/rewards/update", {
         id,
-        ...updateData,
+        ...formattedData,
       });
 
       // Refresh the rewards list after update
       await get().fetchRewards();
-
-      toast.success("Reward updated successfully");
       return true;
     } catch (error) {
       console.error("Error updating reward:", error);
-      toast.error(error.response?.data?.error || "Failed to update reward");
-      return false;
+      throw error;
     } finally {
       set({ isLoading: false });
     }
