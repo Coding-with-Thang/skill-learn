@@ -1,9 +1,29 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+
 export const usePointsStore = create((set, get) => ({
   points: 0,
   lifetimePoints: 0,
+  dailyStatus: null,
   isLoading: false,
+
+  fetchDailyStatus: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await api.get("/user/points/daily-status");
+      set({
+        dailyStatus: response.data,
+        points: response.data.user.points,
+        lifetimePoints: response.data.user.lifetimePoints,
+        isLoading: false,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching daily status:", error);
+      set({ isLoading: false });
+      return null;
+    }
+  },
 
   fetchPoints: async () => {
     try {

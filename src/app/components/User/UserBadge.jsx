@@ -12,7 +12,7 @@ import formatNumber from "@/utils/formatNumbers";
 
 export default function UserBadge() {
   const { user, isLoaded } = useUser();
-  const { points, lifetimePoints, fetchPoints, addPoints, isLoading } = usePointsStore();
+  const { points, lifetimePoints, fetchPoints, addPoints, isLoading, fetchDailyStatus } = usePointsStore();
   const [cooldown, setCooldown] = useState(0);
   const pointsToAward = 10;
   const cooldownInSeconds = 5;
@@ -31,6 +31,10 @@ export default function UserBadge() {
 
     return () => clearTimeout(timer);
   }, [cooldown]);
+
+  useEffect(() => {
+    fetchDailyStatus();
+  }, [fetchDailyStatus]);
 
   const handleClick = async () => {
     if (cooldown > 0 || isLoading) return;

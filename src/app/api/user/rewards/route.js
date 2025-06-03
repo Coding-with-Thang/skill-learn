@@ -10,6 +10,8 @@ export async function GET() {
         description: true,
         cost: true,
         imageUrl: true,
+        featured: true,
+        enabled: true,
       },
     });
 
