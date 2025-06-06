@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
-import { Circle, Ellipsis, Gift, ExternalLink, Check } from "lucide-react"
+import { Circle, Ellipsis, Gift, Check } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { usePointsStore } from "@/app/store/pointsStore"
 import { toast } from "sonner"
@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import api from "@/utils/axios";
 
 // Import images
 import Gifts from "../../../public/gifts.png"
@@ -78,10 +79,10 @@ const DailyStreak = () => (
         </div>
         <div className="flex-1 max-w-md">
           <div className="flex gap-4 justify-center mb-3">
-            {[...Array(7)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center">
                 <Circle className="text-gray-400" />
-                {i < 4 && <Ellipsis className="text-gray-300" />}
+                {i < 6 && <Ellipsis className="text-gray-300" />}
               </div>
             ))}
           </div>
@@ -129,10 +130,18 @@ const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
       <Button
         className="w-full font-medium"
         onClick={() => onRedeem(reward)}
-        disabled={disabled}
+        disabled={disabled || isLoading}
         variant={disabled ? "secondary" : "default"}
       >
-        {isLoading ? "Processing..." : disabled ? "Insufficient Points" : "Redeem"}
+        {isLoading ? (
+          <span className="flex items-center gap-2">
+            <span className="animate-spin">⭐</span> Redeeming...
+          </span>
+        ) : disabled ? (
+          "Insufficient Points"
+        ) : (
+          "Redeem"
+        )}
       </Button>
     </CardFooter>
   </Card>
@@ -147,7 +156,8 @@ const ClaimButton = ({ redemption, onClaim }) => {
       await onClaim(redemption)
       toast.success("Successfully claimed reward!")
     } catch (error) {
-      toast.error(error.message || "Failed to claim reward")
+      console.error('Error claiming reward:', error)
+      toast.error(error.response?.data?.error || "Failed to claim reward")
     } finally {
       setClaiming(false)
     }
@@ -155,22 +165,24 @@ const ClaimButton = ({ redemption, onClaim }) => {
 
   if (redemption.claimed) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-2">
         <span className="text-green-600 flex items-center gap-1">
           <Check size={16} />
           Claimed
         </span>
         {redemption.claimUrl && (
-          <a
-            href={redemption.claimUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
-          >
-            View <ExternalLink size={14} />
-          </a>
+          <BlurredClaimUrl url={redemption.claimUrl} />
         )}
       </div>
+    )
+  }
+
+  if (!redemption.redeemed) {
+    return (
+      <span className="text-yellow-600 flex items-center gap-1">
+        <Circle size={16} className="fill-yellow-600" />
+        Pending
+      </span>
     )
   }
 
@@ -179,7 +191,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
       variant="outline"
       size="sm"
       onClick={handleClaim}
-      disabled={claiming}
+      disabled={claiming || redemption.claimed}
       className={cn(
         "relative overflow-hidden transition-all duration-300",
         claiming && "cursor-not-allowed",
@@ -208,7 +220,7 @@ const BlurredClaimUrl = ({ url }) => {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 group relative"
+      className="inline-block group relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -218,13 +230,88 @@ const BlurredClaimUrl = ({ url }) => {
       )}>
         {url}
       </span>
-      <ExternalLink size={14} className="text-blue-600 flex-shrink-0" />
       {!isHovered && (
         <span className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
           Hover to reveal
         </span>
       )}
     </a>
+  );
+};
+
+const RedemptionGroup = ({ redemptions, onClaimReward }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const latestRedemption = redemptions[0]; // Assuming sorted by date desc
+  const totalRedemptions = redemptions.length;
+  const unclaimedCount = redemptions.filter(r => !r.claimed).length;
+
+  return (
+    <TableRow className={cn(
+      "transition-colors",
+      latestRedemption.claimed && "bg-green-50/50"
+    )}>
+      <TableCell>
+        <div className="flex items-center gap-3">
+          <div className="relative h-12 w-12 rounded-lg overflow-hidden">
+            <Image
+              src={latestRedemption.reward.imageUrl}
+              fill
+              style={{ objectFit: 'cover' }}
+              alt={latestRedemption.reward.prize}
+            />
+          </div>
+          <div>
+            <p className="font-medium">{latestRedemption.reward.prize}</p>
+            <p className="text-sm text-gray-500">{latestRedemption.reward.description}</p>
+            {totalRedemptions > 1 && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-sm text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
+              >
+                {isExpanded ? "Hide" : "Show"} all {totalRedemptions} redemptions
+                {unclaimedCount > 0 && !isExpanded && (
+                  <span className="text-yellow-600">
+                    ({unclaimedCount} unclaimed)
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>
+        <span className="flex items-center gap-1">
+          <span className="text-yellow-500">⭐</span>
+          {latestRedemption.pointsSpent.toLocaleString()}
+        </span>
+      </TableCell>
+      <TableCell>
+        {!isExpanded ? (
+          <ClaimButton
+            redemption={latestRedemption}
+            onClaim={onClaimReward}
+          />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {redemptions.map((redemption) => (
+              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b last:border-0">
+                <ClaimButton
+                  redemption={redemption}
+                  onClaim={onClaimReward}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </TableCell>
+      <TableCell>
+        <div className="text-sm">
+          <p className="font-medium">
+            {format(new Date(latestRedemption.createdAt), "MMM d, yyyy")}
+          </p>
+        </div>
+      </TableCell>
+    </TableRow>
   );
 };
 
@@ -245,6 +332,25 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
     )
   }
 
+  // Group redemptions by prize name
+  const groupedRedemptions = rewardHistory.reduce((acc, redemption) => {
+    const prizeName = redemption.reward.prize;
+    if (!acc[prizeName]) {
+      acc[prizeName] = [];
+    }
+    acc[prizeName].push(redemption);
+    return acc;
+  }, {});
+
+  // Sort groups by most recent redemption date
+  const sortedGroups = Object.entries(groupedRedemptions)
+    .sort(([, a], [, b]) => {
+      const latestA = new Date(a[0].createdAt).getTime();
+      const latestB = new Date(b[0].createdAt).getTime();
+      return latestB - latestA;
+    })
+    .map(([, redemptions]) => redemptions);
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -254,86 +360,17 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
             <TableHead>Points</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Action</TableHead>
-            <TableHead>Claim URL</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rewardHistory.map((redemption) => (
-            <TableRow
-              key={redemption.id}
-              className={cn(
-                "transition-colors",
-                redemption.claimed && "bg-green-50/50"
+          {sortedGroups.map((redemptions) => (
+            <RedemptionGroup
+              key={`${redemptions[0].reward.prize}-${redemptions[0].id}`}
+              redemptions={redemptions.sort((a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               )}
-            >
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="relative h-12 w-12 rounded-lg overflow-hidden">
-                    <Image
-                      src={redemption.reward.imageUrl}
-                      fill
-                      style={{ objectFit: 'cover' }}
-                      alt={redemption.reward.prize}
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium">{redemption.reward.prize}</p>
-                    <p className="text-sm text-gray-500">{redemption.reward.description}</p>
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className="flex items-center gap-1">
-                  <span className="text-yellow-500">⭐</span>
-                  {redemption.pointsSpent.toLocaleString()}
-                </span>
-              </TableCell>
-              <TableCell>
-                <span className={cn(
-                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                  redemption.claimed
-                    ? "bg-green-100 text-green-800"
-                    : redemption.redeemed
-                      ? "bg-blue-100 text-blue-800"
-                      : "bg-yellow-100 text-yellow-800"
-                )}>
-                  {redemption.claimed
-                    ? "Claimed"
-                    : redemption.redeemed
-                      ? "Ready to Claim"
-                      : "Pending"}
-                </span>
-              </TableCell>
-              <TableCell>
-                <div className="text-sm">
-                  <p className="font-medium">
-                    {format(new Date(redemption.createdAt), "MMM d, yyyy")}
-                  </p>
-                  <p className="text-gray-500">
-                    {format(new Date(redemption.createdAt), "h:mm a")}
-                  </p>
-                </div>
-              </TableCell>
-              <TableCell>
-                {redemption.redeemed && !redemption.claimed ? (
-                  <ClaimButton
-                    redemption={redemption}
-                    onClaim={onClaimReward}
-                  />
-                ) : redemption.claimed ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <Check size={16} />
-                    Claimed
-                  </span>
-                ) : null}
-              </TableCell>
-              <TableCell>
-                {redemption.claimed && redemption.reward.claimUrl && (
-                  <BlurredClaimUrl url={redemption.reward.claimUrl} />
-                )}
-              </TableCell>
-            </TableRow>
+              onClaimReward={onClaimReward}
+            />
           ))}
         </TableBody>
       </Table>
@@ -344,6 +381,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
 export default function RewardsPage() {
   const { fetchRewards, fetchRewardHistory, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
   const { points, fetchPoints } = usePointsStore()
+  const [redeemingRewardId, setRedeemingRewardId] = useState(null)
 
   useEffect(() => {
     fetchRewards()
@@ -359,28 +397,26 @@ export default function RewardsPage() {
       return
     }
 
+    setRedeemingRewardId(reward.id)
     try {
-      const success = await redeemReward(reward.id)
-      if (success) {
-        // Refresh the reward history to show the new redemption
-        await fetchRewardHistory()
+      const result = await redeemReward(reward.id)
+      if (result.success) {
+        toast.success(result.message || `Successfully redeemed ${reward.prize}`)
       }
     } catch (error) {
       console.error('Error redeeming reward:', error)
-      toast.error('Failed to redeem reward')
+      // Only show generic error if no specific error was shown by the store
+      if (!error.response?.data?.error) {
+        toast.error('Failed to redeem reward')
+      }
+    } finally {
+      setRedeemingRewardId(null)
     }
   }
 
   const handleClaimReward = async (redemption) => {
     try {
-      const response = await fetch(`/api/user/rewards/claim/${redemption.id}`, {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to claim reward')
-      }
+      await api.post(`/user/rewards/claim/${redemption.id}`);
 
       // Refresh the reward history after claiming
       await fetchRewardHistory()
@@ -412,7 +448,7 @@ export default function RewardsPage() {
                   reward={featuredReward}
                   onRedeem={handleRedeem}
                   disabled={points < featuredReward.cost}
-                  isLoading={isLoading}
+                  isLoading={redeemingRewardId === featuredReward.id}
                 />
               </div>
             </div>
@@ -430,7 +466,7 @@ export default function RewardsPage() {
                   reward={reward}
                   onRedeem={handleRedeem}
                   disabled={points < reward.cost}
-                  isLoading={isLoading}
+                  isLoading={redeemingRewardId === reward.id}
                 />
               ))}
             </div>

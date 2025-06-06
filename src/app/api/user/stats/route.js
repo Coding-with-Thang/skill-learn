@@ -1,10 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = await auth();
+    const { userId } = getAuth(request);
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -52,21 +53,26 @@ export async function GET() {
     });
 
     // Combine the data
-    const quizStats = allQuizzes.map((quiz) => {
-      const attempts = quizAttempts.find(
-        (attempt) => attempt.quizId === quiz.id
-      );
-      return {
-        id: quiz.id,
-        title: quiz.title,
-        category: quiz.category,
-        attempts: attempts?.attempts || 0,
-        completed: attempts?.completed || 0,
-        bestScore: attempts?.bestScore || null,
-        averageScore: attempts?.averageScore || null,
-        lastAttempt: attempts?.lastAttempt || null,
-      };
-    });
+    const quizStats = allQuizzes.map((quiz) => ({
+      id: quiz.id,
+      title: quiz.title,
+      category: quiz.category,
+      attempts:
+        quizAttempts.find((attempt) => attempt.quizId === quiz.id)?.attempts ||
+        0,
+      completed:
+        quizAttempts.find((attempt) => attempt.quizId === quiz.id)?.completed ||
+        0,
+      bestScore:
+        quizAttempts.find((attempt) => attempt.quizId === quiz.id)?.bestScore ||
+        null,
+      averageScore:
+        quizAttempts.find((attempt) => attempt.quizId === quiz.id)
+          ?.averageScore || null,
+      lastAttempt:
+        quizAttempts.find((attempt) => attempt.quizId === quiz.id)
+          ?.lastAttempt || null,
+    }));
 
     // Get categories for filtering
     const categories = await prisma.category.findMany({
@@ -93,14 +99,17 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      categoryStats,
-      quizStats,
-      categories,
+      success: true,
+      data: {
+        categoryStats,
+        quizStats,
+        categories,
+      },
     });
   } catch (error) {
     console.error("Error fetching quiz stats:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: error.message },
       { status: 500 }
     );
   }

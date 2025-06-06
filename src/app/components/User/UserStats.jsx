@@ -1,8 +1,10 @@
 "use client"
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { formatTime } from "@/utils/formatTime";
 import { PencilLine, Crosshair, ListChecks } from 'lucide-react';
+import { LoadingCard } from "@/components/ui/loading";
 import CategoryBarChart from "../User/CategoryBarChart"
 import {
   Table,
@@ -14,16 +16,66 @@ import {
 } from "../../../components/ui/table";
 import BreadCrumbCom from "../BreadCrumb"
 import QuizStats from "./QuizStats"
+import { LoadingUserStats } from "@/components/ui/loading"
+import { ErrorCard } from "@/components/ui/error-boundary"
+import api from "@/utils/axios";
 
-export default function UserStats({ userStats }) {
-  const { user, isLoaded } = useUser();
+export default function UserStats() {
+  const { user, isLoaded, isSignedIn } = useUser();
+  const [userStats, setUserStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!isLoaded) {
-    return <div>Loading...</div>;
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await api.get('/api/user/stats');
+        if (data.success) {
+          setUserStats(data.data);
+        } else {
+          throw new Error(data.error || 'Failed to fetch user stats');
+        }
+      } catch (error) {
+        console.error('Failed to fetch user stats:', error);
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isSignedIn) {
+      fetchStats();
+    }
+  }, [isSignedIn]);
+
+  if (!isLoaded || loading) {
+    return <LoadingUserStats />;
+  }
+
+  if (!isSignedIn) {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <ErrorCard
+        error={error}
+        message="Failed to load user statistics"
+      />
+    );
+  }
+
+  if (!userStats) {
+    return (
+      <ErrorCard
+        error={new Error("No stats data available")}
+        message="Failed to load user statistics"
+      />
+    );
   }
 
   //Get the most recent attempt date
-  const recentAttemptDate = userStats?.categoryStats.reduce(
+  const recentAttemptDate = userStats?.categoryStats?.reduce(
     (acc, curr) => {
       const currentDate = new Date(curr.lastAttempt);
       return currentDate > acc ? currentDate : acc;
@@ -31,13 +83,13 @@ export default function UserStats({ userStats }) {
     new Date(0)
   );
 
-  const totalAttempts = userStats?.categoryStats.reduce(
-    (acc, curr) => acc + curr.attempts,
+  const totalAttempts = userStats?.categoryStats?.reduce(
+    (acc, curr) => acc + (curr.attempts || 0),
     0
   );
 
-  const totalCompleted = userStats?.categoryStats.reduce(
-    (acc, curr) => acc + curr.completed,
+  const totalCompleted = userStats?.categoryStats?.reduce(
+    (acc, curr) => acc + (curr.completed || 0),
     0
   );
 
@@ -49,6 +101,21 @@ export default function UserStats({ userStats }) {
         new Date(b.lastAttempt).getTime() - new Date(a.lastAttempt).getTime()
       );
     });
+
+  // Add error boundary for the chart components
+  const renderCategoryChart = (category) => {
+    try {
+      return <CategoryBarChart key={category.id} categoryData={category} />;
+    } catch (error) {
+      return (
+        <ErrorCard
+          error={error}
+          message={`Failed to load chart for ${category.category?.name || 'category'}`}
+          className="h-full"
+        />
+      );
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -96,8 +163,8 @@ export default function UserStats({ userStats }) {
       </div>
       <div className="mt-2 grid grid-cols-2 gap-6">
         {latestStats?.map((category) => (
-          <CategoryBarChart key={category.id} categoryData={category} />
-        ))}
+          renderCategoryChart(category))
+        )}
       </div>
 
       <div className="border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">

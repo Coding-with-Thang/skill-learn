@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function UserDetails() {
-  const { user } = useUser()
+  const { user, isLoaded } = useUser()
 
-  if (!user) return null
+  if (!isLoaded || !user) return null
 
   return (
     <Card>

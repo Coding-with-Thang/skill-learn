@@ -35,7 +35,7 @@ const data = {
     },
     {
       title: "Rewards",
-      url: "#",
+      url: "/dashboard",
       icon: Bot,
       items: [
         {
@@ -44,13 +44,13 @@ const data = {
         },
         {
           title: "Reward Redeem Logs",
-          url: "#",
+          url: "/dashboard",
         },
       ],
     },
     {
       title: "Users",
-      url: "#",
+      url: "/dashboard",
       icon: BookOpen,
       items: [
         {
@@ -61,39 +61,31 @@ const data = {
     },
     {
       title: "Documentation",
-      url: "#",
+      url: "/dashboard",
       icon: BookOpen,
       items: [
         {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
           title: "Changelog",
-          url: "#",
+          url: "/dashboard/changelog",
         },
       ],
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/dashboard",
       icon: Settings2,
       items: [
         {
-          title: "General",
-          url: "#",
+          title: "Config",
+          url: "/dashboard/settings",
         },
         {
           title: "Team",
-          url: "#",
+          url: "/dashboard",
+        },
+        {
+          title: "Audit Logs",
+          url: "/dashboard/audit-logs",
         },
       ],
     },

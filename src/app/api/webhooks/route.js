@@ -1,87 +1,95 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const SIGNING_SECRET = process.env.SIGNING_SECRET;
-  const payload = await req.text();
-  const headerList = headers();
+  const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
-  // Add request validation
-  if (!payload || !headerList) {
-    return NextResponse.json("Invalid request", { status: 400 });
+  if (!WEBHOOK_SECRET) {
+    throw new Error(
+      "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
+    );
   }
 
-  // Add retry logic for database operations
-  const MAX_RETRIES = 3;
-  let retries = 0;
+  // Get the headers
+  const headerPayload = headers();
+  const svix_id = headerPayload.get("svix-id");
+  const svix_timestamp = headerPayload.get("svix-timestamp");
+  const svix_signature = headerPayload.get("svix-signature");
 
-  while (retries < MAX_RETRIES) {
+  // If there are no headers, error out
+  if (!svix_id || !svix_timestamp || !svix_signature) {
+    return new Response("Error occurred -- no svix headers", {
+      status: 400,
+    });
+  }
+
+  // Get the body
+  const payload = await req.json();
+  const body = JSON.stringify(payload);
+
+  // Create a new Svix instance with your secret.
+  const wh = new Webhook(WEBHOOK_SECRET);
+
+  let evt;
+
+  try {
+    evt = wh.verify(body, {
+      "svix-id": svix_id,
+      "svix-timestamp": svix_timestamp,
+      "svix-signature": svix_signature,
+    });
+  } catch (err) {
+    console.error("Error verifying webhook:", err);
+    return new Response("Error occurred", {
+      status: 400,
+    });
+  }
+
+  const eventType = evt.type;
+  const { id, ...attributes } = evt.data;
+
+  if (eventType === "user.created" || eventType === "user.updated") {
     try {
-      // Explicitly extract the required headers
-      const svixHeaders = {
-        "svix-id": headerList.get("svix-id"),
-        "svix-timestamp": headerList.get("svix-timestamp"),
-        "svix-signature": headerList.get("svix-signature"),
-      };
-
-      if (!SIGNING_SECRET || !svixHeaders["svix-signature"]) {
-        return NextResponse.json("Missing secret or headers", { status: 400 });
-      }
-
-      const wh = new Webhook(SIGNING_SECRET);
-      const evt = wh.verify(payload, svixHeaders); // will throw if invalid
-      const eventType = evt.type;
-      const user = evt.data;
-
-      if (["user.created", "user.updated"].includes(eventType)) {
-        const existingUser = await prisma.user.findFirst({
-          where: { clerkId: user.id },
-        });
-
-        const userData = {
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-          imageUrl: user.image_url,
-        };
-
-        if (existingUser) {
-          console.log("🔁 Updating user in DB:", user.id);
-          await prisma.user.update({
-            where: { clerkId: user.id },
-            data: userData,
-          });
-        } else {
-          console.log("🆕 Creating new user in DB:", user.id);
-          await prisma.user.create({
-            data: {
-              clerkId: user.id,
-              ...userData,
-            },
-          });
-        }
-      } else if (eventType === "user.deleted") {
-        console.log("🗑️ Deleting user from DB:", user.id);
-        await prisma.user.deleteMany({
-          where: { clerkId: user.id },
-        });
-      }
-
-      return NextResponse.json(
-        { message: "User sync successful" },
-        { status: 200 }
-      );
+      await prisma.user.upsert({
+        where: { clerkId: id },
+        update: {
+          username: attributes.username,
+          firstName: attributes.first_name,
+          lastName: attributes.last_name,
+          imageUrl: attributes.image_url,
+        },
+        create: {
+          clerkId: id,
+          username: attributes.username || id,
+          firstName: attributes.first_name || "",
+          lastName: attributes.last_name || "",
+          imageUrl: attributes.image_url,
+          points: 0,
+          lifetimePoints: 0,
+        },
+      });
     } catch (error) {
-      retries++;
-      if (retries === MAX_RETRIES) {
-        // Log to error monitoring service
-        console.error("Webhook processing failed after max retries:", error);
-        return NextResponse.json("Processing failed", { status: 500 });
-      }
-      // Wait before retry
-      await new Promise((resolve) => setTimeout(resolve, 1000 * retries));
+      console.error("Error upserting user:", error);
+      return new Response("Error occurred", {
+        status: 500,
+      });
     }
   }
+
+  if (eventType === "user.deleted") {
+    try {
+      await prisma.user.delete({
+        where: { clerkId: id },
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return new Response("Error occurred", {
+        status: 500,
+      });
+    }
+  }
+
+  return NextResponse.json({ success: true });
 }

@@ -4,89 +4,172 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Award, Calendar, Gift, Star, Clock } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { usePointsStore } from "@/app/store/pointsStore"
 import formatNumber from "@/utils/formatNumbers";
+import { LoadingUserBadge } from "@/components/ui/loading"
+import { ErrorCard } from "@/components/ui/error-boundary"
 
 export default function UserBadge() {
-  const { user, isLoaded } = useUser();
-  const { points, lifetimePoints, fetchPoints, addPoints, isLoading, fetchDailyStatus } = usePointsStore();
-  const [cooldown, setCooldown] = useState(0);
-  const pointsToAward = 10;
-  const cooldownInSeconds = 5;
-
-  // Fetch points status on component mount
-  useEffect(() => {
-    fetchPoints();
-  }, [fetchPoints]);
+  const { user, isLoaded, isSignedIn } = useUser();
+  const { points, lifetimePoints, isLoading, fetchUserData } = usePointsStore();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (cooldown <= 0) return;
+    let isMounted = true;
 
-    const timer = setTimeout(() => {
-      setCooldown(prev => prev - 1);
-    }, 1000);
+    const loadUserData = async () => {
+      if (!isSignedIn || !isLoaded) return;
 
-    return () => clearTimeout(timer);
-  }, [cooldown]);
+      try {
+        await fetchUserData();
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+        if (isMounted) {
+          setError(err);
+        }
+      }
+    };
 
-  useEffect(() => {
-    fetchDailyStatus();
-  }, [fetchDailyStatus]);
+    loadUserData();
 
-  const handleClick = async () => {
-    if (cooldown > 0 || isLoading) return;
+    return () => {
+      isMounted = false;
+    };
+  }, [isSignedIn, isLoaded, fetchUserData]);
 
-    await addPoints(pointsToAward, 'button_click');
-    setCooldown(cooldownInSeconds);
-  };
+  if (!isLoaded) {
+    return <LoadingUserBadge />
+  }
+
+  if (!isSignedIn) {
+    return null;
+  }
+
+  if (error) {
+    return (
+      <ErrorCard
+        error={error}
+        message="Failed to load user data"
+        reset={() => {
+          setError(null);
+          fetchUserData(true); // Force refresh on retry
+        }}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-[50rem] h-full w-full flex flex-col items-center justify-center bg-[url(/user_background.jpg)] bg-no-repeat bg-cover bg-center text-white">
-      <Image
-        src={user?.imageUrl || "/user.png"}
-        alt="Profile Image"
-        width={200}
-        height={200}
-        className="rounded-full border-2 shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-      />
-      <h2 className="text-4xl my-6">Welcome,{user?.firstName} {" "} {user?.lastName}!</h2>
-      {/* <p className="text-xl">You can earn up to 100 reward points today.</p> */}
-      {!isLoading ? (
-        <>
-          <div className="mt-10 px-10 bg-[rgba(0,0,0,0.25)] grid grid-cols-3 gap-6 rounded-md">
-            <div className="p-4">
-              <p className="font-bold text-4xl">{isLoading ? '...' : formatNumber(points)}</p>
-              <p className="text-xl">Current Reward Points</p>
+    <div
+      className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn"
+      aria-label="User Badge Section"
+      style={{
+        backgroundColor: "#254117",
+        backgroundImage: "url('/chalkboard_texture.png'), radial-gradient(circle at 20% 20%, #2e4a21 60%, #1a2a13 100%)",
+        backgroundBlendMode: "multiply",
+        border: "8px solid #fff",
+        borderRadius: "32px",
+        boxShadow: "0 8px 32px 0 rgba(0,0,0,0.5), 0 0 0 4px #eee8",
+        outline: "2px dashed #fff8",
+        outlineOffset: "8px",
+      }}
+    >
+      <div className="absolute inset-0 pointer-events-none z-0" style={{
+        background: "url('/chalk_dust.png') repeat",
+        opacity: 0.15,
+        mixBlendMode: "screen"
+      }} aria-hidden="true" />
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <Image
+          src={user?.imageUrl || "/user.png"}
+          alt={user ? `${user.firstName} ${user.lastName} profile image` : "Default profile image"}
+          width={160}
+          height={160}
+          className="rounded-full border-4 border-white/60 shadow-lg bg-white/10 object-cover mt-6"
+          priority
+        />
+        <h2
+          className="text-4xl font-bold my-6 drop-shadow-lg text-center"
+          style={{
+            fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
+            color: "#fff",
+            textShadow: "0 2px 0 #fff8, 0 0 8px #fff8"
+          }}
+        >
+          {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
+        </h2>
+        {!isLoading ? (
+          <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
+            style={{
+              boxShadow: "0 2px 16px 0 #0006, 0 0 0 2px #fff4",
+              fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
+            }}
+          >
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(points)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Current Reward Points</p>
             </div>
-            <div className="p-4">
-              <p className="font-bold text-4xl">{isLoading ? '...' : formatNumber(lifetimePoints)}</p>
-              <p className="text-xl">All Time Reward Points</p>
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(lifetimePoints)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>All Time Reward Points</p>
             </div>
-            <div className="p-4">
-              <p className="font-bold text-4xl">{formatNumber(10)}</p>
-              <p className="text-xl">Training Sessions Last 30 Days</p>
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(10)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Training Sessions Last 30 Days</p>
             </div>
           </div>
-
-          {/* <Button
-            onClick={handleClick}
-            className="text-xl font-semibold mt-10 rounded-full bg-white/20 px-8 py-3 text-white"
-            disabled={cooldown > 0 || isLoading}
-          >
-            {cooldown > 0 ? `Wait ${cooldown}s` : "Click here to earn 10 Points (Test)"}
-          </Button> */}
-        </>
-      ) : (
-        <Card className="w-full max-w-md mx-auto">
-          <CardContent className="pt-6 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </CardContent>
-        </Card>
-      )
-      }
+        ) : (
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="pt-6 flex justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </CardContent>
+          </Card>
+        )}
+      </div>
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20"
+        style={{
+          width: "80%",
+          height: "36px",
+          background: "linear-gradient(90deg, #b08d57 0%, #e2c290 100%)",
+          borderRadius: "0 0 18px 18px",
+          boxShadow: "0 6px 16px 0 #0007, 0 2px 0 #fff5 inset",
+          borderTop: "4px solid #a67c52",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          paddingRight: "32px"
+        }}
+        aria-hidden="true"
+      >
+        <div style={{
+          width: "32px",
+          height: "12px",
+          background: "#fff",
+          borderRadius: "4px",
+          marginLeft: "8px",
+          boxShadow: "0 1px 4px #bbb, 0 0 0 1px #eee"
+        }} />
+        <div style={{
+          width: "18px",
+          height: "8px",
+          background: "#f5f5f5",
+          borderRadius: "3px",
+          marginLeft: "6px",
+          boxShadow: "0 1px 2px #bbb"
+        }} />
+      </div>
+      <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap" rel="stylesheet" />
+      <style jsx global>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(30px);}
+          to { opacity: 1; transform: none;}
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.8s cubic-bezier(0.4,0,0.2,1) both;
+        }
+      `}</style>
     </div>
-  )
+  );
 }

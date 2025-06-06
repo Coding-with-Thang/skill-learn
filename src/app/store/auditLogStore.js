@@ -17,18 +17,19 @@ export const useAuditLogStore = create((set, get) => ({
       set({ isLoading: true });
       const filters = get().filters;
 
-      // Build query params
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "50",
-      });
+      // Build query string manually to avoid URLSearchParams issues
+      let queryParams = `page=${page}&limit=50`;
 
-      if (filters.resource) params.append("resource", filters.resource);
-      if (filters.action) params.append("action", filters.action);
-      if (filters.startDate) params.append("startDate", filters.startDate);
-      if (filters.endDate) params.append("endDate", filters.endDate);
+      if (filters.resource)
+        queryParams += `&resource=${encodeURIComponent(filters.resource)}`;
+      if (filters.action)
+        queryParams += `&action=${encodeURIComponent(filters.action)}`;
+      if (filters.startDate)
+        queryParams += `&startDate=${encodeURIComponent(filters.startDate)}`;
+      if (filters.endDate)
+        queryParams += `&endDate=${encodeURIComponent(filters.endDate)}`;
 
-      const response = await api.get(`/admin/audit-logs?${params}`);
+      const response = await api.get(`/admin/audit-logs?${queryParams}`);
 
       set({
         logs: response.data.logs,

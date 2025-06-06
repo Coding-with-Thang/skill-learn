@@ -4,9 +4,9 @@ import prisma from "@/utils/connect";
 
 export async function GET(req, { params }) {
   try {
-    const { userId } = await auth();
+    const { userId } = auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     const { categoryId } = params;
@@ -16,7 +16,7 @@ export async function GET(req, { params }) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return new Response("User not found", { status: 404 });
     }
 
     const stats = await prisma.categoryStat.findUnique({
@@ -46,9 +46,6 @@ export async function GET(req, { params }) {
     );
   } catch (error) {
     console.error("Error fetching quiz stats:", error);
-    return NextResponse.json(
-      { error: "Error fetching quiz stats" },
-      { status: 500 }
-    );
+    return new Response("Error fetching quiz stats", { status: 500 });
   }
 }

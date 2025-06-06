@@ -3,11 +3,11 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const { userId } = await auth();
+  const { userId } = auth();
   const { categoryId } = await req.json();
 
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return new Response("Unauthorized", { status: 401 });
   }
 
   try {
@@ -16,7 +16,7 @@ export async function POST(req) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return new Response("User not found", { status: 404 });
     }
 
     let stat = await prisma.categoryStat.findUnique({
@@ -55,6 +55,6 @@ export async function POST(req) {
     return NextResponse.json(stat);
   } catch (error) {
     console.error("Start quiz error:", error);
-    return NextResponse.json({ error: "Error starting quiz" }, { status: 500 });
+    return new Response("Error starting quiz", { status: 500 });
   }
 }

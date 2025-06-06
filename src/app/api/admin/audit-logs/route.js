@@ -4,9 +4,9 @@ import prisma from "@/utils/connect";
 
 export async function GET(request) {
   try {
-    const { userId } = await auth();
+    const { userId } = auth(request);
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     // Get query parameters
@@ -61,9 +61,6 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error("Error fetching audit logs:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return new Response("Internal server error", { status: 500 });
   }
 }

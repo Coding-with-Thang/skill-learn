@@ -1,10 +1,10 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
 export async function POST(request, { params }) {
   try {
-    const { userId } = await auth();
+    const { userId } = getAuth(request);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -45,7 +45,7 @@ export async function POST(request, { params }) {
       where: { id },
       data: {
         claimed: true,
-        claimUrl: redemption.reward.claimUrl, // If the reward has a URL
+        claimUrl: redemption.reward.claimUrl,
         claimedAt: new Date(),
       },
     });

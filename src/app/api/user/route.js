@@ -1,12 +1,13 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
-export async function GET() {
+
+export async function GET(request) {
   try {
-    const { userId } = await auth();
+    const { userId } = auth(request);
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     //Find the user in the db
@@ -15,11 +16,11 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return new Response("User not found", { status: 404 });
     }
 
     return NextResponse.json(user);
   } catch (error) {
-    return NextResponse.json({ error: "Error getting user" }, { status: 500 });
+    return new Response("Error getting user", { status: 500 });
   }
 }

@@ -26,6 +26,13 @@ const images = [
     genre: "Brain Teaser",
     route: "/games/guessing-game",
   },
+  {
+    id: 4,
+    src: "https://hips.hearstapps.com/hmg-prod/images/people-playing-paper-rock-scissors-royalty-free-illustration-1583269312.jpg",
+    alt: "Rock Paper Scissors",
+    genre: "Brain Teaser",
+    route: "/games/rock-paper-scissors",
+  },
 ];
 
 export default function GameSelectPage() {
