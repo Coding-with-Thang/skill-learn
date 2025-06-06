@@ -1,23 +1,59 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { rateLimiter } from "@/middleware/rateLimit";
 
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-]);
+const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+
+// Rate limit configuration
+const rateLimits = {
+  public: { windowMs: 15 * 60 * 1000, max: 200 }, // 200 requests per 15 minutes
+  protected: { windowMs: 60 * 1000, max: 120 }, // 120 requests per minute
+};
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
-    await auth.protect();
+  try {
+    const { userId } = await auth();
+
+    // Apply rate limiting based on route type
+    const rateLimit = isProtectedRoute(req)
+      ? rateLimits.protected
+      : rateLimits.public;
+    const rateLimitResult = await rateLimiter(req.ip, rateLimit);
+
+    if (!rateLimitResult.success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: "Too many requests",
+          retryAfter: rateLimitResult.retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": rateLimitResult.retryAfter.toString(),
+          },
+        }
+      );
+    }
+
+    // Check authentication for protected routes
+    if (!userId && isProtectedRoute(req)) {
+      return auth().redirectToSignIn();
+    }
+  } catch (error) {
+    console.error("Middleware error:", error);
+    return new NextResponse(
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    //Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
+    //Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };

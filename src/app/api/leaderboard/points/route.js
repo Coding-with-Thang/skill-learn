@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
     const leaderboard = await prisma.user.findMany({
       select: {
@@ -22,11 +22,14 @@ export async function GET() {
       rank: index + 1,
     }));
 
-    return NextResponse.json(rankedLeaderboard);
+    return NextResponse.json({
+      success: true,
+      leaderboard: rankedLeaderboard,
+    });
   } catch (error) {
     console.error("Error fetching points leaderboard:", error);
     return NextResponse.json(
-      { error: "Failed to fetch leaderboard" },
+      { error: "Failed to fetch leaderboard", details: error.message },
       { status: 500 }
     );
   }

@@ -39,8 +39,12 @@ export default function PerformanceStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const data = await api.get('/api/user/performance')
-        setStats(data)
+        const { data } = await api.get('/api/user/performance')
+        if (data.success) {
+          setStats(data)
+        } else {
+          throw new Error(data.error || 'Failed to fetch performance stats')
+        }
       } catch (error) {
         console.error('Failed to fetch performance stats:', error)
       } finally {

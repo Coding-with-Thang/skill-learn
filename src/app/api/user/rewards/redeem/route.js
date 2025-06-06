@@ -1,12 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
 export async function POST(request) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth(request);
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { rewardId } = await request.json();
@@ -32,16 +32,22 @@ export async function POST(request) {
 
     // Validate user and reward
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     if (!reward) {
-      return new Response("Reward not found", { status: 404 });
+      return NextResponse.json({ error: "Reward not found" }, { status: 404 });
     }
     if (!reward.enabled) {
-      return new Response("Reward not available", { status: 400 });
+      return NextResponse.json(
+        { error: "Reward not available" },
+        { status: 400 }
+      );
     }
     if (user.points < reward.cost) {
-      return new Response("Insufficient points", { status: 400 });
+      return NextResponse.json(
+        { error: "Insufficient points" },
+        { status: 400 }
+      );
     }
 
     // Check redemption limits
@@ -114,6 +120,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Error redeeming reward:", error);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

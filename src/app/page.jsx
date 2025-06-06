@@ -1,6 +1,6 @@
 "use client"
 
-import { SignedIn, SignedOut, useUser, useAuth } from '@clerk/nextjs'
+import { SignedIn, SignedOut, useUser } from '@clerk/nextjs'
 import { useState } from 'react';
 import DailyActivities from "./components/User/DailyActivities";
 import MoreTraining from "./components/User/Training";
@@ -17,7 +17,6 @@ import { ErrorCard } from "@/components/ui/error-boundary"
 
 export default function HomePage() {
   const { isLoaded, isSignedIn } = useUser();
-  const { getToken } = useAuth();
   const [error, setError] = useState(null);
 
   if (!isLoaded) {
@@ -79,7 +78,6 @@ export default function HomePage() {
           {renderSection(Testimonials)}
         </section>
       </SignedOut>
-      {/* TODO: Add loading states, dark mode toggle, and improve accessibility */}
     </main>
   );
 }

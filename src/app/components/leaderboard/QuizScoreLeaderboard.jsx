@@ -11,7 +11,7 @@ export default function QuizScoreLeaderboard() {
     const fetchLeaderboard = async () => {
       try {
         const { data } = await api.get("/api/leaderboard/quiz-score");
-        setLeaderboard(data);
+        setLeaderboard(data.leaderboard);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       } finally {

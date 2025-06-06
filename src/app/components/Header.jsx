@@ -105,9 +105,9 @@ export default function Header() {
                 <Link href="/training" className="flex gap-1 items-center hover:underline">
                   <BookOpenText /> Training
                 </Link>
-                {/* <Link href="/achievements" className="flex gap-1 items-center hover:underline">
+                <Link href="/achievements" className="flex gap-1 items-center hover:underline">
                   <Medal /> Achievements
-                </Link> */}
+                </Link>
                 <Link href="/stats" className="flex gap-1 items-center hover:underline">
                   <ChartColumnBig /> My Stats
                 </Link>

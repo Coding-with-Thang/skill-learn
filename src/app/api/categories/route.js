@@ -17,11 +17,15 @@ export async function GET() {
       },
     });
 
+    if (!categories) {
+      return NextResponse.json({ categories: [] });
+    }
+
     return NextResponse.json({ categories });
   } catch (error) {
     console.error("Error fetching categories:", error);
     return NextResponse.json(
-      { error: "There was an error getting Categories" },
+      { error: "There was an error getting Categories", categories: [] },
       { status: 500 }
     );
   }

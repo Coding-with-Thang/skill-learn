@@ -1,6 +1,7 @@
 "use client"
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { formatTime } from "@/utils/formatTime";
 import { PencilLine, Crosshair, ListChecks } from 'lucide-react';
 import { LoadingCard } from "@/components/ui/loading";
@@ -17,17 +18,51 @@ import BreadCrumbCom from "../BreadCrumb"
 import QuizStats from "./QuizStats"
 import { LoadingUserStats } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
+import api from "@/utils/axios";
 
-export default function UserStats({ userStats }) {
+export default function UserStats() {
   const { user, isLoaded, isSignedIn } = useUser();
-  const { getToken } = useAuth();
+  const [userStats, setUserStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!isLoaded) {
-    return <LoadingUserStats />
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await api.get('/api/user/stats');
+        if (data.success) {
+          setUserStats(data.data);
+        } else {
+          throw new Error(data.error || 'Failed to fetch user stats');
+        }
+      } catch (error) {
+        console.error('Failed to fetch user stats:', error);
+        setError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isSignedIn) {
+      fetchStats();
+    }
+  }, [isSignedIn]);
+
+  if (!isLoaded || loading) {
+    return <LoadingUserStats />;
   }
 
   if (!isSignedIn) {
     return null;
+  }
+
+  if (error) {
+    return (
+      <ErrorCard
+        error={error}
+        message="Failed to load user statistics"
+      />
+    );
   }
 
   if (!userStats) {

@@ -1,12 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth(request);
+
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -15,7 +16,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Get all active quizzes
@@ -98,12 +99,18 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      categoryStats,
-      quizStats,
-      categories,
+      success: true,
+      data: {
+        categoryStats,
+        quizStats,
+        categories,
+      },
     });
   } catch (error) {
     console.error("Error fetching quiz stats:", error);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error", details: error.message },
+      { status: 500 }
+    );
   }
 }

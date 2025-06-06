@@ -1,13 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth(request);
 
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -16,20 +16,61 @@ export async function GET() {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Get points history
     const history = await prisma.pointLog.findMany({
-      where: {
-        user: { clerkId: userId },
-      },
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 50, // Limit to last 50 entries
+      select: {
+        id: true,
+        amount: true,
+        reason: true,
+        createdAt: true,
+      },
     });
 
-    return NextResponse.json({ history });
+    // Get points summary
+    const summary = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        points: true,
+        lifetimePoints: true,
+      },
+    });
+
+    // Get today's points
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todaysPoints = await prisma.pointLog.aggregate({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: today,
+        },
+      },
+      _sum: {
+        amount: true,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      history,
+      summary: {
+        currentPoints: summary?.points || 0,
+        lifetimePoints: summary?.lifetimePoints || 0,
+        todaysPoints: todaysPoints._sum.amount || 0,
+      },
+    });
   } catch (error) {
     console.error("Error fetching points history:", error);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error", details: error.message },
+      { status: 500 }
+    );
   }
 }

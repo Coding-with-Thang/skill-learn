@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
     const users = await prisma.user.findMany({
       select: {
@@ -39,11 +39,14 @@ export async function GET() {
       .sort((a, b) => b.averageScore - a.averageScore)
       .slice(0, 100);
 
-    return NextResponse.json(leaderboard);
+    return NextResponse.json({
+      success: true,
+      leaderboard,
+    });
   } catch (error) {
     console.error("Error fetching quiz score leaderboard:", error);
     return NextResponse.json(
-      { error: "Failed to fetch leaderboard" },
+      { error: "Failed to fetch leaderboard", details: error.message },
       { status: 500 }
     );
   }

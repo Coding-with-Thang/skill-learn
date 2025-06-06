@@ -2,9 +2,9 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = auth();
+    const { userId } = auth(request);
 
     if (!userId) {
       return new Response("Unauthorized", { status: 401 });

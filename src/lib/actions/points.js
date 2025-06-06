@@ -1,12 +1,17 @@
 import prisma from "@/utils/connect";
 import { auth } from "@clerk/nextjs/server";
+import { updateStreak } from "./streak";
+import { getSystemSetting } from "./settings";
 
-export async function getDailyPointStatus() {
-  const { userId } = await auth();
+export async function getDailyPointStatus(request) {
+  const { userId } = auth(request);
 
   if (!userId) {
     throw new Error("Unauthorized");
   }
+
+  // Get daily points limit from settings
+  const dailyLimit = parseInt(await getSystemSetting("DAILY_POINTS_LIMIT"), 10);
 
   //Get user from DB
   const user = await prisma.user.findUnique({
@@ -37,6 +42,7 @@ export async function getDailyPointStatus() {
       todaysPoints: 0,
       canEarnPoints: true,
       lifetimePoints: 0,
+      dailyLimit,
     };
   }
 
@@ -54,9 +60,10 @@ export async function getDailyPointStatus() {
   return {
     user,
     todaysPoints,
-    canEarnPoints: todaysPoints < 100,
+    canEarnPoints: todaysPoints < dailyLimit,
     lifetimePoints: user.lifetimePoints,
     todaysLogs,
+    dailyLimit,
   };
 }
 
@@ -65,8 +72,10 @@ export async function awardPoints(amount, reason) {
     throw new Error("Point amount must be a number");
   }
 
-  if (amount <= 0 || amount > 100) {
-    throw new Error("Point amount must be between 1 and 100");
+  const dailyLimit = parseInt(await getSystemSetting("DAILY_POINTS_LIMIT"), 10);
+
+  if (amount <= 0 || amount > dailyLimit) {
+    throw new Error(`Point amount must be between 1 and ${dailyLimit}`);
   }
 
   if (!reason || typeof reason !== "string") {
@@ -85,7 +94,10 @@ export async function awardPoints(amount, reason) {
     throw new Error("Daily point limit reached");
   }
 
-  const pointsToAward = Math.min(amount, 100 - status.todaysPoints);
+  const pointsToAward = Math.min(
+    amount,
+    status.dailyLimit - status.todaysPoints
+  );
 
   try {
     // Use transaction to ensure atomic updates
@@ -104,7 +116,7 @@ export async function awardPoints(amount, reason) {
       const pointLog = await tx.pointLog.create({
         data: {
           userId: user.id,
-          amount, // Use the amount parameter directly
+          amount: pointsToAward,
           reason,
         },
       });
@@ -116,6 +128,9 @@ export async function awardPoints(amount, reason) {
           lifetimePoints: { increment: pointsToAward },
         },
       });
+
+      // Update streak
+      await updateStreak(userId);
 
       return {
         awarded: pointsToAward,

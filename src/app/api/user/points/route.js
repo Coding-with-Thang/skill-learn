@@ -1,30 +1,79 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth(request);
 
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      throw new AppError("Unauthorized - No user found", ErrorType.AUTH, {
+        status: 401,
+      });
     }
 
-    const user = await prisma.user.findUnique({
+    // Find user in database
+    const dbUser = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { points: true, lifetimePoints: true },
+      select: {
+        id: true,
+        points: true,
+        lifetimePoints: true,
+      },
     });
 
-    if (!user) {
-      return new Response("User not found", { status: 404 });
+    if (!dbUser) {
+      // Try to create the user if they don't exist
+      try {
+        // Get user details from Clerk
+        const clerkUser = await fetch(
+          `https://api.clerk.dev/v1/users/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+            },
+          }
+        ).then((res) => res.json());
+
+        // Generate a username from email or name
+        const email = clerkUser.email_addresses[0]?.email_address;
+        const username = email
+          ? email.split("@")[0]
+          : `${clerkUser.first_name?.toLowerCase() || ""}${
+              clerkUser.last_name?.toLowerCase() || ""
+            }`;
+
+        // Create new user
+        const newUser = await prisma.user.create({
+          data: {
+            clerkId: userId,
+            email: email,
+            username: username,
+            firstName: clerkUser.first_name,
+            lastName: clerkUser.last_name,
+            points: 0,
+            lifetimePoints: 0,
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          points: newUser.points,
+          lifetimePoints: newUser.lifetimePoints,
+        });
+      } catch (error) {
+        throw new AppError("Failed to create user", ErrorType.API, error);
+      }
     }
 
     return NextResponse.json({
-      points: user.points,
-      lifetimePoints: user.lifetimePoints,
+      success: true,
+      points: dbUser.points,
+      lifetimePoints: dbUser.lifetimePoints,
     });
   } catch (error) {
-    console.error("Error fetching points:", error);
-    return new Response("Internal server error", { status: 500 });
+    const errorResponse = handleApiError(error);
+    return NextResponse.json(errorResponse, { status: errorResponse.status });
   }
 }

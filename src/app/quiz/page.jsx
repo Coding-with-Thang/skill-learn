@@ -178,27 +178,54 @@ export default function QuizScreenPage() {
       let pointsEarned = 0;
       let pointsBreakdown = {
         correct: 0,
-        bonus: 0
+        bonus: 0,
+        limited: false
       };
+
+      // Get daily points status
+      const dailyStatus = await api.get("/user/points/daily-status");
+      const remainingDailyPoints = 100000 - (dailyStatus.data.todaysPoints || 0);
 
       if (hasPassingRequirement) {
         // With passing score requirement
         if (hasPassed) {
-          pointsBreakdown.correct = correctAnswers * 10; // 10 points per correct answer
-          if (isPerfectScore) {
-            pointsBreakdown.bonus = pointsBreakdown.correct; // Double points for perfect score
+          // Calculate raw points (before daily limit)
+          const rawPoints = correctAnswers * 1000; // 1000 points per correct answer
+          const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
+
+          // Apply daily limit
+          pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
+          if (pointsBreakdown.correct < rawPoints) {
+            pointsBreakdown.limited = true;
+          }
+
+          // Only apply bonus if there's room in daily limit
+          if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
+            pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
           }
         }
       } else {
         // No passing score - half points per correct answer
-        pointsBreakdown.correct = correctAnswers * 5; // 5 points per correct answer
-        if (isPerfectScore) {
-          pointsBreakdown.bonus = pointsBreakdown.correct; // Double points for perfect score
+        const rawPoints = correctAnswers * 500; // 500 points per correct answer
+        const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
+
+        // Apply daily limit
+        pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
+        if (pointsBreakdown.correct < rawPoints) {
+          pointsBreakdown.limited = true;
+        }
+
+        // Only apply bonus if there's room in daily limit
+        if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
+          pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
         }
       }
 
       // Calculate total points
       pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
+
+      // Format points with commas
+      const formatNumber = (num) => new Intl.NumberFormat().format(num);
 
       const timeSpent = selectedQuiz?.timeLimit
         ? (selectedQuiz.timeLimit * 60) - timeRemaining
@@ -216,34 +243,22 @@ export default function QuizScreenPage() {
         pointsBreakdown
       });
 
-      // Award points
-      if (pointsEarned > 0) {
-        await api.post("/user/points/add", {
-          amount: pointsEarned,
-          reason: isPerfectScore ? "perfect_quiz_completion" : "quiz_completion",
-          breakdown: pointsBreakdown
-        });
-      }
-
-      // Show appropriate success message
-      let message = '';
-      if (hasPassingRequirement) {
-        if (hasPassed) {
-          message = isPerfectScore
-            ? `Perfect score! You earned ${pointsEarned} points (2x bonus)! 🎉`
-            : `Quiz passed! You earned ${pointsBreakdown.correct} points! 🎉`;
-        } else {
-          message = `Quiz not passed. Required score: ${passingScore}%. Your score: ${scorePercentage.toFixed(1)}%. No points earned.`;
-        }
-      } else {
-        if (isPerfectScore) {
-          message = `Perfect score! You earned ${pointsEarned} points (2x bonus)! 🎉`;
-        } else {
-          message = `Quiz completed! You earned ${pointsBreakdown.correct} points!`;
-        }
-      }
-
-      toast.success(message);
+      // Show results with point breakdown
+      toast({
+        title: "Quiz Completed!",
+        description: (
+          <div className="mt-2 space-y-2">
+            <p>Score: {scorePercentage.toFixed(1)}%</p>
+            <p>Points earned: {formatNumber(pointsEarned)}</p>
+            {pointsBreakdown.limited && (
+              <p className="text-yellow-600">
+                Note: Points were limited by daily cap. Come back tomorrow for more!
+              </p>
+            )}
+          </div>
+        ),
+        duration: 5000,
+      });
 
       // Store results for the results page
       sessionStorage.setItem('lastQuizResults', JSON.stringify({

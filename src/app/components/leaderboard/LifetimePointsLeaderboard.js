@@ -14,8 +14,11 @@ export default function LifetimePointsLeaderboard({
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const data = await api.get("/api/leaderboard/points");
-        const filteredData = data.slice(skip, limit ? skip + limit : undefined);
+        const { data } = await api.get("/api/leaderboard/points");
+        const filteredData = data.leaderboard.slice(
+          skip,
+          limit ? skip + limit : undefined
+        );
         setLeaderboard(filteredData);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
@@ -53,7 +56,33 @@ export default function LifetimePointsLeaderboard({
 
   return (
     <div className="bg-white rounded-lg shadow-md">
-      // ...existing table code...
+      <table className="w-full">
+        <thead>
+          <tr className="bg-gray-50">
+            <th className="px-6 py-3 text-left">Rank</th>
+            <th className="px-6 py-3 text-left">User</th>
+            <th className="px-6 py-3 text-right">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((entry) => (
+            <tr key={entry.id} className="border-t">
+              <td className="px-6 py-4">{entry.rank}</td>
+              <td className="px-6 py-4 flex items-center gap-2">
+                <Image
+                  src={entry.image}
+                  alt={entry.name}
+                  width={32}
+                  height={32}
+                  className="rounded-full"
+                />
+                {entry.name}
+              </td>
+              <td className="px-6 py-4 text-right">{entry.totalPoints}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

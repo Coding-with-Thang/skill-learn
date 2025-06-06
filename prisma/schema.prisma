@@ -24,6 +24,11 @@ model User {
   rewardsRedeemed RewardLog[]
   categoryStats   CategoryStat[]
   AuditLog        AuditLog[]
+  currentStreak   Int            @default(0)
+  longestStreak   Int            @default(0)
+  lastStreakDate  DateTime?
+  streakUpdatedAt DateTime?    @default(now())
+  systemSettings  SystemSetting[]
 
   // CRITICAL INDEXES FOR COMMON QUERIES
   @@index([role]) // Filter by role: "Get all managers"
@@ -236,6 +241,19 @@ model AuditLog {
   @@index([timestamp(sort: Desc)])
   @@index([userId, timestamp(sort: Desc)])
   @@map("audit_logs")
+}
+
+model SystemSetting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general")
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  @db.ObjectId
+  user        User?    @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_settings")
 }
 
 enum Role {

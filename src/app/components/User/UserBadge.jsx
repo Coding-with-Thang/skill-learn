@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
@@ -13,38 +13,31 @@ import { ErrorCard } from "@/components/ui/error-boundary"
 
 export default function UserBadge() {
   const { user, isLoaded, isSignedIn } = useUser();
-  const { getToken } = useAuth();
-  const { points, lifetimePoints, fetchPoints, addPoints, isLoading, fetchDailyStatus } = usePointsStore();
-  const [cooldown, setCooldown] = useState(0);
+  const { points, lifetimePoints, isLoading, fetchUserData } = usePointsStore();
   const [error, setError] = useState(null);
-  const pointsToAward = 10;
-  const cooldownInSeconds = 5;
 
   useEffect(() => {
-    if (isSignedIn) {
-      fetchPoints().catch(err => {
-        setError(err);
-        console.error("Failed to fetch points:", err);
-      });
-    }
-  }, [fetchPoints, isSignedIn]);
+    let isMounted = true;
 
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setTimeout(() => {
-      setCooldown(prev => prev - 1);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [cooldown]);
+    const loadUserData = async () => {
+      if (!isSignedIn || !isLoaded) return;
 
-  useEffect(() => {
-    if (isSignedIn) {
-      fetchDailyStatus().catch(err => {
-        console.error("Failed to fetch daily status:", err);
-        // Don't set error state here as it's not critical
-      });
-    }
-  }, [fetchDailyStatus, isSignedIn]);
+      try {
+        await fetchUserData();
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+        if (isMounted) {
+          setError(err);
+        }
+      }
+    };
+
+    loadUserData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isSignedIn, isLoaded, fetchUserData]);
 
   if (!isLoaded) {
     return <LoadingUserBadge />
@@ -61,24 +54,18 @@ export default function UserBadge() {
         message="Failed to load user data"
         reset={() => {
           setError(null);
-          fetchPoints();
+          fetchUserData(true); // Force refresh on retry
         }}
       />
     );
   }
-
-  const handleClick = async () => {
-    if (cooldown > 0 || isLoading) return;
-    await addPoints(pointsToAward, 'button_click');
-    setCooldown(cooldownInSeconds);
-  };
 
   return (
     <div
       className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn"
       aria-label="User Badge Section"
       style={{
-        backgroundColor: "#254117", // Chalkboard green
+        backgroundColor: "#254117",
         backgroundImage: "url('/chalkboard_texture.png'), radial-gradient(circle at 20% 20%, #2e4a21 60%, #1a2a13 100%)",
         backgroundBlendMode: "multiply",
         border: "8px solid #fff",
@@ -88,7 +75,6 @@ export default function UserBadge() {
         outlineOffset: "8px",
       }}
     >
-      {/* Chalk dust overlay */}
       <div className="absolute inset-0 pointer-events-none z-0" style={{
         background: "url('/chalk_dust.png') repeat",
         opacity: 0.15,
@@ -113,37 +99,26 @@ export default function UserBadge() {
         >
           {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
         </h2>
-        {/* <p className="text-xl">You can earn up to 100 reward points today.</p> */}
         {!isLoading ? (
-          <>
-            <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
-              style={{
-                boxShadow: "0 2px 16px 0 #0006, 0 0 0 2px #fff4",
-                fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
-              }}
-            >
-              <div className="p-4 flex flex-col justify-center items-center">
-                <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(points)}</p>
-                <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Current Reward Points</p>
-              </div>
-              <div className="p-4 flex flex-col justify-center items-center">
-                <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(lifetimePoints)}</p>
-                <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>All Time Reward Points</p>
-              </div>
-              <div className="p-4 flex flex-col justify-center items-center">
-                <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(10)}</p>
-                <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Training Sessions Last 30 Days</p>
-              </div>
+          <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
+            style={{
+              boxShadow: "0 2px 16px 0 #0006, 0 0 0 2px #fff4",
+              fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
+            }}
+          >
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(points)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Current Reward Points</p>
             </div>
-
-            {/* <Button
-              onClick={handleClick}
-              className="text-xl font-semibold mt-10 rounded-full bg-white/20 px-8 py-3 text-white"
-              disabled={cooldown > 0 || isLoading}
-            >
-              {cooldown > 0 ? `Wait ${cooldown}s` : "Click here to earn 10 Points (Test)"}
-            </Button> */}
-          </>
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(lifetimePoints)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>All Time Reward Points</p>
+            </div>
+            <div className="p-4 flex flex-col justify-center items-center">
+              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(10)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Training Sessions Last 30 Days</p>
+            </div>
+          </div>
         ) : (
           <Card className="w-full max-w-md mx-auto">
             <CardContent className="pt-6 flex justify-center">
@@ -152,7 +127,6 @@ export default function UserBadge() {
           </Card>
         )}
       </div>
-      {/* Chalkboard ledge */}
       <div
         className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20"
         style={{
@@ -169,7 +143,6 @@ export default function UserBadge() {
         }}
         aria-hidden="true"
       >
-        {/* Optional: Chalk pieces */}
         <div style={{
           width: "32px",
           height: "12px",
@@ -187,7 +160,6 @@ export default function UserBadge() {
           boxShadow: "0 1px 2px #bbb"
         }} />
       </div>
-      {/* Chalkboard font import */}
       <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap" rel="stylesheet" />
       <style jsx global>{`
         @keyframes fadeIn {
@@ -199,5 +171,5 @@ export default function UserBadge() {
         }
       `}</style>
     </div>
-  )
+  );
 }

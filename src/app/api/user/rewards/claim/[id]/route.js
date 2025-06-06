@@ -1,12 +1,12 @@
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 
 export async function POST(request, { params }) {
   try {
-    const { userId } = auth();
+    const { userId } = getAuth(request);
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = params;
@@ -17,7 +17,7 @@ export async function POST(request, { params }) {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Find the redemption and check if it can be claimed
@@ -34,9 +34,10 @@ export async function POST(request, { params }) {
     });
 
     if (!redemption) {
-      return new Response("Reward redemption not found or already claimed", {
-        status: 404,
-      });
+      return NextResponse.json(
+        { error: "Reward redemption not found or already claimed" },
+        { status: 404 }
+      );
     }
 
     // Update the redemption as claimed
@@ -55,6 +56,9 @@ export async function POST(request, { params }) {
     });
   } catch (error) {
     console.error("Error claiming reward:", error);
-    return new Response("Internal server error", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

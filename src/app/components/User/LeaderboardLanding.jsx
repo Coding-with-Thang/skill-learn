@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import api from "@/utils/axios";
+import { useUser } from "@clerk/nextjs";
 
 const PodiumPosition = ({ user, position }) => {
   const medals = {
@@ -51,9 +52,18 @@ export default function LeaderboardLanding() {
   const [quizLeaderboard, setQuizLeaderboard] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isSignedIn, isLoaded } = useUser();
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchLeaderboards = async () => {
+      // Don't fetch if not signed in
+      if (!isSignedIn || !isLoaded) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
@@ -63,23 +73,45 @@ export default function LeaderboardLanding() {
           api.get("/api/leaderboard/quiz-score"),
         ]);
 
-        setPointsLeaderboard(pointsData.slice(0, 3));
-        setQuizLeaderboard(quizData.slice(0, 3));
+        if (isMounted) {
+          setPointsLeaderboard(pointsData.data.leaderboard.slice(0, 3));
+          setQuizLeaderboard(quizData.data.leaderboard.slice(0, 3));
+        }
       } catch (error) {
         console.error("Error fetching leaderboards:", error);
-        setError("Failed to load leaderboards");
+        if (isMounted) {
+          if (error.response?.status === 401) {
+            setError("Please sign in to view leaderboards");
+          } else {
+            setError("Failed to load leaderboards");
+          }
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchLeaderboards();
-  }, []);
 
-  if (isLoading) {
+    return () => {
+      isMounted = false;
+    };
+  }, [isSignedIn, isLoaded]);
+
+  if (!isLoaded || isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[200px]">
         Loading leaderboards...
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        Please sign in to view leaderboards
       </div>
     );
   }

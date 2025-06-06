@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
 import { toast } from "sonner";
+import { usePointsStore } from "./pointsStore";
 
 export const useRewardStore = create((set, get) => ({
   rewards: [],
@@ -40,22 +41,23 @@ export const useRewardStore = create((set, get) => ({
 
   redeemReward: async (rewardId) => {
     try {
-      set({ isLoading: true });
       const response = await api.post("/user/rewards/redeem", { rewardId });
-
-      toast.success(response.data.message);
 
       // Update points in the points store
       const pointsStore = usePointsStore.getState();
       pointsStore.fetchPoints(); // Refresh points after redemption
 
-      return true;
+      // Refresh rewards and reward history
+      await get().fetchRewards();
+      await get().fetchRewardHistory();
+
+      return response.data;
     } catch (error) {
       console.error("Error redeeming reward:", error);
-      toast.error(error.response?.data?.error || "Failed to redeem reward");
-      return false;
-    } finally {
-      set({ isLoading: false });
+      if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      }
+      throw error; // Re-throw the error to be handled by the component
     }
   },
 
