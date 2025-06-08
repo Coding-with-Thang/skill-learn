@@ -8,6 +8,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import BreadCrumbCom from "../components/BreadCrumb"
+import Footer from "../components/Footer"
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname()
@@ -38,19 +39,22 @@ export default function DashboardLayout({ children }) {
   const { crumbs, endtrail } = getBreadcrumbs()
 
   return (
-    <SidebarProvider>
-      <AppSidebar className="mt-15" />
-      <SidebarInset>
-        <div className="min-h-screen w-full bg-gray-100">
-          <header className="flex h-16 mb-3 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-            <SidebarTrigger className="ml-2" />
-            <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
-          </header>
-          <div className="flex gap-1 px-4">
-            {children}
+    <div className="relative flex min-h-screen">
+      <SidebarProvider>
+        <AppSidebar className="mt-15" />
+        <SidebarInset>
+          <div className="flex flex-col min-h-screen w-full bg-gray-100">
+            <header className="flex h-16 mb-3 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+              <SidebarTrigger className="ml-2" />
+              <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
+            </header>
+            <div className="flex gap-1 px-4 flex-1">
+              {children}
+            </div>
+            <Footer />
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
 import Header from "./components/Header";
-import Footer from "./components/Footer";
+import FooterWrapper from "./components/FooterWrapper";
 import "./globals.css";
 
 export const metadata = {
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
             <Header />
             {children}
             <Toaster />
-            <Footer />
+            <FooterWrapper />
           </ErrorBoundaryProvider>
         </body>
       </html>
