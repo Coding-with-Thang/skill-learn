@@ -4,67 +4,93 @@ import { updateStreak } from "./streak";
 import { getSystemSetting } from "./settings";
 
 export async function getDailyPointStatus(request) {
-  const { userId } = auth(request);
+  try {
+    console.log("Getting daily point status...");
+    const { userId } = auth(request);
+    console.log("User ID from auth in points.js:", userId);
 
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
-  // Get daily points limit from settings
-  const dailyLimit = parseInt(await getSystemSetting("DAILY_POINTS_LIMIT"), 10);
+    // Get daily points limit from settings
+    console.log("Fetching daily points limit from settings...");
+    const dailyLimit = parseInt(
+      await getSystemSetting("DAILY_POINTS_LIMIT"),
+      10
+    );
+    console.log("Daily points limit:", dailyLimit);
 
-  //Get user from DB
-  const user = await prisma.user.findUnique({
-    where: { clerkId: userId },
-    include: {
-      pointLogs: {
-        orderBy: {
-          createdAt: "desc",
+    //Get user from DB
+    console.log("Fetching user from database...");
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      include: {
+        pointLogs: {
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
-    },
-  });
-
-  if (!user) {
-    //Create user if they don't exist
-    const newUser = await prisma.user.create({
-      data: {
-        clerkId: userId,
-        lifetimePoints: 0,
-      },
-      include: {
-        pointLogs: true,
-      },
     });
+    console.log("User found:", user ? "yes" : "no");
+
+    if (!user) {
+      console.log("User not found, creating new user...");
+      //Create user if they don't exist
+      const newUser = await prisma.user.create({
+        data: {
+          clerkId: userId,
+          username: `user_${Date.now()}`, // Adding required username field
+          firstName: "New",
+          lastName: "User",
+          lifetimePoints: 0,
+          points: 0,
+        },
+        include: {
+          pointLogs: true,
+        },
+      });
+      console.log("New user created:", newUser.id);
+
+      return {
+        user: newUser,
+        todaysPoints: 0,
+        canEarnPoints: true,
+        lifetimePoints: 0,
+        dailyLimit,
+      };
+    }
+
+    //Get today's date at midnight
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+
+    //Filter logs for today
+    const todaysLogs = user.pointLogs.filter(
+      (log) => new Date(log.createdAt) >= today
+    );
+
+    //Calculate points earned today
+    const todaysPoints = todaysLogs.reduce((sum, log) => sum + log.amount, 0);
+    console.log("Points earned today:", todaysPoints);
 
     return {
-      user: newUser,
-      todaysPoints: 0,
-      canEarnPoints: true,
-      lifetimePoints: 0,
+      user,
+      todaysPoints,
+      canEarnPoints: todaysPoints < dailyLimit,
+      lifetimePoints: user.lifetimePoints,
+      todaysLogs,
       dailyLimit,
     };
+  } catch (error) {
+    console.error("Error in getDailyPointStatus:", {
+      message: error.message,
+      stack: error.stack,
+      type: error.constructor.name,
+      cause: error.cause,
+    });
+    throw error;
   }
-
-  //Get today's date at midnight
-  const today = new Date(new Date().setHours(0, 0, 0, 0));
-
-  //Filter logs for today
-  const todaysLogs = user.pointLogs.filter(
-    (log) => new Date(log.createdAt) >= today
-  );
-
-  //Calculate points earned today
-  const todaysPoints = todaysLogs.reduce((sum, log) => sum + log.amount, 0);
-
-  return {
-    user,
-    todaysPoints,
-    canEarnPoints: todaysPoints < dailyLimit,
-    lifetimePoints: user.lifetimePoints,
-    todaysLogs,
-    dailyLimit,
-  };
 }
 
 export async function awardPoints(amount, reason) {

@@ -29,7 +29,7 @@ export default function UserStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/api/user/stats');
+        const { data } = await api.get('/user/stats');
         if (data.success) {
           setUserStats(data.data);
         } else {

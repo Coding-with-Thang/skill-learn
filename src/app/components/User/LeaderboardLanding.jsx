@@ -13,13 +13,11 @@ const PodiumPosition = ({ user, position }) => {
     3: { color: "bg-amber-700", size: "w-16 h-16" },
   };
 
+  const imageSize = position === 1 ? 96 : position === 2 ? 80 : 64;
+
   return (
     <div
-      className={`flex flex-col items-center ${position === 1
-        ? "order-2"
-        : position === 2
-          ? "order-1"
-          : "order-3"
+      className={`flex flex-col items-center ${position === 1 ? "order-2" : position === 2 ? "order-1" : "order-3"
         }`}
     >
       <div
@@ -29,18 +27,29 @@ const PodiumPosition = ({ user, position }) => {
         {position}
       </div>
       <div className="flex flex-col items-center">
-        <Image
-          src={user.image}
-          alt={user.name}
-          width={position === 1 ? 96 : position === 2 ? 80 : 64}
-          height={position === 1 ? 96 : position === 2 ? 80 : 64}
-          className="rounded-full"
-        />
-        <p className="font-bold mt-2">{user.name}</p>
+        {user.imageUrl ? (
+          <Image
+            src={user.imageUrl}
+            alt={user.username || "User"}
+            width={imageSize}
+            height={imageSize}
+            className="rounded-full"
+          />
+        ) : (
+          <div
+            className={`rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-semibold`}
+            style={{ width: imageSize, height: imageSize }}
+          >
+            {(user.username || "?")[0].toUpperCase()}
+          </div>
+        )}
+        <p className="font-bold mt-2">{user.username || "Anonymous"}</p>
         <p className="text-sm">
-          {user.totalPoints
-            ? `${user.totalPoints} pts`
-            : `${user.averageScore.toFixed(1)}%`}
+          {user.totalPoints !== undefined
+            ? `${user.totalPoints.toLocaleString()} pts`
+            : user.averageScore !== undefined
+              ? `${user.averageScore.toFixed(1)}%`
+              : "N/A"}
         </p>
       </div>
     </div>
@@ -69,8 +78,8 @@ export default function LeaderboardLanding() {
         setError(null);
 
         const [pointsData, quizData] = await Promise.all([
-          api.get("/api/leaderboard/points"),
-          api.get("/api/leaderboard/quiz-score"),
+          api.get("/leaderboard/points"),
+          api.get("/leaderboard/quiz-score"),
         ]);
 
         if (isMounted) {

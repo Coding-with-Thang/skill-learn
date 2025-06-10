@@ -2,7 +2,11 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/middleware/rateLimit";
 
-const isProtectedRoute = createRouteMatcher(["/dashboard(.*)"]);
+const isProtectedRoute = createRouteMatcher([
+  "/dashboard(.*)",
+  "/api/user/(.*)", // Protect all user-related API routes
+  "/api/admin/(.*)", // Protect all admin API routes
+]);
 
 // Rate limit configuration
 const rateLimits = {
@@ -13,6 +17,9 @@ const rateLimits = {
 export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
+    console.log("Middleware - Route:", req.url);
+    console.log("Middleware - User ID:", userId);
+    console.log("Middleware - Is Protected Route:", isProtectedRoute(req));
 
     // Apply rate limiting based on route type
     const rateLimit = isProtectedRoute(req)
@@ -38,10 +45,21 @@ export default clerkMiddleware(async (auth, req) => {
 
     // Check authentication for protected routes
     if (!userId && isProtectedRoute(req)) {
-      return auth().redirectToSignIn();
+      console.log("Middleware - Unauthorized access to protected route");
+      return new NextResponse(
+        JSON.stringify({ error: "Unauthorized - Please sign in" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
   } catch (error) {
-    console.error("Middleware error:", error);
+    console.error("Middleware error:", {
+      message: error.message,
+      stack: error.stack,
+      type: error.constructor.name,
+    });
     return new NextResponse(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { "Content-Type": "application/json" } }

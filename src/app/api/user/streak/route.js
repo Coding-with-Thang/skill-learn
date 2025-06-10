@@ -6,6 +6,8 @@ export async function GET(request) {
   try {
     const { userId } = getAuth(request);
 
+    console.log("userId", userId);
+
     if (!userId) {
       return NextResponse.json(
         { error: "Unauthorized - No user found" },

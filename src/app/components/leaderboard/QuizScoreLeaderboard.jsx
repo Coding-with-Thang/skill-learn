@@ -10,7 +10,7 @@ export default function QuizScoreLeaderboard() {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const { data } = await api.get("/api/leaderboard/quiz-score");
+        const { data } = await api.get("/leaderboard/quiz-score");
         setLeaderboard(data.leaderboard);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);

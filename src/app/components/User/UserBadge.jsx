@@ -56,7 +56,7 @@ export default function UserBadge() {
           setError(null);
           fetchUserData(true); // Force refresh on retry
         }}
-      />
+      /> 
     );
   }
 

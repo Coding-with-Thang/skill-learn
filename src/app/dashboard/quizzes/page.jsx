@@ -73,7 +73,7 @@ export default function QuizzesAdminPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/api/categories')
+      const response = await api.get('/categories')
       setCategories(response.data)
     } catch (error) {
       console.error('Failed to fetch categories:', error)
@@ -82,7 +82,7 @@ export default function QuizzesAdminPage() {
 
   const fetchQuizzes = async () => {
     try {
-      const response = await api.get('/api/admin/quizzes')
+      const response = await api.get('/admin/quizzes')
       setQuizzes(response.data)
     } catch (error) {
       console.error('Failed to fetch quizzes:', error)
@@ -125,7 +125,7 @@ export default function QuizzesAdminPage() {
     if (!window.confirm(`Are you sure you want to delete ${selectedQuizzes.length} quizzes?`)) return
 
     try {
-      await Promise.all(selectedQuizzes.map(id => api.delete(`/api/admin/quizzes/${id}`)))
+      await Promise.all(selectedQuizzes.map(id => api.delete(`/admin/quizzes/${id}`)))
       await fetchQuizzes()
       setSelectedQuizzes([])
     } catch (error) {
@@ -137,7 +137,7 @@ export default function QuizzesAdminPage() {
   const handleBulkToggleStatus = async (status) => {
     try {
       await Promise.all(selectedQuizzes.map(id =>
-        api.put(`/api/admin/quizzes/${id}`, { isActive: status })
+        api.put(`/admin/quizzes/${id}`, { isActive: status })
       ))
       await fetchQuizzes()
       setSelectedQuizzes([])
@@ -210,7 +210,7 @@ export default function QuizzesAdminPage() {
     if (!window.confirm('Are you sure you want to delete this quiz?')) return
 
     try {
-      await api.delete(`/api/admin/quizzes/${quizId}`)
+      await api.delete(`/admin/quizzes/${quizId}`)
       await fetchQuizzes() // Refresh the list
     } catch (error) {
       console.error('Failed to delete quiz:', error)

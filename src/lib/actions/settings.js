@@ -34,13 +34,24 @@ const DEFAULT_SETTINGS = {
 
 export async function getSystemSetting(key) {
   try {
+    console.log(`Getting system setting for key: ${key}`);
     const setting = await prisma.systemSetting.findUnique({
       where: { key },
     });
+    console.log(
+      `Setting found for ${key}:`,
+      setting?.value || DEFAULT_SETTINGS[key]
+    );
 
     return setting?.value || DEFAULT_SETTINGS[key];
   } catch (error) {
-    console.error(`Error getting system setting ${key}:`, error);
+    console.error(`Error getting system setting ${key}:`, {
+      message: error.message,
+      stack: error.stack,
+      type: error.constructor.name,
+      cause: error.cause,
+    });
+    console.log(`Returning default value for ${key}:`, DEFAULT_SETTINGS[key]);
     return DEFAULT_SETTINGS[key];
   }
 }
@@ -114,7 +125,6 @@ export async function getAllSystemSettings() {
         user: {
           select: {
             username: true,
-            email: true,
           },
         },
       },

@@ -26,7 +26,7 @@ export async function GET(request) {
         category: {
           select: {
             id: true,
-            name: true,
+            title: true,
           },
         },
         questions: {
