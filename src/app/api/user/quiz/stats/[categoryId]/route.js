@@ -4,19 +4,26 @@ import prisma from "@/utils/connect";
 
 export async function GET(req, { params }) {
   try {
-    const { userId } = auth();
+    // Get auth session asynchronously
+    const { userId } = await auth();
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { categoryId } = params;
+    const { categoryId } = await params;
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const stats = await prisma.categoryStat.findUnique({
@@ -46,6 +53,9 @@ export async function GET(req, { params }) {
     );
   } catch (error) {
     console.error("Error fetching quiz stats:", error);
-    return new Response("Error fetching quiz stats", { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

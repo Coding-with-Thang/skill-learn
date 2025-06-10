@@ -4,6 +4,7 @@ import { rateLimiter } from "@/middleware/rateLimit";
 
 const isProtectedRoute = createRouteMatcher([
   "/dashboard(.*)",
+  "/quiz(.*)",
   "/api/user/(.*)", // Protect all user-related API routes
   "/api/admin/(.*)", // Protect all admin API routes
 ]);
@@ -17,7 +18,7 @@ const rateLimits = {
 export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
-    
+
     // Apply rate limiting based on route type
     const rateLimit = isProtectedRoute(req)
       ? rateLimits.protected

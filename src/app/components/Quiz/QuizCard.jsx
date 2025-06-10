@@ -13,10 +13,16 @@ import { useRouter } from "next/navigation";
 export default function QuizCard({ quiz }) {
   const router = useRouter();
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
-
   const handleClick = () => {
+    if (!quiz || !quiz.id || !quiz.categoryId) {
+      console.error('Invalid quiz data:', quiz);
+      return;
+    }
     setSelectedQuiz(quiz);
-    router.push(`/quiz/start/${quiz.id}`)
+    router.push(`/quiz/start/${quiz.id}`);
+  }
+  if (!quiz?.title || !quiz?.description) {
+    return null;
   }
 
   return (
@@ -27,22 +33,21 @@ export default function QuizCard({ quiz }) {
     >
       <CardHeader className="rounded-xl py-2 w-full">
         <Image
-          src={quiz?.imageUrl}
+          src={quiz?.imageUrl || "/quiz.png"} // Fallback to default image
           width={500}
           height={300}
-          alt={quiz?.title}
+          alt={quiz?.title || "Quiz Image"}
           className="rounded-xl"
         />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-7 items-start">
-        <h4 className="text-xl font-bold mt-2">{quiz?.title}</h4>
+      </CardHeader>      <CardContent className="flex flex-col gap-7 items-start">
+        <h4 className="text-xl font-bold mt-2">{quiz.title}</h4>
         <p className="text-gray-600 text-sm leading-none font-semibold max-w-[60ch]">
-          {quiz?.description}
+          {quiz.description}
         </p>
         <p className="text-gray-400 semi-bold text-sm flex items-center gap-2 leading-none">
           <span className="text-xl"><MessageCircleQuestion /></span>
           <span className="text-xl">Total Questions: {" "}
-            <span className="font-bold">{quiz?.questions.length}</span>
+            <span className="font-bold">{quiz.questions?.length || 0}</span>
           </span>
         </p>
       </CardContent>

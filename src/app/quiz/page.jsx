@@ -10,6 +10,23 @@ import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
 import Image from "next/image"
 
+// Utility functions
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+// Fisher-Yates Shuffle Algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; --i) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // Move button styles to a constant
 const getButtonStyles = (isActive) => `
   relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
@@ -40,12 +57,6 @@ const QuestionMedia = ({ question }) => {
   );
 };
 
-const formatTime = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
 export default function QuizScreenPage() {
   const router = useRouter();
   const { selectedQuiz, setQuizResponses } = useQuizStartStore();
@@ -57,59 +68,6 @@ export default function QuizScreenPage() {
   const [timeRemaining, setTimeRemaining] = useState(
     selectedQuiz?.timeLimit ? selectedQuiz.timeLimit * 60 : 0
   );
-
-  // Clear any existing progress when component mounts with a new quiz
-  useEffect(() => {
-    if (selectedQuiz) {
-      sessionStorage.removeItem('quizProgress');
-      setCurrentIndex(0);
-      setResponses([]);
-      setActiveQuestion(null);
-      setIsLoading(false);
-    } else {
-      router.push("/training");
-    }
-  }, [selectedQuiz, router]);
-
-  // Save progress during the quiz
-  useEffect(() => {
-    if (!isLoading && selectedQuiz && currentIndex < shuffledQuestionsMemo.length - 1) {
-      sessionStorage.setItem('quizProgress', JSON.stringify({
-        quizId: selectedQuiz.id,
-        currentIndex,
-        responses
-      }));
-    }
-  }, [currentIndex, responses, isLoading, selectedQuiz]);
-
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === 'Enter' && activeQuestion) {
-        handleQuizNavigation();
-      }
-      // Allow selecting options with number keys 1-4
-      if (['1', '2', '3', '4'].includes(e.key)) {
-        const index = parseInt(e.key) - 1;
-        if (shuffledOptions[index]) {
-          handleActiveQuestion(shuffledOptions[index]);
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [activeQuestion, handleQuizNavigation]);
-
-  // Fisher-Yates Shuffle Algorithm
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; --i) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
 
   // Memoize shuffled questions
   const shuffledQuestionsMemo = useMemo(() =>
@@ -125,7 +83,7 @@ export default function QuizScreenPage() {
     [shuffledQuestionsMemo, currentIndex]
   );
 
-  const handleActiveQuestion = (option) => {
+  const handleActiveQuestion = useCallback((option) => {
     if (!shuffledQuestionsMemo[currentIndex]) return;
 
     const response = {
@@ -148,17 +106,17 @@ export default function QuizScreenPage() {
     });
 
     setActiveQuestion(option);
-  };
+  }, [shuffledQuestionsMemo, currentIndex]);
 
-  const handleNextQuestion = async () => {
+  const handleNextQuestion = useCallback(async () => {
     setIsTransitioning(true);
     await new Promise(resolve => setTimeout(resolve, 300)); // Smooth transition
     setCurrentIndex((prev) => prev + 1);
     setActiveQuestion(null);
     setIsTransitioning(false);
-  };
+  }, []);
 
-  const handleFinishQuiz = async () => {
+  const handleFinishQuiz = useCallback(async () => {
     try {
       setIsLoading(true);
       setQuizResponses(responses);
@@ -261,18 +219,24 @@ export default function QuizScreenPage() {
       });
 
       // Store results for the results page
-      sessionStorage.setItem('lastQuizResults', JSON.stringify({
-        score: scorePercentage,
-        pointsEarned,
-        pointsBreakdown,
-        hasPassed,
-        isPerfectScore,
-        hasPassingRequirement,
-        passingScore,
-        totalQuestions,
-        correctAnswers,
-        timeSpent
-      }));
+      const resultsData = {
+        score: Number(scorePercentage.toFixed(1)),
+        pointsEarned: Number(pointsEarned),
+        pointsBreakdown: {
+          correct: Number(pointsBreakdown.correct),
+          bonus: Number(pointsBreakdown.bonus),
+          limited: Boolean(pointsBreakdown.limited)
+        },
+        hasPassed: Boolean(hasPassed),
+        isPerfectScore: Boolean(isPerfectScore),
+        hasPassingRequirement: Boolean(hasPassingRequirement),
+        passingScore: Number(passingScore),
+        totalQuestions: Number(totalQuestions),
+        correctAnswers: Number(correctAnswers),
+        timeSpent: Number(timeSpent)
+      };
+
+      sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
 
       sessionStorage.removeItem('quizProgress');
       router.push("/quiz/results");
@@ -282,9 +246,9 @@ export default function QuizScreenPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [responses, shuffledQuestionsMemo.length, selectedQuiz, timeRemaining, router, setQuizResponses]);
 
-  const handleQuizNavigation = async () => {
+  const handleQuizNavigation = useCallback(async () => {
     if (!activeQuestion?.id) {
       toast.error("Please select an option to continue");
       return;
@@ -295,161 +259,115 @@ export default function QuizScreenPage() {
     } else {
       await handleFinishQuiz();
     }
-  };
+  }, [activeQuestion, currentIndex, shuffledQuestionsMemo.length, handleNextQuestion, handleFinishQuiz]);
 
+  // Clear any existing progress when component mounts with a new quiz
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (responses.length > 0) {
-        // Save progress
-        sessionStorage.setItem('quizProgress', JSON.stringify({
-          quizId: selectedQuiz.id,
-          currentIndex,
-          responses,
-          timestamp: Date.now()
-        }));
-
-        // Show confirmation dialog
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [responses, currentIndex, selectedQuiz]);
-
-  // Handle timer expiration
-  const handleTimeUp = useCallback(async () => {
-    toast.error("Time's up! Submitting your quiz.");
-    await handleFinishQuiz();
-  }, []);
-
-  // Timer effect
-  useEffect(() => {
-    if (selectedQuiz?.timeLimit && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
+    if (selectedQuiz) {
+      sessionStorage.removeItem('quizProgress');
+      setCurrentIndex(0);
+      setResponses([]);
+      setActiveQuestion(null);
+      setIsLoading(false);
+    } else {
+      router.push("/training");
     }
-  }, [selectedQuiz, timeRemaining, handleTimeUp]);
+  }, [selectedQuiz, router]);
 
+  // Save progress during the quiz
   useEffect(() => {
-    return () => {
-      // Clean up when component unmounts
-      if (!responses.length) {
-        sessionStorage.removeItem('quizProgress');
+    if (!isLoading && selectedQuiz && currentIndex < shuffledQuestionsMemo.length - 1) {
+      sessionStorage.setItem('quizProgress', JSON.stringify({
+        quizId: selectedQuiz.id,
+        currentIndex,
+        responses
+      }));
+    }
+  }, [currentIndex, responses, isLoading, selectedQuiz, shuffledQuestionsMemo.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter' && activeQuestion) {
+        handleQuizNavigation();
+      }
+      // Allow selecting options with number keys 1-4
+      if (['1', '2', '3', '4'].includes(e.key)) {
+        const index = parseInt(e.key) - 1;
+        if (shuffledOptions[index]) {
+          handleActiveQuestion(shuffledOptions[index]);
+        }
       }
     };
-  }, [responses]);
 
-  if (isLoading) return <Loader />;
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [activeQuestion, handleQuizNavigation, shuffledOptions, handleActiveQuestion]);
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
-    <main
-      className={`py-[2.5rem] px-[5rem] ${isTransitioning ? 'opacity-50' : ''}`}
-      role="main"
-      aria-label="Quiz Page"
-    >
-      {shuffledQuestionsMemo[currentIndex] ? (
-        <div className="space-y-6">
-          <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
-              <p
-                className="py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-                role="status"
-                aria-live="polite"
-              >
-                Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
-                <span className="text-xl">{shuffledQuestionsMemo.length}</span>
-              </p>
-
-              {/* Timer Display */}
-              {selectedQuiz?.timeLimit && (
-                <div
-                  className={`py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]
-                    ${timeRemaining <= 60 ? 'text-red-500 animate-pulse' : ''}`}
-                  role="timer"
-                  aria-label="Time remaining"
-                >
-                  Time: {formatTime(timeRemaining)}
-                </div>
-              )}
-            </div>
-            <h1
-              className="mt-4 px-10 text-5xl font-bold text-center"
-              role="heading"
-              aria-level="1"
-            >
-              {shuffledQuestionsMemo[currentIndex].text}
-            </h1>
-          </div>
-
-          <div
-            className="pt-14 space-y-4"
-            role="radiogroup"
-            aria-label="Quiz options"
-          >
-            {shuffledOptions.map((option, index) => (
-              <button
-                key={option.id}
-                className={getButtonStyles(option.text === activeQuestion?.text)}
-                onClick={() => handleActiveQuestion(option)}
-                aria-pressed={option.text === activeQuestion?.text}
-                aria-label={`Option ${index + 1}: ${option.text}`}
-                disabled={isTransitioning}
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-
-          {/* Points Info */}
-          <div className="text-center text-sm text-gray-600">
-            {selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null ? (
-              <>
-                <p>Must achieve {selectedQuiz.passingScore}% to earn points</p>
-                <p>Earn 10 points per correct answer when passing score is achieved</p>
-                <p>Perfect score doubles your points! 🌟</p>
-              </>
-            ) : (
-              <>
-                <p>Earn 5 points per correct answer</p>
-                <p>Perfect score doubles your points! 🌟</p>
-              </>
-            )}
-          </div>
+    <div className="w-full max-w-3xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold mb-2">{selectedQuiz?.title}</h1>
+        <div className="flex items-center justify-between">
+          <p className="text-gray-600">
+            Question {currentIndex + 1} of {shuffledQuestionsMemo.length}
+          </p>
+          {timeRemaining > 0 && (
+            <p className="text-gray-600">
+              Time remaining: {formatTime(timeRemaining)}
+            </p>
+          )}
         </div>
-      ) : (
-        <p className="text-lg" role="alert">No questions found for this quiz</p>
-      )}
+      </div>
 
-      <div className="w-full py-[4rem] border-t-2 flex items-center justify-center">
+      <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+        {shuffledQuestionsMemo[currentIndex] && (
+          <>
+            <div className="mb-8">
+              <QuestionMedia question={shuffledQuestionsMemo[currentIndex]} />
+              <h2 className="text-xl font-semibold mb-6">
+                {shuffledQuestionsMemo[currentIndex].text}
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              {shuffledOptions.map((option, index) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleActiveQuestion(option)}
+                  disabled={isTransitioning}
+                  className={getButtonStyles(activeQuestion?.id === option.id)}
+                >
+                  {String.fromCharCode(65 + index)}. {option.text}
+                  {activeQuestion?.id === option.id && (
+                    <CircleCheckBig className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="mt-8 flex justify-end">
         <Button
-          className="px-10 py-6 font-bold text-xl rounded-xl bg-teal-600"
-          variant="destructive"
           onClick={handleQuizNavigation}
-          disabled={isTransitioning || !activeQuestion}
+          disabled={!activeQuestion || isTransitioning}
+          className="text-lg py-6 px-8"
         >
           {currentIndex < shuffledQuestionsMemo.length - 1 ? (
-            <span className="flex items-center gap-2">
-              <ArrowBigRightDash /> Next
-            </span>
+            <>
+              Next <ArrowBigRightDash className="ml-2" />
+            </>
           ) : (
-            <span className="flex items-center gap-2 text-black">
-              <CircleCheckBig /> Finish
-            </span>
+            'Finish Quiz'
           )}
         </Button>
       </div>
-    </main>
+    </div>
   );
 }

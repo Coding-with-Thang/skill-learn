@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import api from "@/utils/axios";
 import { useQuizStartStore } from '@/app/store/quizStore'
 import { Label } from "@/components/ui/label"
@@ -18,15 +17,41 @@ export default function SelectedQuizPage() {
   const [stats, setStats] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!selectedQuiz) {
-      router.push("/training")
-    } else {
-      fetchQuizStats();
+  // Define the startQuiz function first since it's used by handleQuizNavigation
+  const startQuiz = async () => {
+    if (!selectedQuiz?.id || !selectedQuiz?.categoryId) {
+      console.error('Invalid quiz data:', selectedQuiz);
+      return;
     }
-  }, [selectedQuiz, router])
+
+    try {
+      await api.post("/user/quiz/start", {
+        categoryId: selectedQuiz.categoryId,
+        quizId: selectedQuiz.id,
+      });
+      router.push("/quiz");
+    } catch (error) {
+      console.error("Error starting quiz: ", error);
+      // Handle specific error types
+      if (error.response?.status === 401) {
+        router.push("/sign-in");
+      }
+    }
+  };
+
+  const handleQuizNavigation = async () => {
+    if (!selectedQuiz?.questions?.length) {
+      console.error('No questions found for this quiz');
+      return;
+    }
+    await startQuiz();
+  };
 
   const fetchQuizStats = async () => {
+    if (!selectedQuiz?.categoryId) {
+      setIsLoading(false);
+      return;
+    }
     try {
       const response = await api.get(`/user/quiz/stats/${selectedQuiz.categoryId}`);
       setStats(response.data);
@@ -37,21 +62,17 @@ export default function SelectedQuizPage() {
     }
   };
 
-  const startQuiz = async () => {
-    if (selectedQuiz?.questions.length > 0) {
-      try {
-        await api.post("/user/quiz/start", {
-          categoryId: selectedQuiz?.categoryId,
-          quizId: selectedQuiz?.id,
-        });
-        router.push("/quiz");
-      } catch (error) {
-        console.error("Error starting quiz: ", error);
-      }
-    } else {
-      console.log("No questions found for the selected criteria")
+  useEffect(() => {
+    if (!selectedQuiz) {
+      router.push("/training")
+      return;
     }
-  }
+    if (!selectedQuiz.categoryId) {
+      console.error("No category ID found for quiz");
+      return;
+    }
+    fetchQuizStats();
+  }, [selectedQuiz, router]);
 
   if (isLoading) return <Loader />;
 

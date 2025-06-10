@@ -3,20 +3,30 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const { userId } = auth();
-  const { categoryId } = await req.json();
-
-  if (!userId) {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
   try {
+    const authRequest = auth();
+    const { userId } = await authRequest;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized - Please sign in" },
+        { status: 401 }
+      );
+    }
+
+    const { categoryId } = await req.json();
+    if (!categoryId) {
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 }
+      );
+    }
+
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     let stat = await prisma.categoryStat.findUnique({
@@ -46,15 +56,18 @@ export async function POST(req) {
           },
         },
         data: {
-          attempts: stat.attempts + 1,
+          attempts: { increment: 1 },
           lastAttempt: new Date(),
         },
       });
     }
 
-    return NextResponse.json(stat);
+    return NextResponse.json({ success: true, stat });
   } catch (error) {
-    console.error("Start quiz error:", error);
-    return new Response("Error starting quiz", { status: 500 });
+    console.error("Error starting quiz:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
