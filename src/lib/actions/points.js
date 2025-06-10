@@ -1,12 +1,12 @@
 import prisma from "@/utils/connect";
-import { auth } from "@clerk/nextjs/server";
+import { getAuth } from "@clerk/nextjs/server"; // Change import
 import { updateStreak } from "./streak";
 import { getSystemSetting } from "./settings";
 
 export async function getDailyPointStatus(request) {
   try {
     console.log("Getting daily point status...");
-    const { userId } = auth(request);
+    const { userId } = getAuth(request);
     console.log("User ID from auth in points.js:", userId);
 
     if (!userId) {
@@ -21,8 +21,8 @@ export async function getDailyPointStatus(request) {
     );
     console.log("Daily points limit:", dailyLimit);
 
-    //Get user from DB
-    console.log("Fetching user from database...");
+    //Get user from DB with detailed logging
+    console.log(`Searching for user with clerkId: ${userId}`);
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: {
@@ -33,33 +33,19 @@ export async function getDailyPointStatus(request) {
         },
       },
     });
-    console.log("User found:", user ? "yes" : "no");
+    
+    // Add debug logging to see what's in the database
+    const allUsers = await prisma.user.findMany({
+      select: { id: true, clerkId: true, username: true }
+    });
+    console.log("All users in database:", allUsers);
 
     if (!user) {
-      console.log("User not found, creating new user...");
-      //Create user if they don't exist
-      const newUser = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          username: `user_${Date.now()}`, // Adding required username field
-          firstName: "New",
-          lastName: "User",
-          lifetimePoints: 0,
-          points: 0,
-        },
-        include: {
-          pointLogs: true,
-        },
-      });
-      console.log("New user created:", newUser.id);
-
-      return {
-        user: newUser,
-        todaysPoints: 0,
-        canEarnPoints: true,
-        lifetimePoints: 0,
-        dailyLimit,
-      };
+      console.log("User lookup failed. Available users:", allUsers.map(u => ({
+        id: u.id,
+        clerkId: u.clerkId
+      })));
+      throw new Error("User not found in database");
     }
 
     //Get today's date at midnight

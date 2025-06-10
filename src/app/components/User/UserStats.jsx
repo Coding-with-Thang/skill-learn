@@ -29,14 +29,14 @@ export default function UserStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/user/stats');
-        if (data.success) {
-          setUserStats(data.data);
+        const response = await api.get("/user/stats");
+        if (response.data.success) {
+          setUserStats(response.data.data); // Access the data property
         } else {
-          throw new Error(data.error || 'Failed to fetch user stats');
+          throw new Error(response.data.error || "Failed to fetch stats");
         }
       } catch (error) {
-        console.error('Failed to fetch user stats:', error);
+        console.error("Error fetching stats:", error);
         setError(error);
       } finally {
         setLoading(false);
@@ -77,6 +77,7 @@ export default function UserStats() {
   //Get the most recent attempt date
   const recentAttemptDate = userStats?.categoryStats?.reduce(
     (acc, curr) => {
+      if (!curr.lastAttempt) return acc;
       const currentDate = new Date(curr.lastAttempt);
       return currentDate > acc ? currentDate : acc;
     },

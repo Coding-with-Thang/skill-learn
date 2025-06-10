@@ -29,6 +29,7 @@ model User {
   lastStreakDate  DateTime?
   streakUpdatedAt DateTime?    @default(now())
   systemSettings  SystemSetting[]
+  quizzes          Quiz[]
 
   // CRITICAL INDEXES FOR COMMON QUERIES
   @@index([role]) // Filter by role: "Get all managers"
@@ -60,27 +61,31 @@ model Category {
 }
 
 model Quiz {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  title        String
-  description  String?
-  imageUrl     String?
-  categoryId   String     @db.ObjectId
-  category     Category   @relation(fields: [categoryId], references: [id])
-  questions    Question[]
-  isActive     Boolean    @default(true)
-  timeLimit    Int?
-  passingScore Int        @default(70)
-  lastAttempt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String?
+  imageUrl       String?
+  categoryId     String     @db.ObjectId
+  category       Category   @relation(fields: [categoryId], references: [id])
+  questions      Question[]
+  isActive       Boolean    @default(true)
+  timeLimit      Int?
+  passingScore   Int        @default(70)
+  lastAttempt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  userId         String     @db.ObjectId
+  user           User       @relation(fields: [userId], references: [id])
+  score          Int
+  totalQuestions Int
 
   // CRITICAL FOREIGN KEY AND QUERY INDEXES
-  @@index([categoryId]) // MOST IMPORTANT: "Quizzes in category X"
-  @@index([isActive]) // Filter active quizzes
-  @@index([categoryId, isActive]) // Active quizzes in category
-  @@index([lastAttempt(sort: Desc)]) // Recently attempted quizzes
-  @@index([createdAt(sort: Desc)]) // Newest quizzes first
-  @@index([title]) // Quiz search by title
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([categoryId, isActive])
+  @@index([lastAttempt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([title])
   @@map("quizzes")
 }
 

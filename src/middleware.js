@@ -17,10 +17,7 @@ const rateLimits = {
 export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
-    console.log("Middleware - Route:", req.url);
-    console.log("Middleware - User ID:", userId);
-    console.log("Middleware - Is Protected Route:", isProtectedRoute(req));
-
+    
     // Apply rate limiting based on route type
     const rateLimit = isProtectedRoute(req)
       ? rateLimits.protected
