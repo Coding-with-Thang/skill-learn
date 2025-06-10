@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
 import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
 import Image from "next/image"
@@ -201,23 +200,6 @@ export default function QuizScreenPage() {
         pointsBreakdown
       });
 
-      // Show results with point breakdown
-      toast({
-        title: "Quiz Completed!",
-        description: (
-          <div className="mt-2 space-y-2">
-            <p>Score: {scorePercentage.toFixed(1)}%</p>
-            <p>Points earned: {formatNumber(pointsEarned)}</p>
-            {pointsBreakdown.limited && (
-              <p className="text-yellow-600">
-                Note: Points were limited by daily cap. Come back tomorrow for more!
-              </p>
-            )}
-          </div>
-        ),
-        duration: 5000,
-      });
-
       // Store results for the results page
       const resultsData = {
         score: Number(scorePercentage.toFixed(1)),
@@ -237,7 +219,6 @@ export default function QuizScreenPage() {
       };
 
       sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
-
       sessionStorage.removeItem('quizProgress');
       router.push("/quiz/results");
     } catch (error) {
