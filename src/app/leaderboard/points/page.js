@@ -1,8 +1,12 @@
 import LifetimePointsLeaderboard from "@/app/components/leaderboard/LifetimePointsLeaderboard";
+import BreadCrumbCom from "@/app/components/BreadCrumb";
 
 export default function PointsLeaderboardPage() {
   return (
     <div className="container mx-auto p-4">
+      <div>
+        <BreadCrumbCom endtrail="Lifetime Points Leaderboard" />
+      </div>
       <h1 className="text-2xl font-bold mb-6">Lifetime Points Leaderboard</h1>
       <div className="flex flex-col gap-8">
         <div className="flex justify-center gap-4 py-8">

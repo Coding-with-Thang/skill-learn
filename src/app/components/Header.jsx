@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image"
-import { SignedIn, SignedOut, UserButton, useUser, useAuth } from '@clerk/nextjs'
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
 import { Star, Telescope, Medal, BookOpenText, LayoutDashboard, Search, ChartColumnBig } from 'lucide-react';
 import logo from '../../../public/logo.svg'
 import { LoadingSpinner } from "@/components/ui/loading"
@@ -14,7 +14,6 @@ import { User } from "lucide-react"
 
 export default function Header() {
   const { isLoaded, isSignedIn } = useUser();
-  const { getToken } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [error, setError] = useState(null);
 
@@ -105,9 +104,9 @@ export default function Header() {
                 <Link href="/training" className="flex gap-1 items-center hover:underline">
                   <BookOpenText /> Training
                 </Link>
-                <Link href="/achievements" className="flex gap-1 items-center hover:underline">
+                {/* <Link href="/achievements" className="flex gap-1 items-center hover:underline">
                   <Medal /> Achievements
-                </Link>
+                </Link> */}
                 <Link href="/stats" className="flex gap-1 items-center hover:underline">
                   <ChartColumnBig /> My Stats
                 </Link>

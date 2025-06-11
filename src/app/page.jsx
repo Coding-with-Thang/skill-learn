@@ -16,7 +16,7 @@ import { LoadingHeader } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 
 export default function HomePage() {
-  const { user, isLoaded } = useUser();
+  const { isLoaded } = useUser();
   const [error, setError] = useState(null);
 
   if (!isLoaded) {
