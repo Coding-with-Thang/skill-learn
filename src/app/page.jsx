@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from 'react';
 import { SignedIn, SignedOut, useUser } from '@clerk/nextjs'
 import { useState } from 'react';
 import DailyActivities from "./components/User/DailyActivities";
@@ -15,19 +14,10 @@ import UserBadge from './components/User/UserBadge';
 import { LoadingPage } from "@/components/ui/loading"
 import { LoadingHeader } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
-import api from "@/utils/api";
 
 export default async function HomePage() {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { isLoaded } = useUser();
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const allusers = await api.get("/users")
-
-    console.log("List of users:", allusers)
-    console.log("User:", user)
-  }, [isLoaded, user]);
-
 
   if (!isLoaded) {
     return (
@@ -68,14 +58,14 @@ export default async function HomePage() {
   return (
     <main className="container mx-auto px-4 py-8 min-h-[80dvh]">
       <SignedIn>
-        {/* <section className="mb-8">
+        <section className="mb-8">
           {renderSection(UserBadge)}
-        </section> */}
+        </section>
         <section className="grid gap-8">
-          {/* {renderSection(DailyActivities)} */}
+          {renderSection(DailyActivities)}
           {renderSection(MoreTraining)}
-          {/* {renderSection(PerformanceLanding)}
-          {renderSection(LeaderboardLanding)} */}
+          {renderSection(PerformanceLanding)}
+          {renderSection(LeaderboardLanding)}
         </section>
       </SignedIn>
       <SignedOut>
