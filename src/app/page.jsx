@@ -15,7 +15,7 @@ import { LoadingPage } from "@/components/ui/loading"
 import { LoadingHeader } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 
-export default async function HomePage() {
+export default function HomePage() {
   const { isLoaded } = useUser();
   const [error, setError] = useState(null);
 

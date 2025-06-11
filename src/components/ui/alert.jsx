@@ -25,19 +25,11 @@ function Alert({
   ...props
 }) {
   return (
-<<<<<<< HEAD
     <div
       data-slot="alert"
       role="alert"
       className={cn(alertVariants({ variant }), className)}
       {...props} />
-=======
-    (<div
-      data-slot="alert"
-      role="alert"
-      className={cn(alertVariants({ variant }), className)}
-      {...props} />)
->>>>>>> d3b9ecf4a4301e59ec2640f591a980b01f5fc01a
   );
 }
 
@@ -46,17 +38,10 @@ function AlertTitle({
   ...props
 }) {
   return (
-<<<<<<< HEAD
     <div
       data-slot="alert-title"
       className={cn("col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight", className)}
       {...props} />
-=======
-    (<div
-      data-slot="alert-title"
-      className={cn("col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight", className)}
-      {...props} />)
->>>>>>> d3b9ecf4a4301e59ec2640f591a980b01f5fc01a
   );
 }
 
@@ -65,21 +50,13 @@ function AlertDescription({
   ...props
 }) {
   return (
-<<<<<<< HEAD
     <div
-=======
-    (<div
->>>>>>> d3b9ecf4a4301e59ec2640f591a980b01f5fc01a
       data-slot="alert-description"
       className={cn(
         "text-muted-foreground col-start-2 grid justify-items-start gap-1 text-sm [&_p]:leading-relaxed",
         className
       )}
-<<<<<<< HEAD
       {...props} />
-=======
-      {...props} />)
->>>>>>> d3b9ecf4a4301e59ec2640f591a980b01f5fc01a
   );
 }
 
