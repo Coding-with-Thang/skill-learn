@@ -1,15 +1,13 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button";
-import { Input } from '@/components/ui/input';
-import { generateRandomPassword } from '../../../utils/generatePassword'
-import useUsersStore from "../../store/usersStore";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table } from "@/components/ui/table";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import UserDetails from "@/components/UserDetails";
+import { useState, useEffect, useMemo } from 'react'
+import { Button } from "@/components/ui/button"
+import { Table } from "@/components/ui/table"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import useUsersStore from "../../store/usersStore"
+import UserDetails from "@/components/UserDetails"
+import { UserForm } from "@/components/UserForm"
+import { UserFilters } from "@/components/UserFilters"
 
 export default function UsersPage() {
   const { users, loading, error, fetchUsers } = useUsersStore();
@@ -18,92 +16,69 @@ export default function UsersPage() {
     fetchUsers();
   }, [])
 
-  const [username, setUsername] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [password, setPassword] = useState('')
-  const [errorUsers, setErrorUsers] = useState(null)
-  const [manager, setManager] = useState('none')
-  const [role, setRole] = useState('AGENT')
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
-  const [selectedUser, setSelectedUser] = useState(null);
-  // Get list of users who are managers for the dropdown
-  const managerList = users
-    ?.filter(user => user.role === "MANAGER")
-    ?.map(user => `${user.firstName} ${user.lastName}`) || []
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('name')
+  const [errorUsers, setErrorUsers] = useState(null)
 
-  const roles = ["AGENT", "MANAGER", "OPERATIONS"]
-  //Function to generate username from first and name
-  const generateUsername = (firstName, lastName) => {
-    const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`
-    let newUsername = baseUsername
-    let suffix = 1
+  const filteredUsers = useMemo(() => {
+    if (!users) return [];
 
-    //Check if the username already exists and regenerate if necessary
-    while (users?.some((user) => user.username === newUsername)) {
-      newUsername = `${baseUsername}${suffix}`
-      suffix++
-    }
+    return users
+      .filter(user => {
+        const matchesSearch = searchTerm
+          ? user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+          : true;
 
-    return newUsername
-  }
+        const matchesRole = roleFilter === 'all' ? true : user.role === roleFilter;
 
-  //Automatically generate username whenever first or last name changes
-  useEffect(() => {
-    if (firstName && lastName) {
-      const newUsername = generateUsername(firstName, lastName)
-      setUsername(newUsername)
-    }
-  }, [firstName, lastName])
+        return matchesSearch && matchesRole;
+      })
+      .sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+          case 'role':
+            return a.role.localeCompare(b.role);
+          case 'recent':
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          default:
+            return 0;
+        }
+      });
+  }, [users, searchTerm, roleFilter, sortBy]);
 
-  const handleGeneratePassword = () => {
-    const randomPassword = generateRandomPassword()
-    setPassword(randomPassword)
-  }
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const managerList = useMemo(() =>
+    users?.filter(user => user.role === "MANAGER")
+      ?.map(user => ({
+        value: user.username,
+        label: `${user.firstName} ${user.lastName}`
+      })) || [],
+    [users]
+  );
 
-    if (!firstName || !lastName) {
-      setErrorUsers('First name and last name are required')
-      return
-    } setErrorUsers(null)
-    const userData = {
-      username,
-      firstName,
-      lastName,
-      password,
-      manager,
-      role,
-    }
-
+  const handleSubmit = async (formData) => {
     try {
       if (editingUser) {
-        await useUsersStore.getState().updateUser(editingUser.id, userData)
+        await useUsersStore.getState().updateUser(editingUser.id, formData)
         setEditingUser(null)
       } else {
-        await useUsersStore.getState().createUser(userData)
-      }      //Clear the form
-      setUsername('')
-      setFirstName('')
-      setLastName('')
-      setPassword('')
-      setManager('none')
-      setRole('AGENT')
-
-      // Refresh the users list
+        await useUsersStore.getState().createUser(formData)
+      }
+      setShowForm(false)
       fetchUsers()
     } catch (error) {
       setErrorUsers(error.response?.data?.error || 'An error occurred')
     }
   }
+
   const handleEdit = (user) => {
     setEditingUser(user)
-    setUsername(user.username)
-    setFirstName(user.firstName)
-    setLastName(user.lastName)
-    setManager(user.manager || 'none')
-    setRole(user.role || 'AGENT')
     setShowForm(true)
   }
 
@@ -114,7 +89,6 @@ export default function UsersPage() {
 
     try {
       await useUsersStore.getState().deleteUser(userId)
-      // The store will automatically update the users list
     } catch (error) {
       setErrorUsers(error.response?.data?.error || 'Failed to delete user')
     }
@@ -135,125 +109,41 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Create/Edit User Form */}
       <Dialog open={showForm} onOpenChange={(open) => {
         if (!open) {
           setEditingUser(null)
-          setUsername('')
-          setFirstName('')
-          setLastName('')
-          setPassword('')
-          setManager('none')
-          setRole('AGENT')
           setErrorUsers(null)
         }
         setShowForm(open)
       }}>
         <DialogContent>
           <h2 className="text-lg font-bold mb-4">{editingUser ? 'Edit' : 'Create'} User</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">First Name</label>
-              <Input
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Last Name</label>
-              <Input
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Username</label>
-              <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-            {!editingUser && (
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <Button type="button" onClick={handleGeneratePassword} variant="outline">
-                    Generate
-                  </Button>
-                </div>
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium mb-1">Role</label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Manager</label>
-              <Select value={manager} onValueChange={setManager}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a manager" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Manager</SelectItem>
-                  {managerList.map((m) => (
-                    <SelectItem key={m} value={m}>
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : editingUser ? 'Update' : 'Create'}
-              </Button>
-            </div>
-          </form>
+          <UserForm
+            onSubmit={handleSubmit}
+            initialData={editingUser}
+            managerList={managerList}
+            loading={loading}
+            onCancel={() => setShowForm(false)}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Advanced Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input placeholder="Search users..." />
-            <Select>
-              <option>Filter by Role</option>
-              <option>Admin</option>
-              <option>User</option>
-            </Select>
-            <Select>
-              <option>Sort by</option>
-              <option>Points (High to Low)</option>
-              <option>Recent Activity</option>
-              <option>Join Date</option>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>      {/* User Table */}
+      <UserFilters
+        onFilterChange={(type, value) => {
+          switch (type) {
+            case 'search':
+              setSearchTerm(value);
+              break;
+            case 'role':
+              setRoleFilter(value);
+              break;
+            case 'sort':
+              setSortBy(value);
+              break;
+          }
+        }}
+      />
+
       {loading ? (
         <div className="text-center py-4">Loading users...</div>
       ) : error ? (
@@ -271,30 +161,29 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users?.map((user) => (
+            {filteredUsers.map((user) => (
               <tr key={user.id} className="border-b">
                 <td className="p-4">{user.username}</td>
                 <td className="p-4">{user.firstName}</td>
                 <td className="p-4">{user.lastName}</td>
-                <td className="p-4">{user.manager || 'No manager'}</td>
+                <td className="p-4">
+                  {user.manager ? (() => {
+                    const managerUser = users.find(u => u.username === user.manager);
+                    return managerUser ? `${managerUser.firstName} ${managerUser.lastName}` : 'No manager';
+                  })() : 'No manager'}
+                </td>
                 <td className="p-4">{user.role || 'AGENT'}</td>
                 <td className="p-4 space-x-4">
-                  <Button
-                    onClick={() => handleEdit(user)}
-                    variant="secondary"
-                  >
+                  <Button onClick={() => handleEdit(user)} variant="secondary">
                     Edit
                   </Button>
-                  <Button
-                    onClick={() => handleDelete(user.id)}
-                    variant="destructive"
-                  >
+                  <Button onClick={() => handleDelete(user.id)} variant="destructive">
                     Delete
                   </Button>
                 </td>
               </tr>
             ))}
-            {users?.length === 0 && (
+            {filteredUsers.length === 0 && (
               <tr>
                 <td colSpan="6" className="text-center py-4">
                   No users found
@@ -305,7 +194,6 @@ export default function UsersPage() {
         </Table>
       )}
 
-      {/* User Details Modal */}
       <Dialog open={selectedUser !== null} onOpenChange={() => setSelectedUser(null)}>
         <DialogContent>
           <UserDetails user={selectedUser} />
