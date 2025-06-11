@@ -6,10 +6,8 @@ export async function GET(request) {
   try {
     console.log("Daily status API called");
     const { userId } = getAuth(request);
-    console.log("User ID from auth:", userId);
 
     if (!userId) {
-      console.log("No user ID found");
       return NextResponse.json(
         { error: "Unauthorized - No user found" },
         { status: 401 }

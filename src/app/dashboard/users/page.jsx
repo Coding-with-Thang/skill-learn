@@ -17,7 +17,6 @@ export default function UsersPage() {
 
   useEffect(() => {
     fetchUsers();
-    console.log("users: ", users)
   }, [])
 
   useEffect(() => {
