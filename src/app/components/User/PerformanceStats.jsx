@@ -39,7 +39,7 @@ export default function PerformanceStats() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const { data } = await api.get('/api/user/performance')
+        const { data } = await api.get('/user/performance')
         if (data.success) {
           setStats(data)
         } else {

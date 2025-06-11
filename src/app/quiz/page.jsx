@@ -5,10 +5,27 @@ import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
 import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
 import Image from "next/image"
+import { toast } from "sonner"
+
+// Utility functions
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+};
+
+// Fisher-Yates Shuffle Algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; --i) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
 
 // Move button styles to a constant
 const getButtonStyles = (isActive) => `
@@ -40,12 +57,6 @@ const QuestionMedia = ({ question }) => {
   );
 };
 
-const formatTime = (seconds) => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-};
-
 export default function QuizScreenPage() {
   const router = useRouter();
   const { selectedQuiz, setQuizResponses } = useQuizStartStore();
@@ -58,10 +69,264 @@ export default function QuizScreenPage() {
     selectedQuiz?.timeLimit ? selectedQuiz.timeLimit * 60 : 0
   );
 
+  // Memoize shuffled questions
+  const shuffledQuestionsMemo = useMemo(() =>
+    selectedQuiz ? shuffleArray(selectedQuiz.questions) : [],
+    [selectedQuiz]
+  );
+
+  // Memoize shuffled options for current question
+  const shuffledOptions = useMemo(() =>
+    shuffledQuestionsMemo[currentIndex]?.options
+      ? shuffleArray(shuffledQuestionsMemo[currentIndex].options)
+      : [],
+    [shuffledQuestionsMemo, currentIndex]
+  );
+
+  const handleActiveQuestion = useCallback((option) => {
+    if (!shuffledQuestionsMemo[currentIndex]) return;
+
+    const response = {
+      questionId: shuffledQuestionsMemo[currentIndex].id,
+      selectedOptionId: option.id,
+      isCorrect: Boolean(option.isCorrect), // Explicitly convert to boolean
+      question: shuffledQuestionsMemo[currentIndex].text,
+      selectedAnswer: option.text,
+      correctAnswer: shuffledQuestionsMemo[currentIndex].options.find(opt => opt.isCorrect)?.text
+    };
+
+    console.log('Recording response:', {
+      question: response.question,
+      isCorrect: response.isCorrect,
+      selected: response.selectedAnswer,
+      correct: response.correctAnswer
+    });
+
+    setResponses((prev) => {
+      const existingIndex = prev.findIndex((res) =>
+        res.questionId === response.questionId
+      );
+
+      if (existingIndex !== -1) {
+        const updatedResponses = [...prev];
+        updatedResponses[existingIndex] = response;
+        return updatedResponses;
+      }
+      return [...prev, response];
+    });
+
+    setActiveQuestion(option);
+  }, [shuffledQuestionsMemo, currentIndex]);
+
+  const handleNextQuestion = useCallback(async () => {
+    setIsTransitioning(true);
+    await new Promise(resolve => setTimeout(resolve, 300)); // Smooth transition
+    setCurrentIndex((prev) => prev + 1);
+    setActiveQuestion(null);
+    setIsTransitioning(false);
+  }, []);
+
+  const handleFinishQuiz = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const totalQuestions = shuffledQuestionsMemo.length;
+
+      // Log the responses to check what we have
+      console.log('All responses:', responses);
+
+      // Log raw responses first
+      console.log('Raw responses:', responses);
+
+      // Count correct answers more explicitly with detailed logging
+      const correctAnswers = responses.reduce((count, response) => {
+        console.log('Checking response:', {
+          question: response.question,
+          isCorrect: response.isCorrect,
+          currentCount: count
+        });
+
+        // Ensure isCorrect is treated as a boolean
+        return count + (Boolean(response.isCorrect) ? 1 : 0);
+      }, 0);
+
+      // Log final tally
+      console.log('Final correct answers count:', {
+        total: correctAnswers,
+        outOf: totalQuestions,
+        responses: responses.length
+      });
+
+      // Calculate score percentage with more precision
+      const scorePercentage = (correctAnswers / totalQuestions) * 100;
+      console.log('Score percentage:', scorePercentage.toFixed(2));
+
+      // Store detailed response data
+      const detailedResponses = responses.map(response => ({
+        questionId: response.questionId,
+        question: response.question,
+        selectedAnswer: response.selectedAnswer,
+        correctAnswer: response.correctAnswer,
+        isCorrect: response.isCorrect
+      }));
+
+      const hasPassed = selectedQuiz.passingScore
+        ? scorePercentage >= selectedQuiz.passingScore
+        : true;
+      const hasPassingRequirement = !!selectedQuiz.passingScore;
+      const passingScore = selectedQuiz.passingScore || 0;
+      const isPerfectScore = scorePercentage === 100;      // Initialize points calculation variables
+      let pointsEarned = 0;
+      let remainingDailyPoints = 0;
+      const pointsBreakdown = {
+        correct: 0,
+        bonus: 0,
+        limited: false
+      };
+
+      // Get quiz settings and points status
+      try {
+        // Get quiz system settings and daily status in parallel
+        const [quizSettings, dailyStatus] = await Promise.all([
+          api.get("/quiz/settings"),
+          api.get("/user/points/daily-status")
+        ]);
+
+        // Extract limits from quiz settings
+        const dailyPointsLimit = quizSettings.data.dailyPointsLimit || 10000;
+        const pointsPerQuestion = quizSettings.data.pointsPerQuestion || 1000;
+
+        // Calculate remaining points
+        const todaysPoints = dailyStatus.data.todaysPoints || 0;
+        remainingDailyPoints = dailyPointsLimit - todaysPoints;
+
+        // Calculate raw points (before daily limit)
+        const rawPoints = correctAnswers * pointsPerQuestion;
+        const rawBonus = isPerfectScore ? rawPoints : 0;
+
+        // Apply daily limit
+        pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
+        if (pointsBreakdown.correct < rawPoints) {
+          pointsBreakdown.limited = true;
+        }
+
+        // Apply bonus if within limit
+        const remainingAfterCorrect = remainingDailyPoints - pointsBreakdown.correct;
+        pointsBreakdown.bonus = Math.min(rawBonus, remainingAfterCorrect);
+
+        pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
+
+        console.log('Final points calculation:', {
+          rawPoints,
+          rawBonus,
+          pointsBreakdown,
+          pointsEarned,
+          dailyPointsLimit,
+          remainingDailyPoints
+        });
+
+      } catch (error) {
+        console.error('Error calculating points:', error);
+        // Use default values if API calls fail
+        pointsEarned = correctAnswers * 1000;
+        console.log('Using default points calculation:', pointsEarned);
+      }
+
+      const timeSpent = selectedQuiz?.timeLimit
+        ? (selectedQuiz.timeLimit * 60) - timeRemaining
+        : 0;
+
+      // Store results for the results page
+      const resultsData = {
+        score: Number(scorePercentage.toFixed(1)),
+        pointsEarned: Number(pointsEarned),
+        pointsBreakdown: {
+          correct: Number(pointsBreakdown.correct),
+          bonus: Number(pointsBreakdown.bonus),
+          limited: Boolean(pointsBreakdown.limited)
+        },
+        hasPassed: Boolean(hasPassed),
+        isPerfectScore: Boolean(isPerfectScore),
+        hasPassingRequirement: Boolean(hasPassingRequirement),
+        passingScore: Number(passingScore),
+        totalQuestions: Number(totalQuestions),
+        correctAnswers: Number(correctAnswers),
+        timeSpent: Number(timeSpent),
+        detailedResponses // Add detailed responses for review
+      };
+
+      console.log('Quiz complete, saving results:', resultsData);
+
+      // Save results in this order:
+      // 1. Store state (immediate)
+      await setQuizResponses(resultsData);
+
+      // 2. Session storage (backup)
+      sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+
+      // 3. Server save with retry
+      try {
+        await api.post("/user/quiz/finish", {
+          categoryId: selectedQuiz.categoryId,
+          quizId: selectedQuiz.id,
+          score: scorePercentage,
+          responses,
+          timeSpent,
+          hasPassed,
+          isPerfectScore,
+          pointsBreakdown
+        });
+      } catch (serverError) {
+        // Log the error but don't fail the whole operation
+        console.error("Server save failed:", serverError);
+        toast.error("Could not save results to server, but your progress is saved locally");
+        // Continue to results page anyway
+      }
+
+      // Clean up and navigate
+      sessionStorage.removeItem('quizProgress');
+      router.replace("/quiz/results");
+    } catch (error) {
+      console.error("Quiz completion error:", error);
+
+      // Save results locally even if there's an error
+      try {
+        const emergencyResults = {
+          score: scorePercentage,
+          correctAnswers,
+          totalQuestions,
+          timeSpent: selectedQuiz?.timeLimit ? (selectedQuiz.timeLimit * 60) - timeRemaining : 0
+        };
+        sessionStorage.setItem('lastQuizResults', JSON.stringify(emergencyResults));
+
+        // Navigate to results even if there's an error
+        router.replace("/quiz/results");
+      } catch (backupError) {
+        console.error("Emergency backup failed:", backupError);
+        toast.error("Failed to save quiz results. Please try again or contact support.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [responses, shuffledQuestionsMemo.length, selectedQuiz, timeRemaining, router, setQuizResponses]);
+
+  const handleQuizNavigation = useCallback(async () => {
+    if (!activeQuestion?.id) {
+      toast.error("Please select an option to continue");
+      return;
+    }
+
+    if (currentIndex < shuffledQuestionsMemo.length - 1) {
+      await handleNextQuestion();
+    } else {
+      await handleFinishQuiz();
+    }
+  }, [activeQuestion, currentIndex, shuffledQuestionsMemo.length, handleNextQuestion, handleFinishQuiz]);
+
   // Clear any existing progress when component mounts with a new quiz
   useEffect(() => {
     if (selectedQuiz) {
       sessionStorage.removeItem('quizProgress');
+      sessionStorage.removeItem('lastQuizResults');
       setCurrentIndex(0);
       setResponses([]);
       setActiveQuestion(null);
@@ -80,7 +345,7 @@ export default function QuizScreenPage() {
         responses
       }));
     }
-  }, [currentIndex, responses, isLoading, selectedQuiz]);
+  }, [currentIndex, responses, isLoading, selectedQuiz, shuffledQuestionsMemo.length]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -99,357 +364,72 @@ export default function QuizScreenPage() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [activeQuestion, handleQuizNavigation]);
+  }, [activeQuestion, handleQuizNavigation, shuffledOptions, handleActiveQuestion]);
 
-  // Fisher-Yates Shuffle Algorithm
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; --i) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
-
-  // Memoize shuffled questions
-  const shuffledQuestionsMemo = useMemo(() =>
-    selectedQuiz ? shuffleArray(selectedQuiz.questions) : [],
-    [selectedQuiz]
-  );
-
-  // Memoize shuffled options for current question
-  const shuffledOptions = useMemo(() =>
-    shuffledQuestionsMemo[currentIndex]?.options
-      ? shuffleArray(shuffledQuestionsMemo[currentIndex].options)
-      : [],
-    [shuffledQuestionsMemo, currentIndex]
-  );
-
-  const handleActiveQuestion = (option) => {
-    if (!shuffledQuestionsMemo[currentIndex]) return;
-
-    const response = {
-      questionId: shuffledQuestionsMemo[currentIndex].id,
-      optionId: option.id,
-      isCorrect: option.isCorrect
-    };
-
-    setResponses((prev) => {
-      const existingIndex = prev.findIndex((res) =>
-        res.questionId === response.questionId
-      );
-
-      if (existingIndex !== -1) {
-        const updatedResponses = [...prev];
-        updatedResponses[existingIndex] = response;
-        return updatedResponses;
-      }
-      return [...prev, response];
-    });
-
-    setActiveQuestion(option);
-  };
-
-  const handleNextQuestion = async () => {
-    setIsTransitioning(true);
-    await new Promise(resolve => setTimeout(resolve, 300)); // Smooth transition
-    setCurrentIndex((prev) => prev + 1);
-    setActiveQuestion(null);
-    setIsTransitioning(false);
-  };
-
-  const handleFinishQuiz = async () => {
-    try {
-      setIsLoading(true);
-      setQuizResponses(responses);
-
-      // Calculate score and percentage
-      const totalQuestions = shuffledQuestionsMemo.length;
-      const correctAnswers = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
-      const scorePercentage = (correctAnswers / totalQuestions) * 100;
-      const isPerfectScore = scorePercentage === 100;
-
-      // Determine if quiz has a passing score requirement
-      const hasPassingRequirement = selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null;
-      const passingScore = selectedQuiz.passingScore || 0;
-      const hasPassed = hasPassingRequirement ? scorePercentage >= passingScore : true;
-
-      // Calculate points
-      let pointsEarned = 0;
-      let pointsBreakdown = {
-        correct: 0,
-        bonus: 0,
-        limited: false
-      };
-
-      // Get daily points status
-      const dailyStatus = await api.get("/user/points/daily-status");
-      const remainingDailyPoints = 100000 - (dailyStatus.data.todaysPoints || 0);
-
-      if (hasPassingRequirement) {
-        // With passing score requirement
-        if (hasPassed) {
-          // Calculate raw points (before daily limit)
-          const rawPoints = correctAnswers * 1000; // 1000 points per correct answer
-          const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
-
-          // Apply daily limit
-          pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
-          if (pointsBreakdown.correct < rawPoints) {
-            pointsBreakdown.limited = true;
-          }
-
-          // Only apply bonus if there's room in daily limit
-          if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
-            pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
-          }
-        }
-      } else {
-        // No passing score - half points per correct answer
-        const rawPoints = correctAnswers * 500; // 500 points per correct answer
-        const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
-
-        // Apply daily limit
-        pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
-        if (pointsBreakdown.correct < rawPoints) {
-          pointsBreakdown.limited = true;
-        }
-
-        // Only apply bonus if there's room in daily limit
-        if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
-          pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
-        }
-      }
-
-      // Calculate total points
-      pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
-
-      // Format points with commas
-      const formatNumber = (num) => new Intl.NumberFormat().format(num);
-
-      const timeSpent = selectedQuiz?.timeLimit
-        ? (selectedQuiz.timeLimit * 60) - timeRemaining
-        : 0;
-
-      // Save quiz results
-      await api.post("/user/quiz/finish", {
-        categoryId: selectedQuiz.categoryId,
-        quizId: selectedQuiz.id,
-        score: scorePercentage,
-        responses,
-        timeSpent,
-        hasPassed,
-        isPerfectScore,
-        pointsBreakdown
-      });
-
-      // Show results with point breakdown
-      toast({
-        title: "Quiz Completed!",
-        description: (
-          <div className="mt-2 space-y-2">
-            <p>Score: {scorePercentage.toFixed(1)}%</p>
-            <p>Points earned: {formatNumber(pointsEarned)}</p>
-            {pointsBreakdown.limited && (
-              <p className="text-yellow-600">
-                Note: Points were limited by daily cap. Come back tomorrow for more!
-              </p>
-            )}
-          </div>
-        ),
-        duration: 5000,
-      });
-
-      // Store results for the results page
-      sessionStorage.setItem('lastQuizResults', JSON.stringify({
-        score: scorePercentage,
-        pointsEarned,
-        pointsBreakdown,
-        hasPassed,
-        isPerfectScore,
-        hasPassingRequirement,
-        passingScore,
-        totalQuestions,
-        correctAnswers,
-        timeSpent
-      }));
-
-      sessionStorage.removeItem('quizProgress');
-      router.push("/quiz/results");
-    } catch (error) {
-      console.error("Error finishing quiz:", error);
-      toast.error("Failed to submit quiz results. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuizNavigation = async () => {
-    if (!activeQuestion?.id) {
-      toast.error("Please select an option to continue");
-      return;
-    }
-
-    if (currentIndex < shuffledQuestionsMemo.length - 1) {
-      await handleNextQuestion();
-    } else {
-      await handleFinishQuiz();
-    }
-  };
-
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (responses.length > 0) {
-        // Save progress
-        sessionStorage.setItem('quizProgress', JSON.stringify({
-          quizId: selectedQuiz.id,
-          currentIndex,
-          responses,
-          timestamp: Date.now()
-        }));
-
-        // Show confirmation dialog
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [responses, currentIndex, selectedQuiz]);
-
-  // Handle timer expiration
-  const handleTimeUp = useCallback(async () => {
-    toast.error("Time's up! Submitting your quiz.");
-    await handleFinishQuiz();
-  }, []);
-
-  // Timer effect
-  useEffect(() => {
-    if (selectedQuiz?.timeLimit && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleTimeUp();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => clearInterval(timer);
-    }
-  }, [selectedQuiz, timeRemaining, handleTimeUp]);
-
-  useEffect(() => {
-    return () => {
-      // Clean up when component unmounts
-      if (!responses.length) {
-        sessionStorage.removeItem('quizProgress');
-      }
-    };
-  }, [responses]);
-
-  if (isLoading) return <Loader />;
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
-    <main
-      className={`py-[2.5rem] px-[5rem] ${isTransitioning ? 'opacity-50' : ''}`}
-      role="main"
-      aria-label="Quiz Page"
-    >
-      {shuffledQuestionsMemo[currentIndex] ? (
-        <div className="space-y-6">
-          <div className="flex flex-col gap-6">
-            <div className="flex justify-between items-center">
-              <p
-                className="py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-                role="status"
-                aria-live="polite"
-              >
-                Question: <span className="text-2xl">{currentIndex + 1}</span> /{" "}
-                <span className="text-xl">{shuffledQuestionsMemo.length}</span>
-              </p>
-
-              {/* Timer Display */}
-              {selectedQuiz?.timeLimit && (
-                <div
-                  className={`py-3 px-6 border-2 text-xl font-bold rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]
-                    ${timeRemaining <= 60 ? 'text-red-500 animate-pulse' : ''}`}
-                  role="timer"
-                  aria-label="Time remaining"
-                >
-                  Time: {formatTime(timeRemaining)}
-                </div>
-              )}
-            </div>
-            <h1
-              className="mt-4 px-10 text-5xl font-bold text-center"
-              role="heading"
-              aria-level="1"
-            >
-              {shuffledQuestionsMemo[currentIndex].text}
-            </h1>
-          </div>
-
-          <div
-            className="pt-14 space-y-4"
-            role="radiogroup"
-            aria-label="Quiz options"
-          >
-            {shuffledOptions.map((option, index) => (
-              <button
-                key={option.id}
-                className={getButtonStyles(option.text === activeQuestion?.text)}
-                onClick={() => handleActiveQuestion(option)}
-                aria-pressed={option.text === activeQuestion?.text}
-                aria-label={`Option ${index + 1}: ${option.text}`}
-                disabled={isTransitioning}
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-
-          {/* Points Info */}
-          <div className="text-center text-sm text-gray-600">
-            {selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null ? (
-              <>
-                <p>Must achieve {selectedQuiz.passingScore}% to earn points</p>
-                <p>Earn 10 points per correct answer when passing score is achieved</p>
-                <p>Perfect score doubles your points! 🌟</p>
-              </>
-            ) : (
-              <>
-                <p>Earn 5 points per correct answer</p>
-                <p>Perfect score doubles your points! 🌟</p>
-              </>
-            )}
-          </div>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{selectedQuiz?.title}</h1>
+        <div className="flex items-center gap-4">
+          <p className="text-gray-600">
+            Question {currentIndex + 1} of {shuffledQuestionsMemo.length}
+          </p>
+          {timeRemaining > 0 && (
+            <p className="text-gray-600">
+              Time remaining: {formatTime(timeRemaining)}
+            </p>
+          )}
         </div>
-      ) : (
-        <p className="text-lg" role="alert">No questions found for this quiz</p>
-      )}
+      </div>
 
-      <div className="w-full py-[4rem] border-t-2 flex items-center justify-center">
+      <div className={`transition-opacity duration-300 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+        {shuffledQuestionsMemo[currentIndex] && (
+          <>
+            <div className="mb-8">
+              <QuestionMedia question={shuffledQuestionsMemo[currentIndex]} />
+              <h2 className="text-xl font-semibold mb-6">
+                {shuffledQuestionsMemo[currentIndex].text}
+              </h2>
+            </div>
+
+            <div className="space-y-4">
+              {shuffledOptions.map((option, index) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleActiveQuestion(option)}
+                  disabled={isTransitioning}
+                  className={getButtonStyles(activeQuestion?.id === option.id)}
+                >
+                  {String.fromCharCode(65 + index)}. {option.text}
+                  {activeQuestion?.id === option.id && (
+                    <CircleCheckBig className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="mt-8 flex justify-end">
         <Button
-          className="px-10 py-6 font-bold text-xl rounded-xl bg-teal-600"
-          variant="destructive"
           onClick={handleQuizNavigation}
-          disabled={isTransitioning || !activeQuestion}
+          disabled={!activeQuestion || isTransitioning}
+          className="text-lg py-6 px-8"
         >
           {currentIndex < shuffledQuestionsMemo.length - 1 ? (
-            <span className="flex items-center gap-2">
-              <ArrowBigRightDash /> Next
-            </span>
+            <>
+              Next <ArrowBigRightDash className="ml-2" />
+            </>
           ) : (
-            <span className="flex items-center gap-2 text-black">
-              <CircleCheckBig /> Finish
-            </span>
+            'Finish Quiz'
           )}
         </Button>
       </div>
-    </main>
+    </div>
   );
 }

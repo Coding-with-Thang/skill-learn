@@ -9,6 +9,21 @@ const api = axios.create({
   withCredentials: true, // Important for handling auth cookies
 });
 
+// Add auth header to every request
+api.interceptors.request.use(async (config) => {
+  try {
+    if (window.Clerk?.session) {
+      const token = await window.Clerk.session.getToken();
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+  } catch (error) {
+    console.error("Error adding auth header:", error);
+  }
+  return config;
+});
+
 // Rate limiting management
 const retryDelays = new Map();
 const MAX_RETRIES = 3;
@@ -89,11 +104,20 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const { config, response } = error;
-
-    // Return cached responses
+    const { config, response } = error; // Return cached responses
     if (response?.status === 304) {
       return Promise.resolve(response);
+    }
+
+    // Handle auth errors
+    if (response?.status === 401) {
+      // Clear any stale auth state
+      window.Clerk?.session?.end();
+
+      // Don't redirect if we're already on the sign-in page
+      if (!window.location.pathname.startsWith("/sign-in")) {
+        window.location.href = "/sign-in";
+      }
     }
 
     // Handle rate limiting

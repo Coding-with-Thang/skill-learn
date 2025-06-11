@@ -6,8 +6,8 @@ export async function GET(request) {
     const leaderboard = await prisma.user.findMany({
       select: {
         id: true,
-        name: true,
-        image: true,
+        username: true,
+        imageUrl: true,
         points: true,
       },
       orderBy: {

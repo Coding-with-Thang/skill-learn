@@ -4,9 +4,11 @@ import prisma from "@/utils/connect";
 
 export async function POST(req) {
   try {
-    const { userId } = auth();
+    const authRequest = auth();
+    const { userId } = await authRequest;
+
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { categoryId, quizId, score, responses } = await req.json();

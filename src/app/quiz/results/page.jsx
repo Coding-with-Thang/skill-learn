@@ -3,68 +3,181 @@
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { Button } from "@/components/ui/button"
-import { Play, ChartNoAxesCombined } from 'lucide-react'
-import { useEffect } from "react"
+import { Play, ChartNoAxesCombined, Trophy, Clock, Target } from 'lucide-react'
+import { useEffect, useState } from "react"
+import { Card, CardContent } from "@/components/ui/card"
+
+// Utility function to format time
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+};
 
 export default function ResultsPage() {
   const router = useRouter();
-  const { quizResponses, selectedQuiz } = useQuizStartStore()
+  const { selectedQuiz, quizResponses } = useQuizStartStore();
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!quizResponses || quizResponses.length === 0) {
-      router.push("/training");
-    }
-  }, [quizResponses, router]);
+    async function loadResults() {
+      console.log('Loading results. Store state:', { quizResponses, selectedQuiz });
 
-  if (!quizResponses || quizResponses.length === 0) {
-    return null; // Return null while redirecting
+      // First try to get results from the store
+      if (quizResponses) {
+        console.log('Found results in store:', quizResponses);
+        setResults(quizResponses);
+        return;
+      }
+
+      // If not in store, try sessionStorage
+      const savedResults = sessionStorage.getItem('lastQuizResults');
+      console.log('SessionStorage results:', savedResults);
+
+      if (!savedResults) {
+        console.log('No quiz results found in either location');
+        setError('No quiz results found');
+        router.replace("/training");
+        return;
+      }
+
+      try {
+        const parsedResults = JSON.parse(savedResults);
+        console.log('Parsed results:', parsedResults);
+
+        // Validate that we have the required data
+        if (!parsedResults || typeof parsedResults.score !== 'number') {
+          throw new Error('Invalid quiz results data');
+        }
+
+        setResults(parsedResults);
+        // Only remove results after successfully loading
+        sessionStorage.removeItem('lastQuizResults');
+      } catch (error) {
+        console.error('Error parsing quiz results:', error);
+        setError(error.message);
+        router.replace("/training");
+      }
+    }
+
+    loadResults();
+  }, [router, quizResponses]);
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+        <h1 className="text-2xl font-bold text-red-500">Error loading results: {error}</h1>
+      </div>
+    );
   }
 
-  const correctAnswers = quizResponses.filter(
-    (res) => res.isCorrect
-  ).length;
+  // Show loading state
+  if (!results) {
+    return (
+      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+        <h1 className="text-2xl font-bold">Loading results...</h1>
+      </div>
+    );
+  }
 
-  const totalQuestions = quizResponses.length;
-  const scorePercentage = (correctAnswers / totalQuestions) * 100;
-
-  //Show message for the score
+  console.log('Displaying results:', results);
+  // Show message for the score
   let message = "";
-  if (scorePercentage < 25) {
+  if (results.score < 25) {
     message = "You need to try harder!";
-  } else if (scorePercentage >= 25 && scorePercentage < 50) {
+  } else if (results.score >= 25 && results.score < 50) {
     message = "You're getting there! Keep practicing.";
-  } else if (scorePercentage >= 50 && scorePercentage < 75) {
+  } else if (results.score >= 50 && results.score < 75) {
     message = "Good effort! You're above average.";
-  } else if (scorePercentage >= 75 && scorePercentage < 100) {
+  } else if (results.score >= 75 && results.score < 100) {
     message = "Great job! You're so close to perfect!";
-  } else if (scorePercentage === 100) {
+  } else if (results.score === 100) {
     message = "Outstanding! You got everything right!";
   }
 
   return (
-    <main className="py-[2.5rem] px-[5rem]">
+    <main className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto">
       <h1 className="text-4xl font-bold text-center mt-10 lg:mt-20">Quiz Results</h1>
-      <p className="text-2xl text-center mt-4">
-        You scored <span className="text-3xl font-bold">{correctAnswers}</span> out of{" "}
-        {""}
-        <span className="font-bold">{totalQuestions}</span> {""}
-      </p>
-      <p className="text-blue-400 font-bold text-4xl text-center">
-        {scorePercentage.toFixed()}%
-      </p>
-      <p className="text-2xl text-center mt-2 font-semibold">{message}</p>
-      <div className="flex gap-2 justify-center mt-8">
+
+      {/* Score Display */}
+      <div className="mt-8 text-center">
+        <p className="text-6xl font-bold text-blue-500 mb-4">{results.score}%</p>
+        <p className="text-xl text-gray-600">
+          {results.correctAnswers} correct out of {results.totalQuestions} questions
+        </p>
+        <p className="text-2xl font-semibold mt-4 text-gray-800">{message}</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+        <Card className="bg-white shadow-lg">
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="p-3 bg-green-100 rounded-full">
+              <Trophy className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Points Earned</p>
+              <p className="text-xl font-bold">{new Intl.NumberFormat().format(results.pointsEarned)}</p>
+              {results.pointsBreakdown.bonus > 0 && (
+                <p className="text-sm text-green-600">+{new Intl.NumberFormat().format(results.pointsBreakdown.bonus)} bonus!</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-lg">
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="p-3 bg-blue-100 rounded-full">
+              <Clock className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Time Taken</p>
+              <p className="text-xl font-bold">{formatTime(results.timeSpent)}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white shadow-lg">
+          <CardContent className="flex items-center gap-4 p-6">
+            <div className="p-3 bg-purple-100 rounded-full">
+              <Target className="h-6 w-6 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Status</p>
+              <p className="text-xl font-bold">
+                {results.hasPassingRequirement
+                  ? (results.hasPassed ? "Passed!" : "Not Passed")
+                  : "Completed"}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Points Breakdown Message */}
+      {results.pointsBreakdown.limited && (
+        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+          <p className="text-yellow-800">
+            Note: Points were limited by daily cap. Come back tomorrow for more!
+          </p>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 justify-center mt-12">
         <Button
-          className="px-10 py-6 font-bold text-xl rounded-xl"
-          onClick={() => router.push("/quiz/start/" + selectedQuiz.id)}
+          className="px-8 py-6 font-bold text-lg rounded-xl bg-blue-500 hover:bg-blue-600 text-white"
+          onClick={() => router.push(`/quiz/start/${selectedQuiz?.id}`)}
         >
-          <Play /> Play Again
+          <Play className="mr-2" /> Try Again
         </Button>
         <Button
-          className="px-10 py-6 font-bold text-xl rounded-xl"
+          className="px-8 py-6 font-bold text-lg rounded-xl"
           onClick={() => router.push("/stats")}
         >
-          <ChartNoAxesCombined /> View Stats
+          <ChartNoAxesCombined className="mr-2" /> View Stats
         </Button>
       </div>
     </main>

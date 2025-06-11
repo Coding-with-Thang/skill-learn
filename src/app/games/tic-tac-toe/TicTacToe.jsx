@@ -83,7 +83,7 @@ const TicTacToe = () => {
 
   //const fetchGameHistory = async () => {
   //  try {
-  //    const response = await fetch("/api/gameHistory");
+  //    const response = await fetch("/gameHistory");
   //    const data = await response.json();
   //    setGameHistory(data);
   //  } catch (error) {
@@ -93,7 +93,7 @@ const TicTacToe = () => {
 
   //const updateGameHistory = async (result) => {
   //  try {
-  //    const response = await fetch("/api/gameHistory", {
+  //    const response = await fetch("/gameHistory", {
   //      method: "POST",
   //      headers: {
   //        "Content-Type": "application/json",
