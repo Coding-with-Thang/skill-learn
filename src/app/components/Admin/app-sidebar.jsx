@@ -54,8 +54,8 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Manage User",
-          url: "users",
+          title: "User Management",
+          url: "/dashboard/users",
         },
       ],
     },
