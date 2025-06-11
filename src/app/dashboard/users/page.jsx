@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { generateRandomPassword } from '../../../utils/generatePassword'
 import useUsersStore from "../../store/usersStore";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table } from "@/components/ui/table";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import UserDetails from "@/components/UserDetails";
@@ -23,7 +23,7 @@ export default function UsersPage() {
   const [lastName, setLastName] = useState('')
   const [password, setPassword] = useState('')
   const [errorUsers, setErrorUsers] = useState(null)
-  const [manager, setManager] = useState('')
+  const [manager, setManager] = useState('none')
   const [role, setRole] = useState('AGENT')
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
@@ -67,14 +67,12 @@ export default function UsersPage() {
     if (!firstName || !lastName) {
       setErrorUsers('First name and last name are required')
       return
-    }
-
-    setErrorUsers(null)
-
+    } setErrorUsers(null)
     const userData = {
       username,
       firstName,
       lastName,
+      password,
       manager,
       role,
     }
@@ -85,15 +83,13 @@ export default function UsersPage() {
         setEditingUser(null)
       } else {
         await useUsersStore.getState().createUser(userData)
-      }
-
-      //Clear the form
+      }      //Clear the form
       setUsername('')
       setFirstName('')
       setLastName('')
       setPassword('')
-      setManager('')
-      setRole('')
+      setManager('none')
+      setRole('AGENT')
 
       // Refresh the users list
       fetchUsers()
@@ -106,7 +102,7 @@ export default function UsersPage() {
     setUsername(user.username)
     setFirstName(user.firstName)
     setLastName(user.lastName)
-    setManager(user.manager || '')
+    setManager(user.manager || 'none')
     setRole(user.role || 'AGENT')
     setShowForm(true)
   }
@@ -125,12 +121,13 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="p-6">      <div className="flex justify-between items-center mb-6">
-      <h1 className="text-3xl font-bold">User Management</h1>
-      <div className="flex gap-3">
-        <Button onClick={() => setShowForm(true)} variant="default">Add User</Button>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">User Management</h1>
+        <div className="flex gap-3">
+          <Button onClick={() => setShowForm(true)} variant="default">Add User</Button>
+        </div>
       </div>
-    </div>
 
       {errorUsers && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -145,8 +142,9 @@ export default function UsersPage() {
           setUsername('')
           setFirstName('')
           setLastName('')
-          setManager('')
-          setRole('')
+          setPassword('')
+          setManager('none')
+          setRole('AGENT')
           setErrorUsers(null)
         }
         setShowForm(open)
@@ -178,27 +176,51 @@ export default function UsersPage() {
                 required
               />
             </div>
+            {!editingUser && (
+              <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button type="button" onClick={handleGeneratePassword} variant="outline">
+                    Generate
+                  </Button>
+                </div>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium mb-1">Role</label>
-              <Select
-                value={role}
-                onValueChange={setRole}
-              >
-                {roles.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Manager</label>
-              <Select
-                value={manager}
-                onValueChange={setManager}
-              >
-                <option value="">No Manager</option>
-                {managerList.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+              <Select value={manager} onValueChange={setManager}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a manager" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Manager</SelectItem>
+                  {managerList.map((m) => (
+                    <SelectItem key={m} value={m}>
+                      {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
             <div className="flex justify-end gap-3">
