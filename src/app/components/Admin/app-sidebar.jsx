@@ -18,11 +18,15 @@ import {
 const data = {
   navMain: [
     {
-      title: "Quizzes",
+      title: "Quiz Management",
       url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
       items: [
+                {
+          title: "Categories",
+          url: "/dashboard/categories",
+        },
         {
           title: "Manage Quizzes",
           url: "/dashboard/quizzes",
