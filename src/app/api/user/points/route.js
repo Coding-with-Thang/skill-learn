@@ -36,19 +36,10 @@ export async function GET(request) {
           }
         ).then((res) => res.json());
 
-        // Generate a username from email or name
-        const email = clerkUser.email_addresses[0]?.email_address;
-        const username = email
-          ? email.split("@")[0]
-          : `${clerkUser.first_name?.toLowerCase() || ""}${
-              clerkUser.last_name?.toLowerCase() || ""
-            }`;
-
         // Create new user
         const newUser = await prisma.user.create({
           data: {
             clerkId: userId,
-            email: email,
             username: username,
             firstName: clerkUser.first_name,
             lastName: clerkUser.last_name,
