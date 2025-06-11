@@ -22,10 +22,8 @@ export const useQuizStore = create((set) => ({
 }));
 
 export const useQuizStartStore = create((set) => ({
-  config: {
-    selectedQuiz: null,
-    quizResponses: [],
-  },
+  selectedQuiz: null,
+  quizResponses: null,
   setSelectedQuiz: (quiz) => set({ selectedQuiz: quiz }),
   setQuizResponses: (newResponses) => set({ quizResponses: newResponses }),
 }));

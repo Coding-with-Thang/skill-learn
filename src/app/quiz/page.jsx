@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
 import Image from "next/image"
+import { toast } from "sonner"
 
 // Utility functions
 const formatTime = (seconds) => {
@@ -87,9 +88,19 @@ export default function QuizScreenPage() {
 
     const response = {
       questionId: shuffledQuestionsMemo[currentIndex].id,
-      optionId: option.id,
-      isCorrect: option.isCorrect
+      selectedOptionId: option.id,
+      isCorrect: Boolean(option.isCorrect), // Explicitly convert to boolean
+      question: shuffledQuestionsMemo[currentIndex].text,
+      selectedAnswer: option.text,
+      correctAnswer: shuffledQuestionsMemo[currentIndex].options.find(opt => opt.isCorrect)?.text
     };
+
+    console.log('Recording response:', {
+      question: response.question,
+      isCorrect: response.isCorrect,
+      selected: response.selectedAnswer,
+      correct: response.correctAnswer
+    });
 
     setResponses((prev) => {
       const existingIndex = prev.findIndex((res) =>
@@ -118,53 +129,79 @@ export default function QuizScreenPage() {
   const handleFinishQuiz = useCallback(async () => {
     try {
       setIsLoading(true);
-      setQuizResponses(responses);
-
-      // Calculate score and percentage
       const totalQuestions = shuffledQuestionsMemo.length;
-      const correctAnswers = responses.reduce((acc, res) => acc + (res.isCorrect ? 1 : 0), 0);
+
+      // Log the responses to check what we have
+      console.log('All responses:', responses);
+
+      // Log raw responses first
+      console.log('Raw responses:', responses);
+
+      // Count correct answers more explicitly with detailed logging
+      const correctAnswers = responses.reduce((count, response) => {
+        console.log('Checking response:', {
+          question: response.question,
+          isCorrect: response.isCorrect,
+          currentCount: count
+        });
+
+        // Ensure isCorrect is treated as a boolean
+        return count + (Boolean(response.isCorrect) ? 1 : 0);
+      }, 0);
+
+      // Log final tally
+      console.log('Final correct answers count:', {
+        total: correctAnswers,
+        outOf: totalQuestions,
+        responses: responses.length
+      });
+
+      // Calculate score percentage with more precision
       const scorePercentage = (correctAnswers / totalQuestions) * 100;
-      const isPerfectScore = scorePercentage === 100;
+      console.log('Score percentage:', scorePercentage.toFixed(2));
 
-      // Determine if quiz has a passing score requirement
-      const hasPassingRequirement = selectedQuiz.passingScore !== undefined && selectedQuiz.passingScore !== null;
+      // Store detailed response data
+      const detailedResponses = responses.map(response => ({
+        questionId: response.questionId,
+        question: response.question,
+        selectedAnswer: response.selectedAnswer,
+        correctAnswer: response.correctAnswer,
+        isCorrect: response.isCorrect
+      }));
+
+      const hasPassed = selectedQuiz.passingScore
+        ? scorePercentage >= selectedQuiz.passingScore
+        : true;
+      const hasPassingRequirement = !!selectedQuiz.passingScore;
       const passingScore = selectedQuiz.passingScore || 0;
-      const hasPassed = hasPassingRequirement ? scorePercentage >= passingScore : true;
-
-      // Calculate points
+      const isPerfectScore = scorePercentage === 100;      // Initialize points calculation variables
       let pointsEarned = 0;
-      let pointsBreakdown = {
+      let remainingDailyPoints = 0;
+      const pointsBreakdown = {
         correct: 0,
         bonus: 0,
         limited: false
       };
 
-      // Get daily points status
-      const dailyStatus = await api.get("/user/points/daily-status");
-      const remainingDailyPoints = 100000 - (dailyStatus.data.todaysPoints || 0);
+      // Get quiz settings and points status
+      try {
+        // Get quiz system settings and daily status in parallel
+        const [quizSettings, dailyStatus] = await Promise.all([
+          api.get("/quiz/settings"),
+          api.get("/user/points/daily-status")
+        ]);
 
-      if (hasPassingRequirement) {
-        // With passing score requirement
-        if (hasPassed) {
-          // Calculate raw points (before daily limit)
-          const rawPoints = correctAnswers * 1000; // 1000 points per correct answer
-          const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
+        // Extract limits from quiz settings
+        const dailyPointsLimit = quizSettings.data.dailyPointsLimit || 10000;
+        const pointsPerQuestion = quizSettings.data.pointsPerQuestion || 1000;
 
-          // Apply daily limit
-          pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
-          if (pointsBreakdown.correct < rawPoints) {
-            pointsBreakdown.limited = true;
-          }
+        // Calculate remaining points
+        const todaysPoints = dailyStatus.data.todaysPoints || 0;
+        remainingDailyPoints = dailyPointsLimit - todaysPoints;
 
-          // Only apply bonus if there's room in daily limit
-          if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
-            pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
-          }
-        }
-      } else {
-        // No passing score - half points per correct answer
-        const rawPoints = correctAnswers * 500; // 500 points per correct answer
-        const rawBonus = isPerfectScore ? rawPoints : 0; // Double points for perfect score
+        // Calculate raw points (before daily limit)
+        const rawPoints = correctAnswers * pointsPerQuestion;
+        const rawBonus = isPerfectScore ? rawPoints : 0;
 
         // Apply daily limit
         pointsBreakdown.correct = Math.min(rawPoints, remainingDailyPoints);
@@ -172,33 +209,31 @@ export default function QuizScreenPage() {
           pointsBreakdown.limited = true;
         }
 
-        // Only apply bonus if there's room in daily limit
-        if (isPerfectScore && remainingDailyPoints > pointsBreakdown.correct) {
-          pointsBreakdown.bonus = Math.min(rawBonus, remainingDailyPoints - pointsBreakdown.correct);
-        }
+        // Apply bonus if within limit
+        const remainingAfterCorrect = remainingDailyPoints - pointsBreakdown.correct;
+        pointsBreakdown.bonus = Math.min(rawBonus, remainingAfterCorrect);
+
+        pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
+
+        console.log('Final points calculation:', {
+          rawPoints,
+          rawBonus,
+          pointsBreakdown,
+          pointsEarned,
+          dailyPointsLimit,
+          remainingDailyPoints
+        });
+
+      } catch (error) {
+        console.error('Error calculating points:', error);
+        // Use default values if API calls fail
+        pointsEarned = correctAnswers * 1000;
+        console.log('Using default points calculation:', pointsEarned);
       }
-
-      // Calculate total points
-      pointsEarned = pointsBreakdown.correct + pointsBreakdown.bonus;
-
-      // Format points with commas
-      const formatNumber = (num) => new Intl.NumberFormat().format(num);
 
       const timeSpent = selectedQuiz?.timeLimit
         ? (selectedQuiz.timeLimit * 60) - timeRemaining
         : 0;
-
-      // Save quiz results
-      await api.post("/user/quiz/finish", {
-        categoryId: selectedQuiz.categoryId,
-        quizId: selectedQuiz.id,
-        score: scorePercentage,
-        responses,
-        timeSpent,
-        hasPassed,
-        isPerfectScore,
-        pointsBreakdown
-      });
 
       // Store results for the results page
       const resultsData = {
@@ -215,15 +250,60 @@ export default function QuizScreenPage() {
         passingScore: Number(passingScore),
         totalQuestions: Number(totalQuestions),
         correctAnswers: Number(correctAnswers),
-        timeSpent: Number(timeSpent)
+        timeSpent: Number(timeSpent),
+        detailedResponses // Add detailed responses for review
       };
 
+      console.log('Quiz complete, saving results:', resultsData);
+
+      // Save results in this order:
+      // 1. Store state (immediate)
+      await setQuizResponses(resultsData);
+
+      // 2. Session storage (backup)
       sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+
+      // 3. Server save with retry
+      try {
+        await api.post("/user/quiz/finish", {
+          categoryId: selectedQuiz.categoryId,
+          quizId: selectedQuiz.id,
+          score: scorePercentage,
+          responses,
+          timeSpent,
+          hasPassed,
+          isPerfectScore,
+          pointsBreakdown
+        });
+      } catch (serverError) {
+        // Log the error but don't fail the whole operation
+        console.error("Server save failed:", serverError);
+        toast.error("Could not save results to server, but your progress is saved locally");
+        // Continue to results page anyway
+      }
+
+      // Clean up and navigate
       sessionStorage.removeItem('quizProgress');
-      router.push("/quiz/results");
+      router.replace("/quiz/results");
     } catch (error) {
-      console.error("Error finishing quiz:", error);
-      toast.error("Failed to submit quiz results. Please try again.");
+      console.error("Quiz completion error:", error);
+
+      // Save results locally even if there's an error
+      try {
+        const emergencyResults = {
+          score: scorePercentage,
+          correctAnswers,
+          totalQuestions,
+          timeSpent: selectedQuiz?.timeLimit ? (selectedQuiz.timeLimit * 60) - timeRemaining : 0
+        };
+        sessionStorage.setItem('lastQuizResults', JSON.stringify(emergencyResults));
+
+        // Navigate to results even if there's an error
+        router.replace("/quiz/results");
+      } catch (backupError) {
+        console.error("Emergency backup failed:", backupError);
+        toast.error("Failed to save quiz results. Please try again or contact support.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -246,6 +326,7 @@ export default function QuizScreenPage() {
   useEffect(() => {
     if (selectedQuiz) {
       sessionStorage.removeItem('quizProgress');
+      sessionStorage.removeItem('lastQuizResults');
       setCurrentIndex(0);
       setResponses([]);
       setActiveQuestion(null);
@@ -290,10 +371,10 @@ export default function QuizScreenPage() {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-2">{selectedQuiz?.title}</h1>
-        <div className="flex items-center justify-between">
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{selectedQuiz?.title}</h1>
+        <div className="flex items-center gap-4">
           <p className="text-gray-600">
             Question {currentIndex + 1} of {shuffledQuestionsMemo.length}
           </p>

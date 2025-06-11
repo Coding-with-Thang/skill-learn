@@ -16,30 +16,74 @@ const formatTime = (seconds) => {
 
 export default function ResultsPage() {
   const router = useRouter();
-  const { selectedQuiz } = useQuizStartStore()
+  const { selectedQuiz, quizResponses } = useQuizStartStore();
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Get results from sessionStorage
-    const savedResults = sessionStorage.getItem('lastQuizResults');
-    if (!savedResults) {
-      router.push("/training");
-      return;
-    }
-    try {
-      const parsedResults = JSON.parse(savedResults);
-      setResults(parsedResults);
-    } catch (error) {
-      console.error('Error parsing quiz results:', error);
-      router.push("/training");
-    }
-  }, [router]);
+    async function loadResults() {
+      console.log('Loading results. Store state:', { quizResponses, selectedQuiz });
 
-  if (!results) {
-    return null; // Return null while loading or redirecting
+      // First try to get results from the store
+      if (quizResponses) {
+        console.log('Found results in store:', quizResponses);
+        setResults(quizResponses);
+        return;
+      }
+
+      // If not in store, try sessionStorage
+      const savedResults = sessionStorage.getItem('lastQuizResults');
+      console.log('SessionStorage results:', savedResults);
+
+      if (!savedResults) {
+        console.log('No quiz results found in either location');
+        setError('No quiz results found');
+        router.replace("/training");
+        return;
+      }
+
+      try {
+        const parsedResults = JSON.parse(savedResults);
+        console.log('Parsed results:', parsedResults);
+
+        // Validate that we have the required data
+        if (!parsedResults || typeof parsedResults.score !== 'number') {
+          throw new Error('Invalid quiz results data');
+        }
+
+        setResults(parsedResults);
+        // Only remove results after successfully loading
+        sessionStorage.removeItem('lastQuizResults');
+      } catch (error) {
+        console.error('Error parsing quiz results:', error);
+        setError(error.message);
+        router.replace("/training");
+      }
+    }
+
+    loadResults();
+  }, [router, quizResponses]);
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+        <h1 className="text-2xl font-bold text-red-500">Error loading results: {error}</h1>
+      </div>
+    );
   }
 
-  //Show message for the score
+  // Show loading state
+  if (!results) {
+    return (
+      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+        <h1 className="text-2xl font-bold">Loading results...</h1>
+      </div>
+    );
+  }
+
+  console.log('Displaying results:', results);
+  // Show message for the score
   let message = "";
   if (results.score < 25) {
     message = "You need to try harder!";
