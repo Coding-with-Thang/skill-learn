@@ -19,7 +19,7 @@ const data = {
   navMain: [
     {
       title: "Quiz Management",
-      url: "/dashboard",
+      url: "/dashboard/quizzes",
       icon: SquareTerminal,
       isActive: true,
       items: [
@@ -82,10 +82,6 @@ const data = {
         {
           title: "Config",
           url: "/dashboard/settings",
-        },
-        {
-          title: "Team",
-          url: "/dashboard",
         },
         {
           title: "Audit Logs",
