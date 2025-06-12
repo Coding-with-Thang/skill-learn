@@ -7,7 +7,6 @@ export async function getDailyPointStatus(request) {
   try {
     console.log("Getting daily point status...");
     const { userId } = getAuth(request);
-    console.log("User ID from auth in points.js:", userId);
 
     if (!userId) {
       throw new Error("Unauthorized");
@@ -22,7 +21,6 @@ export async function getDailyPointStatus(request) {
     console.log("Daily points limit:", dailyLimit);
 
     //Get user from DB with detailed logging
-    console.log(`Searching for user with clerkId: ${userId}`);
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: {
@@ -33,20 +31,6 @@ export async function getDailyPointStatus(request) {
         },
       },
     });
-    
-    // Add debug logging to see what's in the database
-    const allUsers = await prisma.user.findMany({
-      select: { id: true, clerkId: true, username: true }
-    });
-    console.log("All users in database:", allUsers);
-
-    if (!user) {
-      console.log("User lookup failed. Available users:", allUsers.map(u => ({
-        id: u.id,
-        clerkId: u.clerkId
-      })));
-      throw new Error("User not found in database");
-    }
 
     //Get today's date at midnight
     const today = new Date(new Date().setHours(0, 0, 0, 0));

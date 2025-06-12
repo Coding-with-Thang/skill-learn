@@ -402,6 +402,8 @@ export default function RewardsPage() {
       const result = await redeemReward(reward.id)
       if (result.success) {
         toast.success(result.message || `Successfully redeemed ${reward.prize}`)
+        // Refresh the reward history after successful redemption
+        await fetchRewardHistory()
       }
     } catch (error) {
       console.error('Error redeeming reward:', error)

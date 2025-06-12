@@ -16,17 +16,18 @@ export async function GET(request) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-
-    // Fetch all quizzes with their categories and question count
+    }    // Fetch all quizzes with their categories and question count
     const quizzes = await prisma.quiz.findMany({
       include: {
         category: {
           select: {
             id: true,
-            title: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            isActive: true,
           },
         },
         questions: {
@@ -64,7 +65,7 @@ export async function POST(request) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -76,9 +77,7 @@ export async function POST(request) {
         { error: "Missing required fields" },
         { status: 400 }
       );
-    }
-
-    // Create new quiz
+    }    // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
       data: {
         title: data.title,
@@ -88,7 +87,26 @@ export async function POST(request) {
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || 70,
         isActive: data.isActive ?? true,
+        questions: {
+          create: (data.questions || Array(5).fill(null).map((_, i) => ({
+            text: `Question ${i + 1}`,
+            points: 1,
+            options: {
+              create: Array(4).fill(null).map((_, j) => ({
+                text: `Option ${j + 1}`,
+                isCorrect: j === 0 // First option is correct by default
+              }))
+            }
+          })))
+        }
       },
+      include: {
+        questions: {
+          include: {
+            options: true
+          }
+        }
+      }
     });
 
     return NextResponse.json(quiz);

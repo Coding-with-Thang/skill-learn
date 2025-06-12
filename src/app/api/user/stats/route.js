@@ -4,10 +4,10 @@ import prisma from "@/utils/connect";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
+    const auth = getAuth(request);
+    const userId = auth.userId;
 
     if (!userId) {
-      console.log("No userId found in auth session");
       return NextResponse.json(
         { error: "Please sign in to access this resource" },
         { status: 401 }
@@ -23,7 +23,6 @@ export async function GET(request) {
     });
 
     if (!user) {
-      console.log(`No user found for clerkId: ${userId}`);
       return NextResponse.json(
         { error: "User not found in database" },
         { status: 404 }
@@ -38,18 +37,17 @@ export async function GET(request) {
       include: {
         category: true,
       },
-    });
-
-    // Get quiz stats
-    const quizStats = await prisma.quiz.findMany({
+    });    // Get quiz stats based on category stats
+    const quizStats = await prisma.categoryStat.findMany({
       where: {
         userId: user.id,
       },
       select: {
-        id: true,
-        title: true,
-        score: true,
-        totalQuestions: true,
+        attempts: true,
+        completed: true,
+        averageScore: true,
+        bestScore: true,
+        lastAttempt: true,
         createdAt: true,
         category: {
           select: {
@@ -59,7 +57,7 @@ export async function GET(request) {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        lastAttempt: "desc",
       },
     });
 

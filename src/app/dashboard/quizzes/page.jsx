@@ -70,10 +70,9 @@ export default function QuizzesAdminPage() {
     fetchQuizzes()
     fetchCategories()
   }, [])
-
   const fetchCategories = async () => {
     try {
-      const response = await api.get('/categories')
+      const response = await api.get('/admin/categories')
       setCategories(response.data)
     } catch (error) {
       console.error('Failed to fetch categories:', error)
@@ -84,9 +83,19 @@ export default function QuizzesAdminPage() {
     try {
       const response = await api.get('/admin/quizzes')
       setQuizzes(response.data)
+      setError(null)
     } catch (error) {
       console.error('Failed to fetch quizzes:', error)
-      setError(error)
+      if (error.response?.status === 401) {
+        // User is not authenticated
+        router.push('/sign-in?redirect=/dashboard/quizzes')
+        return
+      } else if (error.response?.status === 403) {
+        // User is authenticated but doesn't have required permissions
+        setError('You do not have permission to access this page. Please contact an administrator.')
+      } else {
+        setError('Failed to load quizzes. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -228,8 +237,24 @@ export default function QuizzesAdminPage() {
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">
-        Error loading quizzes. Please try again.
+      <div className="p-8 max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <CardTitle>Access Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-red-500 mb-4">{error}</p>
+            {error.includes('permission') ? (
+              <Button variant="outline" onClick={() => router.push('/dashboard')}>
+                Return to Dashboard
+              </Button>
+            ) : (
+              <Button onClick={fetchQuizzes}>
+                Try Again
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -500,4 +525,4 @@ export default function QuizzesAdminPage() {
       </Card>
     </div>
   )
-} 
+}

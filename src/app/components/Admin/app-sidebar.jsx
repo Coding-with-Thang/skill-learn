@@ -18,11 +18,15 @@ import {
 const data = {
   navMain: [
     {
-      title: "Quizzes",
-      url: "/dashboard",
+      title: "Quiz Management",
+      url: "/dashboard/quizzes",
       icon: SquareTerminal,
       isActive: true,
       items: [
+                {
+          title: "Categories",
+          url: "/dashboard/categories",
+        },
         {
           title: "Manage Quizzes",
           url: "/dashboard/quizzes",
@@ -54,8 +58,8 @@ const data = {
       icon: BookOpen,
       items: [
         {
-          title: "Manage User",
-          url: "users",
+          title: "User Management",
+          url: "/dashboard/users",
         },
       ],
     },
@@ -78,10 +82,6 @@ const data = {
         {
           title: "Config",
           url: "/dashboard/settings",
-        },
-        {
-          title: "Team",
-          url: "/dashboard",
         },
         {
           title: "Audit Logs",
