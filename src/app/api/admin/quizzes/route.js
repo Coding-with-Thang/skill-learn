@@ -77,9 +77,7 @@ export async function POST(request) {
         { error: "Missing required fields" },
         { status: 400 }
       );
-    }
-
-    // Create new quiz
+    }    // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
       data: {
         title: data.title,
@@ -89,7 +87,26 @@ export async function POST(request) {
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || 70,
         isActive: data.isActive ?? true,
+        questions: {
+          create: (data.questions || Array(5).fill(null).map((_, i) => ({
+            text: `Question ${i + 1}`,
+            points: 1,
+            options: {
+              create: Array(4).fill(null).map((_, j) => ({
+                text: `Option ${j + 1}`,
+                isCorrect: j === 0 // First option is correct by default
+              }))
+            }
+          })))
+        }
       },
+      include: {
+        questions: {
+          include: {
+            options: true
+          }
+        }
+      }
     });
 
     return NextResponse.json(quiz);
