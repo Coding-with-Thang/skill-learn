@@ -43,8 +43,8 @@ export default function QuizScoreLeaderboard() {
               <td className="px-6 py-4">{entry.rank}</td>
               <td className="px-6 py-4 flex items-center gap-2">
                 <Image
-                  src={entry.imageUrl || "/default-avatar.png"}
-                  alt={entry.name}
+                  src={entry.imageUrl}
+                  alt={entry.username}
                   width={32}
                   height={32}
                   className="rounded-full"
