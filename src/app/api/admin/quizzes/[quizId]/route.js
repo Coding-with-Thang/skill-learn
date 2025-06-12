@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
         category: {
           select: {
             id: true,
-            title: true,
+            name: true,
           },
         },
         questions: {
@@ -67,7 +67,7 @@ export async function PUT(request, { params }) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
@@ -120,7 +120,7 @@ export async function DELETE(request, { params }) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

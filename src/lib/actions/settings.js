@@ -70,7 +70,7 @@ export async function updateSystemSetting(key, value, description = null) {
       select: { id: true, role: true },
     });
 
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "OPERATIONS") {
       throw new Error("Unauthorized - Admin access required");
     }
 
@@ -116,7 +116,7 @@ export async function getAllSystemSettings() {
       select: { role: true },
     });
 
-    if (!user || user.role !== "admin") {
+    if (!user || user.role !== "OPERATIONS") {
       throw new Error("Unauthorized - Admin access required");
     }
 

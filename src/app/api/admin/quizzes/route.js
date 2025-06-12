@@ -16,17 +16,18 @@ export async function GET(request) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-
-    // Fetch all quizzes with their categories and question count
+    }    // Fetch all quizzes with their categories and question count
     const quizzes = await prisma.quiz.findMany({
       include: {
         category: {
           select: {
             id: true,
-            title: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            isActive: true,
           },
         },
         questions: {
@@ -64,7 +65,7 @@ export async function POST(request) {
       select: { role: true },
     });
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || user.role !== "OPERATIONS") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

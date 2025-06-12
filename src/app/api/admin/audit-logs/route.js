@@ -9,6 +9,16 @@ export async function GET(request) {
       return new Response("Unauthorized", { status: 401 });
     }
 
+    // Verify OPERATIONS role
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      select: { role: true },
+    });
+
+    if (!user || user.role !== "OPERATIONS") {
+      return new Response("Unauthorized - Requires OPERATIONS role", { status: 403 });
+    }
+
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");

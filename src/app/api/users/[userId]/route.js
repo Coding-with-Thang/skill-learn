@@ -17,7 +17,7 @@ export async function GET(request, { params }) {
             select: { role: true },
         });
 
-        if (!adminUser || adminUser.role !== "ADMIN") {
+        if (!adminUser || adminUser.role !== "OPERATIONS") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
@@ -65,7 +65,7 @@ export async function PUT(request, { params }) {
             select: { role: true },
         });
 
-        if (!adminUser || adminUser.role !== "ADMIN") {
+        if (!adminUser || adminUser.role !== "OPERATIONS") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
@@ -144,7 +144,7 @@ export async function DELETE(request, { params }) {
             select: { role: true },
         });
 
-        if (!adminUser || adminUser.role !== "ADMIN") {
+        if (!adminUser || adminUser.role !== "OPERATIONS") {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }        // Get user to delete
         const user = await prisma.user.findUnique({
