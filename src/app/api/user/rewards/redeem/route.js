@@ -1,6 +1,7 @@
 import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { auditActions } from "@/utils/auditLogger";
 
 export async function POST(request) {
   try {
@@ -111,6 +112,14 @@ export async function POST(request) {
         updatedPoints: updatedUser.points,
       };
     });
+
+    // Log audit event
+    await auditActions.rewardRedeemed(
+      user.id,
+      rewardId,
+      reward.prize,
+      reward.cost
+    );
 
     return NextResponse.json({
       success: true,

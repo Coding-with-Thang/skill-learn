@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/middleware/rateLimit";
 import { protectedRoutes, rateLimits } from "@/config/routes";
+import { auditActions } from "@/utils/auditLogger";
 
 const isProtectedRoute = createRouteMatcher(protectedRoutes);
 
@@ -54,6 +55,43 @@ export default clerkMiddleware(async (auth, req) => {
     );
   }
 });
+
+export function withAudit(handler, options = {}) {
+  return async (req, res) => {
+    const startTime = Date.now();
+
+    try {
+      // Execute the original handler
+      const result = await handler(req, res);
+
+      // Log successful actions if configured
+      if (options.logSuccess && req.user?.id) {
+        const duration = Date.now() - startTime;
+        await logAuditEvent(
+          req.user.id,
+          options.action || req.method.toLowerCase(),
+          options.resource || "api",
+          options.resourceId,
+          `API call: ${req.url} (${duration}ms)`
+        );
+      }
+
+      return result;
+    } catch (error) {
+      // Log failed actions
+      if (options.logErrors && req.user?.id) {
+        await logAuditEvent(
+          req.user.id,
+          "error",
+          options.resource || "api",
+          options.resourceId,
+          `API error: ${req.url} - ${error.message}`
+        );
+      }
+      throw error;
+    }
+  };
+}
 
 export const config = {
   matcher: [
