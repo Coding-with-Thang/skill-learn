@@ -6,11 +6,6 @@ import { NavLink } from './NavLink';
 export function Navigation({ isOperations }) {
   return (
     <>
-      {/* {isOperations && (
-        <NavLink href="/dashboard" icon={LayoutDashboard}>
-          Dashboard
-        </NavLink>
-      )} */}
       <NavLink href="/training" icon={BookOpenText}>
         Training
       </NavLink>
@@ -20,6 +15,11 @@ export function Navigation({ isOperations }) {
       <NavLink href="/rewards" icon={Star}>
         Rewards
       </NavLink>
+      {isOperations && (
+        <NavLink href="/dashboard" icon={LayoutDashboard}>
+          Dashboard
+        </NavLink>
+      )}
     </>
   );
 }

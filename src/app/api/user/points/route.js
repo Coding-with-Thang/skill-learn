@@ -24,40 +24,10 @@ export async function GET(request) {
     });
 
     if (!dbUser) {
-      // Try to create the user if they don't exist
-      try {
-        // Get user details from Clerk
-        const clerkUser = await fetch(
-          `https://api.clerk.dev/v1/users/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
-            },
-          }
-        ).then((res) => res.json());
-
-        // Create new user
-        const newUser = await prisma.user.create({
-          data: {
-            clerkId: userId,
-            username: username,
-            firstName: clerkUser.first_name,
-            lastName: clerkUser.last_name,
-            points: 0,
-            lifetimePoints: 0,
-          },
-        });
-
-        return NextResponse.json({
-          success: true,
-          points: newUser.points,
-          lifetimePoints: newUser.lifetimePoints,
-        });
-      } catch (error) {
-        throw new AppError("Failed to create user", ErrorType.API, error);
-      }
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
-
     return NextResponse.json({
       success: true,
       points: dbUser.points,

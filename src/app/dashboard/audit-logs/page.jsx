@@ -28,7 +28,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     fetchLogs()
-  }, [fetchLogs])
+  }, [])
 
   const handleDateRangeChange = (range) => {
     setDateRange(range)
@@ -39,7 +39,7 @@ export default function AuditLogsPage() {
   }
 
   const handleExport = () => {
-    // Implement CSV export functionality
+    //TODO: Implement CSV export functionality
   }
 
   if (isLoading) {

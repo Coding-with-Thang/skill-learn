@@ -43,7 +43,6 @@ const TicTacToe = () => {
 
   //Tic Tac Toe Logic
   useEffect(() => {
-    //fetchGameHistory();
     const savedScore = localStorage.getItem('ticTacToeScore');
     if (savedScore) {
       setPlayerScore(parseInt(savedScore));
@@ -80,35 +79,6 @@ const TicTacToe = () => {
     setShowScoreAnimation(true);
     setTimeout(() => setShowScoreAnimation(false), 1500);
   };
-
-  //const fetchGameHistory = async () => {
-  //  try {
-  //    const response = await fetch("/gameHistory");
-  //    const data = await response.json();
-  //    setGameHistory(data);
-  //  } catch (error) {
-  //    console.error("Error fetching game history:", error);
-  //  }
-  //};
-
-  //const updateGameHistory = async (result) => {
-  //  try {
-  //    const response = await fetch("/gameHistory", {
-  //      method: "POST",
-  //      headers: {
-  //        "Content-Type": "application/json",
-  //      },
-  //      body: JSON.stringify({ result }),
-  //    });
-
-  //    if (response.ok) {
-  //      const updatedHistory = await response.json();
-  //      setGameHistory(updatedHistory);
-  //    }
-  //  } catch (error) {
-  //    console.error("Error updating game history:", error);
-  //  }
-  //};
 
   const calculateWinner = (squares) => {
     const lines = [
@@ -215,11 +185,9 @@ const TicTacToe = () => {
     if (gameWinner) {
       setWinner(gameWinner);
       setWinningLine(line);
-      //updateGameHistory(gameWinner);
     } else if (!newBoard.includes(null)) {
       setWinner("draw");
       setWinningLine([]);
-      //updateGameHistory("draw");
     } else {
       setIsXNext(!isXNext);
     }
