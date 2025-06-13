@@ -42,7 +42,6 @@ export function useUserRole() {
           },
         });
 
-        console.log("Fetched user role data:", data);
         setRole(data.role);
         setError(null);
         setRetryCount(0);

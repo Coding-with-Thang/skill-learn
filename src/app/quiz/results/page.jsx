@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Play, ChartNoAxesCombined, Trophy, Clock, Target } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { useAuditLog } from '@/hooks/useAuditLog';
+import { useAuditLog } from '@/lib/hooks/useAuditLog';
 
 // Utility function to format time
 const formatTime = (seconds) => {
@@ -29,18 +29,20 @@ export default function ResultsPage() {
       // First try to get results from the store
       if (quizResponses) {
         console.log('Found results in store:', quizResponses);
-        
-        // Log the audit event
-      await logUserAction(
-        'complete',
-        'quiz',
-        quizId,
-        `Completed quiz with score: ${score}% (${passed ? 'Passed' : 'Failed'})`
-      );
-    };
-          setResults(quizResponses);
-          return;
+
+        // Log the audit event with correct variables
+        if (selectedQuiz?.id) {
+          await logUserAction(
+            'complete',
+            'quiz',
+            selectedQuiz.id,
+            `Completed quiz with score: ${quizResponses.score}% (${quizResponses.hasPassed ? 'Passed' : 'Failed'})`
+          );
         }
+
+        setResults(quizResponses);
+        return;
+      }
 
       // If not in store, try sessionStorage
       const savedResults = sessionStorage.getItem('lastQuizResults');
@@ -62,6 +64,16 @@ export default function ResultsPage() {
           throw new Error('Invalid quiz results data');
         }
 
+        // Log the audit event for sessionStorage results
+        if (selectedQuiz?.id) {
+          await logUserAction(
+            'complete',
+            'quiz',
+            selectedQuiz.id,
+            `Completed quiz with score: ${parsedResults.score}% (${parsedResults.hasPassed ? 'Passed' : 'Failed'})`
+          );
+        }
+
         setResults(parsedResults);
         // Only remove results after successfully loading
         sessionStorage.removeItem('lastQuizResults');
@@ -73,7 +85,7 @@ export default function ResultsPage() {
     }
 
     loadResults();
-  }, [router, quizResponses]);
+  }, [router, quizResponses, selectedQuiz, logUserAction]);
 
   // Show error state
   if (error) {

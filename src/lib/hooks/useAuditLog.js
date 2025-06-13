@@ -9,7 +9,7 @@ export function useAuditLog() {
     if (!user) return;
 
     try {
-      await api.get("/api/audit-log", {
+      await api.get("/audit-log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

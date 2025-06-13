@@ -22,7 +22,7 @@ export default async function QuizSelectPage({ params }) {
         imageUrl: true,
         timeLimit: true,
         passingScore: true,
-        categoryId: true, // Add this line to include categoryId
+        categoryId: true,
         questions: {
           select: {
             id: true,

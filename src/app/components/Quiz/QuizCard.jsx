@@ -39,7 +39,8 @@ export default function QuizCard({ quiz }) {
           alt={quiz?.title || "Quiz Image"}
           className="rounded-xl"
         />
-      </CardHeader>      <CardContent className="flex flex-col gap-7 items-start">
+      </CardHeader>
+      <CardContent className="flex flex-col gap-7 items-start">
         <h4 className="text-xl font-bold mt-2">{quiz.title}</h4>
         <p className="text-gray-600 text-sm leading-none font-semibold max-w-[60ch]">
           {quiz.description}

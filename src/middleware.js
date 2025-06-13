@@ -31,7 +31,7 @@ export default clerkMiddleware(async (auth, req) => {
         }
       );
     }
-    console.log("user id:", userId);
+
     // Check authentication for protected routes
     if (!userId && isProtectedRoute(req)) {
       console.log("Middleware - Unauthorized access to protected route");
@@ -92,7 +92,6 @@ export function withAudit(handler, options = {}) {
     }
   };
 }
-
 export const config = {
   matcher: [
     //Skip Next.js internals and all static files, unless found in search params

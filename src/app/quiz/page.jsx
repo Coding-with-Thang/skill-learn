@@ -75,6 +75,9 @@ export default function QuizScreenPage() {
     [selectedQuiz]
   );
 
+  console.log("selectedQuiz:", selectedQuiz);
+  console.log("shuffledQuestionsMemo:", shuffledQuestionsMemo);
+
   // Memoize shuffled options for current question
   const shuffledOptions = useMemo(() =>
     shuffledQuestionsMemo[currentIndex]?.options
@@ -86,10 +89,13 @@ export default function QuizScreenPage() {
   const handleActiveQuestion = useCallback((option) => {
     if (!shuffledQuestionsMemo[currentIndex]) return;
 
+    const correctOption = shuffledQuestionsMemo[currentIndex]
+    console.log("Array options:", correctOption)
+
     const response = {
       questionId: shuffledQuestionsMemo[currentIndex].id,
       selectedOptionId: option.id,
-      isCorrect: Boolean(option.isCorrect), // Explicitly convert to boolean
+      isCorrect: option.id === correctOption?.id, // safer comparison
       question: shuffledQuestionsMemo[currentIndex].text,
       selectedAnswer: option.text,
       correctAnswer: shuffledQuestionsMemo[currentIndex].options.find(opt => opt.isCorrect)?.text

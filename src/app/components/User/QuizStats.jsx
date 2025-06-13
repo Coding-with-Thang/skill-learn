@@ -72,7 +72,7 @@ export default function QuizStats({ quizStats, categories }) {
                 <TableHead>Last Attempt</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody key={`${selectedCategory}-${filteredQuizzes?.length}`}>
               {filteredQuizzes?.map((quiz) => (
                 <TableRow key={quiz.id}>
                   <TableCell className="font-medium py-4">
