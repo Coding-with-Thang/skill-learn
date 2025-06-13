@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Play, ChartNoAxesCombined, Trophy, Clock, Target } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 // Utility function to format time
 const formatTime = (seconds) => {
@@ -19,6 +20,7 @@ export default function ResultsPage() {
   const { selectedQuiz, quizResponses } = useQuizStartStore();
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const { logUserAction } = useAuditLog();
 
   useEffect(() => {
     async function loadResults() {
@@ -27,9 +29,18 @@ export default function ResultsPage() {
       // First try to get results from the store
       if (quizResponses) {
         console.log('Found results in store:', quizResponses);
-        setResults(quizResponses);
-        return;
-      }
+        
+        // Log the audit event
+      await logUserAction(
+        'complete',
+        'quiz',
+        quizId,
+        `Completed quiz with score: ${score}% (${passed ? 'Passed' : 'Failed'})`
+      );
+    };
+          setResults(quizResponses);
+          return;
+        }
 
       // If not in store, try sessionStorage
       const savedResults = sessionStorage.getItem('lastQuizResults');

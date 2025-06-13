@@ -129,7 +129,6 @@ export default function AuditLogsPage() {
                       <p className="font-medium">
                         {log.user.firstName} {log.user.lastName}
                       </p>
-                      <p className="text-sm text-gray-500">{log.user.email}</p>
                     </div>
                   </TableCell>
                   <TableCell>

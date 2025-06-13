@@ -68,12 +68,11 @@ export const auditActions = {
     ),
 
   // Points management
-  pointsAwarded: (userId, targetUserId, points, reason) =>
+  pointsAwarded: (userId, points, reason) =>
     logAuditEvent(
       userId,
       "create",
       "points",
-      targetUserId,
       `Awarded ${points} points: ${reason}`
     ),
 
