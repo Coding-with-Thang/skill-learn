@@ -15,6 +15,8 @@ export async function GET(request) {
       where: { clerkId: userId },
     });
 
+    console.log("User found:", user);
+
     if (!user) {
       return new Response("User not found", { status: 404 });
     }

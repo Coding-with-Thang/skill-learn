@@ -1,19 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/middleware/rateLimit";
+import { protectedRoutes, rateLimits } from "@/config/routes";
 
-const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
-  "/quiz(.*)",
-  "/api/user/(.*)", // Protect all user-related API routes
-  "/api/admin/(.*)", // Protect all admin API routes
-]);
-
-// Rate limit configuration
-const rateLimits = {
-  public: { windowMs: 15 * 60 * 1000, max: 200 }, // 200 requests per 15 minutes
-  protected: { windowMs: 60 * 1000, max: 120 }, // 120 requests per minute
-};
+const isProtectedRoute = createRouteMatcher(protectedRoutes);
 
 export default clerkMiddleware(async (auth, req) => {
   try {
@@ -40,7 +30,7 @@ export default clerkMiddleware(async (auth, req) => {
         }
       );
     }
-
+    console.log("user id:", userId);
     // Check authentication for protected routes
     if (!userId && isProtectedRoute(req)) {
       console.log("Middleware - Unauthorized access to protected route");

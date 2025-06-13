@@ -10,8 +10,6 @@ export async function GET(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Streak - Current userId:", userId);
-
     const result = await updateStreak(userId);
     return NextResponse.json(result);
   } catch (error) {

@@ -8,14 +8,17 @@ export async function GET(request) {
     const { userId } = getAuth(request);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }    // Verify operations role
+    } // Verify operations role
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { role: true },
     });
 
     if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized - Requires OPERATIONS role" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Unauthorized - Requires OPERATIONS role" },
+        { status: 403 }
+      );
     }
 
     const users = await prisma.user.findMany({
@@ -32,8 +35,8 @@ export async function GET(request) {
         createdAt: true,
       },
       orderBy: {
-        createdAt: 'desc'
-      }
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json({ users });
@@ -51,17 +54,21 @@ export async function POST(request) {
     const { userId } = getAuth(request);
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }    // Verify operations role
+    } // Verify operations role
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { role: true },
     });
 
     if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized - Requires OPERATIONS role" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Unauthorized - Requires OPERATIONS role" },
+        { status: 403 }
+      );
     }
 
-    const { username, firstName, lastName, password, manager, role } = await request.json();
+    const { username, firstName, lastName, password, manager, role } =
+      await request.json();
 
     // Validate required fields
     if (!username || !firstName || !lastName || !password) {
@@ -81,7 +88,8 @@ export async function POST(request) {
         { error: "Username already exists" },
         { status: 400 }
       );
-    }    // Check if username exists in Clerk
+    }
+    // Check if username exists in Clerk
     const existingClerkUsers = await clerkClient.users.getUserList({
       username: [username],
     });
@@ -99,15 +107,15 @@ export async function POST(request) {
       lastName,
       password,
       username,
-    });    // Create user in database
+    }); // Create user in database
     const newUser = await prisma.user.create({
       data: {
         clerkId: clerkUser.id,
         username,
         firstName,
         lastName,
-        role: role || 'AGENT',
-        manager: manager === 'none' ? '' : manager,
+        role: role || "AGENT",
+        manager: manager === "none" ? "" : manager,
         imageUrl: clerkUser.imageUrl,
       },
     });

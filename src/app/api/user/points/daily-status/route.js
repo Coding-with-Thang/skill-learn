@@ -4,7 +4,6 @@ import { getDailyPointStatus } from "@/lib/actions/points";
 
 export async function GET(request) {
   try {
-    console.log("Daily status API called");
     const { userId } = getAuth(request);
 
     if (!userId) {
@@ -14,10 +13,7 @@ export async function GET(request) {
       );
     }
 
-    console.log("Fetching daily point status...");
     const status = await getDailyPointStatus(request);
-    console.log("Daily point status:", status);
-
     return NextResponse.json(status);
   } catch (error) {
     console.error("Error in daily points status API:", {

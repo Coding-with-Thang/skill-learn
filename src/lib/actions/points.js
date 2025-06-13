@@ -5,7 +5,6 @@ import { getSystemSetting } from "./settings";
 
 export async function getDailyPointStatus(request) {
   try {
-    console.log("Getting daily point status...");
     const { userId } = getAuth(request);
 
     if (!userId) {
@@ -13,12 +12,10 @@ export async function getDailyPointStatus(request) {
     }
 
     // Get daily points limit from settings
-    console.log("Fetching daily points limit from settings...");
     const dailyLimit = parseInt(
       await getSystemSetting("DAILY_POINTS_LIMIT"),
       10
     );
-    console.log("Daily points limit:", dailyLimit);
 
     //Get user from DB with detailed logging
     const user = await prisma.user.findUnique({

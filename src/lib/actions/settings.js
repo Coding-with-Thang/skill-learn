@@ -34,14 +34,9 @@ const DEFAULT_SETTINGS = {
 
 export async function getSystemSetting(key) {
   try {
-    console.log(`Getting system setting for key: ${key}`);
     const setting = await prisma.systemSetting.findUnique({
       where: { key },
     });
-    console.log(
-      `Setting found for ${key}:`,
-      setting?.value || DEFAULT_SETTINGS[key]
-    );
 
     return setting?.value || DEFAULT_SETTINGS[key];
   } catch (error) {
@@ -51,7 +46,6 @@ export async function getSystemSetting(key) {
       type: error.constructor.name,
       cause: error.cause,
     });
-    console.log(`Returning default value for ${key}:`, DEFAULT_SETTINGS[key]);
     return DEFAULT_SETTINGS[key];
   }
 }
