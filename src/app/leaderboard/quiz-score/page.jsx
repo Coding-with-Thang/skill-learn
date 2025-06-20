@@ -1,4 +1,4 @@
-import QuizScoreLeaderboard from "@/app/components/Leaderboard/QuizScoreLeaderboard";
+import QuizScoreLeaderboard from "@/app/components/leaderboard/QuizScoreLeaderboard";
 import BreadCrumbCom from "@/app/components/BreadCrumb"
 export default function QuizScoreLeaderboardPage() {
   return (
