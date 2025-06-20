@@ -56,28 +56,44 @@ export default function HomePage() {
   };
 
   return (
-    <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 py-6 min-h-[80dvh] flex flex-col gap-8">
-      <SignedIn>
-        <section className="mb-4 w-full">
-          {renderSection(UserBadge)}
-        </section>
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          {renderSection(DailyActivities)}
-          {renderSection(MoreTraining)}
-          {renderSection(PerformanceLanding)}
-          {renderSection(LeaderboardLanding)}
-        </section>
-      </SignedIn>
+    <>
       <SignedOut>
-        <section className="mb-4 w-full">
+        <section className="w-screen mb-4 overflow-x-hidden">
           {renderSection(HeroBanner)}
         </section>
-        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          {renderSection(Features)}
-          {renderSection(HowItWorks)}
-          {renderSection(Testimonials)}
-        </section>
       </SignedOut>
-    </main>
+      <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 min-h-[80dvh] flex flex-col gap-8">
+        <SignedIn>
+          {/* Hero Section for logged-in users */}
+          <section className="w-full mt-8 mb-6 p-8 rounded-3xl shadow-2xl bg-white/90 flex flex-col md:flex-row items-center gap-8 border border-green-200">
+            <div className="flex-1 flex flex-col items-center md:items-start">
+              {renderSection(UserBadge)}
+            </div>
+            <div className="flex-1 flex flex-col gap-6 w-full">
+              <div className="grid grid-cols-1 gap-6">
+                {renderSection(DailyActivities)}
+                {renderSection(MoreTraining)}
+              </div>
+            </div>
+          </section>
+          {/* Dashboard Widgets */}
+          <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white/80 rounded-2xl shadow-lg p-6 border border-gray-100">
+              {renderSection(PerformanceLanding)}
+            </div>
+            <div className="bg-white/80 rounded-2xl shadow-lg p-6 border border-gray-100">
+              {renderSection(LeaderboardLanding)}
+            </div>
+          </section>
+        </SignedIn>
+        <SignedOut>
+          <section className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-6 px-2 sm:px-4 md:px-8">
+            {renderSection(Features)}
+            {renderSection(HowItWorks)}
+            {renderSection(Testimonials)}
+          </section>
+        </SignedOut>
+      </main>
+    </>
   );
 }
