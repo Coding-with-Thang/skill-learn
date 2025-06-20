@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { NotebookPen } from "lucide-react";
 import Image from "next/image";
-import empathy from "../../../../public/empathy.png";
+import empathy from "/public/empathy.png";
 
 export default function MoreTraining() {
   return (
