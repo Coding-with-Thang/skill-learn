@@ -42,20 +42,20 @@ export default async function QuizSelectPage({ params }) {
     })
 
     return (
-      <section className="flex flex-col w-[90%] px-20">
+      <section className="flex flex-col w-full max-w-5xl mx-auto px-2 sm:px-6">
         <BreadCrumbCom
           crumbs={[{ name: "My Training", href: "training" }]}
           endtrail="Quiz Selection"
         />
-        <h1 className="mb-6 text-4xl font-bold mt-20">Quizzes</h1>
+        <h1 className="mb-6 text-2xl sm:text-4xl font-bold mt-8 sm:mt-20">Quizzes</h1>
         {quizzes.length > 0 ? (
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {quizzes.map((quiz) => (
               <QuizCard key={quiz.id} quiz={quiz} />
             ))}
           </div>
         ) : (
-          <h1 className="text-2xl text-center mt-4">
+          <h1 className="text-xl sm:text-2xl text-center mt-4">
             No quizzes found for this Category
           </h1>
         )}

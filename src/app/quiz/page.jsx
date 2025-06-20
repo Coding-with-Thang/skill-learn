@@ -377,7 +377,7 @@ export default function QuizScreenPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-12 py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{selectedQuiz?.title}</h1>
         <div className="flex items-center gap-4">

@@ -39,18 +39,18 @@ export default function DashboardLayout({ children }) {
   const { crumbs, endtrail } = getBreadcrumbs()
 
   return (
-    <div className="relative flex min-h-screen">
+    <div className="relative flex flex-col md:flex-row min-h-screen w-full">
       <SidebarProvider>
         <AppSidebar className="mt-15" />
         <SidebarInset>
           <div className="flex flex-col min-h-screen w-full bg-gray-100">
-            <header className="flex h-16 mb-3 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+            <header className="flex h-16 mb-3 shrink-0 items-center gap-2 px-2 sm:px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
               <SidebarTrigger className="ml-2" />
               <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
             </header>
-            <div className="flex gap-1 px-4 flex-1">
+            <main className="flex-1 flex flex-col p-2 sm:p-6 w-full min-w-0 max-w-6xl mx-auto gap-4">
               {children}
-            </div>
+            </main>
             <Footer />
           </div>
         </SidebarInset>

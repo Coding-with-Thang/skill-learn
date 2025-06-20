@@ -10,39 +10,38 @@ import empathy from "../../../../public/empathy.png";
 
 export default function MoreTraining() {
   return (
-    <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center">
+    <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center px-2">
       <h3 className="text-xl font-bold">More Training</h3>
-      <div className="flex gap-5">
-        <Card className="max-w-[40ch]">
+      <div className="flex flex-col md:flex-row gap-5 w-full max-w-4xl items-stretch">
+        <Card className="w-full md:max-w-[40ch]">
           <CardHeader className="relative">
             <Image
-              className=""
+              className="object-cover w-full h-[150px] rounded"
               src={empathy}
               width={340}
               height={150}
               alt="Icon"
             />
-            <p className="p-2 right-8 absolute bg-gray-50 rounded-full">RECOMMENDATION</p>
+            <p className="p-2 right-4 top-4 absolute bg-gray-50 rounded-full text-xs md:text-sm">RECOMMENDATION</p>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 items-start">
             <p className="text-gray-400">Empathy Training</p>
-            <h4>How to Create an Empathetic Client Experience</h4>
+            <h4 className="text-base md:text-lg">How to Create an Empathetic Client Experience</h4>
             <Link href="/training">
               <Button className="align-right">Continue</Button>
             </Link>
           </CardContent>
         </Card>
 
-
-        <Card className="min-w-[40ch]">
-          <CardHeader className="flex flex-row gap-3">
-            <NotebookPen />
-            <CardTitle>My Training</CardTitle>
+        <Card className="w-full md:min-w-[40ch] flex flex-col justify-between">
+          <CardHeader className="flex flex-row gap-3 items-center">
+            <NotebookPen className="w-6 h-6" />
+            <CardTitle className="text-base md:text-lg">My Training</CardTitle>
           </CardHeader>
-          <CardFooter className="flex flex-col gap-3 items-end">
+          <CardFooter className="flex flex-col gap-3 items-end flex-1 justify-end">
             <Progress value={33} />
-            <p className="text-gray-300">1 out of 20 topics completed</p>
-            <Link href="/training">View All</Link>
+            <p className="text-gray-300 text-xs md:text-sm">1 out of 20 topics completed</p>
+            <Link href="/training" className="text-blue-600 hover:underline">View All</Link>
           </CardFooter>
         </Card>
       </div>

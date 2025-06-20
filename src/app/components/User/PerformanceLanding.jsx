@@ -35,10 +35,10 @@ export default function PerformanceLanding() {
   ]
 
   return (
-    <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center">
+    <section className="flex flex-col gap-5 mb-9 w-full max-w-2xl mx-auto justify-center items-center px-2 sm:px-4 md:px-8">
       <h3 className="text-xl font-bold">Your Performance</h3>
-      <div className="flex gap-5">
-        <Card className="">
+      <div className="flex flex-col md:flex-row gap-5 w-full">
+        <Card className="w-full md:w-auto min-w-0">
           <CardHeader className="flex flex-row gap-5 items-center place-content-between">
             <h4 className="text-gray-900 font-bold m-0 p-0">Achievements</h4>
             <Link href="/achievements" className="text-gray-400 m-0 p-0">View Achievements</Link>
@@ -46,8 +46,7 @@ export default function PerformanceLanding() {
           <CardContent className="flex flex-col gap-2 items-start">
           </CardContent>
         </Card>
-
-        <Card className="min-w-96">
+        <Card className="w-full md:min-w-96 min-w-0">
           <CardHeader className="flex flex-row gap-3">
             <NotebookPen />
             <CardTitle>Topic Progress</CardTitle>
@@ -56,7 +55,7 @@ export default function PerformanceLanding() {
           <CardContent className="flex flex-col gap-3">
             <ul className="flex flex-col gap-5 ">
               {topicsProgress.map((topic, index) => (
-                <li key={index} className="flex gap-5 place-content-between">
+                <li key={index} className="flex gap-5 place-content-between items-center text-sm sm:text-base flex-wrap">
                   <topic.topicCategoryIcon />
                   <p>{topic.topicLevel}</p>
                   <p>{topic.topicCount}</p>

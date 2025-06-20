@@ -437,52 +437,55 @@ export default function RewardsPage() {
       <PageHeader />
 
       <main className="container mx-auto pb-20">
-        <PointsBalance points={points} />
-        <DailyStreak />
+        <section className="w-full max-w-4xl mx-auto px-4 sm:px-8 md:px-12 py-8">
+          <PointsBalance points={points} />
+          <DailyStreak />
+          <div className="overflow-x-auto">
+            {/* Featured Reward */}
+            {featuredReward && (
+              <section className="w-full max-w-4xl mx-auto mb-8 px-4">
+                <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-6">Featured Reward</h2>
+                  <div className="max-w-2xl mx-auto">
+                    <RewardCard
+                      reward={featuredReward}
+                      onRedeem={handleRedeem}
+                      disabled={points < featuredReward.cost}
+                      isLoading={redeemingRewardId === featuredReward.id}
+                    />
+                  </div>
+                </div>
+              </section>
+            )}
 
-        {/* Featured Reward */}
-        {featuredReward && (
-          <section className="w-full max-w-4xl mx-auto mb-8 px-4">
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">Featured Reward</h2>
-              <div className="max-w-2xl mx-auto">
-                <RewardCard
-                  reward={featuredReward}
-                  onRedeem={handleRedeem}
-                  disabled={points < featuredReward.cost}
-                  isLoading={redeemingRewardId === featuredReward.id}
+            {/* All Rewards */}
+            <section className="w-full max-w-4xl mx-auto mb-8 px-4">
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">All Rewards</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {rewards.map((reward) => (
+                    <RewardCard
+                      key={reward.id}
+                      reward={reward}
+                      onRedeem={handleRedeem}
+                      disabled={points < reward.cost}
+                      isLoading={redeemingRewardId === reward.id}
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* Redemption History */}
+            <section className="w-full max-w-4xl mx-auto px-4">
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                <h2 className="text-3xl font-bold text-gray-900 mb-6">Redemption History</h2>
+                <RedemptionHistory
+                  rewardHistory={rewardHistory}
+                  onClaimReward={handleClaimReward}
                 />
               </div>
-            </div>
-          </section>
-        )}
-
-        {/* All Rewards */}
-        <section className="w-full max-w-4xl mx-auto mb-8 px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">All Rewards</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {rewards.map((reward) => (
-                <RewardCard
-                  key={reward.id}
-                  reward={reward}
-                  onRedeem={handleRedeem}
-                  disabled={points < reward.cost}
-                  isLoading={redeemingRewardId === reward.id}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Redemption History */}
-        <section className="w-full max-w-4xl mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Redemption History</h2>
-            <RedemptionHistory
-              rewardHistory={rewardHistory}
-              onClaimReward={handleClaimReward}
-            />
+            </section>
           </div>
         </section>
       </main>

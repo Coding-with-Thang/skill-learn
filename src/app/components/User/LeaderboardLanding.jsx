@@ -134,10 +134,23 @@ export default function LeaderboardLanding() {
   }
 
   return (
-    <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center">
-      <h3 className="text-xl font-bold">Leaderboards</h3>
-      <div className="flex gap-5 flex-wrap">
-        <Card className="w-[400px]">
+    <section className="w-full max-w-3xl mx-auto flex flex-col gap-8 items-center">
+      <Card className="w-full">
+        <CardHeader>
+          <h3 className="text-xl font-bold">Top Learners</h3>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full">
+            <div className="flex justify-center items-end gap-4 py-8 w-full sm:w-auto">
+              {pointsLeaderboard.map((user, index) => (
+                <PodiumPosition key={user.id} user={user} position={index + 1} />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <div className="flex gap-5 flex-wrap w-full">
+        <Card className="w-full sm:w-[400px]">
           <CardHeader className="flex flex-row gap-5 items-center place-content-between">
             <h4 className="text-gray-900 font-bold m-0 p-0">
               Top Points Leaders
@@ -158,7 +171,7 @@ export default function LeaderboardLanding() {
           </CardContent>
         </Card>
 
-        <Card className="w-[400px]">
+        <Card className="w-full sm:w-[400px]">
           <CardHeader className="flex flex-row gap-5 items-center place-content-between">
             <h4 className="text-gray-900 font-bold m-0 p-0">
               Top Quiz Performers

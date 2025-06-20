@@ -56,12 +56,12 @@ export default function HomePage() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-[80dvh]">
+    <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 py-6 min-h-[80dvh] flex flex-col gap-8">
       <SignedIn>
-        <section className="mb-8">
+        <section className="mb-4 w-full">
           {renderSection(UserBadge)}
         </section>
-        <section className="grid gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           {renderSection(DailyActivities)}
           {renderSection(MoreTraining)}
           {renderSection(PerformanceLanding)}
@@ -69,10 +69,10 @@ export default function HomePage() {
         </section>
       </SignedIn>
       <SignedOut>
-        <section className="mb-8">
+        <section className="mb-4 w-full">
           {renderSection(HeroBanner)}
         </section>
-        <section className="grid gap-8">
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
           {renderSection(Features)}
           {renderSection(HowItWorks)}
           {renderSection(Testimonials)}

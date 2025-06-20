@@ -90,7 +90,7 @@ export default function ResultsPage() {
   // Show error state
   if (error) {
     return (
-      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+      <div className="py-8 px-4 sm:px-8 md:px-12 max-w-2xl mx-auto text-center">
         <h1 className="text-2xl font-bold text-red-500">Error loading results: {error}</h1>
       </div>
     );
@@ -99,7 +99,7 @@ export default function ResultsPage() {
   // Show loading state
   if (!results) {
     return (
-      <div className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto text-center">
+      <div className="py-8 px-4 sm:px-8 md:px-12 max-w-2xl mx-auto text-center">
         <h1 className="text-2xl font-bold">Loading results...</h1>
       </div>
     );

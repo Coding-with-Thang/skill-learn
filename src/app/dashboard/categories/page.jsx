@@ -138,15 +138,15 @@ export default function CategoriesPage() {
     }
 
     return (
-        <div className="p-6">
+        <div className="px-2 sm:px-6 py-6 w-full max-w-5xl mx-auto">
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
                             <CardTitle>Categories</CardTitle>
                             <CardDescription>Manage quiz categories</CardDescription>
                         </div>
-                        <Button onClick={() => setShowForm(true)}>
+                        <Button className="w-full sm:w-auto" onClick={() => setShowForm(true)}>
                             <Plus className="w-4 h-4 mr-2" />
                             Create Category
                         </Button>
@@ -159,13 +159,13 @@ export default function CategoriesPage() {
                             placeholder="Search categories..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-sm"
+                            className="w-full max-w-sm"
                         />
                     </div>
 
                     {/* Categories Table */}
-                    <div className="rounded-md border">
-                        <Table>
+                    <div className="rounded-md border overflow-x-auto">
+                        <Table className="min-w-[600px]">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Name</TableHead>
@@ -183,8 +183,8 @@ export default function CategoriesPage() {
                                         <TableCell>{category._count.quizzes}</TableCell>
                                         <TableCell>
                                             <span className={`px-2 py-1 rounded-full text-xs ${category.isActive
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
                                                 }`}>
                                                 {category.isActive ? 'Active' : 'Inactive'}
                                             </span>
@@ -224,14 +224,14 @@ export default function CategoriesPage() {
 
             {/* Create/Edit Form Dialog */}
             <Dialog open={showForm} onOpenChange={handleCloseForm}>
-                <DialogContent>
+                <DialogContent className="max-w-lg w-full">
                     <DialogHeader>
                         <DialogTitle>
                             {editingId ? 'Edit Category' : 'Create Category'}
                         </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit}>
-                        <div className="space-y-4 py-4">
+                    <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                        <div className="grid gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
                                 <Input
@@ -241,6 +241,7 @@ export default function CategoriesPage() {
                                     onChange={(e) =>
                                         setFormData((prev) => ({ ...prev, name: e.target.value }))
                                     }
+                                    className="w-full"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -254,6 +255,7 @@ export default function CategoriesPage() {
                                             description: e.target.value,
                                         }))
                                     }
+                                    className="w-full"
                                 />
                             </div>
                             <div className="grid gap-2">
@@ -265,24 +267,25 @@ export default function CategoriesPage() {
                                     onChange={(e) =>
                                         setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
                                     }
+                                    className="w-full"
                                 />
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Switch
                                     id="isActive"
                                     checked={formData.isActive}
-                                    onCheckedChange={(checked) =>
-                                        setFormData((prev) => ({ ...prev, isActive: checked }))
-                                    }
+                                    onCheckedChange={(checked) => {
+                                        setFormData((prev) => ({ ...prev, isActive: checked }));
+                                    }}
                                 />
                                 <Label htmlFor="isActive">Active</Label>
                             </div>
                         </div>
-                        <DialogFooter>
-                            <Button type="button" variant="outline" onClick={handleCloseForm}>
+                        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+                            <Button type="button" variant="outline" onClick={handleCloseForm} className="w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button type="submit">
+                            <Button type="submit" className="w-full sm:w-auto">
                                 {editingId ? 'Update' : 'Create'}
                             </Button>
                         </DialogFooter>

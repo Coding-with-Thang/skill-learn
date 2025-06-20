@@ -85,11 +85,10 @@ export default function SelectedQuizPage() {
         ]}
         endtrail={selectedQuiz?.title}
       />
-      <section className="py-[6rem] w-[50%] fixed left-1/2 top-[45%] translate-x-[-50%] translate-y-[-50%] p-6 border-2 rounded-xl shadow-[0_.5rem_0_0_rgba(0,0,0,0.1)] mx-auto">
-        <h1 className="text-4xl font-bold mb-4">{selectedQuiz?.title}</h1>
-        <h2 className="text-xl mb-6">{selectedQuiz?.description}</h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-8">
+      <section className="w-full max-w-lg mx-auto px-4 sm:px-8 md:px-12 py-8 border-2 rounded-xl shadow-[0_.5rem_0_0_rgba(0,0,0,0.1)]">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-4">{selectedQuiz?.title}</h1>
+        <h2 className="text-lg sm:text-xl mb-6">{selectedQuiz?.description}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <Card className="p-4">
             <CardContent className="flex items-center gap-3">
               <Trophy className="h-5 w-5 text-yellow-500" />
