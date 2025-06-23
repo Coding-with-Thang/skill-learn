@@ -10,6 +10,7 @@ import { useUserRole } from "@/lib/hooks/useUserRole";
 import { Navigation } from './Navigation/Navigation';
 import { Logo } from './Logo';
 import { UserButtonWrapper } from './UserButtonWrapper';
+import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 
 export default function Header() {
   const { isLoaded: clerkLoaded } = useUser();
@@ -37,7 +38,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full bg-white border-b-2 z-1000">
+    <header className="sticky top-0 w-full bg-white z-1000">
       <div className="flex items-center h-16 justify-between px-4 md:px-0">
         {/* Logo always visible */}
         <div className="flex items-center justify-center pl-0 md:pl-5">
@@ -45,6 +46,7 @@ export default function Header() {
         </div>
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center justify-end gap-6 mr-6 lg:mr-9">
+          <ThemeSwitcher />
           {!clerkLoaded ? (
             <LoadingSpinner size="small" />
           ) : (
@@ -78,6 +80,7 @@ export default function Header() {
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-b-2 px-4 pb-4 animate-fade-in z-50">
+          <ThemeSwitcher />
           {!clerkLoaded ? (
             <div className="py-4 flex justify-center"><LoadingSpinner size="small" /></div>
           ) : (

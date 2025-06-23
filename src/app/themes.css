@@ -1,0 +1,32 @@
+/* Example: Add more themes by duplicating and editing these blocks */
+[data-theme="ocean"] {
+  --background: #0a192f;
+  --foreground: #e0e6ed;
+  --primary: #64ffda;
+  --primary-foreground: #0a192f;
+  --secondary: #112240;
+  --secondary-foreground: #64ffda;
+  --accent: #ff6f91;
+  --accent-foreground: #0a192f;
+  --card: #112240;
+  --card-foreground: #e0e6ed;
+  --border: #233554;
+  --input: #233554;
+  --ring: #64ffda;
+}
+
+[data-theme="sunset"] {
+  --background: #fff6e0;
+  --foreground: #2d1e2f;
+  --primary: #ff6f61;
+  --primary-foreground: #fff6e0;
+  --secondary: #f7cac9;
+  --secondary-foreground: #2d1e2f;
+  --accent: #92a8d1;
+  --accent-foreground: #fff6e0;
+  --card: #f7cac9;
+  --card-foreground: #2d1e2f;
+  --border: #f7cac9;
+  --input: #f7cac9;
+  --ring: #ff6f61;
+}
