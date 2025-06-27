@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
       {/* Activity Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
           <CardHeader>
             <CardTitle>User Activity</CardTitle>
           </CardHeader>
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             <LineChart data={userActivity} />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
           <CardHeader>
             <CardTitle>Points Distribution</CardTitle>
           </CardHeader>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Category Performance */}
-      <Card>
+      <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
         <CardHeader>
           <CardTitle>Category Performance</CardTitle>
         </CardHeader>
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>

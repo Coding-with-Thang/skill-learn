@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
-        <body className="flex flex-col min-h-screen">
+        <body className="flex flex-col min-h-screen" style={{ background: "var(--background)", color: "var(--foreground)", fontFamily: "var(--fun-font)", transition: "var(--transition)" }}>
           <ErrorBoundaryProvider>
             <Header />
             {children}

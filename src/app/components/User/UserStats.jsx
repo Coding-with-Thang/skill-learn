@@ -121,7 +121,7 @@ export default function UserStats() {
   return (
     <div className="flex flex-col gap-4">
       <BreadCrumbCom endtrail="User Stats" />
-      <div className="min-h-[15rem] px-8 py-6 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)] flex-col gap-4">
+      {/* <div className="min-h-[15rem] px-8 py-6 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)] flex-col gap-4">
         <Image
           src={user?.imageUrl || "/user.png"}
           alt="Profile Image"
@@ -130,7 +130,7 @@ export default function UserStats() {
           className="rounded-full border-2 shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
         />
         <h2 className="font-bold text-xl mt-4">{user?.firstName} {" "} {user?.lastName}</h2>
-      </div>
+      </div> */}
       <div className="mt-4">
         <h1 className="font-bold text-2xl">Overview</h1>
         <p className="text-muted-foreground">
@@ -138,14 +138,12 @@ export default function UserStats() {
         </p>
       </div>
       <div className="grid grid-cols-3 gap-6 font-semibold">
-        <div className="py-4 px-4 flex flex-col gap-3 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <div className="flex gap-2 text-2xl text-blue-400">
-            <PencilLine />
-            <p className="text-gray-900 text-lg font-semibold">Most Recent Attempt</p>
+        <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
+          <div className="text-2xl text-blue-400"><PencilLine /></div>
+          <div>
+            <p className="text-lg font-semibold">Most Recent Attempt</p>
+            <p className="font-bold text-2xl">{formatTime(recentAttemptDate)}</p>
           </div>
-          <p className="font-bold text-2xl">
-            {formatTime(recentAttemptDate)}
-          </p>
         </div>
         <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
           <div className="text-2xl text-blue-400"><Crosshair /></div>

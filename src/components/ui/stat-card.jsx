@@ -2,13 +2,13 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export function StatCard({ title, value, icon: Icon, trend, description }) {
   return (
-    <Card>
+    <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
       <CardContent className="p-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">
-            {Icon && <Icon className="h-5 w-5 text-gray-500" />}
+            {Icon && <Icon className="h-5 w-5 text-[var(--accent-foreground)] dark:text-[var(--accent-foreground)]" />}
             <div>
-              <p className="text-sm font-medium text-gray-500">{title}</p>
+              <p className="text-sm font-medium text-[var(--muted-foreground)] dark:text-[--muted-foreground)]">{title}</p>
               <h3 className="text-2xl font-bold tracking-tight">
                 {value}
                 {trend && (
@@ -18,7 +18,7 @@ export function StatCard({ title, value, icon: Icon, trend, description }) {
                 )}
               </h3>
               {description && (
-                <p className="text-xs text-gray-500">{description}</p>
+                <p className="text-xs text-[var(--muted-foreground)] dark:text-[--muted-foreground)">{description}</p>
               )}
             </div>
           </div>

@@ -38,7 +38,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full bg-white z-1000">
+    <header className="sticky top-0 w-full z-1000" style={{ background: "var(--secondary-background)", color: "var(--secondary-foreground)", fontFamily: "var(--fun-font)", transition: "var(--transition)" }}>
       <div className="flex items-center h-16 justify-between px-4 md:px-0">
         {/* Logo always visible */}
         <div className="flex items-center justify-center pl-0 md:pl-5">
@@ -79,7 +79,7 @@ export default function Header() {
       </div>
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b-2 px-4 pb-4 animate-fade-in z-50">
+        <div className="md:hidden border-b-2 px-4 pb-4 animate-fade-in z-50" style={{ background: "var(--background)", color: "var(--foreground)", fontFamily: "var(--fun-font)", transition: "var(--transition)" }}>
           <ThemeSwitcher />
           {!clerkLoaded ? (
             <div className="py-4 flex justify-center"><LoadingSpinner size="small" /></div>

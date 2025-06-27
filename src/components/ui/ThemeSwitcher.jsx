@@ -1,4 +1,11 @@
 import { useEffect, useState } from "react";
+import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Palette } from "lucide-react";
 
 const THEMES = [
     { label: "Light", value: "light" },
@@ -29,17 +36,30 @@ export default function ThemeSwitcher() {
     }, [theme]);
 
     return (
-        <div className="flex items-center gap-2">
-            <span className="text-sm">Theme:</span>
-            <select
-                className="border rounded px-2 py-1 bg-background text-foreground"
-                value={theme}
-                onChange={e => setTheme(e.target.value)}
-            >
-                {THEMES.map(t => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    aria-label="Open theme switcher"
+                    className="flex items-center justify-center rounded-full p-2 bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition"
+                    style={{ fontFamily: "var(--fun-font)", transition: "var(--transition)" }}
+                >
+                    <Palette className="w-6 h-6" />
+                </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" style={{ zIndex: 9999, background: "var(--background)", color: "var(--foreground)", boxShadow: "0 8px 32px 0 rgba(0,0,0,0.25)", border: "1px solid var(--border)" }}>
+                {THEMES.map((t) => (
+                    <DropdownMenuItem
+                        key={t.value}
+                        onClick={() => setTheme(t.value)}
+                        className={theme === t.value ? "font-bold bg-accent text-accent-foreground" : ""}
+                    >
+                        {t.label}
+                        {theme === t.value && (
+                            <span className="ml-auto">✓</span>
+                        )}
+                    </DropdownMenuItem>
                 ))}
-            </select>
-        </div>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }

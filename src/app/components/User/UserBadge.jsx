@@ -56,7 +56,7 @@ export default function UserBadge() {
           setError(null);
           fetchUserData(true); // Force refresh on retry
         }}
-      /> 
+      />
     );
   }
 
@@ -65,13 +65,13 @@ export default function UserBadge() {
       className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn"
       aria-label="User Badge Section"
       style={{
-        backgroundColor: "#254117",
+        backgroundColor: "var(--background)",
         backgroundImage: "url('/chalkboard_texture.png'), radial-gradient(circle at 20% 20%, #2e4a21 60%, #1a2a13 100%)",
         backgroundBlendMode: "multiply",
-        border: "8px solid #fff",
+        border: "8px solid var(--border)",
         borderRadius: "32px",
-        boxShadow: "0 8px 32px 0 rgba(0,0,0,0.5), 0 0 0 4px #eee8",
-        outline: "2px dashed #fff8",
+        boxShadow: "0 8px 32px 0 var(--card-shadow), 0 0 0 4px var(--ring)",
+        outline: "2px dashed var(--ring)",
         outlineOffset: "8px",
       }}
     >
@@ -93,8 +93,8 @@ export default function UserBadge() {
           className="text-4xl font-bold my-6 drop-shadow-lg text-center"
           style={{
             fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
-            color: "#fff",
-            textShadow: "0 2px 0 #fff8, 0 0 8px #fff8"
+            color: "var(--foreground)",
+            textShadow: "0 2px 0 var(--ring), 0 0 8px var(--ring)"
           }}
         >
           {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
@@ -102,21 +102,21 @@ export default function UserBadge() {
         {!isLoading ? (
           <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
             style={{
-              boxShadow: "0 2px 16px 0 #0006, 0 0 0 2px #fff4",
+              boxShadow: "0 2px 16px 0 var(--card-shadow), 0 0 0 2px var(--ring)",
               fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
             }}
           >
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(points)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Current Reward Points</p>
+              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(points)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>Current Reward Points</p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(lifetimePoints)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>All Time Reward Points</p>
+              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(lifetimePoints)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>All Time Reward Points</p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "#fff", textShadow: "0 1px 0 #fff8" }}>{formatNumber(10)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "#fff" }}>Training Sessions Last 30 Days</p>
+              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(10)}</p>
+              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>Training Sessions Last 30 Days</p>
             </div>
           </div>
         ) : (
@@ -134,8 +134,8 @@ export default function UserBadge() {
           height: "36px",
           background: "linear-gradient(90deg, #b08d57 0%, #e2c290 100%)",
           borderRadius: "0 0 18px 18px",
-          boxShadow: "0 6px 16px 0 #0007, 0 2px 0 #fff5 inset",
-          borderTop: "4px solid #a67c52",
+          boxShadow: "0 6px 16px 0 var(--card-shadow), 0 2px 0 var(--ring) inset",
+          borderTop: "4px solid var(--border)",
           display: "flex",
           alignItems: "center",
           justifyContent: "flex-end",
@@ -146,18 +146,18 @@ export default function UserBadge() {
         <div style={{
           width: "32px",
           height: "12px",
-          background: "#fff",
+          background: "var(--card)",
           borderRadius: "4px",
           marginLeft: "8px",
-          boxShadow: "0 1px 4px #bbb, 0 0 0 1px #eee"
+          boxShadow: "0 1px 4px var(--border), 0 0 0 1px var(--ring)"
         }} />
         <div style={{
           width: "18px",
           height: "8px",
-          background: "#f5f5f5",
+          background: "var(--muted)",
           borderRadius: "3px",
           marginLeft: "6px",
-          boxShadow: "0 1px 2px #bbb"
+          boxShadow: "0 1px 2px var(--border)"
         }} />
       </div>
       <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap" rel="stylesheet" />
