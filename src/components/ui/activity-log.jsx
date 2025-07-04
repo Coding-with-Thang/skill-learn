@@ -8,18 +8,18 @@ export function ActivityLog({ items }) {
       {items.map((item) => (
         <div
           key={item.id}
-          className="flex items-center justify-between p-4 border rounded-lg"
+          className="flex items-center justify-between p-4 border border-[var(--muted-foreground)] rounded-lg"
         >
           <div className="flex items-center space-x-4">
             <div>
               <p className="text-sm font-medium">
                 <span className="font-semibold">{item.user}</span>{" "}
-                <span className="text-muted-foreground">({item.role})</span>
+                <span className="text-[var(--muted-foreground)]">({item.role})</span>
               </p>
-              <p className="text-sm text-muted-foreground">{item.action}</p>
+              <p className="text-sm text-[var(--primary)]">{item.action}</p>
             </div>
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-[var(--muted-foreground)]">
             {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
           </div>
         </div>

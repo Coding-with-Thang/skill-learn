@@ -139,7 +139,7 @@ export default function CategoriesPage() {
 
     return (
         <div className="px-2 sm:px-6 py-6 w-full max-w-5xl mx-auto">
-            <Card>
+            <Card className="bg-[var(--accent)]/90">
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>

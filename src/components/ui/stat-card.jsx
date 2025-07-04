@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 export function StatCard({ title, value, icon: Icon, trend, description }) {
   return (
-    <Card className="bg-[var(--accent)]/90 dark:bg-[var(--accent)]/90">
+    <Card className="bg-[var(--accent)]/90">
       <CardContent className="p-6">
         <div className="flex items-center justify-between space-x-4">
           <div className="flex items-center space-x-4">

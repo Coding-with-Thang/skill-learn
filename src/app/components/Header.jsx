@@ -26,7 +26,7 @@ export default function Header() {
 
   if (error) {
     return (
-      <div className="sticky top-0 w-full bg-white border-b-2 z-1000">
+      <div className="sticky top-0 w-full bg-background border-b-2 z-1000">
         <ErrorCard
           error={error}
           message="Failed to load header"
@@ -38,7 +38,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full z-1000" style={{ background: "var(--secondary-background)", color: "var(--secondary-foreground)", fontFamily: "var(--fun-font)", transition: "var(--transition)" }}>
+    <header className="sticky top-0 w-full z-1000 bg-[var(--background)] text-[var(--secondary-foreground)] font-fun transition-colors duration-300">
       <div className="flex items-center h-16 justify-between px-4 md:px-0">
         {/* Logo always visible */}
         <div className="flex items-center justify-center pl-0 md:pl-5">
@@ -67,7 +67,7 @@ export default function Header() {
         <div className="flex md:hidden items-center">
           <button
             aria-label="Open menu"
-            className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-2 rounded focus:outline-none focus:ring-2 focus:ring-primary"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {/* Hamburger icon */}
@@ -79,7 +79,7 @@ export default function Header() {
       </div>
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b-2 px-4 pb-4 animate-fade-in z-50" style={{ background: "var(--background)", color: "var(--foreground)", fontFamily: "var(--fun-font)", transition: "var(--transition)" }}>
+        <div className="md:hidden border-b-2 px-4 pb-4 animate-fade-in z-50 bg-background text-foreground font-fun transition-colors duration-300">
           <ThemeSwitcher />
           {!clerkLoaded ? (
             <div className="py-4 flex justify-center"><LoadingSpinner size="small" /></div>
