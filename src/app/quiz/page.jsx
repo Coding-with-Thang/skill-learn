@@ -30,10 +30,10 @@ const shuffleArray = (array) => {
 // Move button styles to a constant
 const getButtonStyles = (isActive) => `
   relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
-  hover:bg-[rgba(0,0,0,0.03)] transition-all duration-200 ease-in-out
+  hover:bg-[var(--hover)] transition-all duration-200 ease-in-out
   ${isActive
-    ? "bg-green-100 border-green-500 shadow-[0_.3rem_0_0_#51bf22] hover:bg-green-100 hover:border-green-500"
-    : "shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
+    ? "bg-[var(--success-bg)] border-[var(--success)] shadow-[0_.3rem_0_0_var(--success)] hover:bg-[var(--success-bg)] hover:border-[var(--success)]"
+    : "shadow-[0_.3rem_0_0_var(--shadow)]"
   }
 `;
 

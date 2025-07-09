@@ -62,24 +62,10 @@ export default function UserBadge() {
 
   return (
     <div
-      className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn"
+      className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn bg-gradient-to-br from-primary to-secondary border-8 border-border rounded-[32px] shadow-xl outline-dashed outline-2 outline-ring outline-offset-8"
       aria-label="User Badge Section"
-      style={{
-        backgroundColor: "var(--background)",
-        backgroundImage: "url('/chalkboard_texture.png'), radial-gradient(circle at 20% 20%, #2e4a21 60%, #1a2a13 100%)",
-        backgroundBlendMode: "multiply",
-        border: "8px solid var(--border)",
-        borderRadius: "32px",
-        boxShadow: "0 8px 32px 0 var(--card-shadow), 0 0 0 4px var(--ring)",
-        outline: "2px dashed var(--ring)",
-        outlineOffset: "8px",
-      }}
     >
-      <div className="absolute inset-0 pointer-events-none z-0" style={{
-        background: "url('/chalk_dust.png') repeat",
-        opacity: 0.15,
-        mixBlendMode: "screen"
-      }} aria-hidden="true" />
+      <div className="absolute inset-0 pointer-events-none z-0 bg-[url('/chalkboard_texture.png')] bg-repeat opacity-15 mix-blend-screen" aria-hidden="true" />
       <div className="relative z-10 flex flex-col items-center w-full">
         <Image
           src={user?.imageUrl || "/user.png"}
@@ -90,12 +76,7 @@ export default function UserBadge() {
           priority
         />
         <h2
-          className="text-4xl font-bold my-6 drop-shadow-lg text-center"
-          style={{
-            fontFamily: "'Permanent Marker', 'Schoolbell', cursive, sans-serif",
-            color: "var(--foreground)",
-            textShadow: "0 2px 0 var(--ring), 0 0 8px var(--ring)"
-          }}
+          className="text-4xl font-bold my-6 drop-shadow-lg text-center text-primary font-marker"
         >
           {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
         </h2>
@@ -107,16 +88,16 @@ export default function UserBadge() {
             }}
           >
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(points)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>Current Reward Points</p>
+              <p className="font-bold text-4xl text-primary drop-shadow-sm">{formatNumber(points)}</p>
+              <p className="text-lg sm:text-xl text-muted-foreground">Current Reward Points</p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(lifetimePoints)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>All Time Reward Points</p>
+              <p className="font-bold text-4xl text-primary drop-shadow-sm">{formatNumber(lifetimePoints)}</p>
+              <p className="text-lg sm:text-xl text-muted-foreground">All Time Reward Points</p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
-              <p className="font-bold text-4xl" style={{ color: "var(--foreground)", textShadow: "0 1px 0 var(--ring)" }}>{formatNumber(10)}</p>
-              <p className="text-lg sm:text-xl text-white/90" style={{ color: "var(--foreground)" }}>Training Sessions Last 30 Days</p>
+              <p className="font-bold text-4xl text-primary drop-shadow-sm">{formatNumber(10)}</p>
+              <p className="text-lg sm:text-xl text-muted-foreground">Training Sessions Last 30 Days</p>
             </div>
           </div>
         ) : (
@@ -128,37 +109,11 @@ export default function UserBadge() {
         )}
       </div>
       <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20"
-        style={{
-          width: "80%",
-          height: "36px",
-          background: "linear-gradient(90deg, #b08d57 0%, #e2c290 100%)",
-          borderRadius: "0 0 18px 18px",
-          boxShadow: "0 6px 16px 0 var(--card-shadow), 0 2px 0 var(--ring) inset",
-          borderTop: "4px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          paddingRight: "32px"
-        }}
+        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-4/5 h-9 bg-gradient-to-r from-yellow-600 to-yellow-300 rounded-b-[18px] shadow-lg border-t-4 border-border flex items-center justify-end pr-8"
         aria-hidden="true"
       >
-        <div style={{
-          width: "32px",
-          height: "12px",
-          background: "var(--card)",
-          borderRadius: "4px",
-          marginLeft: "8px",
-          boxShadow: "0 1px 4px var(--border), 0 0 0 1px var(--ring)"
-        }} />
-        <div style={{
-          width: "18px",
-          height: "8px",
-          background: "var(--muted)",
-          borderRadius: "3px",
-          marginLeft: "6px",
-          boxShadow: "0 1px 2px var(--border)"
-        }} />
+        <div className="w-8 h-3 bg-card rounded ml-2 shadow" />
+        <div className="w-4 h-2 bg-muted rounded ml-1.5 shadow" />
       </div>
       <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap" rel="stylesheet" />
       <style jsx global>{`

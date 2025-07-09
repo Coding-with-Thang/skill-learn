@@ -47,17 +47,17 @@ const PageHeader = () => (
 
 const PointsBalance = ({ points }) => (
   <section className="w-full max-w-4xl mx-auto my-8 px-2 sm:px-4">
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Your Points Balance</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-xl border border-yellow-200">
-        <div className="bg-yellow-500 rounded-full p-3 mb-2 sm:mb-0">
+    <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
+      <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-4">Your Points Balance</h2>
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-[var(--accent-light)] to-[var(--accent)] p-4 sm:p-6 rounded-xl border border-[var(--accent)]">
+        <div className="bg-[var(--accent)] rounded-full p-3 mb-2 sm:mb-0">
           <span className="text-3xl sm:text-4xl">⭐</span>
         </div>
         <div className="flex flex-col items-center sm:items-start">
-          <span className="text-4xl sm:text-5xl font-bold text-gray-900">
+          <span className="text-4xl sm:text-5xl font-bold text-[var(--foreground)]">
             {new Intl.NumberFormat('en-US').format(points || 0)}
           </span>
-          <span className="text-gray-600 text-base sm:text-lg">Available Points</span>
+          <span className="text-[var(--muted-foreground)] text-base sm:text-lg">Available Points</span>
         </div>
       </div>
     </div>
@@ -66,16 +66,16 @@ const PointsBalance = ({ points }) => (
 
 const DailyStreak = () => (
   <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Daily Streak</h2>
+    <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
+      <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Daily Streak</h2>
       <div className="flex flex-col sm:flex-row gap-6 items-center justify-between">
         <div className="flex flex-col items-center">
-          <div className="rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 p-1">
-            <div className="bg-white rounded-full p-4">
+          <div className="rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-dark)] p-1">
+            <div className="bg-[var(--card)] rounded-full p-4">
               <span className="text-4xl sm:text-5xl font-bold">0</span>
             </div>
           </div>
-          <p className="mt-2 font-medium text-gray-600">Current Streak</p>
+          <p className="mt-2 font-medium text-[var(--muted-foreground)]">Current Streak</p>
         </div>
         <div className="flex-1 max-w-md">
           <div className="flex gap-2 sm:gap-4 justify-center mb-3">
@@ -86,7 +86,7 @@ const DailyStreak = () => (
               </div>
             ))}
           </div>
-          <p className="text-gray-600 text-center sm:text-left">
+          <p className="text-[var(--muted-foreground)] text-center sm:text-left">
             Nice work! <strong>5 days away</strong> from unlocking your 500-point bonus.
           </p>
         </div>
@@ -98,7 +98,7 @@ const DailyStreak = () => (
             alt="Streak bonus chest"
             className="drop-shadow-md w-14 h-14 sm:w-20 sm:h-20"
           />
-          <span className="mt-2 font-medium text-gray-600">Streak Bonus</span>
+          <span className="mt-2 font-medium text-[var(--muted-foreground)]">Streak Bonus</span>
         </div>
       </div>
     </div>
@@ -116,15 +116,15 @@ const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
           alt={reward.prize}
           className="rounded-t-lg"
         />
-        <div className="absolute top-2 right-2 bg-black/70 text-white px-3 py-1 rounded-full text-sm sm:text-base">
-          <span className="text-yellow-400 mr-1">⭐</span>
+        <div className="absolute top-2 right-2 bg-[var(--card)]/70 text-[var(--on-card)] px-3 py-1 rounded-full text-sm sm:text-base">
+          <span className="text-[var(--accent)] mr-1">⭐</span>
           {new Intl.NumberFormat('en-US').format(reward.cost)}
         </div>
       </div>
     </CardHeader>
     <CardContent className="p-4 sm:p-6">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{reward.prize}</h3>
-      <p className="text-gray-600 text-sm sm:text-base">{reward.description}</p>
+      <h3 className="text-lg sm:text-xl font-semibold text-[var(--foreground)] mb-2">{reward.prize}</h3>
+      <p className="text-[var(--muted-foreground)] text-sm sm:text-base">{reward.description}</p>
     </CardContent>
     <CardFooter className="p-4 pt-0 sm:p-6 sm:pt-0">
       <Button
@@ -433,7 +433,7 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--secondary)]">
       <PageHeader />
 
       <main className="container mx-auto pb-20">
@@ -444,8 +444,8 @@ export default function RewardsPage() {
             {/* Featured Reward */}
             {featuredReward && (
               <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Featured Reward</h2>
+                <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Featured Reward</h2>
                   <div className="max-w-2xl mx-auto">
                     <RewardCard
                       reward={featuredReward}
@@ -460,8 +460,8 @@ export default function RewardsPage() {
 
             {/* All Rewards */}
             <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">All Rewards</h2>
+              <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">All Rewards</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rewards.map((reward) => (
                     <RewardCard
@@ -478,8 +478,8 @@ export default function RewardsPage() {
 
             {/* Redemption History */}
             <section className="w-full max-w-4xl mx-auto px-2 sm:px-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Redemption History</h2>
+              <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
+                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Redemption History</h2>
                 <RedemptionHistory
                   rewardHistory={rewardHistory}
                   onClaimReward={handleClaimReward}

@@ -31,7 +31,7 @@ export default function TrainingPage() {
         <div className="text-red-500 mb-4">Error loading categories: {error}</div>
         <button
           onClick={() => fetchCategories()}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-[var(--primary)] text-[var(--on-primary)] rounded hover:bg-[var(--primary-dark)] transition-colors"
         >
           Retry
         </button>
@@ -69,10 +69,10 @@ export default function TrainingPage() {
                 />
               </CardHeader>
               <CardContent className="mt-4 flex flex-col gap-2">
-                <h4 className="text-xl font-bold text-gray-400">
+                <h4 className="text-xl font-bold text-[var(--muted-foreground)]">
                   {`${category.name} Training`}
                 </h4>
-                <div className="flex items-center gap-2 text-blue-600">
+                <div className="flex items-center gap-2 text-[var(--accent)]">
                   <BookOpen className="h-5 w-5" />
                   <span className="font-medium">
                     {category._count.quizzes} {category._count.quizzes === 1 ? 'Quiz' : 'Quizzes'}
@@ -85,7 +85,7 @@ export default function TrainingPage() {
       ) : (
         <div className="flex flex-col items-center justify-center mt-10">
           <Loader />
-          <p className="mt-4 text-gray-500">Loading categories...</p>
+          <p className="mt-4 text-[var(--muted-foreground)]">Loading categories...</p>
         </div>
       )}
     </section>
