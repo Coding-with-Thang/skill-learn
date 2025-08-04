@@ -1,47 +1,225 @@
 [data-theme="ocean"] {
+  /* Core Semantic Colors */
   --background: #000b58;
   --foreground: #fff4b7;
-  --primary: #006a67;
-  --primary-foreground: #fff4b7;
-  --secondary: #003161;
-  --secondary-foreground: #fff4b7;
-  --accent: #006a67;
-  --accent-foreground: #fff4b7;
   --card: #003161;
   --card-foreground: #fff4b7;
+  --popover: #003161;
+  --popover-foreground: #fff4b7;
+
+  /* Primary Brand Colors */
+  --primary: #006a67;
+  --primary-foreground: #fff4b7;
+  --primary-hover: #009688;
+  --primary-active: #004d4a;
+  --primary-disabled: #4a7a78;
+
+  /* Secondary Colors */
+  --secondary: #003161;
+  --secondary-foreground: #fff4b7;
+  --secondary-hover: #004a8a;
+  --secondary-active: #002a4a;
+
+  /* Accent Colors */
+  --accent: #006a67;
+  --accent-foreground: #fff4b7;
+  --accent-hover: #009688;
+  --accent-active: #004d4a;
+
+  /* Muted Colors */
+  --muted: #003161;
+  --muted-foreground: #b8c5d1;
+  --muted-hover: #004a8a;
+
+  /* Semantic Status Colors */
+  --success: #00d4aa;
+  --success-foreground: #fff4b7;
+  --success-hover: #00b894;
+
+  --warning: #ffa726;
+  --warning-foreground: #000b58;
+  --warning-hover: #ff9800;
+
+  --error: #ff6b6b;
+  --error-foreground: #fff4b7;
+  --error-hover: #ff5252;
+
+  --info: #4fc3f7;
+  --info-foreground: #fff4b7;
+  --info-hover: #29b6f6;
+
+  /* Interactive Elements */
+  --destructive: #ff6b6b;
+  --destructive-foreground: #fff4b7;
+  --destructive-hover: #ff5252;
+
+  /* Border and Input Colors */
   --border: #006a67;
   --input: #003161;
+  --input-hover: #004a8a;
+  --input-focus: #006a67;
+
+  /* Ring/Focus Colors */
   --ring: #fff4b7;
-  /* New variables for interactivity */
-  --button-bg: var(--primary);
-  --button-bg-hover: #009688;
-  --button-text: var(--primary-foreground);
-  --button-shadow: 0 4px 16px 0 rgba(0, 106, 103, 0.2);
-  --card-shadow: 0 8px 32px 0 rgba(0, 49, 97, 0.3);
-  --fun-font: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --ring-primary: #006a67;
+  --ring-secondary: #4fc3f7;
+
+  /* Chart Colors */
+  --chart-1: #00d4aa;
+  --chart-2: #4fc3f7;
+  --chart-3: #9c27b0;
+  --chart-4: #ffa726;
+  --chart-5: #ff6b6b;
+
+  /* Sidebar Colors */
+  --sidebar: #003161;
+  --sidebar-foreground: #fff4b7;
+  --sidebar-primary: #006a67;
+  --sidebar-primary-foreground: #fff4b7;
+  --sidebar-accent: #004a8a;
+  --sidebar-accent-foreground: #fff4b7;
+  --sidebar-border: #006a67;
+  --sidebar-ring: #fff4b7;
+
+  /* Game and Interactive Colors */
+  --game-primary: #00d4aa;
+  --game-secondary: #4fc3f7;
+  --game-accent: #ffa726;
+
+  /* Reward and Points Colors */
+  --reward-gold: #ffd700;
+  --reward-silver: #c0c0c0;
+  --reward-bronze: #cd7f32;
+  --points-primary: #00d4aa;
+  --points-secondary: #4fc3f7;
+
+  /* Shadow and Depth */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 106, 103, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(0, 106, 103, 0.3),
+    0 2px 4px -2px rgba(0, 106, 103, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 106, 103, 0.3),
+    0 4px 6px -4px rgba(0, 106, 103, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 106, 103, 0.3),
+    0 8px 10px -6px rgba(0, 106, 103, 0.3);
+
+  /* Animation and Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-display: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
 }
 
 [data-theme="sunset"] {
+  /* Core Semantic Colors */
   --background: #fff6e0;
   --foreground: #2d1e2f;
-  --primary: #ff6f61;
-  --primary-foreground: #fff6e0;
-  --secondary: #f7cac9;
-  --secondary-foreground: #2d1e2f;
-  --accent: #92a8d1;
-  --accent-foreground: #fff6e0;
   --card: #f7cac9;
   --card-foreground: #2d1e2f;
+  --popover: #f7cac9;
+  --popover-foreground: #2d1e2f;
+
+  /* Primary Brand Colors */
+  --primary: #ff6f61;
+  --primary-foreground: #fff6e0;
+  --primary-hover: #ff9478;
+  --primary-active: #e55a4a;
+  --primary-disabled: #ffb3a8;
+
+  /* Secondary Colors */
+  --secondary: #f7cac9;
+  --secondary-foreground: #2d1e2f;
+  --secondary-hover: #f4b8b7;
+  --secondary-active: #f1a6a5;
+
+  /* Accent Colors */
+  --accent: #92a8d1;
+  --accent-foreground: #fff6e0;
+  --accent-hover: #a8b8d8;
+  --accent-active: #7c98c8;
+
+  /* Muted Colors */
+  --muted: #f7cac9;
+  --muted-foreground: #8b7a8b;
+  --muted-hover: #f4b8b7;
+
+  /* Semantic Status Colors */
+  --success: #4caf50;
+  --success-foreground: #fff6e0;
+  --success-hover: #45a049;
+
+  --warning: #ff9800;
+  --warning-foreground: #2d1e2f;
+  --warning-hover: #f57c00;
+
+  --error: #f44336;
+  --error-foreground: #fff6e0;
+  --error-hover: #d32f2f;
+
+  --info: #2196f3;
+  --info-foreground: #fff6e0;
+  --info-hover: #1976d2;
+
+  /* Interactive Elements */
+  --destructive: #f44336;
+  --destructive-foreground: #fff6e0;
+  --destructive-hover: #d32f2f;
+
+  /* Border and Input Colors */
   --border: #f7cac9;
   --input: #f7cac9;
+  --input-hover: #f4b8b7;
+  --input-focus: #ff6f61;
+
+  /* Ring/Focus Colors */
   --ring: #ff6f61;
-  /* New variables for interactivity */
-  --button-bg: var(--primary);
-  --button-bg-hover: #ff9478;
-  --button-text: var(--primary-foreground);
-  --button-shadow: 0 4px 16px 0 rgba(255, 111, 97, 0.2);
-  --card-shadow: 0 8px 32px 0 rgba(255, 246, 224, 0.3);
-  --fun-font: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
-  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --ring-primary: #ff6f61;
+  --ring-secondary: #92a8d1;
+
+  /* Chart Colors */
+  --chart-1: #ff6f61;
+  --chart-2: #92a8d1;
+  --chart-3: #f7cac9;
+  --chart-4: #ff9800;
+  --chart-5: #4caf50;
+
+  /* Sidebar Colors */
+  --sidebar: #f7cac9;
+  --sidebar-foreground: #2d1e2f;
+  --sidebar-primary: #ff6f61;
+  --sidebar-primary-foreground: #fff6e0;
+  --sidebar-accent: #f4b8b7;
+  --sidebar-accent-foreground: #2d1e2f;
+  --sidebar-border: #f7cac9;
+  --sidebar-ring: #ff6f61;
+
+  /* Game and Interactive Colors */
+  --game-primary: #ff6f61;
+  --game-secondary: #92a8d1;
+  --game-accent: #ff9800;
+
+  /* Reward and Points Colors */
+  --reward-gold: #ffd700;
+  --reward-silver: #c0c0c0;
+  --reward-bronze: #cd7f32;
+  --points-primary: #ff6f61;
+  --points-secondary: #92a8d1;
+
+  /* Shadow and Depth */
+  --shadow-sm: 0 1px 2px 0 rgba(255, 111, 97, 0.2);
+  --shadow-md: 0 4px 6px -1px rgba(255, 111, 97, 0.3),
+    0 2px 4px -2px rgba(255, 111, 97, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(255, 111, 97, 0.3),
+    0 4px 6px -4px rgba(255, 111, 97, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(255, 111, 97, 0.3),
+    0 8px 10px -6px rgba(255, 111, 97, 0.3);
+
+  /* Animation and Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-display: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
 }
