@@ -43,13 +43,13 @@ export default function Features() {
   ]
 
   return (
-    <section id="features" className="py-16 text-gray-800">
-      <div className="max-w-7xl mx-auto text-center pxxc.cr-9 lg:px-4">
+    <section id="features" className="py-16 text-foreground">
+      <div className="max-w-7xl mx-auto text-center px-4 lg:px-4">
         <h2 className="text-3xl font-semibold">Discover your training activities with ease and efficiency with Skill-Learn</h2>
-        <p className="mt-4 mb-9 text-xl">Skill-Learn is a learning platform that enables agents to unlock their learning potential with our gamified approach.</p>
+        <p className="mt-4 mb-9 text-xl text-muted-foreground">Skill-Learn is a learning platform that enables agents to unlock their learning potential with our gamified approach.</p>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           {featureSet.map((feature, index) => (
-            <Card key={index} className="rounded-none border-none outline-hidden bg-[#F0F4F8]">
+            <Card key={index} className="rounded-lg border border-border bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-normal">
               <CardHeader className="flex items-center">
                 <Image
                   src={feature.icon}
@@ -59,10 +59,10 @@ export default function Features() {
                   className=""
                 />
               </CardHeader>
-              <CardContent className="text-[#155d59] font-bold uppercase ">
+              <CardContent className="text-primary font-bold uppercase">
                 <h4>{feature.title}</h4>
               </CardContent>
-              <CardFooter className="text-gray-900">{feature.description}</CardFooter>
+              <CardFooter className="text-muted-foreground">{feature.description}</CardFooter>
             </Card>
           ))}
         </div>

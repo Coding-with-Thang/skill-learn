@@ -28,10 +28,10 @@ export default function TrainingPage() {
   if (error) {
     return (
       <section className="flex flex-col items-center w-[90%] px-20">
-        <div className="text-red-500 mb-4">Error loading categories: {error}</div>
+        <div className="text-error mb-4">Error loading categories: {error}</div>
         <button
           onClick={() => fetchCategories()}
-          className="px-4 py-2 bg-[var(--primary)] text-[var(--on-primary)] rounded hover:bg-[var(--primary-dark)] transition-colors"
+          className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary-hover transition-colors duration-normal"
         >
           Retry
         </button>
@@ -42,8 +42,8 @@ export default function TrainingPage() {
   return (
     <section className="w-full max-w-5xl mx-auto px-4 sm:px-8 md:px-12 py-8" aria-label="Training Categories">
       <BreadCrumbCom endtrail="My Training" />
-      <h1 className="text-3xl sm:text-4xl font-bold my-10 flex self-center" tabIndex="0">My Training</h1>
-      <h2 className="font-semibold text-2xl" tabIndex="0">Categories</h2>
+      <h1 className="text-3xl sm:text-4xl font-bold my-10 flex self-center text-foreground" tabIndex="0">My Training</h1>
+      <h2 className="font-semibold text-2xl text-foreground" tabIndex="0">Categories</h2>
       {!loading ? (
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {categories.map((category) => (
@@ -69,10 +69,10 @@ export default function TrainingPage() {
                 />
               </CardHeader>
               <CardContent className="mt-4 flex flex-col gap-2">
-                <h4 className="text-xl font-bold text-[var(--muted-foreground)]">
+                <h4 className="text-xl font-bold text-muted-foreground">
                   {`${category.name} Training`}
                 </h4>
-                <div className="flex items-center gap-2 text-[var(--accent)]">
+                <div className="flex items-center gap-2 text-accent">
                   <BookOpen className="h-5 w-5" />
                   <span className="font-medium">
                     {category._count.quizzes} {category._count.quizzes === 1 ? 'Quiz' : 'Quizzes'}
@@ -85,7 +85,7 @@ export default function TrainingPage() {
       ) : (
         <div className="flex flex-col items-center justify-center mt-10">
           <Loader />
-          <p className="mt-4 text-[var(--muted-foreground)]">Loading categories...</p>
+          <p className="mt-4 text-muted-foreground">Loading categories...</p>
         </div>
       )}
     </section>

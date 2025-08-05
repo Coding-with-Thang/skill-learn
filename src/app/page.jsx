@@ -63,7 +63,7 @@ export default function HomePage() {
       <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 min-h-[80dvh] flex flex-col gap-8">
         <SignedIn>
           {/* Hero Section for logged-in users */}
-          <section className="w-full mt-8 mb-6 p-8 rounded-3xl shadow-2xl bg-[var(--card)]/90 flex flex-col md:flex-row items-center gap-8">
+          <section className="w-full mt-8 mb-6 p-8 rounded-3xl shadow-2xl bg-card/90 flex flex-col md:flex-row items-center gap-8">
             <div className="flex-1 flex flex-col items-center md:items-start">
               {renderSection(UserBadge)}
             </div>
@@ -76,10 +76,10 @@ export default function HomePage() {
           </section>
           {/* Dashboard Widgets */}
           <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-[var(--card)]/80 rounded-2xl shadow-lg p-6 border border-[var(--border)]">
+            <div className="bg-card/80 rounded-2xl shadow-lg p-6 border border-border">
               {renderSection(PerformanceLanding)}
             </div>
-            <div className="bg-[var(--card)]/80 rounded-2xl shadow-lg p-6 border border-[var(--border)]">
+            <div className="bg-card/80 rounded-2xl shadow-lg p-6 border border-border">
               {renderSection(LeaderboardLanding)}
             </div>
           </section>

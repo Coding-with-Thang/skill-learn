@@ -29,7 +29,7 @@ import Loader from "../components/loader"
 
 // Sub-components
 const PageHeader = () => (
-  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[220px] h-[220px] sm:h-[300px] bg-gradient-to-br from-green-400 to-yellow-200 text-white relative overflow-hidden">
+  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[220px] h-[220px] sm:h-[300px] bg-gradient-to-br from-game-primary to-game-secondary text-primary-foreground relative overflow-hidden">
     <Image
       src={Gifts}
       height={180}
@@ -39,7 +39,7 @@ const PageHeader = () => (
       priority
     />
     <h1 className="text-3xl sm:text-6xl font-bold mb-2 drop-shadow-lg text-center z-10">Get Rewards</h1>
-    <h2 className="text-lg sm:text-2xl font-bold text-green-100 uppercase tracking-wide text-center z-10">
+    <h2 className="text-lg sm:text-2xl font-bold text-primary-foreground/80 uppercase tracking-wide text-center z-10">
       Earn points to unlock and redeem rewards from a wide variety of choices!
     </h2>
   </div>
@@ -47,17 +47,17 @@ const PageHeader = () => (
 
 const PointsBalance = ({ points }) => (
   <section className="w-full max-w-4xl mx-auto my-8 px-2 sm:px-4">
-    <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
-      <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-4">Your Points Balance</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-[var(--accent-light)] to-[var(--accent)] p-4 sm:p-6 rounded-xl border border-[var(--accent)]">
-        <div className="bg-[var(--accent)] rounded-full p-3 mb-2 sm:mb-0">
+    <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">Your Points Balance</h2>
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-points-primary to-points-secondary p-4 sm:p-6 rounded-xl border border-accent">
+        <div className="bg-accent rounded-full p-3 mb-2 sm:mb-0">
           <span className="text-3xl sm:text-4xl">⭐</span>
         </div>
         <div className="flex flex-col items-center sm:items-start">
-          <span className="text-4xl sm:text-5xl font-bold text-[var(--foreground)]">
+          <span className="text-4xl sm:text-5xl font-bold text-foreground">
             {new Intl.NumberFormat('en-US').format(points || 0)}
           </span>
-          <span className="text-[var(--muted-foreground)] text-base sm:text-lg">Available Points</span>
+          <span className="text-muted-foreground text-base sm:text-lg">Available Points</span>
         </div>
       </div>
     </div>
@@ -66,27 +66,27 @@ const PointsBalance = ({ points }) => (
 
 const DailyStreak = () => (
   <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-    <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
-      <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Daily Streak</h2>
+    <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Daily Streak</h2>
       <div className="flex flex-col sm:flex-row gap-6 items-center justify-between">
         <div className="flex flex-col items-center">
-          <div className="rounded-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-dark)] p-1">
-            <div className="bg-[var(--card)] rounded-full p-4">
+          <div className="rounded-full bg-gradient-to-r from-accent to-accent-hover p-1">
+            <div className="bg-card rounded-full p-4">
               <span className="text-4xl sm:text-5xl font-bold">0</span>
             </div>
           </div>
-          <p className="mt-2 font-medium text-[var(--muted-foreground)]">Current Streak</p>
+          <p className="mt-2 font-medium text-muted-foreground">Current Streak</p>
         </div>
         <div className="flex-1 max-w-md">
           <div className="flex gap-2 sm:gap-4 justify-center mb-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center">
-                <Circle className="text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                {i < 6 && <Ellipsis className="text-gray-300 w-4 h-4 sm:w-5 sm:h-5" />}
+                <Circle className="text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
+                {i < 6 && <Ellipsis className="text-muted-foreground/50 w-4 h-4 sm:w-5 sm:h-5" />}
               </div>
             ))}
           </div>
-          <p className="text-[var(--muted-foreground)] text-center sm:text-left">
+          <p className="text-muted-foreground text-center sm:text-left">
             Nice work! <strong>5 days away</strong> from unlocking your 500-point bonus.
           </p>
         </div>
@@ -98,7 +98,7 @@ const DailyStreak = () => (
             alt="Streak bonus chest"
             className="drop-shadow-md w-14 h-14 sm:w-20 sm:h-20"
           />
-          <span className="mt-2 font-medium text-[var(--muted-foreground)]">Streak Bonus</span>
+          <span className="mt-2 font-medium text-muted-foreground">Streak Bonus</span>
         </div>
       </div>
     </div>
@@ -116,15 +116,15 @@ const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
           alt={reward.prize}
           className="rounded-t-lg"
         />
-        <div className="absolute top-2 right-2 bg-[var(--card)]/70 text-[var(--on-card)] px-3 py-1 rounded-full text-sm sm:text-base">
-          <span className="text-[var(--accent)] mr-1">⭐</span>
+        <div className="absolute top-2 right-2 bg-card/70 text-card-foreground px-3 py-1 rounded-full text-sm sm:text-base">
+          <span className="text-accent mr-1">⭐</span>
           {new Intl.NumberFormat('en-US').format(reward.cost)}
         </div>
       </div>
     </CardHeader>
     <CardContent className="p-4 sm:p-6">
-      <h3 className="text-lg sm:text-xl font-semibold text-[var(--foreground)] mb-2">{reward.prize}</h3>
-      <p className="text-[var(--muted-foreground)] text-sm sm:text-base">{reward.description}</p>
+      <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2">{reward.prize}</h3>
+      <p className="text-muted-foreground text-sm sm:text-base">{reward.description}</p>
     </CardContent>
     <CardFooter className="p-4 pt-0 sm:p-6 sm:pt-0">
       <Button
@@ -166,7 +166,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
   if (redemption.claimed) {
     return (
       <div className="flex flex-col gap-2">
-        <span className="text-green-600 flex items-center gap-1">
+        <span className="text-success flex items-center gap-1">
           <Check size={16} />
           Claimed
         </span>
@@ -179,8 +179,8 @@ const ClaimButton = ({ redemption, onClaim }) => {
 
   if (!redemption.redeemed) {
     return (
-      <span className="text-yellow-600 flex items-center gap-1">
-        <Circle size={16} className="fill-yellow-600" />
+      <span className="text-warning flex items-center gap-1">
+        <Circle size={16} className="fill-warning" />
         Pending
       </span>
     )
@@ -195,7 +195,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
       className={cn(
         "relative overflow-hidden transition-all duration-300",
         claiming && "cursor-not-allowed",
-        !claiming && "hover:border-green-500 hover:text-green-600"
+        !claiming && "hover:border-success hover:text-success"
       )}
     >
       {claiming ? (
@@ -207,7 +207,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
           <Gift size={16} /> Claim Reward
         </span>
       )}
-      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-green-400 to-green-600 transform origin-left scale-x-0 transition-transform group-hover:scale-x-100" />
+      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-success to-success-hover transform origin-left scale-x-0 transition-transform group-hover:scale-x-100" />
     </Button>
   )
 }
@@ -225,13 +225,13 @@ const BlurredClaimUrl = ({ url }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <span className={cn(
-        "text-blue-600 hover:text-blue-700 text-sm transition-all duration-200",
+        "text-info hover:text-info-hover text-sm transition-all duration-200",
         !isHovered && "blur-sm select-none"
       )}>
         {url}
       </span>
       {!isHovered && (
-        <span className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+        <span className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
           Hover to reveal
         </span>
       )}
@@ -248,7 +248,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
   return (
     <TableRow className={cn(
       "transition-colors",
-      latestRedemption.claimed && "bg-green-50/50"
+      latestRedemption.claimed && "bg-success/10"
     )}>
       <TableCell>
         <div className="flex items-center gap-3">
@@ -262,15 +262,15 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
           </div>
           <div>
             <p className="font-medium">{latestRedemption.reward.prize}</p>
-            <p className="text-sm text-gray-500">{latestRedemption.reward.description}</p>
+            <p className="text-sm text-muted-foreground">{latestRedemption.reward.description}</p>
             {totalRedemptions > 1 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-sm text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
+                className="text-sm text-info hover:text-info-hover mt-1 flex items-center gap-1"
               >
                 {isExpanded ? "Hide" : "Show"} all {totalRedemptions} redemptions
                 {unclaimedCount > 0 && !isExpanded && (
-                  <span className="text-yellow-600">
+                  <span className="text-warning">
                     ({unclaimedCount} unclaimed)
                   </span>
                 )}
@@ -281,7 +281,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
       </TableCell>
       <TableCell>
         <span className="flex items-center gap-1">
-          <span className="text-yellow-500">⭐</span>
+          <span className="text-warning">⭐</span>
           {latestRedemption.pointsSpent.toLocaleString()}
         </span>
       </TableCell>
@@ -294,7 +294,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
         ) : (
           <div className="flex flex-col gap-3">
             {redemptions.map((redemption) => (
-              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b last:border-0">
+              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0">
                 <ClaimButton
                   redemption={redemption}
                   onClaim={onClaimReward}
@@ -319,13 +319,13 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
   if (!rewardHistory.length) {
     return (
       <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
-          <Gift className="h-6 w-6 text-gray-400" />
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+          <Gift className="h-6 w-6 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900">
+        <h3 className="text-lg font-medium text-foreground">
           No Rewards Redeemed Yet
         </h3>
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-muted-foreground">
           Complete quizzes and earn points to redeem exciting rewards!
         </p>
       </div>
@@ -433,7 +433,7 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--secondary)]">
+    <div className="min-h-screen bg-background">
       <PageHeader />
 
       <main className="container mx-auto pb-20">
@@ -444,8 +444,8 @@ export default function RewardsPage() {
             {/* Featured Reward */}
             {featuredReward && (
               <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-                <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Featured Reward</h2>
+                <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Featured Reward</h2>
                   <div className="max-w-2xl mx-auto">
                     <RewardCard
                       reward={featuredReward}
@@ -460,8 +460,8 @@ export default function RewardsPage() {
 
             {/* All Rewards */}
             <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-              <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">All Rewards</h2>
+              <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">All Rewards</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rewards.map((reward) => (
                     <RewardCard
@@ -478,8 +478,8 @@ export default function RewardsPage() {
 
             {/* Redemption History */}
             <section className="w-full max-w-4xl mx-auto px-2 sm:px-4">
-              <div className="bg-[var(--card)] rounded-2xl shadow-lg p-4 sm:p-8 border border-[var(--border)]">
-                <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)] mb-6">Redemption History</h2>
+              <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Redemption History</h2>
                 <RedemptionHistory
                   rewardHistory={rewardHistory}
                   onClaimReward={handleClaimReward}

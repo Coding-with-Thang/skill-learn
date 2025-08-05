@@ -121,39 +121,29 @@ export default function UserStats() {
   return (
     <div className="flex flex-col gap-4">
       <BreadCrumbCom endtrail="User Stats" />
-      {/* <div className="min-h-[15rem] px-8 py-6 flex items-center justify-center border-2 rounded-xl shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)] flex-col gap-4">
-        <Image
-          src={user?.imageUrl || "/user.png"}
-          alt="Profile Image"
-          width={200}
-          height={200}
-          className="rounded-full border-2 shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]"
-        />
-        <h2 className="font-bold text-xl mt-4">{user?.firstName} {" "} {user?.lastName}</h2>
-      </div> */}
       <div className="mt-4">
-        <h1 className="font-bold text-2xl">Overview</h1>
+        <h1 className="font-bold text-2xl text-foreground">Overview</h1>
         <p className="text-muted-foreground">
           A summary of your recent activity and performance
         </p>
       </div>
       <div className="grid grid-cols-3 gap-6 font-semibold">
-        <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <div className="text-2xl text-blue-400"><PencilLine /></div>
+        <div className="py-4 px-4 flex gap-2 border border-border rounded-lg bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-normal">
+          <div className="text-2xl text-primary"><PencilLine /></div>
           <div>
             <p className="text-lg font-semibold">Most Recent Attempt</p>
             <p className="font-bold text-2xl">{formatTime(recentAttemptDate)}</p>
           </div>
         </div>
-        <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <div className="text-2xl text-blue-400"><Crosshair /></div>
+        <div className="py-4 px-4 flex gap-2 border border-border rounded-lg bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-normal">
+          <div className="text-2xl text-primary"><Crosshair /></div>
           <div>
             <p className="font-bold">Total Quizzes Attempted</p>
             <p className="mt-2 font-bold text-3xl">{totalAttempts}</p>
           </div>
         </div>
-        <div className="py-4 px-4 flex gap-2 border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
-          <div className="text-2xl text-blue-400"><ListChecks /></div>
+        <div className="py-4 px-4 flex gap-2 border border-border rounded-lg bg-card text-card-foreground shadow-sm hover:shadow-md transition-shadow duration-normal">
+          <div className="text-2xl text-primary"><ListChecks /></div>
           <div>
             <p className="font-bold">Total Quizzes Completed</p>
             <p className="mt-2 font-bold text-3xl">{totalCompleted}</p>
@@ -166,7 +156,7 @@ export default function UserStats() {
         )}
       </div>
 
-      <div className="border-2 rounded-lg shadow-[0_.3rem_0_0_rgba(0,0,0,0.1)]">
+      <div className="border border-border rounded-lg bg-card text-card-foreground shadow-sm">
         <Table>
           <TableHeader className="text-base font-semibold">
             <TableRow>
