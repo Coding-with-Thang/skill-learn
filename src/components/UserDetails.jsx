@@ -22,7 +22,7 @@ export default function UserDetails() {
           </Avatar>
           <div>
             <h3 className="text-xl font-semibold">{user.fullName}</h3>
-            <p className="text-sm text-gray-500">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
+            <p className="text-sm text-muted-foreground">Member since {new Date(user.createdAt).toLocaleDateString()}</p>
           </div>
         </div>
       </CardContent>

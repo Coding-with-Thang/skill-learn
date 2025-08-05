@@ -9,6 +9,7 @@ import { ArrowBigRightDash, CircleCheckBig } from 'lucide-react'
 import Loader from "../components/loader"
 import Image from "next/image"
 import { toast } from "sonner"
+import { cn } from "@/lib/utils"
 
 // Utility functions
 const formatTime = (seconds) => {
@@ -28,14 +29,12 @@ const shuffleArray = (array) => {
 };
 
 // Move button styles to a constant
-const getButtonStyles = (isActive) => `
-  relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg
-  hover:bg-[var(--hover)] transition-all duration-200 ease-in-out
-  ${isActive
-    ? "bg-[var(--success-bg)] border-[var(--success)] shadow-[0_.3rem_0_0_var(--success)] hover:bg-[var(--success-bg)] hover:border-[var(--success)]"
-    : "shadow-[0_.3rem_0_0_var(--shadow)]"
-  }
-`;
+const getButtonStyles = (isActive) => cn(
+  "relative group py-3 w-full text-center border-2 text-lg font-semibold rounded-lg transition-all duration-200 ease-in-out",
+  isActive
+    ? "bg-success text-success-foreground border-success shadow-lg hover:bg-success-hover"
+    : "bg-background text-foreground border-border shadow-sm hover:bg-accent hover:text-accent-foreground hover:border-accent"
+);
 
 const QuestionMedia = ({ question }) => {
   const [mediaError, setMediaError] = useState(false);
@@ -379,13 +378,13 @@ export default function QuizScreenPage() {
   return (
     <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-12 py-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{selectedQuiz?.title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{selectedQuiz?.title}</h1>
         <div className="flex items-center gap-4">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Question {currentIndex + 1} of {shuffledQuestionsMemo.length}
           </p>
           {timeRemaining > 0 && (
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Time remaining: {formatTime(timeRemaining)}
             </p>
           )}
@@ -397,7 +396,7 @@ export default function QuizScreenPage() {
           <>
             <div className="mb-8">
               <QuestionMedia question={shuffledQuestionsMemo[currentIndex]} />
-              <h2 className="text-xl font-semibold mb-6">
+              <h2 className="text-xl font-semibold mb-6 text-foreground">
                 {shuffledQuestionsMemo[currentIndex].text}
               </h2>
             </div>
@@ -412,7 +411,7 @@ export default function QuizScreenPage() {
                 >
                   {String.fromCharCode(65 + index)}. {option.text}
                   {activeQuestion?.id === option.id && (
-                    <CircleCheckBig className="absolute right-4 top-1/2 -translate-y-1/2 text-green-500" />
+                    <CircleCheckBig className="absolute right-4 top-1/2 -translate-y-1/2 text-success" />
                   )}
                 </button>
               ))}

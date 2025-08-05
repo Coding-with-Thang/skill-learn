@@ -12,7 +12,7 @@ export function StatCard({ title, value, icon: Icon, trend, description }) {
               <h3 className="text-2xl font-bold tracking-tight">
                 {value}
                 {trend && (
-                  <span className={`ml-2 text-sm font-medium ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`ml-2 text-sm font-medium ${trend > 0 ? 'text-success' : 'text-error'}`}>
                     {trend > 0 ? '+' : ''}{trend}%
                   </span>
                 )}

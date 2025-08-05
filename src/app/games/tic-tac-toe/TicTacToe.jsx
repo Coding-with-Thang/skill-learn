@@ -212,8 +212,8 @@ const TicTacToe = () => {
     return (
       <button
         className={`h-16 w-16 border border-gray-300 flex items-center justify-center text-2xl font-bold
-          ${board[index] === "X" ? "text-blue-600" : "text-red-600"}
-          ${isWinningSquare ? "bg-green-200" : "hover:bg-gray-100"}
+                          ${board[index] === "X" ? "text-primary" : "text-error"}
+                ${isWinningSquare ? "bg-success/20" : "hover:bg-accent"}
           ${isAIThinking ? "cursor-not-allowed" : "cursor-pointer"}
           transition-colors duration-200`}
         onClick={() => handleMove(index)}
@@ -275,12 +275,12 @@ const TicTacToe = () => {
             </div>
 
             <div className={`text-center text-xl font-bold mb-2 
-              ${winner === 'X' ? 'text-blue-600' :
-                winner === 'O' ? 'text-red-600' :
-                  winner === 'draw' ? 'text-gray-600' : ''}`}>
+              ${winner === 'X' ? 'text-primary' :
+                winner === 'O' ? 'text-error' :
+                  winner === 'draw' ? 'text-muted-foreground' : ''}`}>
               {getStatusMessage()}
             </div>
-            <div className="text-sm text-gray-600 text-center">
+            <div className="text-sm text-muted-foreground text-center">
               <p>Player (X) Wins: {gameHistory.xWins}</p>
               <p>AI (O) Wins: {gameHistory.oWins}</p>
               <p>Draws: {gameHistory.draws}</p>
@@ -295,7 +295,7 @@ const TicTacToe = () => {
           <div className="text-center">
             <Button
               onClick={resetBoard}
-              className="bg-blue-600 text-white px-4 py-2 rounded-sm hover:bg-blue-700"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary-hover"
             >
               New Game
             </Button>
