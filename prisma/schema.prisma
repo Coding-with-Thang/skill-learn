@@ -8,28 +8,29 @@ datasource db {
 }
 
 model User {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId         String         @unique
-  username        String         @unique
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId         String          @unique
+  username        String          @unique
   firstName       String
   lastName        String
   imageUrl        String?
-  manager         String?        @default("")
-  role            Role           @default(AGENT)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  points          Int            @default(0)
-  lifetimePoints  Int            @default(0)
+  manager         String?         @default("")
+  role            Role            @default(AGENT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  points          Int             @default(0)
+  lifetimePoints  Int             @default(0)
   pointLogs       PointLog[]
   rewardsRedeemed RewardLog[]
   categoryStats   CategoryStat[]
   AuditLog        AuditLog[]
-  currentStreak   Int            @default(0)
-  longestStreak   Int            @default(0)
+  currentStreak   Int             @default(0)
+  longestStreak   Int             @default(0)
   lastStreakDate  DateTime?
-  streakUpdatedAt DateTime?    @default(now())
+  streakUpdatedAt DateTime?       @default(now())
   systemSettings  SystemSetting[]
-  quizzes          Quiz[]
+  quizzes         Quiz[]
+  courses         Course[]
 
   // CRITICAL INDEXES FOR COMMON QUERIES
   @@index([role]) // Filter by role: "Get all managers"
@@ -53,6 +54,7 @@ model Category {
   updatedAt     DateTime       @updatedAt
   quizzes       Quiz[]
   categoryStats CategoryStat[]
+  courses        Course[]
 
   // INDEXES FOR CATEGORY QUERIES
   @@index([isActive]) // Filter active categories
@@ -261,8 +263,31 @@ model SystemSetting {
   @@map("system_settings")
 }
 
+model Course {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String
+  fileKey            String
+  duration           Int
+  categoryId         String       @db.ObjectId
+  category           Category     @relation(fields: [categoryId], references: [id])
+  excerptDescription String
+  slug               String       @unique
+  status             CourseStatus @default(Draft)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  userId             String?      @db.ObjectId
+  user               User?        @relation(fields: [userId], references: [id])
+}
+
 enum Role {
   AGENT
   MANAGER
   OPERATIONS
+}
+
+enum CourseStatus {
+  Published
+  Draft
+  Achieved
 }
