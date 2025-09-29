@@ -18,6 +18,22 @@ import {
 const data = {
   navMain: [
     {
+      title: "Courses",
+      url: "/dashboard/courses",
+      icon: SquareTerminal,
+      isActive: true,
+      items: [
+        {
+          title: "Manage Courses",
+          url: "/dashboard/courses",
+        },
+        {
+          title: "Course Creator",
+          url: "/dashboard/courses/creator",
+        },
+      ],
+    },
+    {
       title: "Quiz Management",
       url: "/dashboard/quizzes",
       icon: SquareTerminal,

@@ -6,7 +6,7 @@ import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatTime } from '@/lib/utils/formatTime'
+import { formatTime } from '@/utils/formatTime'
 import api from '@/utils/axios'
 
 export default function UserStats({ user }) {

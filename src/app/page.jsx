@@ -4,7 +4,6 @@ import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { InteractiveCard, InteractiveCardContent } from "@/components/ui/interactive-card"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { AnimatedLoader } from "@/components/ui/animated-loader"
 import UserBadge from "./components/User/UserBadge"
 import HeroBanner from "./components/User/HeroBanner"
 import Features from "./components/User/Features"
@@ -25,7 +24,7 @@ export default function HomePage() {
 
   return (
     <>
-      <SignedIn>
+      <SignedIn key="signed-in">
         {/* Hero Section for logged-in users */}
         <section className="w-full mt-8 mb-6 p-8 rounded-3xl shadow-2xl bg-card/90 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1 flex flex-col items-center md:items-start">
@@ -170,16 +169,7 @@ export default function HomePage() {
         </section>
       </SignedIn>
 
-      <SignedOut>
-        {/* Loading state for signed out users */}
-        <div className="flex items-center justify-center min-h-screen">
-          <AnimatedLoader
-            variant="dots"
-            size="lg"
-            text="Loading..."
-          />
-        </div>
-
+      <SignedOut key="signed-out">
         {/* Hero Section for non-logged-in users */}
         <section className="w-full">
           {renderSection(HeroBanner)}
