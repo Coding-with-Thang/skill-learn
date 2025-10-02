@@ -2,7 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/middleware/rateLimit";
 import { protectedRoutes, rateLimits } from "@/config/routes";
-import { auditActions } from "@/utils/auditLogger";
+// Removed server-only import to avoid bundling Prisma into middleware/edge
 
 const isProtectedRoute = createRouteMatcher(protectedRoutes);
 

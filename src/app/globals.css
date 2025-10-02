@@ -181,9 +181,9 @@
   --destructive-hover: oklch(0.804 0.191 22.216);
 
   /* Border and Input Colors */
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --input-hover: oklch(1 0 0 / 20%);
+  --border: oklch(0.4 0 0);
+  --input: oklch(0.3 0 0);
+  --input-hover: oklch(0.35 0 0);
   --input-focus: oklch(0.922 0 0);
 
   /* Ring/Focus Colors */
@@ -205,7 +205,7 @@
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-border: oklch(0.4 0 0);
   --sidebar-ring: oklch(0.556 0 0);
 
   /* Game and Interactive Colors */
