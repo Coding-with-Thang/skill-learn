@@ -29,7 +29,7 @@ const data = {
         },
         {
           title: "Course Creator",
-          url: "/dashboard/courses/creator",
+          url: "/dashboard/courses/create",
         },
       ],
     },
@@ -39,7 +39,7 @@ const data = {
       icon: SquareTerminal,
       isActive: true,
       items: [
-                {
+        {
           title: "Categories",
           url: "/dashboard/categories",
         },
