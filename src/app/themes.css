@@ -108,7 +108,7 @@
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Typography */
-  --font-display: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
+  --font-display: Poppins, "Fredoka One", "Comic Sans MS", cursive, sans-serif;
 }
 
 [data-theme="sunset"] {
@@ -221,5 +221,5 @@
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Typography */
-  --font-display: "Fredoka One", "Comic Sans MS", cursive, sans-serif;
+  --font-display: Poppins, "Fredoka One", "Comic Sans MS", cursive, sans-serif;
 }

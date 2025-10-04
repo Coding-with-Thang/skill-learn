@@ -28,7 +28,7 @@ const EnhancedInput = React.forwardRef(({
       <input
         type={inputType}
         className={cn(
-          "flex w-full rounded-md border bg-input px-3 py-1 text-base shadow-sm transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          "flex w-full rounded-md border bg-input px-3 py-1 text-base shadow-sm transition-all duration-200 file:border-0 file:bg-input file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           // Size variants
           size === "sm" && "h-8 text-sm px-2",
           size === "default" && "h-9 px-3",
