@@ -24,6 +24,7 @@ export function Menubar({ editor }) {
                   editor.isActive("bold") ?? "bg-muted text-muted-foreground"
                 )}
               >
+                <Bold />
               </Toggle>
             </TooltipTrigger>
             <TooltipContent>Bold</TooltipContent>

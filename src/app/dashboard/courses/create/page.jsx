@@ -28,6 +28,7 @@ import Link from "next/link";
 import slugify from 'slugify';
 import { useState, useEffect } from "react";
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
+import { Uploader } from "@/components/file-uploader/Uploader";
 
 export default function CreateCoursePage() {
     const [categories, setCategories] = useState([]);
@@ -149,12 +150,7 @@ export default function CreateCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Description</FormLabel>
                                         <FormControl>
-                                            <RichTextEditor />
-
-                                            {/* <Textarea
-                                                placeholder="description"
-                                                className="min-h-[120px]"
-                                                {...field} /> */}
+                                            <RichTextEditor field={field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -166,9 +162,7 @@ export default function CreateCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Thumbnail Image</FormLabel>
                                         <FormControl>
-                                            <Input
-                                                placeholder="thumbnail url"
-                                                {...field} />
+                                            <Uploader />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
