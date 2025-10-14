@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button"
-import { CloudUpload, FileImage } from 'lucide-react';
+import { CloudUpload, FileImage, X } from 'lucide-react';
+import Image from 'next/image';
 
 export function RenderEmptyState({ isDragActive }) {
   return (
@@ -27,10 +28,36 @@ export function RenderErrorState() {
       </div>
       <p className="text-base font-semibold">Upload Failed</p>
       <p className="text-xs mt-1 text-muted-foreground ">Something went wrong</p>
-      <Button 
-      type="button"
-      className="mt-4"
+      <Button
+        type="button"
+        className="mt-4"
       >Retry</Button>
+    </div>
+  )
+}
+
+export function RenderUploadedState({ previewUrl }) {
+  return (
+    <div>
+      <Image
+        src={previewUrl}
+        alt="Uploaded File"
+        fill
+        className="object-contain p-2"
+      />
+      <Button variant="destructive" size="icon" className={cn("absolute top-4 right-4")}>
+        <X className="size-4" />
+      </Button>
+    </div>
+  )
+}
+
+export function RenderUploadingState({ progress, file }) {
+  return (
+    <div className="text-center flex flex-col justify-center items-center">
+      <p>{progress}</p>
+      <p className="mt-2 text-sm font-medium text-foreground">Uploading...</p>
+      <p classname="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
     </div>
   )
 }

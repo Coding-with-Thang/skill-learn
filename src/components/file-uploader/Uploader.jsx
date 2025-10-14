@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Card, CardContent } from "@/components/ui/card"
-import { RenderEmptyState, RenderErrorState } from "./RenderState"
+import { RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState } from "./RenderState"
 import { cn } from "@/lib/utils";
 import { toast } from "sonner"
 import { v4 as uuidv4 } from 'uuid';
@@ -110,6 +110,26 @@ export function Uploader() {
     onDropRejected: rejectedFiles,
   })
 
+  function renderContent() {
+    if (fileState.uploading) {
+      return (
+        <RenderUploadingState
+          file={fileState.file}
+          progress={fileState.progress}
+        />
+      );
+    }
+
+    if (fileState.error) {
+      return <RenderErrorState />;
+    }
+
+    if (fileState.objectUrl) {
+      return <RenderUploadedState previewUrl={fileState.objectUrl} />
+    }
+    return <RenderEmptyState isDragActive={isDragActive} />;
+  }
+
   return (
     <Card
       {...getRootProps()}
@@ -120,8 +140,7 @@ export function Uploader() {
     >
       <CardContent className="flex items-center justify-center h-full w-full p-4">
         <input {...getInputProps()} />
-        <RenderEmptyState isDragActive={isDragActive} />
-        {/* <RenderErrorState /> */}
+        {renderContent()}
       </CardContent>
     </Card>
   )
