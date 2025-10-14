@@ -9,25 +9,39 @@ export const fileUploadSchema = z.object({
     isImage: z.boolean(),
 })
 
-// Initialize firebase-admin with a service account JSON in env var
+// Initialize Firebase Admin SDK using service account credentials supplied via env vars.
+const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+
+if (privateKey && privateKey.includes('\\n')) {
+    // when stored in .env the newlines are escaped; convert them back
+    privateKey = privateKey.replace(/\\n/g, "\n");
+}
+
 if (!admin.apps.length) {
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT || null;
-    if (!serviceAccount) {
-        // Do not throw here; route will return a clear error if called without config
-        console.warn('FIREBASE_SERVICE_ACCOUNT not set; uploads will fail until configured.');
-    } else {
-        try {
-            const parsed = JSON.parse(serviceAccount);
-            admin.initializeApp({
-                credential: admin.credential.cert(parsed),
-                storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-            });
-        } catch (err) {
-            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT:', err.message);
-        }
+    if (!projectId || !clientEmail || !privateKey || !storageBucket) {
+        // Do not throw here; we will surface an error at runtime if missing. But log for clarity.
+        console.warn('Firebase Admin SDK not fully configured. Make sure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_STORAGE_BUCKET are set.');
+    }
+
+    try {
+        admin.initializeApp({
+            credential: admin.credential.cert({
+                projectId,
+                clientEmail,
+                privateKey,
+            }),
+            storageBucket,
+        });
+    } catch (e) {
+        // If initialization fails, admin may already be initialized or config invalid
+        console.warn('Firebase Admin initialization error:', e?.message || e);
     }
 }
-const storage = admin.storage?.();
+
+const storage = admin.storage();
 
 export async function POST(req) {
     try {
@@ -56,25 +70,32 @@ export async function POST(req) {
         // Use validated metadata for upload
         const { fileName: originalName, contentType } = validation.data;
 
-        // Create buffer and upload to Firebase Storage via admin SDK
-        if (!storage) {
-            return NextResponse.json({ error: 'Firebase admin storage not configured' }, { status: 500 });
+        // Create buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        // Ensure bucket is available
+        if (!storage || !storage.bucket) {
+            return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const storageFileName = `uploads/${Date.now()}_${originalName}`;
-        const bucket = storage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
-        const fileUpload = bucket.file(storageFileName);
+        const bucket = storage.bucket();
+        const storageFileName = `courses/${Date.now()}_${originalName}`;
+        const fileRef = bucket.file(storageFileName);
 
-        await fileUpload.save(buffer, { metadata: { contentType } });
-
-        // Make the file public URL or generate a signed URL. Prefer signed URL for private buckets
-        const [url] = await fileUpload.getSignedUrl({
-            action: 'read',
-            expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 7 days
+        // Upload the buffer
+        await fileRef.save(buffer, {
+            metadata: {
+                contentType,
+            },
+            resumable: false,
         });
 
-        return NextResponse.json({ url });
+        // Make the file publicly readable (optional). Alternatively, create a signed URL.
+        // Here we'll create a signed URL valid for 7 days.
+        const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+        const [signedUrl] = await fileRef.getSignedUrl({ action: 'read', expires: expiresAt });
+
+        return NextResponse.json({ url: signedUrl });
     } catch (error) {
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
