@@ -45,13 +45,6 @@ const storage = admin.storage();
 
 export async function POST(req) {
     try {
-        console.log('[api/admin/upload] POST invoked');
-        try {
-            const ct = req.headers.get('content-type');
-            console.log('[api/admin/upload] content-type:', ct);
-        } catch (e) {
-            /* ignore header read errors */
-        }
         const formData = await req.formData();
         // Get the uploaded file from the form data
         const file = formData.get('file');
@@ -105,14 +98,12 @@ export async function POST(req) {
         // Return the signed URL and the storage path so the client can delete the file later
         return NextResponse.json({ url: signedUrl, path: storageFileName });
     } catch (error) {
-        console.error('[api/admin/upload] POST error:', error?.stack || error);
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
 }
 
 export async function DELETE(req) {
     try {
-        console.log('[api/admin/upload] DELETE invoked');
         const body = await req.json();
         const { path } = body || {};
         if (!path) {
@@ -131,7 +122,6 @@ export async function DELETE(req) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('[api/admin/upload] DELETE error:', error?.stack || error);
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
 }

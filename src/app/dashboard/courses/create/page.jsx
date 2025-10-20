@@ -1,5 +1,8 @@
 "use client"
 
+import { useState, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { courseSchema, courseStatusOptions } from "@/lib/zodSchemas"
@@ -23,16 +26,18 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Plus, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Loader2, Plus, Sparkles } from "lucide-react";
 import slugify from 'slugify';
-import { useState, useEffect } from "react";
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@/components/file-uploader/Uploader";
+import { toast } from "sonner";
+import axios from "axios";
 
 export default function CreateCoursePage() {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pending, startTransition] = useTransition();
+    const router = useRouter();
 
     const form = useForm({
         resolver: zodResolver(courseSchema),
@@ -40,6 +45,7 @@ export default function CreateCoursePage() {
             title: "",
             description: "",
             imageUrl: "",
+            fileKey: "",
             category: "",
             duration: 1,
             status: "Draft",
@@ -66,9 +72,55 @@ export default function CreateCoursePage() {
         fetchCategories();
     }, []);
 
-    const onSubmit = (data) => {
-        console.log(data)
+    const onSubmit = (values) => {
+
+        startTransition(async () => {
+
+            try {
+                const data = await axios.post('/api/admin/courses/create', values);
+                if (data?.data?.status === 'success') {
+                    toast.success('Course created successfully');
+                    form.reset();
+                    router.push('/dashboard/courses');
+                } else if (data?.data?.status === 'error') {
+                    // If server returned validation details, show them
+                    const payload = data.data || {};
+                    if (payload.details) {
+                        // details comes from zod.flatten()
+                        console.warn('Validation details:', payload.details);
+                        const fieldErrors = payload.details.fieldErrors || {};
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        if (messages.length) {
+                            messages.forEach((m) => toast.error(m));
+                        } else {
+                            toast.error(payload.message || 'An error occurred while creating the course');
+                        }
+                    } else {
+                        toast.error(payload.message || 'An error occurred while creating the course');
+                    }
+                }
+            } catch (error) {
+                // If axios returned a 400 with validation details, surface them
+                const resp = error?.response?.data;
+                if (resp) {
+                    console.error('/api/admin/courses/create error response:', resp);
+                    if (resp.details) {
+                        const fieldErrors = resp.details.fieldErrors || {};
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        if (messages.length) {
+                            messages.forEach((m) => toast.error(m));
+                        } else {
+                            toast.error(resp.message || 'An error occurred while creating the course');
+                        }
+                        return;
+                    }
+                }
+                toast.error(error?.message || 'An error occurred while creating the course');
+                return;
+            }
+        });
     }
+
     return (
         <>
             <div className="flex items-center gap-4">
@@ -162,7 +214,13 @@ export default function CreateCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Thumbnail Image</FormLabel>
                                         <FormControl>
-                                            <Uploader />
+                                            <Uploader onChange={field.onChange} value={field.value} name={field.name}
+                                                onUploadComplete={(upload) => {
+                                                    // upload: { url, path }
+                                                    // store storage path as fileKey for database
+                                                    form.setValue('fileKey', upload?.path || '', { shouldValidate: true });
+                                                }}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -215,8 +273,18 @@ export default function CreateCoursePage() {
                                         </FormItem>
                                     )} />
                             </div>
-                            <Button className="">
-                                Create Course <Plus className="ml-1" size={16} />
+                            <Button type="submit" disabled={pending}>
+                                {pending ?
+                                    (
+                                        <>
+                                            Creating...
+                                            <Loader2 className="animate-spin ml-1" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            Create Course <Plus className="ml-1" size={16} />
+                                        </>
+                                    )}
                             </Button>
                         </form>
                     </Form>

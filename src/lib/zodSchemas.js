@@ -16,7 +16,8 @@ export const courseSchema = z.object({
     .min(10, "Title must be at least 10 characters")
     .max(100, "Title must be less than 100 characters"),
   description: z.string().min(10).max(1000),
-  imageUrl: z.string(),
+  // imageUrl can be empty/undefined while creating — make it optional
+  imageUrl: z.string().optional(),
   category: objectIdSchema,
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
   status: courseStatus,
@@ -28,6 +29,8 @@ export const courseSchema = z.object({
     .string()
     .min(5, "Slug must be at least 5 characters")
     .max(100, "Slug must be less than 100 characters"),
+  // fileKey corresponds to a stored file identifier required by Prisma schema
+  fileKey: z.string().optional(),
 });
 
 export const courseUpdateSchema = z.object({

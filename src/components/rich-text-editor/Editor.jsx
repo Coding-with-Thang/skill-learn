@@ -15,7 +15,13 @@ export function RichTextEditor({ field }) {
       }
     },
     onUpdate: ({ editor }) => {
-      field.onChange(JSON.stringify(editor.getJSON))
+      try {
+        const json = editor.getJSON();
+        field.onChange(JSON.stringify(json));
+      } catch (e) {
+        // fallback: do not set undefined
+        console.error('RichTextEditor onUpdate error:', e);
+      }
     },
     content: field.value ? JSON.parse(field.value) : '<p></p>'
   })

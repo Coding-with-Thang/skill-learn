@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button"
-import { CloudUpload, FileImage, X } from 'lucide-react';
+import { CloudUpload, FileImage, X, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export function RenderEmptyState({ isDragActive }) {
@@ -36,7 +36,7 @@ export function RenderErrorState() {
   )
 }
 
-export function RenderUploadedState({ previewUrl }) {
+export function RenderUploadedState({ previewUrl, onDelete, isDeleting }) {
   return (
     <div>
       <Image
@@ -45,8 +45,19 @@ export function RenderUploadedState({ previewUrl }) {
         fill
         className="object-contain p-2"
       />
-      <Button variant="destructive" size="icon" className={cn("absolute top-4 right-4")}>
-        <X className="size-4" />
+      <Button
+        variant="destructive"
+        size="icon"
+        className={cn("absolute top-4 right-4")}
+        onClick={onDelete}
+        aria-label="Delete uploaded file"
+        disabled={isDeleting}
+      >
+        {isDeleting ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <X className="size-4" />
+        )}
       </Button>
     </div>
   )
@@ -57,7 +68,7 @@ export function RenderUploadingState({ progress, file }) {
     <div className="text-center flex flex-col justify-center items-center">
       <p>{progress}</p>
       <p className="mt-2 text-sm font-medium text-foreground">Uploading...</p>
-      <p classname="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
+      <p className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
     </div>
   )
 }
