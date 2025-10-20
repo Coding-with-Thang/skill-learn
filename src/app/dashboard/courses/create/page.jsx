@@ -26,7 +26,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, Loader2, Plus, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2, Plus, Sparkles, Clock } from "lucide-react";
 import slugify from 'slugify';
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@/components/file-uploader/Uploader";
@@ -226,66 +226,101 @@ export default function CreateCoursePage() {
                                     </FormItem>
                                 )} />
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="category"
-                                    render={({ field }) => (
-                                        <FormItem className="full-w">
-                                            <FormLabel>Category</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <div className="space-y-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="category"
+                                        render={({ field }) => (
+                                            <FormItem className="full-w">
+                                                <FormLabel>Category</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder={loading ? "Loading categories..." : "Select a category"} />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {categories.map((category) => (
+                                                            <SelectItem key={category.id} value={category.id}>
+                                                                {category.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="duration"
+                                        render={({ field }) => (
+                                            <FormItem className="full-w">
+                                                <FormLabel>Duration (minutes)</FormLabel>
                                                 <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={loading ? "Loading categories..." : "Select a category"} />
-                                                    </SelectTrigger>
+                                                    <div className="flex items-center">
+                                                        <Input
+                                                            type="number"
+                                                            min={1}
+                                                            step={1}
+                                                            aria-label="Duration in minutes"
+                                                            value={field.value}
+                                                            onChange={(e) => field.onChange(Number(e.target.value))}
+                                                            placeholder="e.g. 30"
+                                                        />
+                                                        <Clock className="ml-2 text-muted-foreground" size={18} />
+                                                    </div>
                                                 </FormControl>
-                                                <SelectContent>
-                                                    {categories.map((category) => (
-                                                        <SelectItem key={category.id} value={category.id}>
-                                                            {category.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
-                                <FormField
-                                    control={form.control}
-                                    name="status"
-                                    render={({ field }) => (
-                                        <FormItem className="full-w">
-                                            <FormLabel>Status</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder={loading ? "Loading status..." : "Select status"} />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {courseStatusOptions.map((status) => (
-                                                        <SelectItem key={status} value={status}>
-                                                            {status}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )} />
+                                                <p className="text-sm text-muted-foreground mt-1">Estimated duration in minutes.</p>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                </div>
+
+                                <div className="flex flex-col justify-between">
+                                    <div>
+                                        <FormField
+                                            control={form.control}
+                                            name="status"
+                                            render={({ field }) => (
+                                                <FormItem className="full-w">
+                                                    <FormLabel>Status</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder={loading ? "Loading status..." : "Select status"} />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {courseStatusOptions.map((status) => (
+                                                                <SelectItem key={status} value={status}>
+                                                                    {status}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )} />
+                                    </div>
+
+                                    <div className="pt-4">
+                                        <Button type="submit" disabled={pending} className="w-full">
+                                            {pending ?
+                                                (
+                                                    <>
+                                                        Creating...
+                                                        <Loader2 className="animate-spin ml-1" />
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Create Course <Plus className="ml-1" size={16} />
+                                                    </>
+                                                )}
+                                        </Button>
+                                    </div>
+                                </div>
                             </div>
-                            <Button type="submit" disabled={pending}>
-                                {pending ?
-                                    (
-                                        <>
-                                            Creating...
-                                            <Loader2 className="animate-spin ml-1" />
-                                        </>
-                                    ) : (
-                                        <>
-                                            Create Course <Plus className="ml-1" size={16} />
-                                        </>
-                                    )}
-                            </Button>
                         </form>
                     </Form>
                 </CardContent>
