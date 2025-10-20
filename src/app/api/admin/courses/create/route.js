@@ -14,8 +14,14 @@ export async function POST(req) {
             return NextResponse.json(result, { status: 200 });
         }
 
-        // For validation or other errors, return 400 with payload to surface details
-        return NextResponse.json(result || { status: 'error', message: 'Failed to create course' }, { status: 400 });
+        // For validation or other errors, always return a predictable JSON shape
+        const errorPayload = {
+            status: result?.status || 'error',
+            message: result?.message || 'Failed to create course',
+            details: result?.details || null,
+        };
+        console.warn('[api/admin/courses/create] returning error payload:', JSON.stringify(errorPayload));
+        return NextResponse.json(errorPayload, { status: 400 });
     } catch (error) {
         console.error('[api/admin/courses/create] error:', error?.stack || error);
         return NextResponse.json({ status: 'error', message: error?.message || String(error) }, { status: 500 });

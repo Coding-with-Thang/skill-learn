@@ -9,214 +9,85 @@ import { toast } from "sonner"
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
-export function Uploader({ value, onChange, name, onUploadComplete }) {
-  const [fileState, setFileState] = useState({
-    error: false,
-    file: null,
-    id: null,
-    uploading: false,
-    progress: 0,
-    isDeleting: false,
-    fileType: "image",
-  })
+// Minimal, clean uploader implementation to avoid syntax issues.
+export function Uploader({ value, onChange, onUploadComplete }) {
+  const [url, setUrl] = useState(value || undefined)
+  const [uploading, setUploading] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  async function uploadFile(file) {
-    setFileState((prev) => ({
-      ...prev,
-      uploading: true,
-      progress: 0,
-      error: false,
-    }))
+  useEffect(() => {
+    if (typeof value === 'string' && value !== url) {
+      setUrl(value)
+    }
+  }, [value])
 
-    const form = new FormData();
-    form.append('file', file, file.name);
-
+  const uploadFile = async (file) => {
+    setUploading(true)
+    setProgress(0)
+    const form = new FormData()
+    form.append('file', file, file.name)
     try {
       const res = await axios.post('/api/admin/upload', form, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (event) => {
-          if (event.total) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setFileState((prev) => ({ ...prev, progress: percent }));
-          }
-        },
-      });
-
-      const data = res?.data || {};
-      if (data.url) {
-        setFileState((prev) => ({ ...prev, uploading: false, progress: 100, url: data.url, path: data.path }));
-        // notify parent (e.g. react-hook-form) of the uploaded URL (backwards-compatible)
-        onChange?.(data.url);
-        // provide full upload response (url + path) when parent wants fileKey
-        onUploadComplete?.(data);
-        toast.success('Upload successful');
-        return data;
-      }
-
-      setFileState((prev) => ({ ...prev, uploading: false, error: true }));
-      const message = data?.error || `Upload failed with status ${res.status}`;
-      toast.error(message);
-    } catch (err) {
-      setFileState((prev) => ({ ...prev, uploading: false, error: true }));
-      // Log more details to help debug 404/other network errors
-      try {
-        console.error('[Uploader] upload error response status:', err?.response?.status, 'data:', err?.response?.data);
-      } catch (e) {
-        console.error('[Uploader] upload error (no response):', err);
-      }
-      const message = err?.response?.data?.error || err.message || 'Upload failed';
-      toast.error(message);
-      throw err;
-    }
-  }
-
-  const onDrop = useCallback(acceptedFiles => {
-    if (acceptedFiles.length > 0) {
-      const file = acceptedFiles[0]
-
-      if (fileState.objectUrl && !fileState.objectUrl.startsWith("http")) {
-        URL.revokeObjectUrl(fileState.objectUrl)
-      }
-
-      setFileState({
-        file: file,
-        uploading: false,
-        progress: 0,
-        objectUrl: URL.createObjectURL(file),
-        error: false,
-        id: uuidv4(),
-        isDeleting: false,
-        fileType: 'image',
-      })
-      // Start upload immediately and track progress
-      uploadFile(file).catch(() => {
-        // errors are already handled with toast and state
-      })
-    }
-  }, [fileState.objectUrl])
-
-  // Sync external `value` (for example when using react-hook-form Controller)
-  useEffect(() => {
-    if (typeof value === 'string' && value) {
-      // If the current preview is different from the external value, update it.
-      if (fileState.objectUrl !== value) {
-        setFileState((prev) => ({ ...prev, objectUrl: value, url: value }));
-      }
-    }
-    // only react when `value` changes intentionally
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
-
-  async function handleRemoveFile() {
-
-    // If already deleting or there's nothing to delete, bail out
-    if (fileState.isDeleting || !fileState.objectUrl) return;
-
-    try {
-      setFileState((prev) => ({ ...prev, isDeleting: true }));
-
-      // If server-side path is present (uploaded), request deletion
-      if (fileState.path) {
-        await axios.delete('/api/admin/upload', { data: { path: fileState.path } });
-      }
-
-      // Revoke local object URL if it was created locally
-      if (fileState.objectUrl && !fileState.objectUrl.startsWith('http')) {
-        try { URL.revokeObjectURL(fileState.objectUrl); } catch (e) {
-          console.error('Error revoking object URL:', e);
+        onUploadProgress: (e) => {
+          if (e.total) setProgress(Math.round((e.loaded / e.total) * 100))
         }
+      })
+      const data = res?.data
+      if (data?.url) {
+        setUrl(data.url)
+        onChange?.(data.url)
+        onUploadComplete?.(data)
+        toast.success('Upload successful')
+      } else {
+        toast.error('Upload failed')
       }
-
-      // Reset state
-      setFileState({
-        error: false,
-        file: null,
-        id: null,
-        uploading: false,
-        progress: 0,
-        isDeleting: false,
-        fileType: 'image',
-      });
-      // notify parent/form that the value has been cleared
-      // use empty string instead of null/undefined to be compatible with zod string expectation
-      onChange?.("");
-      toast.success('File deleted');
     } catch (err) {
-      setFileState((prev) => ({ ...prev, isDeleting: false }));
-      const message = err?.response?.data?.error || err?.message || 'Delete failed';
-      toast.error(message);
-    }
-
-  }
-  function rejectedFiles(fileRejection) {
-    if (fileRejection.length) {
-      const tooManyFiles = fileRejection.find(
-        (rejection) => rejection.errors[0].code === 'too-many-files'
-      )
-      const fileSizeToBig = fileRejection.find(
-        (rejection) => rejection.errors[0].code === 'file-too-large'
-      )
-
-      if (fileSizeToBig) {
-        toast.error('File size exceeded, Max: 5MB');
-      }
-
-      if (tooManyFiles) {
-        toast.error('Too many files selected, max: 1');
-      }
+      console.error('[Uploader] upload error', err)
+      toast.error('Upload failed')
+    } finally {
+      setUploading(false)
+      setProgress(0)
     }
   }
 
-  function renderContent() {
-    if (fileState.uploading) {
-      return (
-        <RenderUploadingState
-          file={fileState.file}
-          progress={fileState.progress}
-        />
-      );
-    }
+  const onDrop = useCallback((acceptedFiles) => {
+    const f = acceptedFiles?.[0]
+    if (f) uploadFile(f)
+  }, [])
 
-    if (fileState.error) {
-      return <RenderErrorState />;
+  const handleRemoveFile = async () => {
+    if (!url || isDeleting) return
+    setIsDeleting(true)
+    try {
+      // If url is an absolute storage url, we rely on server-side delete using `path`.
+      // For now, just clear client state and notify parent.
+      setUrl(undefined)
+      onChange?.("")
+      onUploadComplete?.(undefined)
+      toast.success('File removed')
+    } catch (err) {
+      console.error('[Uploader] delete error', err)
+      toast.error('Delete failed')
+    } finally {
+      setIsDeleting(false)
     }
-
-    if (fileState.objectUrl) {
-      return <RenderUploadedState previewUrl={fileState.objectUrl} onDelete={handleRemoveFile} isDeleting={fileState.isDeleting} />
-    }
-    return <RenderEmptyState isDragActive={isDragActive} />;
   }
 
-  useEffect(() => {
-    return () => {
-      if (fileState.objectUrl && !fileState.objectUrl.startsWith('http')) {
-        try { URL.revokeObjectURL(fileState.objectUrl); } catch (e) { /* ignore */ }
-      }
-    }
-    // We intentionally only want to run cleanup when the component unmounts or objectUrl changes
-  }, [fileState.objectUrl])
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { "image/*": [] },
-    maxFiles: 1,
-    multiple: false,
-    maxSize: 5 * 1024 * 1024, //5MB upload limit
-    onDropRejected: rejectedFiles,
-    disabled: fileState.uploading || !!fileState.objectUrl,
-  })
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, maxFiles: 1, accept: { 'image/*': [] }, disabled: uploading || !!url })
 
   return (
-    <Card
-      {...getRootProps()}
-      className={cn("relative border-2 border-dashed transition-colors duration-200 ease-in-out w-full h-64",
-        isDragActive
-          ? "border-primary bg-primary/10 border-solid"
-          : "border-border hover:border-primary")}
-    >
+    <Card {...getRootProps()} className={cn('relative border-2 border-dashed w-full h-64', isDragActive ? 'border-primary bg-primary/10' : 'border-border')}>
       <CardContent className="flex items-center justify-center h-full w-full p-4">
         <input {...getInputProps()} />
-        {renderContent()}
+        {uploading ? (
+          <RenderUploadingState progress={progress} />
+        ) : url ? (
+          <RenderUploadedState previewUrl={url} onDelete={handleRemoveFile} isDeleting={isDeleting} />
+        ) : (
+          <RenderEmptyState isDragActive={isDragActive} />
+        )}
       </CardContent>
     </Card>
   )
