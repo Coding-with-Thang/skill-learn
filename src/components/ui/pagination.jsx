@@ -4,6 +4,7 @@ import {
   ChevronRightIcon,
   MoreHorizontalIcon,
 } from "lucide-react"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button";
@@ -44,10 +45,14 @@ function PaginationLink({
   className,
   isActive,
   size = "icon",
+  asChild = false,
+  children,
   ...props
 }) {
+  const Comp = asChild ? Slot : 'a'
+
   return (
-    (<a
+    (<Comp
       aria-current={isActive ? "page" : undefined}
       data-slot="pagination-link"
       data-active={isActive}
@@ -55,7 +60,8 @@ function PaginationLink({
         variant: isActive ? "outline" : "ghost",
         size,
       }), className)}
-      {...props} />)
+      {...props}
+    >{children}</Comp>)
   );
 }
 

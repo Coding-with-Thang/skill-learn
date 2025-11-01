@@ -3,7 +3,9 @@ import { getSignedUrl } from '@/utils/adminStorage'
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import { Clock, ArrowRight, MoreVertical } from 'lucide-react'
 import CourseFilters from '@/components/CourseFilters'
+import Pagination from '@/components/Pagination'
 
 async function getCourses({ page = 1, pageSize = 5, category } = {}) {
     const where = {};
@@ -56,27 +58,6 @@ export default async function CoursesPage({ searchParams }) {
 
     const baseHref = `/dashboard/courses?pageSize=${pageSize}` + (category ? `&category=${encodeURIComponent(category)}` : '');
 
-    function getPageList(curr, total) {
-        // Return an array of page numbers and nulls for ellipses
-        if (total <= 9) return Array.from({ length: total }, (_, i) => i + 1);
-
-        const delta = 2;
-        const range = new Set([1, total]);
-        for (let i = curr - delta; i <= curr + delta; i++) {
-            if (i > 1 && i < total) range.add(i);
-        }
-
-        const pages = Array.from(range).sort((a, b) => a - b);
-        const result = [];
-        let last = 0;
-        for (const p of pages) {
-            if (last && p - last > 1) result.push(null); // ellipsis
-            result.push(p);
-            last = p;
-        }
-        return result;
-    }
-
     return (
         <>
             <div className="flex items-center justify-between mb-6">
@@ -97,6 +78,18 @@ export default async function CoursesPage({ searchParams }) {
 
             {courses.length === 0 ? (
                 <Card>
+                    {/*Absolute Dropdown*/}
+                    <div className="" absolute top-2 right-2 z-10>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="secondary" size="icon">
+                                    <MoreVertical className="size-4" />
+                                </Button>
+
+                            </DropdownMenuTrigger>
+                        </DropdownMenu>
+
+                    </div>
                     <CardHeader>
                         <CardTitle>No courses yet</CardTitle>
                         <CardDescription>There are currently no courses in the system. Create one to get started.</CardDescription>
@@ -132,7 +125,7 @@ export default async function CoursesPage({ searchParams }) {
                                             </span>
                                         </div>
 
-                                        <span className="text-sm text-muted-foreground">{course.duration}m</span>
+                                        <span className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="text-muted-foreground" size={14} />{course.duration}m</span>
                                     </CardTitle>
                                     <CardDescription className="mt-1 truncate">{course.excerptDescription}</CardDescription>
                                 </CardHeader>
@@ -140,17 +133,20 @@ export default async function CoursesPage({ searchParams }) {
                                 <CardContent>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Category: <span className="text-foreground">{course.category?.name || 'Uncategorized'}</span></p>
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                                                {course.category?.name || 'Uncategorized'}
+                                            </span>
                                         </div>
 
-                                        <div className="flex flex-col items-end gap-2">
-                                            <Link href={`/dashboard/courses/${course.id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                                                View
-                                            </Link>
-                                            <Link href={`/dashboard/courses/${course.id}/edit`} className={buttonVariants({ size: 'sm' })}>
-                                                Edit
-                                            </Link>
-                                        </div>
+                                        <div />
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <Link href={`/dashboard/courses/${course.id}/edit`} className={buttonVariants({
+                                            className: "w-full justify-center mt-4",
+                                        })}>
+                                            Edit Course <ArrowRight className="ml-2" />
+                                        </Link>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -158,36 +154,8 @@ export default async function CoursesPage({ searchParams }) {
                     </div>
                 </>
             )}
-            {/* Pagination controls (always visible) */}
-            <div className="flex items-center justify-center gap-3 mt-6">
-                {currentPage > 1 ? (
-                    <Link href={`${baseHref}&page=${currentPage - 1}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-                        Previous
-                    </Link>
-                ) : (
-                    <button disabled className="opacity-50 cursor-not-allowed rounded-md border px-3 py-1 text-sm">Previous</button>
-                )}
-
-                <div className="flex items-center gap-2">
-                    {getPageList(currentPage, totalPages).map((p, idx) => (
-                        p === null ? (
-                            <span key={`e-${idx}`} className="px-2 text-sm text-muted-foreground">…</span>
-                        ) : p === currentPage ? (
-                            <span key={p} className="px-3 py-1 rounded-md bg-primary text-primary-foreground text-sm font-medium">{p}</span>
-                        ) : (
-                            <Link key={p} href={`${baseHref}&page=${p}`} className="px-3 py-1 rounded-md border text-sm hover:bg-accent">{p}</Link>
-                        )
-                    ))}
-                </div>
-
-                {currentPage < totalPages ? (
-                    <Link href={`${baseHref}&page=${currentPage + 1}`} className={buttonVariants({ size: 'sm' })}>
-                        Next
-                    </Link>
-                ) : (
-                    <button disabled className="opacity-50 cursor-not-allowed rounded-md border px-3 py-1 text-sm">Next</button>
-                )}
-            </div>
+            {/* Pagination controls (reusable component) */}
+            <Pagination baseHref={baseHref} currentPage={currentPage} totalPages={totalPages} />
         </>
     );
 }
