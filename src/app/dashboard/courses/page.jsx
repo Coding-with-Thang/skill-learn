@@ -2,8 +2,19 @@ import prisma from "@/utils/connect";
 import { getSignedUrl } from '@/utils/adminStorage'
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link";
-import { Clock, ArrowRight, MoreVertical } from 'lucide-react'
+import {
+    Clock, ArrowRight, MoreVertical, Pencil, Eye, Trash2
+} from 'lucide-react'
 import CourseFilters from '@/components/CourseFilters'
 import Pagination from '@/components/Pagination'
 
@@ -78,18 +89,6 @@ export default async function CoursesPage({ searchParams }) {
 
             {courses.length === 0 ? (
                 <Card>
-                    {/*Absolute Dropdown*/}
-                    <div className="" absolute top-2 right-2 z-10>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="secondary" size="icon">
-                                    <MoreVertical className="size-4" />
-                                </Button>
-
-                            </DropdownMenuTrigger>
-                        </DropdownMenu>
-
-                    </div>
                     <CardHeader>
                         <CardTitle>No courses yet</CardTitle>
                         <CardDescription>There are currently no courses in the system. Create one to get started.</CardDescription>
@@ -106,9 +105,40 @@ export default async function CoursesPage({ searchParams }) {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {courses.map((course) => (
-                            <Card key={course.id}>
-                                {/* Thumbnail */}
-                                <div className="h-40 w-full overflow-hidden rounded-t-xl bg-muted">
+                            <Card key={course.id} className="relative overflow-visible">
+                                {/*Absolute Dropdown*/}
+                                <div className="absolute top-2 right-2 z-30">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="secondary" size="icon">
+                                                <MoreVertical className="size-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="w-48">
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/`} >
+                                                    <Pencil className="size-4 mr-2" />
+                                                    Edit Course
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/`}>
+                                                    <Eye className="size-4 mr-2" />
+                                                    Preview
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/`}>
+                                                    <Trash2 className="size-4 mr-2" />
+                                                    Delete
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                {/* Thumbnail (flush to top and sides, no rounded corners) */}
+                                <div className="h-40 w-full overflow-hidden bg-muted">
                                     <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
                                 </div>
 
