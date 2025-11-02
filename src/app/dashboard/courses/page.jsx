@@ -3,20 +3,13 @@ import { getSignedUrl } from '@/utils/adminStorage'
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import Link from "next/link";
 import {
-    Clock, ArrowRight, MoreVertical, Pencil, Eye, Trash2
+    Clock, ArrowRight
 } from 'lucide-react'
 import CourseFilters from '@/components/CourseFilters'
 import Pagination from '@/components/Pagination'
+import CourseActions from '@/components/CourseActions'
 
 async function getCourses({ page = 1, pageSize = 5, category } = {}) {
     const where = {};
@@ -108,34 +101,7 @@ export default async function CoursesPage({ searchParams }) {
                             <Card key={course.id} className="relative overflow-visible">
                                 {/*Absolute Dropdown*/}
                                 <div className="absolute top-2 right-2 z-30">
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="secondary" size="icon">
-                                                <MoreVertical className="size-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48">
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/`} >
-                                                    <Pencil className="size-4 mr-2" />
-                                                    Edit Course
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/`}>
-                                                    <Eye className="size-4 mr-2" />
-                                                    Preview
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuSeparator />
-                                            <DropdownMenuItem asChild>
-                                                <Link href={`/`}>
-                                                    <Trash2 className="size-4 mr-2" />
-                                                    Delete
-                                                </Link>
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <CourseActions courseId={course.id} />
                                 </div>
                                 {/* Thumbnail (flush to top and sides, no rounded corners) */}
                                 <div className="h-40 w-full overflow-hidden bg-muted">
