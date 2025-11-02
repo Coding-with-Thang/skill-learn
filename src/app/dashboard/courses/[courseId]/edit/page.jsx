@@ -32,6 +32,7 @@ import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@/components/file-uploader/Uploader";
 import { toast } from "sonner";
 import axios from "axios";
+import { useCoursesStore } from '@/store/coursesStore'
 
 export default function EditCoursePage() {
     const params = useParams();
@@ -41,6 +42,10 @@ export default function EditCoursePage() {
     const [courseLoading, setCourseLoading] = useState(true);
     const [pending, startTransition] = useTransition();
     const router = useRouter();
+    // Read preview from client store early so fetchCourse can prefer it
+    const previewImageUrl = useCoursesStore((s) => s.previewImageUrl)
+    const setPreviewImageUrl = useCoursesStore((s) => s.setPreviewImageUrl)
+    const setSelectedCourseId = useCoursesStore((s) => s.setSelectedCourseId)
 
     const form = useForm({
         resolver: zodResolver(courseSchema),
@@ -78,16 +83,17 @@ export default function EditCoursePage() {
     useEffect(() => {
         const fetchCourse = async () => {
             if (!courseId) return;
-            
+
             try {
                 const response = await axios.get(`/api/admin/courses/${courseId}`);
                 const course = response.data;
-                
+
                 if (course) {
                     form.reset({
                         title: course.title || "",
                         description: course.description || "",
-                        imageUrl: "", // We'll get this from fileKey via getSignedUrl if needed
+                        // Prefer any client-side preview (set when clicking Edit) so preview doesn't flash
+                        imageUrl: previewImageUrl || course.imageUrl || "",
                         fileKey: course.fileKey || "",
                         category: course.categoryId || "",
                         duration: course.duration || 1,
@@ -95,6 +101,10 @@ export default function EditCoursePage() {
                         excerptDescription: course.excerptDescription || "",
                         slug: course.slug || "",
                     });
+                    // If we have a preview from the client store, ensure uploader sees it
+                    if (previewImageUrl) {
+                        form.setValue('imageUrl', previewImageUrl, { shouldValidate: true })
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching course:', error);
@@ -108,11 +118,39 @@ export default function EditCoursePage() {
         fetchCourse();
     }, [courseId, form, router]);
 
+    // If there's a preview image URL stored in the client store (set when clicking Edit), prefer that
+    useEffect(() => {
+        if (previewImageUrl) {
+            // prefer the client-side preview over server-supplied imageUrl so preview shows instantly
+            form.setValue('imageUrl', previewImageUrl, { shouldValidate: true })
+        }
+    }, [previewImageUrl, form])
+
+    // Clear preview/selection on unmount to avoid stale preview on next edit
+    useEffect(() => {
+        return () => {
+            try {
+                setPreviewImageUrl(null)
+                setSelectedCourseId(null)
+            } catch (e) {
+                // noop
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     const onSubmit = (values) => {
         startTransition(async () => {
             try {
                 const data = await axios.put(`/api/admin/courses/${courseId}`, values);
                 if (data?.data?.status === 'success') {
+                    // clear any client-side preview/selection before navigating away
+                    try {
+                        setPreviewImageUrl(null)
+                        setSelectedCourseId(null)
+                    } catch (e) {
+                        // noop
+                    }
                     toast.success('Course updated successfully');
                     router.push('/dashboard/courses');
                 } else if (data?.data?.status === 'error') {
@@ -239,7 +277,7 @@ export default function EditCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Description</FormLabel>
                                         <FormControl>
-                                            <RichTextEditor field={field} />
+                                            <RichTextEditor field={field} editorClass="text-xs" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -291,7 +329,10 @@ export default function EditCoursePage() {
                                         name="duration"
                                         render={({ field }) => (
                                             <FormItem className="full-w">
-                                                <FormLabel>Duration (minutes)</FormLabel>
+                                                <FormLabel className="flex gap-1">
+                                                    <Clock className="ml-2 text-muted-foreground" size={18} />
+                                                    Duration (minutes)
+                                                </FormLabel>
                                                 <FormControl>
                                                     <div className="flex items-center">
                                                         <Input
@@ -303,7 +344,6 @@ export default function EditCoursePage() {
                                                             onChange={(e) => field.onChange(Number(e.target.value))}
                                                             placeholder="e.g. 30"
                                                         />
-                                                        <Clock className="ml-2 text-muted-foreground" size={18} />
                                                     </div>
                                                 </FormControl>
                                                 <p className="text-sm text-muted-foreground mt-1">Estimated duration in minutes.</p>
@@ -339,7 +379,7 @@ export default function EditCoursePage() {
                                             )} />
                                     </div>
 
-                                    <div className="pt-4">
+                                    <div>
                                         <Button type="submit" disabled={pending} className="w-full">
                                             {pending ?
                                                 (
@@ -349,7 +389,7 @@ export default function EditCoursePage() {
                                                     </>
                                                 ) : (
                                                     <>
-                                                        Save Changes <Save className="ml-1" size={16} />
+                                                        Save
                                                     </>
                                                 )}
                                         </Button>

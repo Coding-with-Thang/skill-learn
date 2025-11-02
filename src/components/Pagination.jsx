@@ -1,10 +1,21 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Pagination as UIPagination, PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination'
 import { buttonVariants } from '@/components/ui/button'
+import { useCoursesStore } from '@/store/coursesStore'
 
 export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5', currentPage = 1, totalPages = 1 }) {
+    const storeCurrent = useCoursesStore((s) => s.currentPage)
+    const setCurrentPage = useCoursesStore((s) => s.setCurrentPage)
+
+    // Hydrate store current page from server prop on mount
+    useEffect(() => {
+        if (currentPage && currentPage !== storeCurrent) setCurrentPage(currentPage)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
     function getPageList(curr, total) {
         if (total <= 9) return Array.from({ length: total }, (_, i) => i + 1)
 
@@ -34,7 +45,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                 {currentPage > 1 ? (
                     <PaginationItem>
                         <PaginationLink asChild href={`${baseHref}&page=${currentPage - 1}`}>
-                            <Link href={`${baseHref}&page=${currentPage - 1}`} className={buttonVariants({ variant: 'outline', size: 'default' })}>
+                            <Link href={`${baseHref}&page=${currentPage - 1}`} onClick={() => setCurrentPage(currentPage - 1)} className={buttonVariants({ variant: 'outline', size: 'default' })}>
                                 <ChevronLeftIcon />
                                 <span className="hidden sm:block">Previous</span>
                             </Link>
@@ -55,7 +66,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                     ) : (
                         <PaginationItem key={p}>
                             <PaginationLink asChild isActive={p === currentPage}>
-                                <Link href={`${baseHref}&page=${p}`} className="px-3 py-1 rounded-md border text-sm hover:bg-accent">{p}</Link>
+                                <Link href={`${baseHref}&page=${p}`} onClick={() => setCurrentPage(p)} className="px-3 py-1 rounded-md border text-sm hover:bg-accent">{p}</Link>
                             </PaginationLink>
                         </PaginationItem>
                     )
@@ -65,7 +76,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                 {currentPage < totalPages ? (
                     <PaginationItem>
                         <PaginationLink asChild href={`${baseHref}&page=${currentPage + 1}`}>
-                            <Link href={`${baseHref}&page=${currentPage + 1}`} className={buttonVariants({ size: 'default' })}>
+                            <Link href={`${baseHref}&page=${currentPage + 1}`} onClick={() => setCurrentPage(currentPage + 1)} className={buttonVariants({ size: 'default' })}>
                                 <span className="hidden sm:block">Next</span>
                                 <ChevronRightIcon />
                             </Link>

@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
+import CourseEditLink from '@/components/CourseEditLink'
 import {
     Clock, ArrowRight
 } from 'lucide-react'
@@ -138,11 +139,11 @@ export default async function CoursesPage({ searchParams }) {
                                     </div>
 
                                     <div className="mt-3">
-                                        <Link href={`/dashboard/courses/${course.id}/edit`} className={buttonVariants({
+                                        <CourseEditLink courseId={course.id} href={`/dashboard/courses/${course.id}/edit`} previewUrl={course.thumbnailUrl} className={buttonVariants({
                                             className: "w-full justify-center mt-4",
                                         })}>
                                             Edit Course <ArrowRight className="ml-2" />
-                                        </Link>
+                                        </CourseEditLink>
                                     </div>
                                 </CardContent>
                             </Card>

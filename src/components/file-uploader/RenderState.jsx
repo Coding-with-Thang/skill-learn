@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button"
 import { CloudUpload, FileImage, X, Loader2 } from 'lucide-react';
-import Image from 'next/image';
 
 export function RenderEmptyState({ isDragActive }) {
   return (
@@ -38,13 +37,8 @@ export function RenderErrorState() {
 
 export function RenderUploadedState({ previewUrl, onDelete, isDeleting }) {
   return (
-    <div>
-      <Image
-        src={previewUrl}
-        alt="Uploaded File"
-        fill
-        className="object-contain p-2"
-      />
+    <div className="relative w-full h-64">
+      <img src={previewUrl} alt="Uploaded File" className="object-contain p-2 w-full h-full" />
       <Button
         variant="destructive"
         size="icon"

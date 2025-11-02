@@ -202,7 +202,7 @@ export default function CreateCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Description</FormLabel>
                                         <FormControl>
-                                            <RichTextEditor field={field} />
+                                            <RichTextEditor field={field} editorClass="text-xs" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

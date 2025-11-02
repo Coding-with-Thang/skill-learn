@@ -2,6 +2,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { courseSchema } from "@/lib/zodSchemas";
+import { getSignedUrl } from "@/utils/adminStorage";
 
 // Get a specific course
 export async function GET(request, { params }) {
@@ -44,7 +45,18 @@ export async function GET(request, { params }) {
             );
         }
 
-        return NextResponse.json(course);
+        // If the course has a fileKey (uploaded image), generate a signed URL for client preview
+        let imageUrl = null;
+        try {
+            if (course?.fileKey) {
+                imageUrl = await getSignedUrl(course.fileKey, 7);
+            }
+        } catch (err) {
+            console.warn('Failed to generate signed URL for course image:', err?.message || err);
+        }
+
+        // Return course with optional imageUrl for client-side preview
+        return NextResponse.json({ ...course, imageUrl });
     } catch (error) {
         console.error("Error fetching course:", error);
         return NextResponse.json(
