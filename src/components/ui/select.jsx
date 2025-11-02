@@ -59,6 +59,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
         "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
       )}
+      style={{ backgroundColor: "var(--card)" }}
       position={position}
       {...props}>
       <SelectScrollUpButton />

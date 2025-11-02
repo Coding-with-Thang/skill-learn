@@ -1,11 +1,7 @@
-/* Use a relative path for CSS import so Vite/Next can resolve it correctly */
 @import "./themes.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "tw-animate-css";
-
-/* Remove unsupported custom at-rules and use Tailwind best practices for theming */
-/* Theming is now handled via CSS variables and Tailwind config. */
 
 :root {
   /* Base Colors */
@@ -239,6 +235,16 @@
     background-color: var(--background);
     color: var(--foreground);
     transition: var(--transition-normal);
+  }
+
+  .bg-card {
+    background-color: var(--card) !important;
+  }
+  .bg-background {
+    background-color: var(--background) !important;
+  }
+  .bg-popover {
+    background-color: var(--popover) !important;
   }
 }
 

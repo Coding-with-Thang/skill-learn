@@ -23,6 +23,7 @@ const InteractiveCard = React.forwardRef(({
       variant === "bordered" && "border-2 hover:border-primary",
       className
     )}
+    style={{ backgroundColor: "var(--card)" }}
     {...props}
   >
     {children}

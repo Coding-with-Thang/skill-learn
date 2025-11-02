@@ -26,6 +26,7 @@ const HoverCardContent = React.forwardRef(({
       "transition-all duration-200",
       className
     )}
+    style={{ backgroundColor: "var(--popover)" }}
     {...props}
   />
 ))
