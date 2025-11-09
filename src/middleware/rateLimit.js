@@ -1,18 +1,9 @@
-"use server";
-
 // Simple in-memory rate limiter with sliding window
+// Note: This runs in Edge runtime (middleware), so we cannot use setInterval
+// Cleanup happens automatically when checking requests (lazy cleanup)
+// For production, consider using a shared cache like Redis or Upstash
 const requests = new Map();
 const CLEANUP_INTERVAL = 15 * 60 * 1000; // 15 minutes
-
-// Cleanup old entries periodically
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, value] of requests.entries()) {
-    if (now - value.timestamp >= CLEANUP_INTERVAL) {
-      requests.delete(key);
-    }
-  }
-}, CLEANUP_INTERVAL);
 
 export const rateLimiter = async (ip, options = {}) => {
   const {
@@ -22,13 +13,25 @@ export const rateLimiter = async (ip, options = {}) => {
 
   const now = Date.now();
   const key = ip;
-  const record = requests.get(key) || {
-    count: 0,
-    timestamp: now,
-    history: [], // Keep track of request timestamps
-  };
+  let record = requests.get(key);
 
-  // Clean up old requests from history
+  // Cleanup: Remove old entries that are beyond the cleanup interval
+  // This is a lazy cleanup that happens during request processing
+  if (record && now - record.timestamp >= CLEANUP_INTERVAL) {
+    requests.delete(key);
+    record = null;
+  }
+
+  // Initialize record if it doesn't exist
+  if (!record) {
+    record = {
+      count: 0,
+      timestamp: now,
+      history: [], // Keep track of request timestamps
+    };
+  }
+
+  // Clean up old requests from history (sliding window)
   record.history = record.history.filter((time) => now - time < windowMs);
 
   // Add current request

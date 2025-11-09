@@ -15,12 +15,15 @@ export default function SignUpPage() {
         aria-label="Hero banner"
       />
 
-      {/* Sign In Form */}
-      <div className="flex flex-1 flex-col justify-center items-center py-12 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          {/* Keyed by theme to force remount on theme change */}
-          <SignUp key={theme} appearance={{ baseTheme: theme === 'dark' ? dark : light }} />
-        </div>
+      {/* Sign Up Form */}
+      <div className="w-1/2 flex justify-center items-center px-8 py-12 bg-white shadow-md">
+        <SignUp 
+          routing="path"
+          path="/sign-up"
+          signInUrl="/sign-in"
+          afterSignInUrl="/home"
+          afterSignUpUrl="/home"
+        />
       </div>
     </div>
   )

@@ -16,11 +16,14 @@ export default function SignInPage() {
       />
 
       {/* Sign In Form */}
-      <div className="flex flex-1 flex-col justify-center items-center py-12 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          {/* Keyed by theme to force remount on theme change */}
-          <SignIn key={theme} appearance={{ baseTheme: theme === 'dark' ? dark : light }} />
-        </div>
+      <div className="w-1/2 flex justify-center items-center px-8 py-12 bg-white shadow-md">
+        <SignIn
+          routing="path"
+          path="/sign-in"
+          signUpUrl="/sign-up"
+          afterSignInUrl="/home"
+          afterSignUpUrl="/home"
+        />
       </div>
     </div>
   )
