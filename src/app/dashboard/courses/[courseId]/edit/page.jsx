@@ -329,7 +329,7 @@ export default function EditCoursePage() {
                                         name="duration"
                                         render={({ field }) => (
                                             <FormItem className="full-w">
-                                                <FormLabel className="flex gap-1">
+                                                <FormLabel className="flex align-center gap-1">
                                                     <Clock className="ml-2 text-muted-foreground" size={18} />
                                                     Duration (minutes)
                                                 </FormLabel>
