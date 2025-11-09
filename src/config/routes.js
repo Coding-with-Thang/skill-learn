@@ -1,6 +1,7 @@
 // Define protected routes that require authentication
 export const protectedRoutes = [
   // Page routes
+  "/home", // User home page (authenticated dashboard)
   "/dashboard(.*)", // All dashboard routes
   "/quiz(.*)", // All quiz routes
   "/achievements(.*)", // User achievements

@@ -8,6 +8,20 @@ const isProtectedRoute = createRouteMatcher(protectedRoutes);
 export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
+    const { pathname } = req.nextUrl;
+
+    // Handle redirects for landing page and home page
+    // Redirect authenticated users from landing page (/) to home page (/home)
+    if (userId && pathname === '/') {
+      const homeUrl = new URL('/home', req.url);
+      return NextResponse.redirect(homeUrl);
+    }
+
+    // Redirect unauthenticated users from home page (/home) to landing page (/)
+    if (!userId && pathname === '/home') {
+      const landingUrl = new URL('/', req.url);
+      return NextResponse.redirect(landingUrl);
+    }
 
     // Get IP address from headers (Edge runtime compatible)
     // req.ip is not available in Next.js middleware Edge runtime

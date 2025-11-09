@@ -10,7 +10,13 @@ export default function SignInPage() {
 
       {/* Sign In Form */}
       <div className="w-1/2 flex justify-center items-center px-8 py-12 bg-white shadow-md">
-        <SignIn />
+        <SignIn 
+          routing="path"
+          path="/sign-in"
+          signUpUrl="/sign-up"
+          afterSignInUrl="/home"
+          afterSignUpUrl="/home"
+        />
       </div>
     </div>
   )
