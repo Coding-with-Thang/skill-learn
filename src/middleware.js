@@ -2,7 +2,6 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/middleware/rateLimit";
 import { protectedRoutes, rateLimits } from "@/config/routes";
-import { auditActions } from "@/utils/auditLogger";
 
 const isProtectedRoute = createRouteMatcher(protectedRoutes);
 
@@ -10,11 +9,18 @@ export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
 
+    // Get IP address from headers (Edge runtime compatible)
+    // req.ip is not available in Next.js middleware Edge runtime
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const ip = forwardedFor?.split(",")[0]?.trim() || 
+               req.headers.get("x-real-ip") || 
+               "unknown";
+
     // Apply rate limiting based on route type
     const rateLimit = isProtectedRoute(req)
       ? rateLimits.protected
       : rateLimits.public;
-    const rateLimitResult = await rateLimiter(req.ip, rateLimit);
+    const rateLimitResult = await rateLimiter(ip, rateLimit);
 
     if (!rateLimitResult.success) {
       return new NextResponse(
@@ -56,42 +62,10 @@ export default clerkMiddleware(async (auth, req) => {
   }
 });
 
-export function withAudit(handler, options = {}) {
-  return async (req, res) => {
-    const startTime = Date.now();
+// Note: withAudit function has been moved to src/utils/withAudit.js
+// It cannot be in middleware because it uses Prisma (Node.js runtime only)
+// Use it in API routes instead
 
-    try {
-      // Execute the original handler
-      const result = await handler(req, res);
-
-      // Log successful actions if configured
-      if (options.logSuccess && req.user?.id) {
-        const duration = Date.now() - startTime;
-        await logAuditEvent(
-          req.user.id,
-          options.action || req.method.toLowerCase(),
-          options.resource || "api",
-          options.resourceId,
-          `API call: ${req.url} (${duration}ms)`
-        );
-      }
-
-      return result;
-    } catch (error) {
-      // Log failed actions
-      if (options.logErrors && req.user?.id) {
-        await logAuditEvent(
-          req.user.id,
-          "error",
-          options.resource || "api",
-          options.resourceId,
-          `API error: ${req.url} - ${error.message}`
-        );
-      }
-      throw error;
-    }
-  };
-}
 export const config = {
   matcher: [
     //Skip Next.js internals and all static files, unless found in search params
