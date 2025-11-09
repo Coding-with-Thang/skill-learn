@@ -3,13 +3,10 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeroSection from "./components/User/Landing/HeroSection";
-import BuiltForEveryone from './components/User/Landing/BuiltForEveryone';
-import VersatilePlatform from './components/User/Landing/VersatilePlatform';
-import EndlessVariety from './components/User/Landing/EndlessVariety';
-import SkillLearnHere from './components/User/Landing/SkillLearnHere';
-import FAQ from './components/User/Landing/FAQ';
-import Testimonials from './components/User/Landing/Testimonials';
+import HeroBanner from "./HeroBanner";
+import Features from './Features';
+import HowItWorks from './HowItWorks';
+import Testimonials from './Testimonials';
 import { LoadingPage } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 
@@ -66,14 +63,21 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="w-full">
-      {renderSection(HeroSection)}
-      {renderSection(BuiltForEveryone)}
-      {renderSection(VersatilePlatform)}
-      {renderSection(EndlessVariety)}
-      {renderSection(SkillLearnHere)}
-      {renderSection(FAQ)}
-      {renderSection(Testimonials)}
-    </main>
+    <>
+      {/* Hero Section */}
+      <section className="w-screen mb-4 overflow-x-hidden">
+        {renderSection(HeroBanner)}
+      </section>
+
+      {/* Main Content */}
+      <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 min-h-[80dvh] flex flex-col gap-8">
+        <section className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-6 px-2 sm:px-4 md:px-8">
+          {renderSection(Features)}
+          {renderSection(HowItWorks)}
+          {renderSection(Testimonials)}
+        </section>
+      </main>
+    </>
   );
 }
+

@@ -2,8 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
-import Header from "./components/Header";
-import FooterWrapper from "./components/FooterWrapper";
+import LayoutWrapper from "./components/LayoutWrapper";
 import "./globals.css";
 
 export const metadata = {
@@ -24,10 +23,10 @@ export default function RootLayout({ children }) {
         </head>
         <body className="flex flex-col min-h-screen">
           <ErrorBoundaryProvider>
-            <Header />
-            {children}
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
             <Toaster />
-            <FooterWrapper />
           </ErrorBoundaryProvider>
         </body>
       </html>
