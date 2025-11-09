@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { useState } from "react";
-import courses from "../../../../../../public/courses.png";
-import games from "../../../../../../public/games.png";
-import redeemRewards from "../../../../../../public/redeem-rewards.png";
+import courses from "../../../../../public/courses.png";
+import games from "../../../../../public/games.png";
+import redeemRewards from "../../../../../public/redeem-rewards.png";
 
 export default function HowItWorks() {
   const [enlarged, setEnlarged] = useState(null);
@@ -27,7 +27,10 @@ export default function HowItWorks() {
     },
   ];
   return (
-    <section id="how-it-works" className="py-12 w-full flex flex-col items-center bg-white">
+    <section
+      id="how-it-works"
+      className="py-12 w-full flex flex-col items-center bg-white"
+    >
       <h2 className="text-2xl md:text-3xl font-semibold mb-12 text-[#155d59] text-center">
         How It Works
       </h2>
@@ -102,4 +105,3 @@ export default function HowItWorks() {
     </section>
   );
 }
-
