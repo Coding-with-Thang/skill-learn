@@ -67,7 +67,7 @@ export default function RockPaperScissors() {
           <Button
             key={choice}
             onClick={() => playGame(choice)}
-            className="px-4 py-2 bg-blue-500 text-white rounded"
+            className="px-4 py-2 bg-primary text-primary-foreground rounded"
             disabled={playerChoice !== null} // Disable buttons after a choice is made
           >
             {choice}
@@ -85,7 +85,7 @@ export default function RockPaperScissors() {
       <div className="my-6 flex justify-center items-center">
         <Button
           onClick={() => resetGame()}
-          className="px-4 py-2 bg-gray-900 text-white rounded"
+          className="px-4 py-2 bg-secondary text-secondary-foreground rounded"
 
         >
           New Game

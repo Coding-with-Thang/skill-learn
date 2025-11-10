@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -16,8 +16,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto text-center">
         <p>Copyright &copy; 2025 - All rights reserved by Skill-Learn.ca</p>
         <div className="mt-4 space-x-6">
-          <a href="#" className="hover:text-gray-400">Privacy Policy</a>
-          <a href="#" className="hover:text-gray-400">Terms of Service</a>
+          <Link href="/legal/privacy-policy" className="hover:text-gray-400">Privacy Policy</Link>
+          <Link href="/legal/terms-of-condition" className="hover:text-gray-400">Terms of Service</Link>
         </div>
       </div>
     </footer>

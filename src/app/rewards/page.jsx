@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
-import { Circle, Ellipsis, Gift, Check } from "lucide-react"
+import { EnhancedButton } from "@/components/ui/enhanced-button"
+import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader, InteractiveCardFooter } from "@/components/ui/interactive-card"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { AnimatedProgress } from "@/components/ui/animated-progress"
+import { Circle, Ellipsis, Gift, Check, Star, Coins, Clock } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { usePointsStore } from "@/app/store/pointsStore"
 import { toast } from "sonner"
@@ -29,7 +31,7 @@ import Loader from "../components/loader"
 
 // Sub-components
 const PageHeader = () => (
-  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[220px] h-[220px] sm:h-[300px] bg-gradient-to-br from-green-400 to-yellow-200 text-white relative overflow-hidden">
+  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[220px] h-[220px] sm:h-[300px] bg-gradient-to-br from-game-primary to-game-secondary text-primary-foreground relative overflow-hidden">
     <Image
       src={Gifts}
       height={180}
@@ -39,7 +41,7 @@ const PageHeader = () => (
       priority
     />
     <h1 className="text-3xl sm:text-6xl font-bold mb-2 drop-shadow-lg text-center z-10">Get Rewards</h1>
-    <h2 className="text-lg sm:text-2xl font-bold text-green-100 uppercase tracking-wide text-center z-10">
+    <h2 className="text-lg sm:text-2xl font-bold text-primary-foreground/80 uppercase tracking-wide text-center z-10">
       Earn points to unlock and redeem rewards from a wide variety of choices!
     </h2>
   </div>
@@ -47,48 +49,55 @@ const PageHeader = () => (
 
 const PointsBalance = ({ points }) => (
   <section className="w-full max-w-4xl mx-auto my-8 px-2 sm:px-4">
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Your Points Balance</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 sm:p-6 rounded-xl border border-yellow-200">
-        <div className="bg-yellow-500 rounded-full p-3 mb-2 sm:mb-0">
-          <span className="text-3xl sm:text-4xl">⭐</span>
+    <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">Your Points Balance</h2>
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-points-primary to-points-secondary p-4 sm:p-6 rounded-xl border border-accent">
+        <div className="bg-accent rounded-full p-3 mb-2 sm:mb-0 animate-pulse">
+          <Star className="text-3xl sm:text-4xl" />
         </div>
         <div className="flex flex-col items-center sm:items-start">
-          <span className="text-4xl sm:text-5xl font-bold text-gray-900">
+          <span className="text-4xl sm:text-5xl font-bold text-foreground">
             {new Intl.NumberFormat('en-US').format(points || 0)}
           </span>
-          <span className="text-gray-600 text-base sm:text-lg">Available Points</span>
+          <span className="text-muted-foreground text-base sm:text-lg">Available Points</span>
         </div>
       </div>
-    </div>
+    </InteractiveCard>
   </section>
 )
 
 const DailyStreak = () => (
   <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-    <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-      <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Daily Streak</h2>
+    <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Daily Streak</h2>
       <div className="flex flex-col sm:flex-row gap-6 items-center justify-between">
         <div className="flex flex-col items-center">
-          <div className="rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 p-1">
-            <div className="bg-white rounded-full p-4">
+          <div className="rounded-full bg-gradient-to-r from-accent to-accent-hover p-1 animate-pulse">
+            <div className="bg-card rounded-full p-4">
               <span className="text-4xl sm:text-5xl font-bold">0</span>
             </div>
           </div>
-          <p className="mt-2 font-medium text-gray-600">Current Streak</p>
+          <p className="mt-2 font-medium text-muted-foreground">Current Streak</p>
         </div>
         <div className="flex-1 max-w-md">
           <div className="flex gap-2 sm:gap-4 justify-center mb-3">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-center">
-                <Circle className="text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
-                {i < 6 && <Ellipsis className="text-gray-300 w-4 h-4 sm:w-5 sm:h-5" />}
+                <Circle className="text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
+                {i < 6 && <Ellipsis className="text-muted-foreground/50 w-4 h-4 sm:w-5 sm:h-5" />}
               </div>
             ))}
           </div>
-          <p className="text-gray-600 text-center sm:text-left">
+          <p className="text-muted-foreground text-center sm:text-left">
             Nice work! <strong>5 days away</strong> from unlocking your 500-point bonus.
           </p>
+          <AnimatedProgress
+            value={0}
+            max={7}
+            variant="success"
+            className="mt-4"
+            showLabel={false}
+          />
         </div>
         <div className="flex flex-col items-center mt-4 sm:mt-0">
           <Image
@@ -96,55 +105,78 @@ const DailyStreak = () => (
             width={60}
             height={60}
             alt="Streak bonus chest"
-            className="drop-shadow-md w-14 h-14 sm:w-20 sm:h-20"
+            className="drop-shadow-md w-14 h-14 sm:w-20 sm:h-20 hover:scale-110 transition-transform duration-200"
           />
-          <span className="mt-2 font-medium text-gray-600">Streak Bonus</span>
+          <span className="mt-2 font-medium text-muted-foreground">Streak Bonus</span>
         </div>
       </div>
-    </div>
+    </InteractiveCard>
   </section>
 )
 
 const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
-  <Card className="w-full max-w-xs sm:max-w-sm transition-transform hover:scale-105 mx-auto">
-    <CardHeader className="p-0">
-      <div className="relative h-40 sm:h-48 w-full">
-        <Image
-          src={reward.imageUrl}
-          fill
-          style={{ objectFit: 'cover' }}
-          alt={reward.prize}
-          className="rounded-t-lg"
-        />
-        <div className="absolute top-2 right-2 bg-black/70 text-white px-3 py-1 rounded-full text-sm sm:text-base">
-          <span className="text-yellow-400 mr-1">⭐</span>
-          {new Intl.NumberFormat('en-US').format(reward.cost)}
+  <HoverCard>
+    <HoverCardTrigger asChild>
+      <InteractiveCard className="w-full max-w-xs sm:max-w-sm transition-transform hover:scale-105 mx-auto">
+        <InteractiveCardHeader className="p-0">
+          <div className="relative h-40 sm:h-48 w-full">
+            <Image
+              src={reward.imageUrl}
+              fill
+              style={{ objectFit: 'cover' }}
+              alt={reward.prize}
+              className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute top-2 right-2 bg-card/70 text-card-foreground px-3 py-1 rounded-full text-sm sm:text-base backdrop-blur-sm">
+              <Star className="text-accent mr-1 inline" />
+              {new Intl.NumberFormat('en-US').format(reward.cost)}
+            </div>
+          </div>
+        </InteractiveCardHeader>
+        <InteractiveCardContent className="p-4 sm:p-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">{reward.prize}</h3>
+          <p className="text-muted-foreground text-sm sm:text-base">{reward.description}</p>
+        </InteractiveCardContent>
+        <InteractiveCardFooter className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <EnhancedButton
+            className="w-full font-medium"
+            onClick={() => onRedeem(reward)}
+            disabled={disabled || isLoading}
+            variant={disabled ? "secondary" : "default"}
+            loading={isLoading}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin">⭐</span> Redeeming...
+              </span>
+            ) : disabled ? (
+              "Insufficient Points"
+            ) : (
+              "Redeem"
+            )}
+          </EnhancedButton>
+        </InteractiveCardFooter>
+      </InteractiveCard>
+    </HoverCardTrigger>
+    <HoverCardContent className="w-80">
+      <div className="space-y-2">
+        <h4 className="font-semibold text-foreground">{reward.prize}</h4>
+        <p className="text-sm text-muted-foreground">{reward.description}</p>
+        <div className="flex items-center gap-4 pt-2">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Coins className="h-4 w-4" />
+            <span>{new Intl.NumberFormat('en-US').format(reward.cost)} points</span>
+          </div>
+          {reward.featured && (
+            <div className="flex items-center gap-1 text-sm text-warning">
+              <Star className="h-4 w-4" />
+              <span>Featured</span>
+            </div>
+          )}
         </div>
       </div>
-    </CardHeader>
-    <CardContent className="p-4 sm:p-6">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{reward.prize}</h3>
-      <p className="text-gray-600 text-sm sm:text-base">{reward.description}</p>
-    </CardContent>
-    <CardFooter className="p-4 pt-0 sm:p-6 sm:pt-0">
-      <Button
-        className="w-full font-medium"
-        onClick={() => onRedeem(reward)}
-        disabled={disabled || isLoading}
-        variant={disabled ? "secondary" : "default"}
-      >
-        {isLoading ? (
-          <span className="flex items-center gap-2">
-            <span className="animate-spin">⭐</span> Redeeming...
-          </span>
-        ) : disabled ? (
-          "Insufficient Points"
-        ) : (
-          "Redeem"
-        )}
-      </Button>
-    </CardFooter>
-  </Card>
+    </HoverCardContent>
+  </HoverCard>
 )
 
 const ClaimButton = ({ redemption, onClaim }) => {
@@ -166,7 +198,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
   if (redemption.claimed) {
     return (
       <div className="flex flex-col gap-2">
-        <span className="text-green-600 flex items-center gap-1">
+        <span className="text-success flex items-center gap-1">
           <Check size={16} />
           Claimed
         </span>
@@ -179,23 +211,24 @@ const ClaimButton = ({ redemption, onClaim }) => {
 
   if (!redemption.redeemed) {
     return (
-      <span className="text-yellow-600 flex items-center gap-1">
-        <Circle size={16} className="fill-yellow-600" />
+      <span className="text-warning flex items-center gap-1">
+        <Circle size={16} className="fill-warning" />
         Pending
       </span>
     )
   }
 
   return (
-    <Button
+    <EnhancedButton
       variant="outline"
       size="sm"
       onClick={handleClaim}
       disabled={claiming || redemption.claimed}
+      loading={claiming}
       className={cn(
         "relative overflow-hidden transition-all duration-300",
         claiming && "cursor-not-allowed",
-        !claiming && "hover:border-green-500 hover:text-green-600"
+        !claiming && "hover:border-success hover:text-success"
       )}
     >
       {claiming ? (
@@ -207,8 +240,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
           <Gift size={16} /> Claim Reward
         </span>
       )}
-      <span className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-green-400 to-green-600 transform origin-left scale-x-0 transition-transform group-hover:scale-x-100" />
-    </Button>
+    </EnhancedButton>
   )
 }
 
@@ -225,13 +257,13 @@ const BlurredClaimUrl = ({ url }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <span className={cn(
-        "text-blue-600 hover:text-blue-700 text-sm transition-all duration-200",
+        "text-info hover:text-info-hover text-sm transition-all duration-200",
         !isHovered && "blur-sm select-none"
       )}>
         {url}
       </span>
       {!isHovered && (
-        <span className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+        <span className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
           Hover to reveal
         </span>
       )}
@@ -248,7 +280,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
   return (
     <TableRow className={cn(
       "transition-colors",
-      latestRedemption.claimed && "bg-green-50/50"
+      latestRedemption.claimed && "bg-success/10"
     )}>
       <TableCell>
         <div className="flex items-center gap-3">
@@ -262,15 +294,15 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
           </div>
           <div>
             <p className="font-medium">{latestRedemption.reward.prize}</p>
-            <p className="text-sm text-gray-500">{latestRedemption.reward.description}</p>
+            <p className="text-sm text-muted-foreground">{latestRedemption.reward.description}</p>
             {totalRedemptions > 1 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-sm text-blue-600 hover:text-blue-700 mt-1 flex items-center gap-1"
+                className="text-sm text-info hover:text-info-hover mt-1 flex items-center gap-1 transition-colors duration-200"
               >
                 {isExpanded ? "Hide" : "Show"} all {totalRedemptions} redemptions
                 {unclaimedCount > 0 && !isExpanded && (
-                  <span className="text-yellow-600">
+                  <span className="text-warning">
                     ({unclaimedCount} unclaimed)
                   </span>
                 )}
@@ -281,7 +313,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
       </TableCell>
       <TableCell>
         <span className="flex items-center gap-1">
-          <span className="text-yellow-500">⭐</span>
+          <span className="text-warning">⭐</span>
           {latestRedemption.pointsSpent.toLocaleString()}
         </span>
       </TableCell>
@@ -294,7 +326,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
         ) : (
           <div className="flex flex-col gap-3">
             {redemptions.map((redemption) => (
-              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b last:border-0">
+              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0">
                 <ClaimButton
                   redemption={redemption}
                   onClaim={onClaimReward}
@@ -319,13 +351,13 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
   if (!rewardHistory.length) {
     return (
       <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-100 mb-4">
-          <Gift className="h-6 w-6 text-gray-400" />
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-4">
+          <Gift className="h-6 w-6 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900">
+        <h3 className="text-lg font-medium text-foreground">
           No Rewards Redeemed Yet
         </h3>
-        <p className="mt-1 text-gray-500">
+        <p className="mt-1 text-muted-foreground">
           Complete quizzes and earn points to redeem exciting rewards!
         </p>
       </div>
@@ -433,7 +465,7 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <PageHeader />
 
       <main className="container mx-auto pb-20">
@@ -444,8 +476,8 @@ export default function RewardsPage() {
             {/* Featured Reward */}
             {featuredReward && (
               <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-                <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Featured Reward</h2>
+                <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Featured Reward</h2>
                   <div className="max-w-2xl mx-auto">
                     <RewardCard
                       reward={featuredReward}
@@ -454,14 +486,14 @@ export default function RewardsPage() {
                       isLoading={redeemingRewardId === featuredReward.id}
                     />
                   </div>
-                </div>
+                </InteractiveCard>
               </section>
             )}
 
             {/* All Rewards */}
             <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">All Rewards</h2>
+              <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">All Rewards</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {rewards.map((reward) => (
                     <RewardCard
@@ -473,18 +505,18 @@ export default function RewardsPage() {
                     />
                   ))}
                 </div>
-              </div>
+              </InteractiveCard>
             </section>
 
             {/* Redemption History */}
             <section className="w-full max-w-4xl mx-auto px-2 sm:px-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Redemption History</h2>
+              <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Redemption History</h2>
                 <RedemptionHistory
                   rewardHistory={rewardHistory}
                   onClaimReward={handleClaimReward}
                 />
-              </div>
+              </InteractiveCard>
             </section>
           </div>
         </section>

@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/nextjs";
-import { auditActions } from "@/utils/auditLogger";
+// Do not import server-only code here; keep this hook client-safe
 import api from "@/utils/axios";
 
 export function useAuditLog() {

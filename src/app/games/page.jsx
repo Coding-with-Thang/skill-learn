@@ -37,7 +37,7 @@ const images = [
 
 export default function GameSelectPage() {
   return (
-    <section className="px-10 w-full pt-9 bg-gray-100">
+    <section className="px-10 w-full pt-9 bg-[var(--background)]">
       <BreadCrumbCom endtrail="Games" />
       <div className=" flex flex-col items-center justify-center p-4">
         <h2 className="my-10 text-2xl font-bold border-b-2 border-teal-500">
@@ -54,7 +54,7 @@ export default function GameSelectPage() {
                 />
                 <div className="p-4">
                   <h2 className="text-xl font-semibold">{image.alt}</h2>
-                  <p className="text-blue-200">{image.genre}</p>
+                  <p className="text-[var(--accent)]">{image.genre}</p>
                 </div>
               </Card>
             </Link>

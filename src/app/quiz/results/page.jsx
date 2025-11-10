@@ -91,7 +91,7 @@ export default function ResultsPage() {
   if (error) {
     return (
       <div className="py-8 px-4 sm:px-8 md:px-12 max-w-2xl mx-auto text-center">
-        <h1 className="text-2xl font-bold text-red-500">Error loading results: {error}</h1>
+        <h1 className="text-2xl font-bold text-error">Error loading results: {error}</h1>
       </div>
     );
   }
@@ -100,7 +100,7 @@ export default function ResultsPage() {
   if (!results) {
     return (
       <div className="py-8 px-4 sm:px-8 md:px-12 max-w-2xl mx-auto text-center">
-        <h1 className="text-2xl font-bold">Loading results...</h1>
+        <h1 className="text-2xl font-bold text-foreground">Loading results...</h1>
       </div>
     );
   }
@@ -122,54 +122,54 @@ export default function ResultsPage() {
 
   return (
     <main className="py-[2.5rem] px-[5rem] max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold text-center mt-10 lg:mt-20">Quiz Results</h1>
+      <h1 className="text-4xl font-bold text-center mt-10 lg:mt-20 text-foreground">Quiz Results</h1>
 
       {/* Score Display */}
       <div className="mt-8 text-center">
-        <p className="text-6xl font-bold text-blue-500 mb-4">{results.score}%</p>
-        <p className="text-xl text-gray-600">
+        <p className="text-6xl font-bold text-primary mb-4">{results.score}%</p>
+        <p className="text-xl text-muted-foreground">
           {results.correctAnswers} correct out of {results.totalQuestions} questions
         </p>
-        <p className="text-2xl font-semibold mt-4 text-gray-800">{message}</p>
+        <p className="text-2xl font-semibold mt-4 text-foreground">{message}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-        <Card className="bg-white shadow-lg">
+        <Card className="bg-card shadow-lg">
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="p-3 bg-green-100 rounded-full">
-              <Trophy className="h-6 w-6 text-green-600" />
+            <div className="p-3 bg-success/20 rounded-full">
+              <Trophy className="h-6 w-6 text-success" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Points Earned</p>
-              <p className="text-xl font-bold">{new Intl.NumberFormat().format(results.pointsEarned)}</p>
+              <p className="text-sm text-muted-foreground">Points Earned</p>
+              <p className="text-xl font-bold text-foreground">{new Intl.NumberFormat().format(results.pointsEarned)}</p>
               {results.pointsBreakdown.bonus > 0 && (
-                <p className="text-sm text-green-600">+{new Intl.NumberFormat().format(results.pointsBreakdown.bonus)} bonus!</p>
+                <p className="text-sm text-success">+{new Intl.NumberFormat().format(results.pointsBreakdown.bonus)} bonus!</p>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white shadow-lg">
+        <Card className="bg-card shadow-lg">
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Clock className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-info/20 rounded-full">
+              <Clock className="h-6 w-6 text-info" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Time Taken</p>
-              <p className="text-xl font-bold">{formatTime(results.timeSpent)}</p>
+              <p className="text-sm text-muted-foreground">Time Taken</p>
+              <p className="text-xl font-bold text-foreground">{formatTime(results.timeSpent)}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white shadow-lg">
+        <Card className="bg-card shadow-lg">
           <CardContent className="flex items-center gap-4 p-6">
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Target className="h-6 w-6 text-purple-600" />
+            <div className="p-3 bg-accent/20 rounded-full">
+              <Target className="h-6 w-6 text-accent" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Status</p>
-              <p className="text-xl font-bold">
+              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-xl font-bold text-foreground">
                 {results.hasPassingRequirement
                   ? (results.hasPassed ? "Passed!" : "Not Passed")
                   : "Completed"}
@@ -181,8 +181,8 @@ export default function ResultsPage() {
 
       {/* Points Breakdown Message */}
       {results.pointsBreakdown.limited && (
-        <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-          <p className="text-yellow-800">
+        <div className="mt-6 p-4 bg-warning/10 border border-warning/20 rounded-lg text-center">
+          <p className="text-warning-foreground">
             Note: Points were limited by daily cap. Come back tomorrow for more!
           </p>
         </div>
@@ -191,12 +191,13 @@ export default function ResultsPage() {
       {/* Action Buttons */}
       <div className="flex gap-4 justify-center mt-12">
         <Button
-          className="px-8 py-6 font-bold text-lg rounded-xl bg-blue-500 hover:bg-blue-600 text-white"
+          className="px-8 py-6 font-bold text-lg rounded-xl"
           onClick={() => router.push(`/quiz/start/${selectedQuiz?.id}`)}
         >
           <Play className="mr-2" /> Try Again
         </Button>
         <Button
+          variant="outline"
           className="px-8 py-6 font-bold text-lg rounded-xl"
           onClick={() => router.push("/stats")}
         >

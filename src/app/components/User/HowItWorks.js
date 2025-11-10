@@ -27,8 +27,11 @@ export default function HowItWorks() {
     },
   ];
   return (
-    <section id="how-it-works" className="py-12 w-full flex flex-col items-center bg-white">
-      <h2 className="text-2xl md:text-3xl font-semibold mb-12 text-[#155d59] text-center">
+    <section
+      id="how-it-works"
+      className="py-12 w-full flex flex-col items-center bg-white"
+    >
+      <h2 className="text-2xl md:text-3xl font-semibold mb-12 text-primary text-center">
         How It Works
       </h2>
       <div className="flex flex-col md:flex-row md:justify-center gap-10 md:gap-12 w-full max-w-5xl">
@@ -38,7 +41,7 @@ export default function HowItWorks() {
             className="relative flex flex-col items-center bg-white rounded-2xl shadow-xl px-6 py-10 md:px-8 md:py-12 flex-1 min-w-[220px] max-w-xs mx-auto md:mx-0"
           >
             <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-10">
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#155d59] flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg border-4 border-white">
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-primary flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg border-4 border-white">
                 {index + 1}
               </div>
             </div>
@@ -59,7 +62,7 @@ export default function HowItWorks() {
                 />
               </button>
             </div>
-            <h4 className="text-[#155d59] text-xl md:text-2xl font-bold text-center mb-3">
+            <h4 className="text-primary text-xl md:text-2xl font-bold text-center mb-3">
               {step.title}
             </h4>
             <p className="text-gray-500 text-base md:text-lg text-center">
@@ -93,7 +96,7 @@ export default function HowItWorks() {
               className="w-[80vw] max-w-xs md:max-w-md lg:max-w-lg h-auto object-contain"
               priority
             />
-            <div className="mt-4 text-[#155d59] text-lg md:text-xl font-bold text-center">
+            <div className="mt-4 text-primary text-lg md:text-xl font-bold text-center">
               {steps[enlarged].title}
             </div>
           </div>

@@ -54,7 +54,7 @@ export default async function DashboardPage() {
 
       {/* Activity Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-[var(--accent)]/90">
           <CardHeader>
             <CardTitle>User Activity</CardTitle>
           </CardHeader>
@@ -62,7 +62,7 @@ export default async function DashboardPage() {
             <LineChart data={userActivity} />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-[var(--accent)]/90">
           <CardHeader>
             <CardTitle>Points Distribution</CardTitle>
           </CardHeader>
@@ -73,23 +73,23 @@ export default async function DashboardPage() {
       </div>
 
       {/* Category Performance */}
-      <Card>
+      <Card className="bg-[var(--accent)]/90">
         <CardHeader>
           <CardTitle>Category Performance</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categoryPerformance.map((category) => (
-              <div key={category.category} className="p-4 border rounded-lg">
+              <div key={category.category} className="p-4 border border-[var(--card-foreground)] rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <BookOpen className="h-4 w-4 text-muted-foreground" />
                   <h3 className="font-semibold">{category.category}</h3>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">
+                <div className="space-y-1 text-sm text-[var(--muted-foreground)]">
+                  <p>
                     Completion Rate: {category.completionRate.toFixed(1)}%
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p>
                     Average Score: {category.averageScore.toFixed(1)}%
                   </p>
                 </div>
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="bg-[var(--accent)]/90">
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>

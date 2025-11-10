@@ -132,8 +132,8 @@ const MemoryGame = () => {
       <div className="text-center mb-4">
         <h2 className="text-2xl font-bold mb-2">Memory Game</h2>
         <div className="flex justify-center gap-4 items-center mb-4">
-          <p className="text-gray-600">Moves: {moves}</p>
-          <p className={`font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-blue-500'}`}>
+          <p className="text-muted-foreground">Moves: {moves}</p>
+          <p className={`font-bold ${timeLeft <= 10 ? 'text-error' : 'text-info'}`}>
             Time: {timeLeft}s
           </p>
         </div>
@@ -165,8 +165,8 @@ const MemoryGame = () => {
             key={id}
             variant="outline"
             className={`h-24 text-4xl ${flipped.includes(id) || matched.includes(id)
-              ? 'bg-blue-100'
-              : 'bg-gray-100'
+              ? 'bg-info/20'
+              : 'bg-muted'
               }`}
             onClick={() => handleCardClick(id)}
           >

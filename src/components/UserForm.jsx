@@ -1,167 +1,130 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { generateRandomPassword } from '../utils/generatePassword'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUserStore } from "@/app/store/usersStore";
+import { toast } from "sonner";
 
-const INITIAL_FORM_STATE = {
-    username: '',
-    firstName: '',
-    lastName: '',
-    password: '',
-    manager: 'none',
-    role: 'AGENT'
-}
+export default function UserForm({ user = null, onSuccess }) {
+    const { createUser, updateUser, loading } = useUserStore();
+    const [formData, setFormData] = useState({
+        firstName: user?.firstName || "",
+        lastName: user?.lastName || "",
+        username: user?.username || "",
+        password: "",
+        role: user?.role || "USER",
+        managerId: user?.managerId || "",
+    });
+    const [error, setError] = useState("");
 
-export function UserForm({
-    onSubmit,
-    initialData = null,
-    managerList = [],
-    loading = false,
-    onCancel
-}) {
-    const [formData, setFormData] = useState(INITIAL_FORM_STATE)
-    const [error, setError] = useState(null)
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
 
-    useEffect(() => {
-        if (initialData) {
-            setFormData({
-                ...INITIAL_FORM_STATE,
-                ...initialData,
-                manager: initialData.manager || 'none'
-            })
+        try {
+            if (user) {
+                await updateUser(user.id, formData);
+                toast.success("User updated successfully!");
+            } else {
+                await createUser(formData);
+                toast.success("User created successfully!");
+            }
+            onSuccess?.();
+        } catch (error) {
+            setError(error.message || "An error occurred");
+            toast.error(error.message || "An error occurred");
         }
-    }, [initialData])
+    };
 
-    const generateUsername = (firstName, lastName) => {
-        const baseUsername = `${firstName.toLowerCase()}_${lastName.toLowerCase()}`
-        let newUsername = baseUsername
-        let suffix = 1
-
-        // Note: This should ideally check against the database for uniqueness
-        while (false) { // Replace with actual username check
-            newUsername = `${baseUsername}${suffix}`
-            suffix++
-        }
-
-        return newUsername
-    }
-
-    useEffect(() => {
-        if (formData.firstName && formData.lastName) {
-            const newUsername = generateUsername(formData.firstName, formData.lastName)
-            setFormData(prev => ({ ...prev, username: newUsername }))
-        }
-    }, [formData.firstName, formData.lastName])
-
-    const handleGeneratePassword = () => {
-        const randomPassword = generateRandomPassword()
-        setFormData(prev => ({ ...prev, password: randomPassword }))
-    }
-
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        if (!formData.firstName || !formData.lastName) {
-            setError('First name and last name are required')
-            return
-        }
-        onSubmit(formData)
-    }
-
-    const roles = ["AGENT", "MANAGER", "OPERATIONS"]
+    const handleChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium mb-1">First Name</label>
-                <Input
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1">Last Name</label>
-                <Input
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    required
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1">Username</label>
-                <Input
-                    value={formData.username}
-                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    required
-                />
-            </div>
-            {!initialData && (
-                <div>
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <div className="flex gap-2">
+        <Card className="w-full max-w-md mx-auto">
+            <CardHeader>
+                <CardTitle>{user ? "Edit User" : "Create User"}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <Label htmlFor="firstName">First Name</Label>
                         <Input
-                            type="text"
-                            value={formData.password}
-                            onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                            id="firstName"
+                            value={formData.firstName}
+                            onChange={(e) => handleChange("firstName", e.target.value)}
                             required
                         />
-                        <Button type="button" onClick={handleGeneratePassword} variant="outline">
-                            Generate
-                        </Button>
                     </div>
-                </div>
-            )}
-            <div>
-                <label className="block text-sm font-medium mb-1">Role</label>
-                <Select
-                    value={formData.role}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {roles.map((r) => (
-                            <SelectItem key={r} value={r}>
-                                {r}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div>
-                <label className="block text-sm font-medium mb-1">Manager</label>
-                <Select
-                    value={formData.manager}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, manager: value }))}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select a manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="none">No Manager</SelectItem>
-                        {managerList.map((m) => (
-                            <SelectItem key={m.value} value={m.value}>
-                                {m.label}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            {error && (
-                <div className="text-red-500 text-sm">{error}</div>
-            )}
-            <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                    Cancel
-                </Button>
-                <Button type="submit" disabled={loading}>
-                    {loading ? 'Saving...' : initialData ? 'Update' : 'Create'}
-                </Button>
-            </div>
-        </form>
-    )
+
+                    <div>
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                            id="lastName"
+                            value={formData.lastName}
+                            onChange={(e) => handleChange("lastName", e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                            id="username"
+                            value={formData.username}
+                            onChange={(e) => handleChange("username", e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            value={formData.password}
+                            onChange={(e) => handleChange("password", e.target.value)}
+                            required={!user}
+                        />
+                    </div>
+
+                    <div>
+                        <Label htmlFor="role">Role</Label>
+                        <Select value={formData.role} onValueChange={(value) => handleChange("role", value)}>
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="USER">User</SelectItem>
+                                <SelectItem value="ADMIN">Admin</SelectItem>
+                                <SelectItem value="MANAGER">Manager</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="manager"
+                            checked={formData.role === "MANAGER"}
+                            onCheckedChange={(checked) => handleChange("role", checked ? "MANAGER" : "USER")}
+                        />
+                        <Label htmlFor="manager">Manager</Label>
+                    </div>
+
+                    {error && (
+                        <div className="text-error text-sm">{error}</div>
+                    )}
+
+                    <Button type="submit" disabled={loading} className="w-full">
+                        {loading ? "Loading..." : user ? "Update User" : "Create User"}
+                    </Button>
+                </form>
+            </CardContent>
+        </Card>
+    );
 }

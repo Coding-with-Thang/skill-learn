@@ -1,3 +1,5 @@
+"use server";
+// This module is server-only because it uses Prisma
 import prisma from "@/utils/connect";
 import { AppError, ErrorType } from "@/utils/errorHandler";
 
