@@ -46,7 +46,7 @@ export default function LandingFooter() {
   };
 
   return (
-    <footer className="bg-[#155d59] text-white py-12 md:py-16">
+    <footer className="bg-[#155d59] text-white pt-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           {Object.entries(footerLinks).map(([category, links]) => (
