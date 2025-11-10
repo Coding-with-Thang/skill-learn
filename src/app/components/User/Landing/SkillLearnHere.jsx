@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function SkillLearnHere() {
   return (
-    <section className="bg-[#155d59] text-white py-16 md:py-24">
+    <section className="bg-[#192C5F] text-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - Text Content */}
@@ -14,13 +14,13 @@ export default function SkillLearnHere() {
               Skill-Learn is here
             </h2>
             <p className="text-lg leading-relaxed opacity-90">
-              Skill-Learn, the latest innovation of this platform, makes it easy for every team to work better, make mistakes before they count, and gain insights into product specific knowledge and industry best practices. Tap into the most powerful work management solution without reconflicts and experience configurable full scalability and ease of use - all at once.
+              Skill-Learn - the latest innovation of our platform, makes it easy for every team to work better, make mistakes before they count, and gain insights into product specific knowledge and industry best practices. Tap into the most powerful work management solution without conflicts and experience configurable full scalability and ease of use - all at once.
             </p>
-            <Button 
+            <Button
               asChild
               variant="outline"
               size="lg"
-              className="border-white text-white hover:bg-white hover:text-[#155d59]"
+              className="mt-3 bg-white/0 hover:bg-white/0 hover:text-gray-400 border-[#04FF69] text-2xl text-[#04FF69]"
             >
               <Link href="/about">Learn more</Link>
             </Button>
@@ -28,7 +28,7 @@ export default function SkillLearnHere() {
 
           {/* Right Side - Image Placeholder (3D Bar Chart) */}
           <div className="bg-white/10 rounded-lg p-8 min-h-[300px] flex items-center justify-center">
-            <div className="bg-white/20 rounded-lg p-6 w-full">
+            <div className="bg-white/20 rounded-lg p-6 w-animate-pulse full">
               <h3 className="text-xl font-bold mb-6 text-center">Performance Analytics</h3>
               <div className="flex items-end justify-center gap-4 h-48">
                 <div className="flex flex-col items-center gap-2">

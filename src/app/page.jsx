@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import HeroSection from "./components/User/Landing/HeroSection";
 import BuiltForEveryone from './components/User/Landing/BuiltForEveryone';
 import VersatilePlatform from './components/User/Landing/VersatilePlatform';
-import EndlessVariety from './components/User/Landing/EndlessVariety';
 import SkillLearnHere from './components/User/Landing/SkillLearnHere';
 import FAQ from './components/User/Landing/FAQ';
 import Testimonials from './components/User/Landing/Testimonials';
@@ -70,7 +69,6 @@ export default function LandingPage() {
       {renderSection(HeroSection)}
       {renderSection(BuiltForEveryone)}
       {renderSection(VersatilePlatform)}
-      {renderSection(EndlessVariety)}
       {renderSection(SkillLearnHere)}
       {renderSection(FAQ)}
       {renderSection(Testimonials)}
