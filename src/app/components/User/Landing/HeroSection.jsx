@@ -34,7 +34,7 @@ export default function ModernHeroSection() {
           style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, #155d59 1px, transparent 0)`,
             backgroundSize: '40px 40px',
-            opacity: 0.25
+            opacity: 0.10
           }}
         ></div>
 
@@ -81,7 +81,7 @@ export default function ModernHeroSection() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          opacity: 0.08,
+          opacity: 0.05,
           backgroundImage: `
             linear-gradient(#155d59 1px, transparent 1px),
             linear-gradient(90deg, #155d59 1px, transparent 1px)
