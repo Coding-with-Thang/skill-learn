@@ -2,10 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import Header from "./Header";
-import FooterWrapper from "./FooterWrapper";
-import TopBanner from "./User/Landing/TopBanner";
-import LandingHeader from "./User/Landing/LandingHeader";
-import LandingFooter from "./User/Landing/LandingFooter";
+import Footer from "../components/Footer";
+import TopBanner from "./TopBanner";
+import LandingHeader from "./Landing/LandingHeader";
+import LandingFooter from "./Landing/LandingFooter";
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -22,7 +22,7 @@ export default function LayoutWrapper({ children }) {
         <Header />
       )}
       {children}
-      {isLandingPage ? <LandingFooter /> : <FooterWrapper />}
+      {isLandingPage ? <LandingFooter /> : <Footer />}
     </>
   );
 }

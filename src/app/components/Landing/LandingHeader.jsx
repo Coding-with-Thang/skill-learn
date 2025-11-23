@@ -23,16 +23,16 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#platform" className="text-gray-700 hover:text-[#155d59] transition-colors">
+            <Link href="#platform" className="text-gray-700 hover:text-brand-teal transition-colors">
               Platform
             </Link>
-            <Link href="#solutions" className="text-gray-700 hover:text-[#155d59] transition-colors">
+            <Link href="#solutions" className="text-gray-700 hover:text-brand-teal transition-colors">
               Solutions
             </Link>
-            <Link href="#resources" className="text-gray-700 hover:text-[#155d59] transition-colors">
+            <Link href="#resources" className="text-gray-700 hover:text-brand-teal transition-colors">
               Resources
             </Link>
-            <Link href="#pricing" className="text-gray-700 hover:text-[#155d59] transition-colors">
+            <Link href="#pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
               Pricing
             </Link>
           </nav>
@@ -45,12 +45,12 @@ export default function LandingHeader() {
                   <UserButtonWrapper />
                 </SignedIn>
                 <SignedOut>
-                  <Link href="/sign-in" className="text-gray-700 hover:text-[#155d59] transition-colors">
+                  <Link href="/sign-in" className="text-gray-700 hover:text-brand-teal transition-colors">
                     Log in
                   </Link>
-                  <Button 
-                    asChild 
-                    className="bg-[#155d59] hover:bg-[#124a47] text-white"
+                  <Button
+                    asChild
+                    className="bg-brand-teal hover:bg-brand-teal-dark text-white"
                   >
                     <Link href="/sign-up">Request a demo</Link>
                   </Button>
@@ -63,7 +63,7 @@ export default function LandingHeader() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-[#155d59] hover:bg-gray-100"
+              className="p-2 rounded-md text-gray-700 hover:text-brand-teal hover:bg-gray-100"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -79,30 +79,30 @@ export default function LandingHeader() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 py-4">
             <nav className="flex flex-col gap-4">
-              <Link 
-                href="#platform" 
-                className="text-gray-700 hover:text-[#155d59] transition-colors px-2"
+              <Link
+                href="#platform"
+                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Platform
               </Link>
-              <Link 
-                href="#solutions" 
-                className="text-gray-700 hover:text-[#155d59] transition-colors px-2"
+              <Link
+                href="#solutions"
+                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Solutions
               </Link>
-              <Link 
-                href="#resources" 
-                className="text-gray-700 hover:text-[#155d59] transition-colors px-2"
+              <Link
+                href="#resources"
+                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Resources
               </Link>
-              <Link 
-                href="#pricing" 
-                className="text-gray-700 hover:text-[#155d59] transition-colors px-2"
+              <Link
+                href="#pricing"
+                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
@@ -116,16 +116,16 @@ export default function LandingHeader() {
                       </div>
                     </SignedIn>
                     <SignedOut>
-                      <Link 
-                        href="/sign-in" 
-                        className="block text-gray-700 hover:text-[#155d59] transition-colors px-2 py-2"
+                      <Link
+                        href="/sign-in"
+                        className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Log in
                       </Link>
-                      <Button 
-                        asChild 
-                        className="w-full mt-2 bg-[#155d59] hover:bg-[#124a47] text-white"
+                      <Button
+                        asChild
+                        className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         <Link href="/sign-up">Request a demo</Link>

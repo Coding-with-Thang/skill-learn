@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function SkillLearnHere() {
   return (
-    <section className="bg-[#192C5F] text-white py-16 md:py-24">
+    <section className="bg-brand-teal text-white py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - Text Content */}
@@ -20,7 +20,7 @@ export default function SkillLearnHere() {
               asChild
               variant="outline"
               size="lg"
-              className="mt-3 bg-white/0 hover:bg-white/0 hover:text-gray-400 border-[#04FF69] text-2xl text-[#04FF69]"
+              className="mt-3 bg-white/0 hover:bg-white/0 hover:text-gray-300 border-white text-2xl text-white"
             >
               <Link href="/about">Learn more</Link>
             </Button>
@@ -28,23 +28,23 @@ export default function SkillLearnHere() {
 
           {/* Right Side - Image Placeholder (3D Bar Chart) */}
           <div className="bg-white/10 rounded-lg p-8 min-h-[300px] flex items-center justify-center">
-            <div className="bg-white/20 rounded-lg p-6 w-animate-pulse full">
+            <div className="bg-white/20 rounded-lg p-6 w-full">
               <h3 className="text-xl font-bold mb-6 text-center">Performance Analytics</h3>
               <div className="flex items-end justify-center gap-4 h-48">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 bg-blue-400 rounded-t" style={{ height: "120px" }}></div>
+                  <div className="w-12 bg-white rounded-t" style={{ height: "120px" }}></div>
                   <span className="text-sm">Q1</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 bg-purple-400 rounded-t" style={{ height: "80px" }}></div>
+                  <div className="w-12 bg-gray-400 rounded-t" style={{ height: "80px" }}></div>
                   <span className="text-sm">Q2</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 bg-blue-400 rounded-t" style={{ height: "140px" }}></div>
+                  <div className="w-12 bg-white rounded-t" style={{ height: "140px" }}></div>
                   <span className="text-sm">Q3</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 bg-purple-400 rounded-t" style={{ height: "100px" }}></div>
+                  <div className="w-12 bg-gray-400 rounded-t" style={{ height: "100px" }}></div>
                   <span className="text-sm">Q4</span>
                 </div>
               </div>
@@ -55,4 +55,3 @@ export default function SkillLearnHere() {
     </section>
   );
 }
-

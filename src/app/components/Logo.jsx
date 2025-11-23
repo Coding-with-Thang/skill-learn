@@ -11,6 +11,7 @@ export function Logo({ className, textClassName }) {
       <Image
         src={logo}
         width={48}
+        height={48}
         alt="Skill-Learn"
       />
       <h1 className={cn('font-bold text-2xl text-nowrap', textClassName)}>Skill-Learn</h1>

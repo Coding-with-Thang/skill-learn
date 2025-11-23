@@ -23,6 +23,11 @@ export default {
         xl: "var(--radius-xl)",
       },
       colors: {
+        // Brand colors
+        'brand-teal': '#155d59',
+        'brand-teal-dark': '#124a47',
+        'brand-dark-blue': '#1B1B53',
+        
         // Core semantic colors
         background: "var(--background)",
         foreground: "var(--foreground)",

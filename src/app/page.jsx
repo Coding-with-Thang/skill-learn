@@ -1,44 +1,77 @@
 "use client"
 
 import { useUser } from '@clerk/nextjs'
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import HeroSection from "./components/User/Landing/HeroSection";
-import BuiltForEveryone from './components/User/Landing/BuiltForEveryone';
-import VersatilePlatform from './components/User/Landing/VersatilePlatform';
-import SkillLearnHere from './components/User/Landing/SkillLearnHere';
-import FAQ from './components/User/Landing/FAQ';
-import Testimonials from './components/User/Landing/Testimonials';
+import HeroSection from "./components/Landing/HeroSection";
+import BuiltForEveryone from './components/Landing/BuiltForEveryone';
+import VersatilePlatform from './components/Landing/VersatilePlatform';
+import SkillLearnHere from './components/Landing/SkillLearnHere';
+import FAQ from './components/Landing/FAQ';
+import Testimonials from './components/Landing/Testimonials';
+import { LoadingPage } from "@/components/ui/loading"
+import { ErrorCard } from "@/components/ui/error-boundary"
 
 /**
  * Landing Page - Public facing marketing page for non-authenticated users
  * Authenticated users are automatically redirected to /home via middleware
- * 
- * Performance Optimization: Landing page content loads immediately without
- * waiting for auth state. Authenticated users are silently redirected in background.
  */
 export default function LandingPage() {
   const { isLoaded, user } = useUser();
   const router = useRouter();
+  const [error, setError] = useState(null);
 
-  // Silent background redirect for authenticated users
-  // No loading spinner - better UX and conversion rates
+  // Client-side redirect fallback (middleware handles server-side)
   useEffect(() => {
     if (isLoaded && user) {
       router.push('/home');
     }
   }, [isLoaded, user, router]);
 
-  // Always show landing page immediately
-  // Redirect happens silently in background
+  if (!isLoaded) {
+    return <LoadingPage />;
+  }
+
+  // Show loading while redirecting authenticated users
+  if (user) {
+    return <LoadingPage />;
+  }
+
+  if (error) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <ErrorCard
+          error={error}
+          message="Failed to load landing page"
+          reset={() => setError(null)}
+        />
+      </main>
+    );
+  }
+
+  // Wrap each section in error boundaries
+  const renderSection = (Component, props = {}) => {
+    try {
+      return <Component {...props} />;
+    } catch (err) {
+      console.error(`Failed to render ${Component.name}:`, err);
+      return (
+        <ErrorCard
+          error={err}
+          message={`Failed to load ${Component.name}`}
+        />
+      );
+    }
+  };
+
   return (
     <main className="w-full">
-      <HeroSection />
-      <BuiltForEveryone />
-      <VersatilePlatform />
-      <SkillLearnHere />
-      <FAQ />
-      <Testimonials />
+      {renderSection(HeroSection)}
+      {renderSection(BuiltForEveryone)}
+      {renderSection(VersatilePlatform)}
+      {renderSection(SkillLearnHere)}
+      {renderSection(FAQ)}
+      {renderSection(Testimonials)}
     </main>
   );
 }

@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from 'react';
-import { ArrowRight, Play, CheckCircle, Target, Rocket, BarChart3, Clock } from 'lucide-react';
+import { ArrowRight, Play, CheckCircle, Target, Rocket, BarChart3, Clock, Zap } from 'lucide-react';
+import Image from 'next/image';
 
 export default function HeroSection() {
   const [activeFeature, setActiveFeature] = useState(0);
@@ -33,12 +34,12 @@ export default function HeroSection() {
         ></div>
 
         {/* Static gradient areas */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-purple-200/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-blue-200/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-teal/20 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-brand-dark-blue/20 to-transparent rounded-full blur-3xl"></div>
 
         {/* Decorative circles */}
-        <div className="absolute top-32 right-32 w-32 h-32 border-2 border-purple-300 rounded-full" style={{ opacity: 0.1 }}></div>
-        <div className="absolute bottom-40 right-40 w-24 h-24 border-2 border-blue-300 rounded-full" style={{ opacity: 0.1 }}></div>
+        <div className="absolute top-32 right-32 w-32 h-32 border-2 border-brand-teal/30 rounded-full" style={{ opacity: 0.1 }}></div>
+        <div className="absolute bottom-40 right-40 w-24 h-24 border-2 border-brand-dark-blue/30 rounded-full" style={{ opacity: 0.1 }}></div>
       </div>
 
       {/* Grid overlay */}
@@ -59,58 +60,80 @@ export default function HeroSection() {
           {/* Left Column - Content */}
           <div className="space-y-6 sm:space-y-8 animate-fade-in-up order-2 lg:order-1">
             {/* Trust Badge with Urgency */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-200 rounded-full backdrop-blur-sm">
-              <Clock className="w-4 h-4 text-purple-600" />
-              <span className="text-sm text-purple-900 font-medium">Limited spots - Join 1.2K+ on waitlist</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-brand-teal/5 border border-brand-teal/20 rounded-full backdrop-blur-sm">
+              <Clock className="w-4 h-4 text-brand-teal" />
+              <span className="text-sm text-brand-dark-blue font-medium">Limited spots - Join 1.2K+ on waitlist</span>
             </div>
 
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
-                <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  People
+                <span className="bg-gradient-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent">
+                  AI-Powered
                 </span>
-                {' '}+ A.I.
+                {' '}Learning That Actually Works
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-xl">
-                Elevate your workforce with adaptive learning experiences that drive measurable results. Boost engagement, accelerate growth, and achieve business goals faster.
+                Join 250+ beta testers experiencing 2.5x faster skill development with personalized AI coaching.
               </p>
             </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105">
+              <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-brand-teal to-brand-dark-blue hover:from-brand-teal-dark hover:to-brand-dark-blue/90 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105">
                 Join Waitlist
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
                 onClick={() => setIsVideoPlaying(true)}
-                className="group px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-purple-600 text-purple-600 font-semibold rounded-lg hover:bg-purple-50 transition-all duration-300 flex items-center justify-center gap-2"
+                className="group px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-brand-teal text-brand-teal font-semibold rounded-lg hover:bg-brand-teal/5 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5" />
                 Watch Demo
               </button>
             </div>
 
-            {/* Rotating Features */}
-            <div className="flex flex-wrap gap-4 sm:gap-6">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-2 transition-all duration-500 ${activeFeature === index ? 'scale-110 opacity-100' : 'opacity-60'
-                    }`}
-                >
-                  <feature.icon className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm text-gray-700">{feature.text}</span>
+            {/* Social Proof */}
+            <div className="flex items-center gap-4 pt-4">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative">
+                    <Image
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`}
+                      alt="User"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              <span className="text-sm text-gray-600 font-medium">
+                Join 1,200+ professionals already learning
+              </span>
+            </div>
+
+            {/* Outcome-based Features */}
+            <div className="space-y-4 pt-4">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-full bg-brand-teal/10 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 text-brand-teal" />
                 </div>
-              ))}
+                <div>
+                  <h4 className="font-semibold text-gray-900">
+                    Save 10+ Hours Per Week
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    AI screens candidates automatically, so you focus on top talent
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Right Column - Interactive Visual */}
           <div className="relative h-auto lg:h-[650px] animate-slide-in-right order-1 lg:order-2">
             {/* Tasks Card (Behind) */}
-            <div className="hidden lg:block absolute top-52 right-20 w-full max-w-md bg-white rounded-2xl shadow-xl hover:shadow-[0_25px_60px_rgba(147,51,234,0.2)] transition-all duration-300 z-10 overflow-hidden">
+            <div className="hidden lg:block absolute top-52 right-20 w-full max-w-md bg-white rounded-2xl shadow-xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-10 overflow-hidden">
               <div className="p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">Tasks Overview</h3>
 
@@ -152,12 +175,18 @@ export default function HeroSection() {
             </div>
 
             {/* Profile Card (Front) */}
-            <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-2xl shadow-2xl hover:shadow-[0_25px_60px_rgba(147,51,234,0.2)] transition-all duration-300 z-20 overflow-hidden">
+            <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-2xl shadow-2xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-20 overflow-hidden">
               {/* Gradient Header */}
-              <div className="h-24 bg-gradient-to-r from-purple-400 via-pink-300 to-purple-300 relative">
+              <div className="h-24 bg-gradient-to-r from-brand-teal/60 via-brand-teal/40 to-brand-dark-blue/40 relative">
                 <div className="absolute -bottom-10 left-6">
-                  <div className="w-20 h-20 rounded-full border-4 border-white bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                    SJ
+                  <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
+                    <Image
+                      src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fprofile.jpg?alt=media&token=b0ece0df-5e88-45eb-aae9-89a7320cd627"
+                      alt="Sarah Johnson"
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                    />
                   </div>
                 </div>
               </div>
@@ -174,11 +203,11 @@ export default function HeroSection() {
                     <div key={index} className="space-y-1">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-700">{skill}</span>
-                        <span className="text-[#155d59] font-semibold">{85 - index * 10}%</span>
+                        <span className="text-brand-teal font-semibold">{85 - index * 10}%</span>
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-[#155d59] to-[#4a9b94] rounded-full animate-progress"
+                          className="h-full bg-gradient-to-r from-brand-teal to-brand-dark-blue rounded-full animate-progress"
                           style={{ width: `${85 - index * 10}%` }}
                         ></div>
                       </div>
@@ -200,7 +229,7 @@ export default function HeroSection() {
               { value: "Q2 2026", label: "Launch Date" }
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
                 <div className="text-xs sm:text-sm text-gray-600">{stat.label}</div>
@@ -225,7 +254,7 @@ export default function HeroSection() {
             </button>
             <div className="absolute inset-0 flex items-center justify-center text-gray-900 text-xl">
               <div className="text-center space-y-4">
-                <Play className="w-20 h-20 text-purple-600 mx-auto" />
+                <Play className="w-20 h-20 text-brand-teal mx-auto" />
                 <p>Demo Video Placeholder</p>
               </div>
             </div>

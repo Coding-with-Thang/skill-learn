@@ -5,10 +5,10 @@ import { ArrowRight } from "lucide-react";
 
 export default function TopBanner() {
   return (
-    <div className="bg-[#155d59] text-white py-2 px-4">
+    <div className="bg-brand-teal text-white py-2 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-center">
-        <Link 
-          href="/vision" 
+        <Link
+          href="/vision"
           className="flex items-center gap-2 hover:underline text-sm md:text-base"
         >
           <span>Elevating People, Partnered with AI.</span>

@@ -35,6 +35,14 @@ export default function FAQ() {
     {
       question: "How quickly can we get started?",
       answer: "Getting started is quick and easy! You can set up your account in minutes and start adding content immediately. Our onboarding team is available to help you configure the platform and import your existing training materials."
+    },
+    {
+      question: "How quickly can I see results?",
+      answer: "Most users see 2x improvement in 30 days. Our AI-driven approach accelerates learning by focusing on exactly what each employee needs to know."
+    },
+    {
+      question: "What if I don't like it?",
+      answer: "We offer a 100% money-back guarantee, no questions asked. If you're not satisfied within the first 30 days, we'll refund your subscription in full."
     }
   ];
 

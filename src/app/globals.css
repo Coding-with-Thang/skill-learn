@@ -145,6 +145,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-brand-teal: #155d59;
+  --color-brand-teal-dark: #124a47;
+  --color-brand-dark-blue: #1B1B53;
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
@@ -283,4 +287,10 @@
 
 #hero-banner {
   background: radial-gradient(var(--game-primary), var(--game-secondary));
+}
+
+button,
+a,
+[role="button"] { /* Target buttons, links, and elements with role="button" */
+  cursor: pointer;
 }
