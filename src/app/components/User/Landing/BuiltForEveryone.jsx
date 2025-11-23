@@ -1,5 +1,4 @@
-"use client";
-
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Users, TrendingUp, BarChart3, CheckCircle, Target, Zap, Image as ImageIcon } from "lucide-react";
@@ -84,11 +83,14 @@ export default function BuiltForEveryone() {
                 </div>
 
                 {/* Image Placeholder */}
-                <div className="order-1 md:order-2 relative w-full h-56 md:h-72 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl flex items-center justify-center border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors backdrop-blur-sm">
-                  <div className="text-center">
-                    <ImageIcon className="w-12 h-12 text-blue-400 mx-auto mb-2" />
-                    <p className="text-sm text-blue-600 font-medium">Candidate Dashboard</p>
-                  </div>
+                <div className="order-1 md:order-2 relative w-full h-56 md:h-72 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl overflow-hidden border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors backdrop-blur-sm">
+                  <Image
+                    src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fcowork.jpg?alt=media&token=32e81a50-de82-40a8-be39-5fdf44c4c89f"
+                    alt="candidate dashboard"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -113,11 +115,14 @@ export default function BuiltForEveryone() {
                 </p>
 
                 {/* Image Placeholder */}
-                <div className="relative w-full h-44 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-purple-200 group-hover:border-purple-400 transition-colors">
-                  <div className="text-center">
-                    <ImageIcon className="w-10 h-10 text-purple-400 mx-auto mb-2" />
-                    <p className="text-xs text-purple-600 font-medium">Team Analytics</p>
-                  </div>
+                <div className="relative w-full h-44 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-purple-200 group-hover:border-purple-400 transition-colors overflow-hidden">
+                  <Image
+                    src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fdashboard.jpg?alt=media&token=010d46e3-7582-43f4-a2b2-d93a37a89d62"
+                    alt="candidate dashboard"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
 
                 <ul className="space-y-2">
@@ -147,11 +152,14 @@ export default function BuiltForEveryone() {
                 </p>
 
                 {/* Image Placeholder */}
-                <div className="relative w-full h-44 bg-gradient-to-br from-blue-50 to-indigo-100/50 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors">
-                  <div className="text-center">
-                    <ImageIcon className="w-10 h-10 text-blue-400 mx-auto mb-2" />
-                    <p className="text-xs text-blue-600 font-medium">Progress Tracking</p>
-                  </div>
+                <div className="relative w-full h-44 bg-gradient-to-br from-blue-50 to-indigo-100/50 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors overflow-hidden">
+                  <Image
+                    src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Flearning.jpg?alt=media&token=8de190f9-c32e-424a-be79-f8e7b326bb91"
+                    alt="candidate dashboard"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
 
                 <ul className="space-y-2">
@@ -194,11 +202,14 @@ export default function BuiltForEveryone() {
                 </div>
 
                 {/* Image Placeholder */}
-                <div className="md:col-span-2 w-full h-52 md:h-64 bg-gradient-to-br from-blue-50 to-purple-100/50 rounded-xl flex items-center justify-center border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors">
-                  <div className="text-center">
-                    <ImageIcon className="w-12 h-12 text-blue-400 mx-auto mb-2" />
-                    <p className="text-sm text-blue-600 font-medium">Data Platform</p>
-                  </div>
+                <div className="md:col-span-2 relative w-full h-52 md:h-64 bg-gradient-to-br from-blue-50 to-purple-100/50 rounded-xl overflow-hidden border-2 border-dashed border-blue-200 group-hover:border-blue-400 transition-colors">
+                  <Image
+                    src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fleadership.jpg?alt=media&token=a81bb1e4-eae5-4c96-915c-33b9e8ecd567"
+                    alt="candidate dashboard"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
               </div>
             </CardContent>
@@ -209,11 +220,14 @@ export default function BuiltForEveryone() {
             <CardContent className="p-6 md:p-8">
               <div className="grid md:grid-cols-5 gap-6 items-center">
                 {/* Image Placeholder */}
-                <div className="md:col-span-2 order-2 md:order-1 w-full h-52 md:h-64 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-200 group-hover:border-purple-400 transition-colors">
-                  <div className="text-center">
-                    <ImageIcon className="w-12 h-12 text-purple-400 mx-auto mb-2" />
-                    <p className="text-sm text-purple-600 font-medium">AI Coach Interface</p>
-                  </div>
+                <div className="relative md:col-span-2 order-2 md:order-1 w-full h-52 md:h-64 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl overflow-hidden border-2 border-dashed border-purple-200 group-hover:border-purple-400 transition-colors">
+                  <Image
+                    src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fnavi%20-%20ai%20companion.png?alt=media&token=b3c01c8e-5ba5-4a6e-b735-6a0deae317a8"
+                    alt="AI companion"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
                 </div>
 
                 <div className="md:col-span-3 order-1 md:order-2">
@@ -241,10 +255,10 @@ export default function BuiltForEveryone() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div >
 
         {/* CTA Section */}
-        <div className="text-center bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 rounded-2xl p-8 md:p-10 shadow-2xl shadow-blue-600/20">
+        <div className="text-center bg-gradient-to-r from-blue-600 via-blue-700 to-purple-600 rounded-2xl p-8 md:p-10 shadow-2xl shadow-blue-600/20" >
           <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Ready to transform your team?
           </h3>
@@ -261,7 +275,7 @@ export default function BuiltForEveryone() {
             </Button>
           </div>
         </div>
-      </div>
-    </section>
+      </div >
+    </section >
   );
 }

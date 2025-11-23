@@ -33,7 +33,7 @@ const PodiumPosition = ({ user, position }) => {
             alt={user.username || "User"}
             width={imageSize}
             height={imageSize}
-            className="rounded-full"
+            className="rounded-full object-cover"
           />
         ) : (
           <div

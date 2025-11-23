@@ -31,13 +31,13 @@ export default function QuizCard({ quiz }) {
       className="min-h-[300px] flex flex-col border-2 rounded-xl p-1 cursor-pointer shadow-[0_.3rem_0_0_rgba(0,0,0,0.8)] hover:-translate-y-1 transition-transform duration-300 ease-in-out"
       onClick={() => handleClick()}
     >
-      <CardHeader className="rounded-xl py-2 w-full">
+      <CardHeader className="rounded-xl py-2 w-full overflow-hidden">
         <Image
           src={quiz?.imageUrl || "/quiz.png"} // Fallback to default image
           width={500}
           height={300}
           alt={quiz?.title || "Quiz Image"}
-          className="rounded-xl"
+          className="rounded-xl object-cover w-full h-full"
         />
       </CardHeader>
       <CardContent className="flex flex-col gap-7 items-start">
