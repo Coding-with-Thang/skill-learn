@@ -177,7 +177,7 @@ export default function HeroSection() {
             {/* Profile Card (Front) */}
             <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-2xl shadow-2xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-20 overflow-hidden">
               {/* Gradient Header */}
-              <div className="h-24 bg-gradient-to-r from-brand-teal/60 via-brand-teal/40 to-brand-dark-blue/40 relative">
+              <div className="h-24 bg-gradient-to-r from-brand-teal/60 via-brand-dark-blue/40 to-brand-teal/40 relative">
                 <div className="absolute -bottom-10 left-6">
                   <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
                     <Image

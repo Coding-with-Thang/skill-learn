@@ -19,17 +19,17 @@ export default function BuiltForEveryone() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="text-brand-dark-blue text-sm font-medium mb-6">
-            WHY US
+          <div className="text-brand-teal text-sm font-medium mb-6">
+            WHY SKILL-LEARN
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Built{" "}
-            <span className="bg-gradient-to-r from-brand-dark-blue via-brand-dark-blue to-brand-teal bg-clip-text text-transparent">
-              for everyone
+            Built for {" "}
+            <span className="bg-gradient-to-r from-brand-teal to-brand-teal/70 bg-clip-text text-transparent">
+              everyone
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            From startups to Fortune 500 companies, thousands of businesses trust Skill-Learn
+            From startups to Fortune 500 companies, businesses trust Skill-Learn
             to transform their employee development strategy
           </p>
         </div>

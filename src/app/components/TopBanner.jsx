@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export default function TopBanner() {
   return (
-    <div className="bg-brand-teal text-white py-2 px-4">
+    <div className="bg-gradient-to-r from-brand-teal/40 via-brand-teal/90 to-brand-dark-blue/60 text-white py-2 px-4">
       <div className="max-w-7xl mx-auto flex items-center justify-center">
         <Link
           href="/vision"
