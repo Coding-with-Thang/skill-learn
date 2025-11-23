@@ -5,8 +5,8 @@ import { ArrowRight, Users, TrendingUp, BarChart3, CheckCircle, Target, Zap, Ima
 
 export default function BuiltForEveryone() {
   const stats = [
-    { number: "10K+", label: "Active Users" },
-    { number: "95%", label: "Satisfaction Rate" },
+    { number: "1.2K+", label: "Waitlist Members" },
+    { number: "250+", label: "Beta Testers" },
     { number: "2.5x", label: "Faster Development" },
   ];
 
@@ -19,9 +19,8 @@ export default function BuiltForEveryone() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-blue-600/10 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-blue-600/20">
-            <CheckCircle className="w-4 h-4" />
-            Trusted by Industry Leaders
+          <div className="text-blue-700 text-sm font-medium mb-6">
+            WHY US
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Built{" "}

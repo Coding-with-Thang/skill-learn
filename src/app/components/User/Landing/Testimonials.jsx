@@ -40,12 +40,6 @@ export default function Testimonials() {
             </div>
           ))}
         </div>
-        {/* Pagination Dots */}
-        <div className="flex justify-center gap-2 mt-8">
-          <div className="w-2 h-2 bg-pink-300 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-          <div className="w-2 h-2 bg-gray-600 rounded-full"></div>
-        </div>
       </div>
     </section>
   );

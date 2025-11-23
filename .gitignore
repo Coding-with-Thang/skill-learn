@@ -43,3 +43,4 @@ next-env.d.ts
 notes.md
 
 .clerk
+.eslintrc.json
