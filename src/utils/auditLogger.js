@@ -40,114 +40,119 @@ export async function logAuditEvent(
 }
 
 // Specific audit logging functions for common actions
-export const auditActions = {
-  // User management
-  userCreated: (userId, targetUserId, userDetails) =>
-    logAuditEvent(
-      userId,
-      "create",
-      "user",
-      targetUserId,
-      `Created user: ${userDetails}`
-    ),
+export async function userCreated(userId, targetUserId, userDetails) {
+  await logAuditEvent(
+    userId,
+    "create",
+    "user",
+    targetUserId,
+    `Created user: ${userDetails}`
+  );
+}
 
-  userUpdated: (userId, targetUserId, changes) =>
-    logAuditEvent(
-      userId,
-      "update",
-      "user",
-      targetUserId,
-      `Updated user: ${JSON.stringify(changes)}`
-    ),
+export async function userUpdated(userId, targetUserId, changes) {
+  await logAuditEvent(
+    userId,
+    "update",
+    "user",
+    targetUserId,
+    `Updated user: ${JSON.stringify(changes)}`
+  );
+}
 
-  userDeleted: (userId, targetUserId, userDetails) =>
-    logAuditEvent(
-      userId,
-      "delete",
-      "user",
-      targetUserId,
-      `Deleted user: ${userDetails}`
-    ),
+export async function userDeleted(userId, targetUserId, userDetails) {
+  await logAuditEvent(
+    userId,
+    "delete",
+    "user",
+    targetUserId,
+    `Deleted user: ${userDetails}`
+  );
+}
 
-  // Points management
-  pointsAwarded: (userId, points, reason) =>
-    logAuditEvent(
-      userId,
-      "create",
-      "points",
-      `Awarded ${points} points: ${reason}`
-    ),
+export async function pointsAwarded(userId, points, reason) {
+  await logAuditEvent(
+    userId,
+    "create",
+    "points",
+    `Awarded ${points} points: ${reason}`
+  );
+}
 
-  pointsDeducted: (userId, targetUserId, points, reason) =>
-    logAuditEvent(
-      userId,
-      "update",
-      "points",
-      targetUserId,
-      `Deducted ${points} points: ${reason}`
-    ),
+export async function pointsDeducted(userId, targetUserId, points, reason) {
+  await logAuditEvent(
+    userId,
+    "update",
+    "points",
+    targetUserId,
+    `Deducted ${points} points: ${reason}`
+  );
+}
 
-  // Reward management
-  rewardCreated: (userId, rewardId, rewardName) =>
-    logAuditEvent(
-      userId,
-      "create",
-      "reward",
-      rewardId,
-      `Created reward: ${rewardName}`
-    ),
+export async function rewardCreated(userId, rewardId, rewardName) {
+  await logAuditEvent(
+    userId,
+    "create",
+    "reward",
+    rewardId,
+    `Created reward: ${rewardName}`
+  );
+}
 
-  rewardRedeemed: (userId, rewardId, rewardName, pointsSpent) =>
-    logAuditEvent(
-      userId,
-      "update",
-      "reward",
-      rewardId,
-      `Redeemed reward: ${rewardName} for ${pointsSpent} points`
-    ),
+export async function rewardRedeemed(userId, rewardId, rewardName, pointsSpent) {
+  await logAuditEvent(
+    userId,
+    "update",
+    "reward",
+    rewardId,
+    `Redeemed reward: ${rewardName} for ${pointsSpent} points`
+  );
+}
 
-  rewardUpdated: (userId, rewardId, changes) =>
-    logAuditEvent(
-      userId,
-      "update",
-      "reward",
-      rewardId,
-      `Updated reward: ${JSON.stringify(changes)}`
-    ),
+export async function rewardUpdated(userId, rewardId, changes) {
+  await logAuditEvent(
+    userId,
+    "update",
+    "reward",
+    rewardId,
+    `Updated reward: ${JSON.stringify(changes)}`
+  );
+}
 
-  // Quiz management
-  quizCompleted: (userId, quizId, score, passed) =>
-    logAuditEvent(
-      userId,
-      "create",
-      "quiz",
-      quizId,
-      `Completed quiz with score: ${score}% (${passed ? "Passed" : "Failed"})`
-    ),
+export async function quizCompleted(userId, quizId, score, passed) {
+  await logAuditEvent(
+    userId,
+    "create",
+    "quiz",
+    quizId,
+    `Completed quiz with score: ${score}% (${passed ? "Passed" : "Failed"})`
+  );
+}
 
-  quizCreated: (userId, quizId, quizTitle) =>
-    logAuditEvent(
-      userId,
-      "create",
-      "quiz",
-      quizId,
-      `Created quiz: ${quizTitle}`
-    ),
+export async function quizCreated(userId, quizId, quizTitle) {
+  await logAuditEvent(
+    userId,
+    "create",
+    "quiz",
+    quizId,
+    `Created quiz: ${quizTitle}`
+  );
+}
 
-  // System settings
-  settingUpdated: (userId, settingKey, oldValue, newValue) =>
-    logAuditEvent(
-      userId,
-      "update",
-      "setting",
-      settingKey,
-      `Changed ${settingKey} from "${oldValue}" to "${newValue}"`
-    ),
+export async function settingUpdated(userId, settingKey, oldValue, newValue) {
+  await logAuditEvent(
+    userId,
+    "update",
+    "setting",
+    settingKey,
+    `Changed ${settingKey} from "${oldValue}" to "${newValue}"`
+  );
+}
 
-  // Authentication
-  userLogin: (userId) =>
-    logAuditEvent(userId, "login", "auth", userId, "User logged in"),
+export async function userLogin(userId) {
+  await logAuditEvent(userId, "login", "auth", userId, "User logged in");
+}
 
-  userLogout: (userId) =>
-    logAuditEvent(userId, "logout", "auth", userId, "User logged out"),
-};
+export async function userLogout(userId) {
+  await logAuditEvent(userId, "logout", "auth", userId, "User logged out");
+}
