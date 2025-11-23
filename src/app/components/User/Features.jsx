@@ -55,8 +55,8 @@ export default function Features() {
                   src={feature.icon}
                   width={100}
                   height={100}
-                  alt="Alt"
-                  className=""
+                  alt={feature.title}
+                  className="object-contain"
                 />
               </CardHeader>
               <CardContent className="text-primary font-bold uppercase">

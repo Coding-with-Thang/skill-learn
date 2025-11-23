@@ -62,7 +62,7 @@ export default function LifetimePointsLeaderboard({
                 alt={entry.username || "User"}
                 width={64}
                 height={64}
-                className="rounded-full"
+                className="rounded-full object-cover"
               />
             ) : (
               <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">

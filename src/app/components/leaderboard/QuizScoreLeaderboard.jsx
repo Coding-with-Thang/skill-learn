@@ -42,13 +42,19 @@ export default function QuizScoreLeaderboard() {
             <tr key={entry.id} className="border-t">
               <td className="px-6 py-4">{entry.rank}</td>
               <td className="px-6 py-4 flex items-center gap-2">
-                <Image
-                  src={entry.imageUrl || null}
-                  alt={entry.username}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
+                {entry.imageUrl ? (
+                  <Image
+                    src={entry.imageUrl}
+                    alt={entry.username}
+                    width={32}
+                    height={32}
+                    className="rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-sm">
+                    {(entry.username || "?")[0].toUpperCase()}
+                  </div>
+                )}
                 {entry.name}
               </td>
               <td className="px-6 py-4 text-right">

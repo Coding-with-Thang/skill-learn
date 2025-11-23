@@ -1,9 +1,8 @@
 "use client"
-
 import { useState, useEffect } from 'react';
 import { ArrowRight, Play, CheckCircle, Users, TrendingUp, Award } from 'lucide-react';
 
-export default function HeroSection() {
+export default function ModernHeroSection() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
 
@@ -22,75 +21,71 @@ export default function HeroSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % features.length);
-    }, 2000);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="relative min-h-screen bg-white overflow-hidden">
-      {/* Background Pattern - Education/Learning Theme */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Subtle geometric pattern suggesting learning paths/connections */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="network" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
-              {/* Network nodes representing learning connections */}
-              <circle cx="20" cy="20" r="2" fill="#155d59" />
-              <circle cx="100" cy="50" r="2" fill="#155d59" />
-              <circle cx="180" cy="80" r="2" fill="#155d59" />
-              <circle cx="50" cy="120" r="2" fill="#155d59" />
-              <circle cx="150" cy="150" r="2" fill="#155d59" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Dot pattern background */}
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, #155d59 1px, transparent 0)`,
+            backgroundSize: '40px 40px',
+            opacity: 0.10
+          }}
+        ></div>
 
-              {/* Connecting lines representing learning paths */}
-              <line x1="20" y1="20" x2="100" y2="50" stroke="#155d59" strokeWidth="0.5" opacity="0.3" />
-              <line x1="100" y1="50" x2="180" y2="80" stroke="#155d59" strokeWidth="0.5" opacity="0.3" />
-              <line x1="100" y1="50" x2="50" y2="120" stroke="#155d59" strokeWidth="0.5" opacity="0.3" />
-              <line x1="50" y1="120" x2="150" y2="150" stroke="#155d59" strokeWidth="0.5" opacity="0.3" />
+        {/* Diagonal lines pattern */}
+        {/* <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 35px,
+              #155d59 35px,
+              #155d59 36px
+            )`,
+            opacity: 0.05
+          }}
+        ></div> */}
 
-              {/* Brain/neuron-like connections */}
-              <path d="M 20 20 Q 60 35, 100 50" stroke="#4a9b94" strokeWidth="0.5" fill="none" opacity="0.2" />
-              <path d="M 100 50 Q 125 100, 150 150" stroke="#4a9b94" strokeWidth="0.5" fill="none" opacity="0.2" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#network)" />
-        </svg>
+        {/* Static gradient areas - no animation, positioned in corners */}
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-[#155d59]/10 to-transparent rounded-full blur-2xl"></div>
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#4a9b94]/8 to-transparent rounded-full blur-2xl"></div>
 
-        {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#155d59]/5 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#4a9b94]/5 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl animate-pulse animation-delay-2000"></div>
+        {/* Decorative circles */}
+        <div className="absolute top-32 right-32 w-32 h-32 border-2 border-[#155d59] rounded-full" style={{ opacity: 0.08 }}></div>
+        <div className="absolute bottom-40 right-40 w-24 h-24 border-2 border-[#4a9b94] rounded-full" style={{ opacity: 0.08 }}></div>
+        <div className="absolute top-1/3 right-20 w-16 h-16 bg-[#155d59] rounded-full" style={{ opacity: 0.06 }}></div>
 
-        {/* Floating abstract shapes representing knowledge/achievement */}
-        <div className="absolute top-20 right-20 opacity-[0.02]">
-          <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Trophy/Achievement shape */}
-            <path d="M100 20 L120 60 L160 60 L130 85 L145 120 L100 95 L55 120 L70 85 L40 60 L80 60 Z" fill="#155d59" />
-            {/* Book pages */}
-            <rect x="60" y="140" width="80" height="40" rx="2" fill="#4a9b94" />
-            <line x1="70" y1="150" x2="130" y2="150" stroke="white" strokeWidth="2" />
-            <line x1="70" y1="160" x2="130" y2="160" stroke="white" strokeWidth="2" />
-            <line x1="70" y1="170" x2="110" y2="170" stroke="white" strokeWidth="2" />
-          </svg>
-        </div>
-
-        <div className="absolute bottom-20 left-20 opacity-[0.02]">
-          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-            {/* Brain/AI representation */}
-            <circle cx="90" cy="90" r="70" stroke="#155d59" strokeWidth="3" fill="none" />
-            <path d="M50 90 Q70 70, 90 90 T130 90" stroke="#4a9b94" strokeWidth="2" fill="none" />
-            <circle cx="60" cy="80" r="5" fill="#155d59" />
-            <circle cx="90" cy="90" r="5" fill="#155d59" />
-            <circle cx="120" cy="80" r="5" fill="#155d59" />
-          </svg>
-        </div>
+        {/* Geometric pattern */}
+        {/* <div
+          className="absolute bottom-1/3 right-1/4 w-40 h-40"
+          style={{
+            opacity: 0.08,
+            background: `linear-gradient(135deg, #155d59 25%, transparent 25%), 
+                        linear-gradient(225deg, #155d59 25%, transparent 25%), 
+                        linear-gradient(45deg, #155d59 25%, transparent 25%), 
+                        linear-gradient(315deg, #155d59 25%, transparent 25%)`,
+            backgroundPosition: '0 0, 20px 0, 20px -20px, 0px 20px',
+            backgroundSize: '40px 40px'
+          }}
+        ></div> */}
       </div>
 
-      {/* Subtle grid overlay for depth */}
+      {/* Grid overlay */}
       <div
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(rgba(21, 93, 89, 0.1) 1px, transparent 1px),
-                           linear-gradient(90deg, rgba(21, 93, 89, 0.1) 1px, transparent 1px)`,
+          opacity: 0.05,
+          backgroundImage: `
+            linear-gradient(#155d59 1px, transparent 1px),
+            linear-gradient(90deg, #155d59 1px, transparent 1px)
+          `,
           backgroundSize: '50px 50px'
         }}
       ></div>
@@ -108,13 +103,13 @@ export default function HeroSection() {
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
-                People+
                 <span className="text-[#155d59]">
-                  A.I.
+                  People
                 </span>
+                + A.I.
               </h1>
               <p className="text-xl text-gray-600 leading-relaxed max-w-xl">
-                Empower your workforce with adaptive learning experiences that drive measurable results. Boost engagement, accelerate growth, and achieve business goals faster.
+                Elevate your workforce with adaptive learning experiences that drive measurable results. Boost engagement, accelerate growth, and achieve business goals faster.
               </p>
             </div>
 

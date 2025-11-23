@@ -57,7 +57,7 @@ export default function HowItWorks() {
                   width={160}
                   height={160}
                   alt={step.title}
-                  className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-lg transition-transform hover:scale-105 focus:scale-105"
+                  className="w-32 h-32 md:w-40 md:h-40 object-contain drop-shadow-lg transition-transform duration-200 ease-in-out hover:scale-105 focus:scale-105"
                   priority
                 />
               </button>

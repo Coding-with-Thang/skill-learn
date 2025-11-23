@@ -14,7 +14,7 @@ export default function MoreTraining() {
       <h3 className="text-xl font-bold">More Training</h3>
       <div className="flex flex-col md:flex-row gap-5 w-full max-w-4xl items-stretch">
         <Card className="w-full md:max-w-[40ch]">
-          <CardHeader className="relative">
+          <CardHeader className="relative overflow-hidden rounded-xl">
             <Image
               className="object-cover w-full h-[150px] rounded"
               src={empathy}
@@ -22,7 +22,7 @@ export default function MoreTraining() {
               height={150}
               alt="Icon"
             />
-            <p className="p-2 right-4 top-4 absolute bg-gray-50 rounded-full text-xs md:text-sm">RECOMMENDATION</p>
+            <p className="p-2 right-4 top-4 absolute bg-gray-50 rounded-full text-xs md:text-sm transition-all duration-200 ease-in-out hover:-translate-y-1 hover:opacity-95">RECOMMENDATION</p>
           </CardHeader>
           <CardContent className="flex flex-col gap-2 items-start">
             <p className="text-gray-400">Empathy Training</p>
