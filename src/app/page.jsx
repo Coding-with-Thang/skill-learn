@@ -28,10 +28,6 @@ export default function LandingPage() {
     }
   }, [isLoaded, user, router]);
 
-  if (!isLoaded) {
-    return <LoadingPage />;
-  }
-
   // Show loading while redirecting authenticated users
   if (user) {
     return <LoadingPage />;
