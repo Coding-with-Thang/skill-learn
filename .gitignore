@@ -48,3 +48,5 @@ notes.md
  
 # Ignore components\User\backup (normalized to forward slashes)
 components/User/backup/
+**/components/User/backup/
+src/app/components/User/backup/
