@@ -121,7 +121,7 @@ const SignInPage = () => {
   return (
     <div className="flex h-screen max-h-screen overflow-hidden">
       {/* Left side - Animated Background */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-teal-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-teal-900 via-teal-800 to-teal-700">
         <AnimatedBackground />
 
         {/* Back button and Logo */}
@@ -134,16 +134,16 @@ const SignInPage = () => {
             <ArrowLeft className="w-5 h-5 text-gray-900" />
           </button>
 
-          <div className="bg-white rounded-2xl px-6 py-3 shadow-lg flex items-center gap-3">
+          <div className="bg-white rounded-2xl px-6 py-3 shadow-xl flex items-center gap-3 ring-1 ring-white/10">
             <GraduationCap className="w-8 h-8 text-teal-600" />
-            <span className="text-2xl font-bold text-gray-900">Skill-Learn</span>
+            <span className="text-lg font-semibold text-gray-900">Skill-Learn</span>
           </div>
         </div>
       </div>
 
       {/* Right side - Sign In Form */}
-      <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 lg:p-8">
+        <div className="w-full max-w-lg">
           {/* Language selector */}
           <div className="flex justify-end mb-8">
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
@@ -162,7 +162,7 @@ const SignInPage = () => {
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">
+            <h1 className="text-3xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
               Sign In to Skill-Learn
             </h1>
             <p className="text-center text-gray-600 mb-8">
@@ -177,15 +177,20 @@ const SignInPage = () => {
               <input
                 type="text"
                 placeholder="Enter your username"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/90"
+                aria-label="username"
               />
             </div>
 
             <button
-              className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-3 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              aria-label="Continue"
             >
-              Continue
-              <span>→</span>
+              <span>Continue</span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block">
+                <path d="M5 12h14"></path>
+                <path d="M12 5l7 7-7 7"></path>
+              </svg>
             </button>
 
             {/* Sign up link */}
@@ -197,9 +202,23 @@ const SignInPage = () => {
             </p>
 
             {/* Clerk branding */}
-            <p className="text-center mt-8 text-xs text-gray-500">
+            <p className="text-center mt-6 text-xs text-gray-500">
               Secured by <span className="font-semibold">Clerk</span>
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer bar at bottom matching screenshot */}
+      <div className="fixed left-0 right-0 bottom-0 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-500 pointer-events-auto">
+          <div className="flex items-center gap-2">
+            <span>© {new Date().getFullYear()} - All rights reserved by Skill-Learn.ca</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a href="#" className="hover:underline text-gray-400">Privacy Policy</a>
+            <a href="#" className="hover:underline text-gray-400">Terms of Service</a>
           </div>
         </div>
       </div>
