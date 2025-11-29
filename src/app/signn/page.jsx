@@ -143,7 +143,7 @@ const SignInPage = () => {
 
       {/* Right side - Sign In Form */}
       <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 lg:p-8">
-          <div className="w-full max-w-md">
+        <div className="w-full max-w-[420px]">
           {/* Language selector */}
           <div className="flex justify-end mb-8">
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
@@ -153,19 +153,19 @@ const SignInPage = () => {
           </div>
 
           {/* Sign in card */}
-          <div className="bg-white rounded-2xl shadow-2xl p-10 ring-1 ring-black/5 border border-transparent">
+          <div className="bg-white rounded-[28px] shadow-[0_30px_60px_rgba(6,17,29,0.18)] p-10 border border-transparent">
             {/* Icon */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center shadow-inner">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center shadow-inner border border-white/60">
                 <GraduationCap className="w-8 h-8 text-teal-600" />
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-3xl font-extrabold text-center text-gray-900 mb-2 leading-tight">
+            <h1 className="text-[30px] md:text-[34px] font-extrabold text-center text-[#0b1320] mb-2 leading-tight">
               Sign In to Skill-Learn
             </h1>
-            <p className="text-center text-gray-600 mb-8">
+            <p className="text-center text-[#55606a] mb-6 max-w-[360px] mx-auto">
               Welcome back! Please sign in to continue.
             </p>
 
@@ -177,13 +177,13 @@ const SignInPage = () => {
               <input
                 type="text"
                 placeholder="Enter your username"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+                className="w-full px-4 py-3 border border-[#e6eef6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6a4] focus:border-transparent bg-white placeholder:text-[#98a0aa] text-[#0b1320]"
                 aria-label="username"
               />
             </div>
 
             <button
-              className="w-full bg-[#0b1320] text-white h-12 rounded-full font-semibold hover:bg-[#111827] transition-colors flex items-center justify-center gap-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="w-full bg-[#07121c] text-white h-12 rounded-full text-base font-semibold hover:bg-[#071827] transition-colors flex items-center justify-center gap-3 shadow-[0_12px_30px_rgba(7,18,28,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#06b6a4]"
               aria-label="Continue"
             >
               <span>Continue</span>
@@ -194,7 +194,7 @@ const SignInPage = () => {
             </button>
 
             {/* Sign up link */}
-            <p className="text-center mt-6 text-sm text-gray-600">
+            <p className="text-center mt-6 text-sm text-[#59626b]">
               Don't have an account?{' '}
               <a href="#" className="text-blue-600 hover:underline font-medium">
                 Sign up
@@ -202,23 +202,23 @@ const SignInPage = () => {
             </p>
 
             {/* Clerk branding */}
-            <p className="text-center mt-6 text-xs text-gray-500">
-              Secured by <span className="font-semibold">Clerk</span>
+            <p className="text-center mt-6 text-xs text-[#98a0a8]">
+              Secured by <span className="font-semibold text-[#0b1320]">Clerk</span>
             </p>
           </div>
         </div>
       </div>
 
       {/* Footer bar at bottom matching screenshot */}
-      <div className="fixed left-0 right-0 bottom-0 bg-gradient-to-t from-transparent via-white/30 to-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between text-xs text-gray-400 pointer-events-auto">
+      <div className="fixed left-0 right-0 bottom-0 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-[#94a3b8] pointer-events-auto">
           <div className="flex items-center gap-2">
-            <span className="text-[13px] text-gray-400">© {new Date().getFullYear()} — All rights reserved by Skill-Learn.ca</span>
+            <span className="text-[13px] text-[#a3b0bd]">© {new Date().getFullYear()} · All rights reserved by Skill-Learn.ca</span>
           </div>
 
           <div className="flex items-center gap-6">
-            <a href="#" className="text-[13px] text-gray-400 hover:text-gray-600">Privacy Policy</a>
-            <a href="#" className="text-[13px] text-gray-400 hover:text-gray-600">Terms of Service</a>
+            <a href="#" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Privacy Policy</a>
+            <a href="#" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Terms of Service</a>
           </div>
         </div>
       </div>
