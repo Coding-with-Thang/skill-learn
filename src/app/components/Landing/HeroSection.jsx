@@ -1,59 +1,218 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ArrowRight, Play, CheckCircle, Target, Rocket, BarChart3, Clock, Zap } from 'lucide-react';
 import Image from 'next/image';
 
 export default function HeroSection() {
-  const [activeFeature, setActiveFeature] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef(null);
 
-  const features = [
-    { icon: Target, text: "AI-Powered Learning Paths" },
-    { icon: Rocket, text: "Launch Ready Platform" },
-    { icon: BarChart3, text: "Real-Time Analytics" }
-  ];
+  // Refs for parallax elements
+  const topBlobRef = useRef(null);
+  const bottomBlobRef = useRef(null);
+  const topCircleRef = useRef(null);
+  const bottomCircleRef = useRef(null);
+  const heroRef = useRef(null);
+  const activeRef = useRef(false);
+  const gridRef = useRef(null);
 
+  // Intersection-aware parallax — parallax runs only while the hero is visible
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveFeature((prev) => (prev + 1) % features.length);
-    }, 3000);
-    return () => clearInterval(interval);
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // If user prefers reduced motion, don't run parallax at all
+    if (prefersReduced) return;
+
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!activeRef.current) return; // only update transforms when active
+      if (ticking) return;
+      ticking = true;
+
+      window.requestAnimationFrame(() => {
+        const rect = heroRef.current?.getBoundingClientRect();
+        const y = window.scrollY || window.pageYOffset;
+
+        // We can use the hero's position relative to viewport to tune transforms
+        // When hero is higher/lower the transforms change subtly.
+        const heroTop = rect ? rect.top : 0;
+        // Use a small factor derived from heroTop and global scroll
+        const factor = Math.max(0, Math.min(1, 1 - Math.abs(heroTop) / (window.innerHeight * 1.5)));
+
+        if (topBlobRef.current) {
+          // Slight inverse y translate (opposite direction of scroll) for depth
+          topBlobRef.current.style.transform = `translate3d(${Math.min(30, -y * 0.03 * factor)}px, ${Math.min(60, -y * 0.06 * factor)}px, 0)`;
+        }
+
+        if (bottomBlobRef.current) {
+          bottomBlobRef.current.style.transform = `translate3d(${Math.max(-30, y * 0.02 * factor)}px, ${Math.max(-60, y * 0.04 * factor)}px, 0)`;
+        }
+
+        if (topCircleRef.current) {
+          topCircleRef.current.style.transform = `translate3d(${Math.min(20, -y * 0.015 * factor)}px, ${Math.min(30, -y * 0.02 * factor)}px, 0)`;
+        }
+
+        if (bottomCircleRef.current) {
+          bottomCircleRef.current.style.transform = `translate3d(${Math.max(-20, y * 0.015 * factor)}px, ${Math.max(-30, y * 0.02 * factor)}px, 0)`;
+        }
+
+        ticking = false;
+      });
+    };
+
+    // Intersection observer to toggle activation only when hero is visible
+    const io = new IntersectionObserver((entries) => {
+      const e = entries[0];
+      if (!e) return;
+      activeRef.current = e.isIntersecting && e.intersectionRatio > 0.05;
+
+      if (activeRef.current) {
+        // start listening and align initial transform
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+      } else {
+        // stop listening and reset transforms to none
+        window.removeEventListener('scroll', handleScroll);
+        [topBlobRef, bottomBlobRef, topCircleRef, bottomCircleRef].forEach(r => {
+          if (r.current) r.current.style.transform = '';
+        });
+      }
+    }, { root: null, threshold: [0, 0.05, 0.25, 0.5, 1] });
+
+    if (heroRef.current) io.observe(heroRef.current);
+
+    return () => {
+      io.disconnect();
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
+  // Make grid overlay full viewport width and align it vertically to the hero
+  useEffect(() => {
+    if (!gridRef.current || !heroRef.current) return;
+
+    const setGrid = () => {
+      const rect = heroRef.current.getBoundingClientRect();
+      const docTop = rect.top + window.pageYOffset;
+      const height = rect.height;
+
+      Object.assign(gridRef.current.style, {
+        position: 'fixed',
+        left: '0px',
+        width: '100vw',
+        top: `${docTop}px`,
+        height: `${height}px`,
+        transform: 'none'
+      });
+    };
+
+    // Initial set
+    setGrid();
+
+    const onResize = () => setGrid();
+    const onScroll = () => setGrid();
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('scroll', onScroll);
+      if (gridRef.current) {
+        gridRef.current.style.position = '';
+        gridRef.current.style.left = '';
+        gridRef.current.style.width = '';
+        gridRef.current.style.top = '';
+        gridRef.current.style.height = '';
+        gridRef.current.style.transform = '';
+      }
+    };
+  }, [gridRef.current, heroRef.current]);
+
+  // Manage video playback and keyboard close while modal is open
+  useEffect(() => {
+    if (!isVideoPlaying) {
+      // Ensure any playing video is paused and seeked back
+      if (videoRef.current) {
+        try { videoRef.current.pause(); } catch (e) { }
+        try { videoRef.current.currentTime = 0; } catch (e) { }
+      }
+      return;
+    }
+
+    // When opening, try to play and give focus to video element.
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // play may fail if browser blocks autoplay with sound — it's okay
+      });
+      videoRef.current.focus?.();
+    }
+
+    const onKey = (e) => {
+      if (e.key === "Escape") setIsVideoPlaying(false);
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isVideoPlaying]);
+
   return (
-    <div className="relative min-h-screen bg-white overflow-hidden">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Dot pattern background */}
-        <div
-          className="absolute inset-0 w-full h-full"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, #155d59 1px, transparent 0)`,
-            backgroundSize: '40px 40px',
-            opacity: 0.08
-          }}
-        ></div>
+    <div ref={heroRef} className="relative min-h-[80dvh] bg-white overflow-hidden">
+      {/* Full-bleed background container - spans the entire viewport width */}
+      <div className="absolute inset-0 pointer-events-none w-screen left-1/2 -translate-x-1/2 overflow-hidden">
+        {/* Background visuals are full-bleed and independent of the centered content */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Dot pattern background */}
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #155d59 1px, transparent 0)`,
+              backgroundSize: '40px 40px',
+              opacity: 0.08
+            }}
+          ></div>
 
-        {/* Static gradient areas */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-brand-teal/20 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-brand-dark-blue/20 to-transparent rounded-full blur-3xl"></div>
+          {/* Static gradient areas (responsive sizes) */}
+          <div
+            ref={topBlobRef}
+            className="absolute top-0 right-0 w-[520px] h-[520px] md:w-[600px] md:h-[600px] lg:w-[720px] lg:h-[720px] bg-gradient-to-br from-brand-teal/22 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
+            aria-hidden
+          />
+          <div
+            ref={bottomBlobRef}
+            className="absolute bottom-0 left-0 w-[360px] h-[360px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-gradient-to-tr from-brand-dark-blue/18 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
+            aria-hidden
+          />
 
-        {/* Decorative circles */}
-        <div className="absolute top-32 right-32 w-32 h-32 border-2 border-brand-teal/30 rounded-full" style={{ opacity: 0.1 }}></div>
-        <div className="absolute bottom-40 right-40 w-24 h-24 border-2 border-brand-dark-blue/30 rounded-full" style={{ opacity: 0.1 }}></div>
+          {/* Decorative circles */}
+          <div
+            ref={topCircleRef}
+            className="absolute top-24 md:top-32 right-28 md:right-32 w-20 md:w-32 h-20 md:h-32 border-2 border-brand-teal/30 rounded-full transform-gpu will-change-transform"
+            style={{ opacity: 0.12 }}
+            aria-hidden
+          />
+          <div
+            ref={bottomCircleRef}
+            className="absolute bottom-28 md:bottom-40 right-20 md:right-40 w-16 md:w-24 h-16 md:h-24 border-2 border-brand-dark-blue/30 rounded-full transform-gpu will-change-transform"
+            style={{ opacity: 0.12 }}
+            aria-hidden
+          />
+
+          {/* Grid overlay (full-bleed) */}
+          <div
+            ref={gridRef}
+            className="absolute inset-0 pointer-events-none w-screen left-1/2 -translate-x-1/2"
+            style={{
+              opacity: 0.05,
+              backgroundImage: `
+                linear-gradient(#155d59 1px, transparent 1px),
+                linear-gradient(90deg, #155d59 1px, transparent 1px)
+              `,
+              backgroundSize: '50px 50px'
+            }}
+          ></div>
+        </div>
       </div>
-
-      {/* Grid overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          opacity: 0.05,
-          backgroundImage: `
-            linear-gradient(#155d59 1px, transparent 1px),
-            linear-gradient(90deg, #155d59 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }}
-      ></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -240,13 +399,21 @@ export default function HeroSection() {
         </div>
       </div>
 
+
+
       {/* Video Modal */}
       {isVideoPlaying && (
         <div
           className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setIsVideoPlaying(false)}
         >
-          <div className="relative w-full max-w-4xl aspect-video bg-white rounded-2xl overflow-hidden border-2 border-gray-200 animate-scale-in">
+          <div
+            className="relative w-full max-w-4xl aspect-video bg-white rounded-2xl overflow-hidden border-2 border-gray-200 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Demo video"
+          >
             <button
               onClick={() => setIsVideoPlaying(false)}
               className="absolute top-4 right-4 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-900 z-10 transition-colors"
@@ -254,10 +421,16 @@ export default function HeroSection() {
               ✕
             </button>
             <div className="absolute inset-0 flex items-center justify-center text-gray-900 text-xl">
-              <div className="text-center space-y-4">
-                <Play className="w-20 h-20 text-brand-teal mx-auto" />
-                <p>Demo Video Placeholder</p>
-              </div>
+              <video
+                ref={videoRef}
+                src={"https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/skill-learn%20demo.mp4?alt=media&token=d38b4738-9d06-4ae5-a264-a23f469ed5c5"}
+                className="w-full h-full object-cover"
+                controls
+                playsInline
+                autoPlay
+                muted
+                aria-label="Skill-Learn demo video"
+              />
             </div>
           </div>
         </div>

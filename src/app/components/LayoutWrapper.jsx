@@ -3,26 +3,32 @@
 import { usePathname } from "next/navigation";
 import Header from "./Header";
 import Footer from "./Footer";
-import TopBanner from "./Landing/TopBanner";
-import LandingHeader from "./Landing/LandingHeader";
-import LandingFooter from "./Landing/LandingFooter";
+import PublicLayout from "./PublicLayout";
+import { useUser } from "@clerk/nextjs";
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
   const isLandingPage = pathname === "/";
 
+  // Show landing header/footer on any route where the user is NOT signed in.
+  // Consider the user signed-in only when Clerk's isLoaded is true and user exists.
+  const { isLoaded, user } = useUser();
+  const isAuthenticated = isLoaded && !!user;
+  const useLandingLayout = !isAuthenticated || isLandingPage;
+
   return (
     <>
-      {isLandingPage ? (
-        <>
-          <TopBanner />
-          <LandingHeader />
-        </>
+      {useLandingLayout ? (
+        <PublicLayout>
+          {children}
+        </PublicLayout>
       ) : (
-        <Header />
+        <>
+          <Header />
+          {children}
+          <Footer />
+        </>
       )}
-      {children}
-      {isLandingPage ? <LandingFooter /> : <Footer />}
     </>
   );
 }

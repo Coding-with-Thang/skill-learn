@@ -45,7 +45,7 @@ notes.md
 .clerk
 .eslintrc.json
 .agent
- 
+
 # Ignore components\User\backup (normalized to forward slashes)
 components/User/backup/
 **/components/User/backup/

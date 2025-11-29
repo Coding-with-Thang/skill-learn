@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 
 export default function SkillLearnHere() {
   return (
-    <section className="bg-brand-teal text-white py-16 md:py-24">
+    <section className="bg-brand-teal text-white py-16 md:py-24 rounded-xl max-w-7xl mx-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Left Side - Text Content */}
