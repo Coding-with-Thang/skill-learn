@@ -136,14 +136,14 @@ const SignInPage = () => {
 
           <div className="bg-white rounded-2xl px-6 py-3 shadow-xl flex items-center gap-3 ring-1 ring-white/10">
             <GraduationCap className="w-8 h-8 text-teal-600" />
-            <span className="text-lg font-semibold text-gray-900">Skill-Learn</span>
+            <span className="text-lg font-bold text-gray-900">Skill-Learn</span>
           </div>
         </div>
       </div>
 
       {/* Right side - Sign In Form */}
       <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 lg:p-8">
-        <div className="w-full max-w-lg">
+          <div className="w-full max-w-md">
           {/* Language selector */}
           <div className="flex justify-end mb-8">
             <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
@@ -153,16 +153,16 @@ const SignInPage = () => {
           </div>
 
           {/* Sign in card */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="bg-white rounded-2xl shadow-2xl p-10 ring-1 ring-black/5 border border-transparent">
             {/* Icon */}
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center shadow-inner">
                 <GraduationCap className="w-8 h-8 text-teal-600" />
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-2xl md:text-3xl font-bold text-center text-gray-900 mb-2">
+            <h1 className="text-4xl md:text-3xl font-extrabold text-center text-gray-900 mb-2 leading-tight">
               Sign In to Skill-Learn
             </h1>
             <p className="text-center text-gray-600 mb-8">
@@ -177,13 +177,13 @@ const SignInPage = () => {
               <input
                 type="text"
                 placeholder="Enter your username"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/90"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
                 aria-label="username"
               />
             </div>
 
             <button
-              className="w-full bg-slate-900 text-white py-3 rounded-xl font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-3 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+              className="w-full bg-[#0b1320] text-white h-12 rounded-full font-semibold hover:bg-[#111827] transition-colors flex items-center justify-center gap-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
               aria-label="Continue"
             >
               <span>Continue</span>
@@ -210,15 +210,15 @@ const SignInPage = () => {
       </div>
 
       {/* Footer bar at bottom matching screenshot */}
-      <div className="fixed left-0 right-0 bottom-0 bg-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-gray-500 pointer-events-auto">
+      <div className="fixed left-0 right-0 bottom-0 bg-gradient-to-t from-transparent via-white/30 to-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between text-xs text-gray-400 pointer-events-auto">
           <div className="flex items-center gap-2">
-            <span>© {new Date().getFullYear()} - All rights reserved by Skill-Learn.ca</span>
+            <span className="text-[13px] text-gray-400">© {new Date().getFullYear()} — All rights reserved by Skill-Learn.ca</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <a href="#" className="hover:underline text-gray-400">Privacy Policy</a>
-            <a href="#" className="hover:underline text-gray-400">Terms of Service</a>
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-[13px] text-gray-400 hover:text-gray-600">Privacy Policy</a>
+            <a href="#" className="text-[13px] text-gray-400 hover:text-gray-600">Terms of Service</a>
           </div>
         </div>
       </div>
