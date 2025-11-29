@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import TopBanner from "./Landing/TopBanner";
+import TopBanner from "./TopBanner";
 import LandingHeader from "./Landing/LandingHeader";
 import LandingFooter from "./Landing/LandingFooter";
 
