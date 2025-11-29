@@ -2,13 +2,11 @@
 
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import HeroSection from "./components/Landing/HeroSection";
-import BuiltForEveryone from './components/Landing/BuiltForEveryone';
-import VersatilePlatform from './components/Landing/VersatilePlatform';
-import SkillLearnHere from './components/Landing/SkillLearnHere';
-import FAQ from './components/Landing/FAQ';
-import Testimonials from './components/Landing/Testimonials';
+import { useRouter } from 'next/navigation';
+import HeroBanner from "./HeroBanner";
+import Features from './Features';
+import HowItWorks from './HowItWorks';
+import Testimonials from './Testimonials';
 import { LoadingPage } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 
@@ -20,7 +18,6 @@ export default function LandingPage() {
   const { isLoaded, user } = useUser();
   const router = useRouter();
   const [error, setError] = useState(null);
-  const pathname = usePathname();
 
   // Client-side redirect fallback (middleware handles server-side)
   useEffect(() => {
@@ -29,9 +26,7 @@ export default function LandingPage() {
     }
   }, [isLoaded, user, router]);
 
-  // Don't show the global loading spinner when the client is still resolving
-  // on the landing page root ("/") — avoid blocker UI flicker for public root.
-  if (!isLoaded && pathname !== '/') {
+  if (!isLoaded) {
     return <LoadingPage />;
   }
 
@@ -68,13 +63,21 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="w-full">
-      {renderSection(HeroSection)}
-      {renderSection(BuiltForEveryone)}
-      {renderSection(VersatilePlatform)}
-      {renderSection(SkillLearnHere)}
-      {renderSection(FAQ)}
-      {renderSection(Testimonials)}
-    </main>
+    <>
+      {/* Hero Section */}
+      <section className="w-screen mb-4 overflow-x-hidden">
+        {renderSection(HeroBanner)}
+      </section>
+
+      {/* Main Content */}
+      <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 min-h-[80dvh] flex flex-col gap-8">
+        <section className="w-full max-w-3xl mx-auto grid grid-cols-1 gap-6 px-2 sm:px-4 md:px-8">
+          {renderSection(Features)}
+          {renderSection(HowItWorks)}
+          {renderSection(Testimonials)}
+        </section>
+      </main>
+    </>
   );
 }
+

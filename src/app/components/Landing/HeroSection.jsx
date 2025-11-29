@@ -102,6 +102,7 @@ export default function HeroSection() {
                       src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`}
                       alt="User"
                       fill
+                      unoptimized
                       className="object-cover"
                     />
                   </div>

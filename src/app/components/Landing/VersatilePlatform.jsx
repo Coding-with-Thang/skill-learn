@@ -138,7 +138,7 @@ export default function VersatilePlatform() {
           {/* Indicator bar */}
           <div className="relative w-full h-1 mt-1">
             <div
-              className="absolute top-0 h-1 bg-brand-teal transition-all duration-300 ease-in-out rounded-full"
+              className="absolute top-0 h-1 bg-purple-600 transition-all duration-300 ease-in-out rounded-full"
               style={{ left: indicatorStyle.left, width: indicatorStyle.width }}
             />
             <div className="w-full border-t border-gray-300" />
