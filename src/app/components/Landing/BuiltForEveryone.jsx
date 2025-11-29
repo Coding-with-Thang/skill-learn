@@ -22,7 +22,7 @@ export default function BuiltForEveryone() {
           <div className="text-brand-teal text-sm font-medium mb-6">
             WHY SKILL-LEARN
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 bg-gradient-to-r from-brand-teal to-brand-teal/70 bg-clip-text text-transparent animate-gradient-slow">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 bg-gradient-to-r from-brand-teal to-brand-teal/70 bg-clip-text animate-gradient-slow">
             Built for everyone
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
