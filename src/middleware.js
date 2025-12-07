@@ -1,9 +1,9 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "@/utils/rateLimit";
-import { protectedRoutes, rateLimits } from "@/config/routes";
+import { publicRoutes, rateLimits } from "@/config/routes";
 
-const isProtectedRoute = createRouteMatcher(protectedRoutes);
+const isPublicRoute = createRouteMatcher(publicRoutes);
 
 export default clerkMiddleware(async (auth, req) => {
   try {
@@ -31,7 +31,9 @@ export default clerkMiddleware(async (auth, req) => {
                "unknown";
 
     // Apply rate limiting based on route type
-    const rateLimit = isProtectedRoute(req)
+    // Protected routes are strictly rate limited, public routes are more lenient
+    const isProtected = !isPublicRoute(req);
+    const rateLimit = isProtected
       ? rateLimits.protected
       : rateLimits.public;
     const rateLimitResult = await rateLimiter(ip, rateLimit);
@@ -52,15 +54,9 @@ export default clerkMiddleware(async (auth, req) => {
       );
     }
 
-    // Check authentication for protected routes
-    if (!userId && isProtectedRoute(req)) {
-      return new NextResponse(
-        JSON.stringify({ error: "Unauthorized - Please sign in" }),
-        {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    // Check authentication for protected routes (all routes NOT in publicRoutes)
+    if (isProtected) {
+      await auth.protect();
     }
   } catch (error) {
     console.error("Middleware error:", {

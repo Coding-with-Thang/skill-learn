@@ -276,7 +276,7 @@ export default function RewardsAdminPage() {
             <DialogTitle>Delete Reward</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-            Are you sure you want to delete "{confirmDelete?.prize}"? This action cannot be undone.
+            Are you sure you want to delete &quot;{confirmDelete?.prize}&quot;? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
             <Button

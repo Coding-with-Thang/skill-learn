@@ -41,7 +41,7 @@ export default function AddRewards({ reward, onClose }) {
       <DialogHeader>
         <DialogTitle>Edit Reward</DialogTitle>
         <DialogDescription>
-          Make changes to the reward here. Click save when you're done.
+          Make changes to the reward here. Click save when you&apos;re done.
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">

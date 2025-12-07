@@ -37,7 +37,7 @@ export default function DailyActivities() {
 
   return (
     <Card className="w-full p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Today's Activities</h1>
+      <h1 className="text-3xl font-bold">Today&apos;s Activities</h1>
 
       {/* Points Progress */}
       <div className="space-y-4">
@@ -54,7 +54,7 @@ export default function DailyActivities() {
           <Alert variant="warning" className="bg-yellow-50 border-yellow-200">
             <AlertTriangle className="h-4 w-4 text-yellow-600" />
             <AlertDescription className="text-yellow-600">
-              Daily point limit reached! You can still participate in activities, but you won't earn additional points until tomorrow.
+              Daily point limit reached! You can still participate in activities, but you won&apos;t earn additional points until tomorrow.
             </AlertDescription>
           </Alert>
         ) : (

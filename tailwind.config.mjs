@@ -1,5 +1,4 @@
 import { fontFamily } from "tailwindcss/defaultTheme";
-import { fonts } from "./src/config/fonts.js";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -12,9 +11,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fonts.sans],
-        mono: ["var(--font-mono)", ...fonts.mono],
-        display: ["var(--font-display)", ...fonts.display],
+        sans: ["var(--font-sans)", ...fontFamily.sans],
+        mono: ["var(--font-mono)", ...fontFamily.mono],
+        display: ["var(--font-display)", ...fontFamily.sans],
       },
       borderRadius: {
         sm: "var(--radius-sm)",

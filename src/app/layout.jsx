@@ -2,7 +2,27 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Skill-Learn",
@@ -20,7 +40,7 @@ export default function RootLayout({ children }) {
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
         </head>
-        <body className="flex flex-col min-h-screen">
+        <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
           <ErrorBoundaryProvider>
             <LayoutWrapper>
               {children}

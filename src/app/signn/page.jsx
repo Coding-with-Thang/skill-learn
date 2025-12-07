@@ -195,7 +195,7 @@ const SignInPage = () => {
 
             {/* Sign up link */}
             <p className="text-center mt-6 text-sm text-[#59626b]">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a href="#" className="text-blue-600 hover:underline font-medium">
                 Sign up
               </a>

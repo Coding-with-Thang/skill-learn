@@ -108,7 +108,7 @@ export default function VersatilePlatform() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-12">
         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">The Most Versatile Work Management Platform</h2>
         <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-          Maximize your team's performance, accelerate growth, improve customer experience with our unique and
+          Maximize your team&apos;s performance, accelerate growth, improve customer experience with our unique and
           extensive customization features that make work seamless for any team or department.
         </p>
       </div>

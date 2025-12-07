@@ -95,7 +95,7 @@ export default function UserStats({ user }) {
             <div className="space-y-2">
               <h4 className="font-semibold text-foreground">Quiz Attempts</h4>
               <p className="text-sm text-muted-foreground">
-                You've attempted {totalAttempts} quizzes total. {totalCompleted} were completed successfully.
+                You&apos;ve attempted {totalAttempts} quizzes total. {totalCompleted} were completed successfully.
               </p>
             </div>
           </HoverCardContent>
@@ -117,7 +117,7 @@ export default function UserStats({ user }) {
             <div className="space-y-2">
               <h4 className="font-semibold text-foreground">Completed Quizzes</h4>
               <p className="text-sm text-muted-foreground">
-                You've successfully completed {totalCompleted} quizzes with an average score of {averageScore.toFixed(1)}%.
+                You&apos;ve successfully completed {totalCompleted} quizzes with an average score of {averageScore.toFixed(1)}%.
               </p>
             </div>
           </HoverCardContent>

@@ -31,7 +31,7 @@ export default function Testimonials() {
                 </span>
               </div>
               <p className="text-gray-200 mb-4 italic">
-                "{testimonial.quote}"
+                &quot;{testimonial.quote}&quot;
               </p>
               <div className="text-sm text-gray-400">
                 <p className="font-semibold">{testimonial.author}</p>

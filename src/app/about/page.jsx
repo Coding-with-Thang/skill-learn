@@ -89,7 +89,7 @@ export default function AboutPage() {
                     <Reveal className="md:order-1">
                         <div className="md:order-1 bg-black/10 dark:bg-black/60 p-8 rounded-lg text-white">
                             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Unlocking True Potential</h2>
-                            <p className="text-lg leading-relaxed">Your people are your most valuable asset. We ensure they don't just stay — they thrive. Skill-Learn provides the tools and insights to cultivate a dynamic environment where continuous growth and engagement become the norm.</p>
+                            <p className="text-lg leading-relaxed">Your people are your most valuable asset. We ensure they don&apos;t just stay — they thrive. Skill-Learn provides the tools and insights to cultivate a dynamic environment where continuous growth and engagement become the norm.</p>
                         </div>
                     </Reveal>
                 </div>

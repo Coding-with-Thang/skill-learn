@@ -1,23 +1,12 @@
-// Define protected routes that require authentication
-export const protectedRoutes = [
-  // Page routes
-  "/home", // User home page (authenticated dashboard)
-  "/dashboard(.*)", // All dashboard routes
-  "/quiz(.*)", // All quiz routes
-  "/achievements(.*)", // User achievements
-  "/stats(.*)", // User statistics
-  "/store(.*)", // Store related
-  "/training(.*)", // Training content and progress
-  "/rewards(.*)", // User rewards
-  "/leaderboard(.*)", // Personal rankings
-  "/games(.*)", // Game progress and states
-
-  // API routes
-  "/api/user", // Base user route
-  "/api/user/(.*)", // All user-related API routes
-  "/api/admin/(.*)", // All admin API routes
-  "/api/quiz/(.*)", // Quiz-related endpoints
-  "/api/leaderboard/(.*)", // Leaderboard data endpoints
+// Define public routes that do NOT require authentication
+export const publicRoutes = [
+  "/", // Landing page
+  "/sign-in(.*)", // Sign in page
+  "/sign-up(.*)", // Sign up page
+  "/api/webhooks(.*)", // Webhooks (Clerk, Stripe, etc)
+  "/about", // About page
+  "/discover(.*)", // Discover page (public access)
+  "/legal(.*)", // Legal pages (Privacy, Terms)
 ];
 
 // Define rate limit configurations for different route types
