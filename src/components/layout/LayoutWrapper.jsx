@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "./Header";
-import Footer from "./Footer";
-import PublicLayout from "./PublicLayout";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import PublicLayout from "@/components/layout/PublicLayout";
 import { useUser } from "@clerk/nextjs";
 
 export default function LayoutWrapper({ children }) {

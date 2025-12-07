@@ -4,13 +4,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
-import CourseEditLink from '@/components/CourseEditLink'
-import {
-    Clock, ArrowRight
-} from 'lucide-react'
-import CourseFilters from '@/components/CourseFilters'
-import Pagination from '@/components/Pagination'
-import CourseActions from '@/components/CourseActions'
+import { Clock, ArrowRight } from 'lucide-react';
+import CourseEditLink from '@/components/features/courses/CourseEditLink';
+import CourseFilters from '@/components/features/courses/CourseFilters';
+import CourseActions from '@/components/features/courses/CourseActions';
+import Pagination from '@/components/shared/Pagination';
 
 async function getCourses({ page = 1, pageSize = 5, category } = {}) {
     const where = {};

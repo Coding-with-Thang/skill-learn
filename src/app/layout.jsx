@@ -1,8 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
-import LayoutWrapper from "./components/LayoutWrapper";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import "./globals.css";
 
 export const metadata = {

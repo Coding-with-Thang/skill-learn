@@ -24,20 +24,20 @@ if (!admin.apps.length) {
     if (!projectId || !clientEmail || !privateKey || !storageBucket) {
         // Do not throw here; we will surface an error at runtime if missing. But log for clarity.
         console.warn('Firebase Admin SDK not fully configured. Make sure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_STORAGE_BUCKET are set.');
-    }
-
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId,
-                clientEmail,
-                privateKey,
-            }),
-            storageBucket,
-        });
-    } catch (e) {
-        // If initialization fails, admin may already be initialized or config invalid
-        console.warn('Firebase Admin initialization error:', e?.message || e);
+    } else {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.cert({
+                    projectId,
+                    clientEmail,
+                    privateKey,
+                }),
+                storageBucket,
+            });
+        } catch (e) {
+            // If initialization fails, admin may already be initialized or config invalid
+            console.warn('Firebase Admin initialization error:', e?.message || e);
+        }
     }
 }
 
@@ -51,60 +51,6 @@ export async function POST(req) {
         if (!file) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
-
-        // Build a plain object with the metadata we expect and validate it with Zod
-        const metadata = {
-            fileName: file.name || '',
-            contentType: file.type || '',
-            size: typeof file.size === 'number' ? file.size : (file.size ? Number(file.size) : 0),
-            isImage: typeof file.type === 'string' ? file.type.startsWith('image/') : false,
-        };
-
-        const validation = fileUploadSchema.safeParse(metadata);
-        if (!validation.success) {
-            // Return a helpful validation error payload
-            const formatted = validation.error.flatten();
-            return NextResponse.json({ error: 'Invalid file metadata', details: formatted }, { status: 400 });
-        }
-
-        // Use validated metadata for upload
-        const { fileName: originalName, contentType } = validation.data;
-
-        // Create buffer
-        const buffer = Buffer.from(await file.arrayBuffer());
-
-        // Ensure bucket is available
-        if (!storage || !storage.bucket) {
-            return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
-        }
-
-        const bucket = storage.bucket();
-        const storageFileName = `courses/${Date.now()}_${originalName}`;
-        const fileRef = bucket.file(storageFileName);
-
-        // Upload the buffer
-        await fileRef.save(buffer, {
-            metadata: {
-                contentType,
-            },
-            resumable: false,
-        });
-
-        // Make the file publicly readable (optional). Alternatively, create a signed URL.
-        // Here we'll create a signed URL valid for 7 days.
-        const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
-        const [signedUrl] = await fileRef.getSignedUrl({ action: 'read', expires: expiresAt });
-
-        // Return the signed URL and the storage path so the client can delete the file later
-        return NextResponse.json({ url: signedUrl, path: storageFileName });
-    } catch (error) {
-        return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
-    }
-}
-
-export async function DELETE(req) {
-    try {
-        const body = await req.json();
         const { path } = body || {};
         if (!path) {
             return NextResponse.json({ error: 'Missing "path" in request body' }, { status: 400 });

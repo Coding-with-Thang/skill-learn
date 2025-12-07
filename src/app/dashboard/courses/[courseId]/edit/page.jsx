@@ -32,7 +32,7 @@ import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@/components/file-uploader/Uploader";
 import { toast } from "sonner";
 import axios from "axios";
-import { useCoursesStore } from '@/store/coursesStore'
+import { useCoursesStore } from '@/app/store/coursesStore'
 
 export default function EditCoursePage() {
     const params = useParams();

@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCoursesStore } from '@/store/coursesStore'
+import { useCoursesStore } from '@/app/store/coursesStore'
 
 export default function CourseEditLink({ courseId, href, children, previewUrl, className }) {
     const router = useRouter()

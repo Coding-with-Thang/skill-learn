@@ -7,7 +7,7 @@ export async function GET(request) {
     const { userId } = getAuth(request);
 
     if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     //Find the user in the db
@@ -16,11 +16,12 @@ export async function GET(request) {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json(user);
   } catch (error) {
-    return new Response("Error getting user", { status: 500 });
+    console.error("Error getting user:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

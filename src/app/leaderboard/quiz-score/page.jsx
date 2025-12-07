@@ -1,5 +1,5 @@
-import QuizScoreLeaderboard from "@/app/components/leaderboard/QuizScoreLeaderboard";
-import BreadCrumbCom from "@/app/components/BreadCrumb"
+import QuizScoreLeaderboard from "@/components/features/leaderboard/QuizScoreLeaderboard";
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
 export default function QuizScoreLeaderboardPage() {
   return (
     <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 md:px-12 py-8">

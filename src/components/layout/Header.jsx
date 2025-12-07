@@ -8,8 +8,8 @@ import { LoadingHeader } from "@/components/ui/loading";
 import { ErrorCard } from "@/components/ui/error-boundary";
 import { useUserRole } from "@/lib/hooks/useUserRole";
 import { Navigation } from './Navigation/Navigation';
-import { Logo } from './Logo';
-import { UserButtonWrapper } from './UserButtonWrapper';
+import { Logo } from '../shared/Logo';
+import { UserButtonWrapper } from '@/components/features/auth/UserButtonWrapper';
 import ThemeSwitcher from "@/components/ui/ThemeSwitcher";
 
 export default function Header() {

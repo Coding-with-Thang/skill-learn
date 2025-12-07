@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Logo } from "@/app/components/Logo";
+import { Logo } from "@/components/shared/Logo";
 
 export default function LandingFooter() {
   const footerLinks = {

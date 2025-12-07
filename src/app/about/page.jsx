@@ -1,6 +1,6 @@
 import { CheckCircle, Handshake, Rocket, BarChart3, Sliders, Play } from 'lucide-react';
 import Image from 'next/image';
-import Reveal from '@/app/components/Reveal';
+import Reveal from '@/components/shared/Reveal';
 
 const principles = [
     {

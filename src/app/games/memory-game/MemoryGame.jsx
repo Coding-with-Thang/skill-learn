@@ -5,7 +5,7 @@ import useLocalStorage from "../../../lib/hooks/useLocalStorage";
 import { usePathname } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import QuizModal from "../../components/Quiz/QuizModal"
+import QuizModal from "@/Components/features/quiz/QuizModal"
 const MemoryGame = () => {
 
   //Local Storage

@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import TopBanner from "./TopBanner";
-import LandingHeader from "./Landing/LandingHeader";
-import LandingFooter from "./Landing/LandingFooter";
+import TopBanner from "@/components/layout/TopBanner";
+import LandingHeader from "@/components/features/landing/LandingHeader";
+import LandingFooter from "@/components/features/landing/LandingFooter";
 
 export default function PublicLayout({ children }) {
   const [loaded, setLoaded] = useState(false);

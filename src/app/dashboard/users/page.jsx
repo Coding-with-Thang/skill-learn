@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Table } from "@/components/ui/table"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import useUsersStore from "../../store/usersStore"
-import UserDetails from "@/components/UserDetails"
-import UserForm from "@/components/UserForm"
-import { UserFilters } from "@/components/UserFilters"
+import UserDetails from "@/components/features/user/UserDetails"
+import UserForm from "@/components/features/user/UserForm"
+import { UserFilters } from "@/components/features/user/UserFilters"
 
 export default function UsersPage() {
   const { users, loading, error, fetchUsers } = useUsersStore();

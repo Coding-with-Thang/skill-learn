@@ -2,7 +2,7 @@
 
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import QuizBuilder from "@/app/components/Admin/QuizBuilder"
+import QuizBuilder from "@/components/features/admin/QuizBuilder"
 
 function QuizManagerContent() {
   const searchParams = useSearchParams()

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
-import { Logo } from "@/app/components/Logo";
+import { Logo } from "@/components/shared/Logo";
 import { Button } from "@/components/ui/button";
-import { UserButtonWrapper } from "@/app/components/UserButtonWrapper";
+import { UserButtonWrapper } from "@/components/features/auth/UserButtonWrapper";
 import { Menu, X } from "lucide-react";
 
 export default function LandingHeader() {

@@ -1,5 +1,5 @@
-import LifetimePointsLeaderboard from "@/app/components/leaderboard/LifetimePointsLeaderboard";
-import BreadCrumbCom from "@/app/components/BreadCrumb";
+import LifetimePointsLeaderboard from "@/components/features/leaderboard/LifetimePointsLeaderboard";
+import BreadCrumbCom from "@/components/shared/BreadCrumb";
 
 export default function PointsLeaderboardPage() {
   return (

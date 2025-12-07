@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Pagination as UIPagination, PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination'
 import { buttonVariants } from '@/components/ui/button'
-import { useCoursesStore } from '@/store/coursesStore'
+import { useCoursesStore } from '@/app/store/coursesStore'
 
 export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5', currentPage = 1, totalPages = 1 }) {
     const storeCurrent = useCoursesStore((s) => s.currentPage)

@@ -27,7 +27,7 @@ import Gifts from "../../../public/gifts.png"
 import Chest from "../../../public/chest.png"
 
 // Components
-import Loader from "../components/loader"
+import Loader from "@/components/shared/loader"
 
 // Sub-components
 const PageHeader = () => (

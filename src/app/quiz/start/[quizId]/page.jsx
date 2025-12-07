@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Play, Trophy, Clock, Target, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
-import Loader from '@/app/components/loader'
-import BreadCrumbCom from '@/app/components/BreadCrumb'
+import Loader from "@/components/shared/loader"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
 export default function SelectedQuizPage() {
   const router = useRouter();

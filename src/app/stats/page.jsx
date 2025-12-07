@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server"
 import prisma from "@/utils/connect";
-import UserStats from "../components/User/UserStats";
+import UserStats from "@/components/features/user/UserStats";
 
 export default async function StatsPage() {
 

@@ -8,11 +8,11 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../../components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb";
 
 export default function BreadCrumbCom({ crumbs, endtrail }) {
   const { isSignedIn } = useUser();
-  
+
   // Use /home for authenticated users, / for unauthenticated (though BreadCrumb is typically only used in protected routes)
   const homeUrl = isSignedIn ? '/home' : '/';
 

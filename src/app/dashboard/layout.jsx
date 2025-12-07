@@ -1,14 +1,14 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { AppSidebar } from "../components/Admin/app-sidebar"
+import { AppSidebar } from "@/components/features/admin/app-sidebar"
 import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import BreadCrumbCom from "../components/BreadCrumb"
-import Footer from "../components/Footer"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
+import Footer from "@/components/layout/Footer"
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname()

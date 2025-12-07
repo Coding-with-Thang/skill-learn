@@ -3,11 +3,11 @@
 import { SignedIn, useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DailyActivities from "../components/User/DailyActivities";
-import MoreTraining from "../components/User/Training";
-import PerformanceLanding from "../components/User/PerformanceLanding";
-import LeaderboardLanding from "../components/User/LeaderboardLanding";
-import UserBadge from '../components/User/UserBadge';
+import DailyActivities from "@/components/features/user/DailyActivities";
+import MoreTraining from "@/components/features/user/Training";
+import PerformanceLanding from "@/components/features/user/PerformanceLanding";
+import LeaderboardLanding from "@/components/features/user/LeaderboardLanding";
+import UserBadge from "@/components/features/user/UserBadge";
 import { LoadingPage } from "@/components/ui/loading"
 import { LoadingHeader } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
