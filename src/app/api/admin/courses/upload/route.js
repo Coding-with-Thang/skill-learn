@@ -41,7 +41,14 @@ if (!admin.apps.length) {
     }
 }
 
-const storage = admin.storage();
+const getStorage = () => {
+    if (!admin.apps.length) return null;
+    try {
+        return admin.storage();
+    } catch (e) {
+        return null;
+    }
+};
 
 export async function POST(req) {
     try {
@@ -51,11 +58,68 @@ export async function POST(req) {
         if (!file) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
+
+        // Build a plain object with the metadata we expect and validate it with Zod
+        const metadata = {
+            fileName: file.name || '',
+            contentType: file.type || '',
+            size: typeof file.size === 'number' ? file.size : (file.size ? Number(file.size) : 0),
+            isImage: typeof file.type === 'string' ? file.type.startsWith('image/') : false,
+        };
+
+        const validation = fileUploadSchema.safeParse(metadata);
+        if (!validation.success) {
+            // Return a helpful validation error payload
+            const formatted = validation.error.flatten();
+            return NextResponse.json({ error: 'Invalid file metadata', details: formatted }, { status: 400 });
+        }
+
+        // Use validated metadata for upload
+        const { fileName: originalName, contentType } = validation.data;
+
+        // Create buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        const storage = getStorage();
+        // Ensure bucket is available
+        if (!storage || !storage.bucket) {
+            return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
+        }
+
+        const bucket = storage.bucket();
+        const storageFileName = `courses/content/${Date.now()}_${originalName}`;
+        const fileRef = bucket.file(storageFileName);
+
+        // Upload the buffer
+        await fileRef.save(buffer, {
+            metadata: {
+                contentType,
+            },
+            resumable: false,
+        });
+
+        // Make the file publicly readable (optional). Alternatively, create a signed URL.
+        // Here we'll create a signed URL valid for 7 days.
+        const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+        const [signedUrl] = await fileRef.getSignedUrl({ action: 'read', expires: expiresAt });
+
+        // Return the signed URL and the storage path so the client can delete the file later
+        return NextResponse.json({ url: signedUrl, path: storageFileName });
+    } catch (error) {
+        console.error('[api/admin/courses/upload] POST error:', error);
+        return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
+    }
+}
+
+export async function DELETE(req) {
+    try {
+        const body = await req.json();
         const { path } = body || {};
         if (!path) {
             return NextResponse.json({ error: 'Missing "path" in request body' }, { status: 400 });
         }
 
+        const storage = getStorage();
         if (!storage || !storage.bucket) {
             return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
         }
@@ -68,6 +132,7 @@ export async function POST(req) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error('[api/admin/courses/upload] DELETE error:', error);
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
 }
