@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import useLocalStorage from "../../../lib/hooks/useLocalStorage";
 import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import QuizModal from "@/Components/features/quiz/QuizModal"
+import QuizModal from "@/components/features/quiz/QuizModal"
 export default function NumberGuessingGame() {
 
   //Local Storage
