@@ -45,10 +45,8 @@ const storage = admin.storage();
 
 export async function POST(req) {
     try {
-        console.log('[api/admin/upload] POST invoked');
         try {
             const ct = req.headers.get('content-type');
-            console.log('[api/admin/upload] content-type:', ct);
         } catch (e) {
             /* ignore header read errors */
         }
@@ -112,7 +110,6 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
-        console.log('[api/admin/upload] DELETE invoked');
         const body = await req.json();
         const { path } = body || {};
         if (!path) {

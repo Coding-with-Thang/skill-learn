@@ -39,7 +39,6 @@ export async function getDailyPointStatus(request) {
 
     //Calculate points earned today
     const todaysPoints = todaysLogs.reduce((sum, log) => sum + log.amount, 0);
-    console.log("Points earned today:", todaysPoints);
 
     return {
       user,

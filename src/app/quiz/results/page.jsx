@@ -24,11 +24,8 @@ export default function ResultsPage() {
 
   useEffect(() => {
     async function loadResults() {
-      console.log('Loading results. Store state:', { quizResponses, selectedQuiz });
-
       // First try to get results from the store
       if (quizResponses) {
-        console.log('Found results in store:', quizResponses);
 
         // Log the audit event with correct variables
         if (selectedQuiz?.id) {
@@ -45,19 +42,18 @@ export default function ResultsPage() {
       }
 
       // If not in store, try sessionStorage
+      // If not in store, try sessionStorage
       const savedResults = sessionStorage.getItem('lastQuizResults');
-      console.log('SessionStorage results:', savedResults);
 
       if (!savedResults) {
-        console.log('No quiz results found in either location');
         setError('No quiz results found');
         router.replace("/training");
         return;
       }
 
       try {
+
         const parsedResults = JSON.parse(savedResults);
-        console.log('Parsed results:', parsedResults);
 
         // Validate that we have the required data
         if (!parsedResults || typeof parsedResults.score !== 'number') {
@@ -105,7 +101,6 @@ export default function ResultsPage() {
     );
   }
 
-  console.log('Displaying results:', results);
   // Show message for the score
   let message = "";
   if (results.score < 25) {

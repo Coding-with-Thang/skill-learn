@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { rateLimiter } from "@/middleware/rateLimit";
+import { rateLimiter } from "@/utils/rateLimit";
 import { protectedRoutes, rateLimits } from "@/config/routes";
 
 const isProtectedRoute = createRouteMatcher(protectedRoutes);
@@ -54,7 +54,6 @@ export default clerkMiddleware(async (auth, req) => {
 
     // Check authentication for protected routes
     if (!userId && isProtectedRoute(req)) {
-      console.log("Middleware - Unauthorized access to protected route");
       return new NextResponse(
         JSON.stringify({ error: "Unauthorized - Please sign in" }),
         {

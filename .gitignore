@@ -46,9 +46,4 @@ notes.md
 .eslintrc.json
 .agent
 
-# Ignore components\User\backup (normalized to forward slashes)
-components/User/backup/
-**/components/User/backup/
-src/app/components/User/backup/
-
-/archieve
+/archive
