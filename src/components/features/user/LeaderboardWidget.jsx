@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import api from "@/utils/axios";
 import { useUser } from "@clerk/nextjs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 
@@ -124,6 +125,11 @@ export default function LeaderboardWidget() {
           <div className="h-48 flex items-center justify-center text-gray-400">No data available</div>
         )}
       </CardContent>
+      <CardFooter className="flex justify-end pt-4 pb-4 border-t border-gray-100">
+        <Link href="/leaderboard" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+          View All →
+        </Link>
+      </CardFooter>
     </Card>
   );
 }

@@ -11,6 +11,8 @@ import LeaderboardWidget from "@/components/features/user/LeaderboardWidget";
 import AchievementsWidget from "@/components/features/user/AchievementsWidget";
 import DailyActivitiesWidget from "@/components/features/user/DailyActivitiesWidget";
 import TopicProgressWidget from "@/components/features/user/TopicProgressWidget";
+import PointsRewardsWidget from "@/components/features/user/PointsRewardsWidget";
+
 
 export default function HomePage() {
   const { isLoaded, user } = useUser();
@@ -54,6 +56,17 @@ export default function HomePage() {
           {/* Topic Progress - 4 cols */}
           <div className="lg:col-span-5 xl:col-span-4">
             <TopicProgressWidget />
+          </div>
+        </div>
+
+        {/* Points & Rewards Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Empty space for balance - 8 cols */}
+          <div className="lg:col-span-7 xl:col-span-8 hidden lg:block" />
+
+          {/* Points & Rewards Widget - 4 cols */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            <PointsRewardsWidget />
           </div>
         </div>
       </div>

@@ -1,7 +1,8 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import Link from "next/link";
 
 export default function TopicProgressWidget() {
   const data = [
@@ -69,6 +70,9 @@ export default function TopicProgressWidget() {
           </div>
         </div>
       </CardContent>
+      <CardFooter className="flex justify-end">
+        <Link href="/training">View All Topics</Link>
+      </CardFooter>
     </Card>
   );
 }

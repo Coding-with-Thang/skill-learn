@@ -13,7 +13,10 @@ const DAILY_POINTS_LIMIT = 100000;
 
 export default function DailyActivities() {
   const { dailyStatus, fetchUserData, isLoading } = usePointsStore();
-
+const todaysPoints = dailyStatus?.todaysPoints || 0;
+  const remainingPoints = DAILY_POINTS_LIMIT - todaysPoints;
+  const progressPercentage = (todaysPoints / DAILY_POINTS_LIMIT) * 100;
+  const isLimitReached = remainingPoints <= 0;
   useEffect(() => {
     // The data will be fetched by UserBadge, no need to fetch again
     // Just subscribe to updates
