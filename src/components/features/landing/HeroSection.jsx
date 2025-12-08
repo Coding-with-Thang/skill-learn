@@ -90,14 +90,17 @@ export default function HeroSection() {
 
   // Make grid overlay full viewport width and align it vertically to the hero
   useEffect(() => {
-    if (!gridRef.current || !heroRef.current) return;
+    const grid = gridRef.current;
+    const hero = heroRef.current;
+
+    if (!grid || !hero) return;
 
     const setGrid = () => {
-      const rect = heroRef.current.getBoundingClientRect();
+      const rect = hero.getBoundingClientRect();
       const docTop = rect.top + window.pageYOffset;
       const height = rect.height;
 
-      Object.assign(gridRef.current.style, {
+      Object.assign(grid.style, {
         position: 'fixed',
         left: '0px',
         width: '100vw',
@@ -118,16 +121,16 @@ export default function HeroSection() {
     return () => {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onScroll);
-      if (gridRef.current) {
-        gridRef.current.style.position = '';
-        gridRef.current.style.left = '';
-        gridRef.current.style.width = '';
-        gridRef.current.style.top = '';
-        gridRef.current.style.height = '';
-        gridRef.current.style.transform = '';
+      if (grid) {
+        grid.style.position = '';
+        grid.style.left = '';
+        grid.style.width = '';
+        grid.style.top = '';
+        grid.style.height = '';
+        grid.style.transform = '';
       }
     };
-  }, [gridRef.current, heroRef.current]);
+  }, []);
 
   // Manage video playback and keyboard close while modal is open
   useEffect(() => {

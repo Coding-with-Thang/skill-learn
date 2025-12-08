@@ -3,6 +3,7 @@ import { getSignedUrl } from '@/utils/adminStorage'
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import Link from "next/link";
+import Image from "next/image";
 import { Clock, ArrowRight } from 'lucide-react';
 import CourseEditLink from '@/components/features/courses/CourseEditLink';
 import CourseFilters from '@/components/features/courses/CourseFilters';
@@ -100,8 +101,8 @@ export default async function CoursesPage({ searchParams }) {
                                     <CourseActions courseId={course.id} />
                                 </div>
                                 {/* Thumbnail (flush to top and sides, no rounded corners) */}
-                                <div className="h-40 w-full overflow-hidden bg-muted rounded-t-lg shrink-0">
-                                    <img src={course.thumbnailUrl} alt={course.title} className="w-full h-full object-cover" />
+                                <div className="h-40 w-full overflow-hidden bg-muted rounded-t-lg shrink-0 relative">
+                                    <Image src={course.thumbnailUrl} alt={course.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" />
                                 </div>
 
                                 <CardHeader>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -160,11 +161,13 @@ export default function RewardsAdminPage() {
                 >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100">
-                        <img
+                      <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100 relative">
+                        <Image
                           src={reward.imageUrl}
                           alt={reward.prize}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="40px"
                         />
                       </div>
                       {reward.prize}

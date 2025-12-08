@@ -4,6 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Clock, BookOpen } from "lucide-react";
 import { notFound } from 'next/navigation';
 
@@ -39,7 +40,7 @@ export default async function PreviewCoursePage({ params }) {
         <>
             <div className="flex items-center gap-4 mb-6">
                 <Link
-                    href="/dashboard/courses" 
+                    href="/dashboard/courses"
                     className={buttonVariants({
                         variant: "outline",
                         size: "icon",
@@ -53,10 +54,12 @@ export default async function PreviewCoursePage({ params }) {
             <Card className="max-w-4xl mx-auto">
                 <CardHeader className="p-0">
                     <div className="relative w-full h-64 md:h-96 overflow-hidden rounded-t-lg">
-                        <img 
-                            src={course.thumbnailUrl} 
-                            alt={course.title} 
-                            className="w-full h-full object-cover" 
+                        <Image
+                            src={course.thumbnailUrl}
+                            alt={course.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 1024px"
                         />
                     </div>
                     <div className="p-6">
@@ -67,11 +70,10 @@ export default async function PreviewCoursePage({ params }) {
                                     {course.excerptDescription}
                                 </CardDescription>
                             </div>
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
-                                course.status === 'Published' ? 'bg-emerald-100 text-emerald-800' :
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${course.status === 'Published' ? 'bg-emerald-100 text-emerald-800' :
                                 course.status === 'Achieved' ? 'bg-blue-100 text-blue-800' :
-                                'bg-slate-100 text-slate-800'
-                            }`}>
+                                    'bg-slate-100 text-slate-800'
+                                }`}>
                                 {course.status}
                             </span>
                         </div>
@@ -95,13 +97,13 @@ export default async function PreviewCoursePage({ params }) {
                     </div>
 
                     <div className="mt-8 flex gap-4">
-                        <Link 
+                        <Link
                             href={`/dashboard/courses/${courseId}/edit`}
                             className={buttonVariants()}
                         >
                             Edit Course
                         </Link>
-                        <Link 
+                        <Link
                             href="/dashboard/courses"
                             className={buttonVariants({ variant: "outline" })}
                         >

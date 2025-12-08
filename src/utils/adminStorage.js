@@ -61,5 +61,3 @@ export async function getSignedUrl(path, expiresDays = 7) {
         return null
     }
 }
-
-export default { getSignedUrl }

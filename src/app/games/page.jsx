@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
@@ -47,11 +48,15 @@ export default function GameSelectPage() {
           {images.map((image) => (
             <Link key={image.id} href={image.route}>
               <Card className="cursor-pointer overflow-hidden transition-transform hover:scale-105">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-64 object-cover"
-                />
+                <div className="relative w-full h-64">
+                  <Image
+                    src={image.src}
+                    alt={image.alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                </div>
                 <div className="p-4">
                   <h2 className="text-xl font-semibold">{image.alt}</h2>
                   <p className="text-[var(--accent)]">{image.genre}</p>

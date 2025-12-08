@@ -122,7 +122,7 @@ export default function PointsRewardsWidget() {
                 "w-2 h-2 rounded-full",
                 isLimitReached ? "bg-red-500" : "bg-green-500 animate-pulse"
               )} />
-              <span className="text-sm font-semibold text-gray-700">Today's Progress</span>
+              <span className="text-sm font-semibold text-gray-700">Today&apos;s Progress</span>
             </div>
             <span className="text-xs text-gray-500">
               {formatNumber(todaysPoints)} / {formatNumber(dailyLimit)}

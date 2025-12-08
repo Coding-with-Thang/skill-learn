@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -141,12 +142,16 @@ export function RewardForm({ reward, onClose }) {
         />
         {formData.imageUrl && (
           <div className="mt-2 p-2 border rounded-md">
-            <img
-              src={formData.imageUrl}
-              alt="Preview"
-              className="h-32 w-full object-cover rounded-md"
-              onError={(e) => e.target.style.display = 'none'}
-            />
+            <div className="relative h-32 w-full rounded-md overflow-hidden">
+              <Image
+                src={formData.imageUrl}
+                alt="Preview"
+                fill
+                className="object-cover"
+                sizes="(max-width: 600px) 100vw, 600px"
+                onError={(e) => e.currentTarget.style.display = 'none'}
+              />
+            </div>
           </div>
         )}
       </div>
