@@ -27,10 +27,13 @@ export default async function QuizSelectPage({ params }) {
           select: {
             id: true,
             text: true,
+            imageUrl: true,
+            videoUrl: true,
             options: {
               select: {
                 id: true,
-                text: true
+                text: true,
+                isCorrect: true
               }
             }
           }

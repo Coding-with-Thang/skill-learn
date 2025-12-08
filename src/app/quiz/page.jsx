@@ -88,16 +88,17 @@ export default function QuizScreenPage() {
   const handleActiveQuestion = useCallback((option) => {
     if (!shuffledQuestionsMemo[currentIndex]) return;
 
-    const correctOption = shuffledQuestionsMemo[currentIndex]
-    console.log("Array options:", correctOption)
+    // Find the correct option from the question's options array
+    const correctOption = shuffledQuestionsMemo[currentIndex].options.find(opt => opt.isCorrect);
+    console.log("Correct option:", correctOption)
 
     const response = {
       questionId: shuffledQuestionsMemo[currentIndex].id,
       selectedOptionId: option.id,
-      isCorrect: option.id === correctOption?.id, // safer comparison
+      isCorrect: option.id === correctOption?.id, // Now comparing option IDs correctly
       question: shuffledQuestionsMemo[currentIndex].text,
       selectedAnswer: option.text,
-      correctAnswer: shuffledQuestionsMemo[currentIndex].options.find(opt => opt.isCorrect)?.text
+      correctAnswer: correctOption?.text
     };
 
     console.log('Recording response:', {
@@ -136,6 +137,14 @@ export default function QuizScreenPage() {
       setIsLoading(true);
       const totalQuestions = shuffledQuestionsMemo.length;
 
+      // Validate that we have questions
+      if (!totalQuestions || totalQuestions === 0) {
+        console.error('No questions found in quiz');
+        toast.error("Quiz has no questions. Please contact support.");
+        router.replace("/training");
+        return;
+      }
+
       // Log the responses to check what we have
       console.log('All responses:', responses);
 
@@ -161,8 +170,20 @@ export default function QuizScreenPage() {
         responses: responses.length
       });
 
-      // Calculate score percentage with more precision
-      const scorePercentage = (correctAnswers / totalQuestions) * 100;
+      // Calculate score percentage with validation to prevent division by zero
+      // Ensure we have valid numbers and handle edge cases
+      const scorePercentage = totalQuestions > 0
+        ? Math.max(0, Math.min(100, (correctAnswers / totalQuestions) * 100))
+        : 0;
+
+      // Validate the score is a valid number
+      if (isNaN(scorePercentage) || !isFinite(scorePercentage)) {
+        console.error('Invalid score calculation:', { correctAnswers, totalQuestions, scorePercentage });
+        toast.error("Error calculating score. Please try again.");
+        router.replace("/training");
+        return;
+      }
+
       console.log('Score percentage:', scorePercentage.toFixed(2));
 
       // Store detailed response data
@@ -295,8 +316,17 @@ export default function QuizScreenPage() {
 
       // Save results locally even if there's an error
       try {
+        // Calculate score safely in error handler
+        const totalQuestions = shuffledQuestionsMemo.length;
+        const correctAnswers = responses.reduce((count, response) => {
+          return count + (Boolean(response.isCorrect) ? 1 : 0);
+        }, 0);
+        const scorePercentage = totalQuestions > 0
+          ? Math.max(0, Math.min(100, (correctAnswers / totalQuestions) * 100))
+          : 0;
+
         const emergencyResults = {
-          score: scorePercentage,
+          score: isNaN(scorePercentage) || !isFinite(scorePercentage) ? 0 : scorePercentage,
           correctAnswers,
           totalQuestions,
           timeSpent: selectedQuiz?.timeLimit ? (selectedQuiz.timeLimit * 60) - timeRemaining : 0
