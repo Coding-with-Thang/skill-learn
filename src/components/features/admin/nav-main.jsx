@@ -22,7 +22,7 @@ import {
 export function NavMain({ items }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-sm text-semibold mb-5">
+      <SidebarGroupLabel className="text-sm text-semibold mb-5 group-data-[collapsible=icon]:hidden">
         <Link href="/dashboard">Admin Dashboard</Link>
       </SidebarGroupLabel>
       <SidebarMenu>

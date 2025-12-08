@@ -46,7 +46,7 @@ export default function CourseFilters({ categories = [], initialCategory = '', i
     }, [category, pageSize, router, startTransition])
 
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm text-muted-foreground">Category</label>
             <select name="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} className="rounded-md border px-2 py-1">
                 <option value="">All Categories</option>

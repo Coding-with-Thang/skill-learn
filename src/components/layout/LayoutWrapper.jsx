@@ -1,9 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import PublicLayout from "@/components/layout/PublicLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { useUser } from "@clerk/nextjs";
 
 export default function LayoutWrapper({ children }) {
@@ -23,11 +22,9 @@ export default function LayoutWrapper({ children }) {
           {children}
         </PublicLayout>
       ) : (
-        <>
-          <Header />
+        <DashboardLayout>
           {children}
-          <Footer />
-        </>
+        </DashboardLayout>
       )}
     </>
   );

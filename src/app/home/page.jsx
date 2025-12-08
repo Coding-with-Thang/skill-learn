@@ -1,97 +1,62 @@
 "use client"
 
 import { SignedIn, useUser } from '@clerk/nextjs'
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import DailyActivities from "@/components/features/user/DailyActivities";
-import MoreTraining from "@/components/features/user/Training";
-import PerformanceLanding from "@/components/features/user/PerformanceLanding";
-import LeaderboardLanding from "@/components/features/user/LeaderboardLanding";
-import UserBadge from "@/components/features/user/UserBadge";
 import { LoadingPage } from "@/components/ui/loading"
-import { LoadingHeader } from "@/components/ui/loading"
-import { ErrorCard } from "@/components/ui/error-boundary"
+
+// New Widgets
+import WelcomeBanner from "@/components/features/user/WelcomeBanner";
+import LeaderboardWidget from "@/components/features/user/LeaderboardWidget";
+import AchievementsWidget from "@/components/features/user/AchievementsWidget";
+import DailyActivitiesWidget from "@/components/features/user/DailyActivitiesWidget";
+import TopicProgressWidget from "@/components/features/user/TopicProgressWidget";
 
 export default function HomePage() {
   const { isLoaded, user } = useUser();
   const router = useRouter();
-  const [error, setError] = useState(null);
 
-  // Client-side redirect fallback (middleware handles server-side)
+  // Client-side redirect fallback
   useEffect(() => {
     if (isLoaded && !user) {
       router.push('/');
     }
   }, [isLoaded, user, router]);
 
-  if (!isLoaded) {
-    return (
-      <>
-        <LoadingHeader />
-        <LoadingPage />
-      </>
-    );
-  }
-
-  // Show loading while redirecting
-  if (!user) {
+  if (!isLoaded || !user) {
     return <LoadingPage />;
   }
 
-  if (error) {
-    return (
-      <main className="container mx-auto px-4 py-8">
-        <ErrorCard
-          error={error}
-          message="Failed to load homepage"
-          reset={() => setError(null)}
-        />
-      </main>
-    );
-  }
-
-  // Wrap each section in error boundaries
-  const renderSection = (Component, props = {}) => {
-    try {
-      return <Component {...props} />;
-    } catch (err) {
-      console.error(`Failed to render ${Component.name}:`, err);
-      return (
-        <ErrorCard
-          error={err}
-          message={`Failed to load ${Component.name}`}
-        />
-      );
-    }
-  };
-
   return (
     <SignedIn>
-      <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 md:px-8 min-h-[80dvh] flex flex-col gap-8">
-        {/* Hero Section for logged-in users */}
-        <section className="w-full mt-8 mb-6 p-8 rounded-3xl shadow-2xl bg-white/90 flex flex-col md:flex-row items-center gap-8 border border-green-200">
-          <div className="flex-1 flex flex-col items-center md:items-start">
-            {renderSection(UserBadge)}
-          </div>
-          <div className="flex-1 flex flex-col gap-6 w-full">
-            <div className="grid grid-cols-1 gap-6">
-              {renderSection(DailyActivities)}
-              {renderSection(MoreTraining)}
-            </div>
-          </div>
-        </section>
+      <div className="flex flex-col gap-8 pb-8 animate-fade-in-up">
+        <WelcomeBanner />
 
-        {/* Dashboard Widgets */}
-        <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white/80 rounded-2xl shadow-lg p-6 border border-gray-100">
-            {renderSection(PerformanceLanding)}
+        {/* Middle Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Daily Activities - 8 cols */}
+          <div className="lg:col-span-7 xl:col-span-8">
+            <DailyActivitiesWidget />
           </div>
-          <div className="bg-white/80 rounded-2xl shadow-lg p-6 border border-gray-100">
-            {renderSection(LeaderboardLanding)}
+          {/* Achievements - 4 cols */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            <AchievementsWidget />
           </div>
-        </section>
-      </main>
+        </div>
+
+        {/* Bottom Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Leaderboard - 8 cols */}
+          <div className="lg:col-span-7 xl:col-span-8">
+            <LeaderboardWidget />
+          </div>
+          {/* Topic Progress - 4 cols */}
+          <div className="lg:col-span-5 xl:col-span-4">
+            <TopicProgressWidget />
+          </div>
+        </div>
+      </div>
     </SignedIn>
   );
 }
-
