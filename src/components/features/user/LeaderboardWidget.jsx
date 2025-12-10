@@ -116,7 +116,7 @@ export default function LeaderboardWidget() {
         {isLoading ? (
           <div className="h-48 flex items-center justify-center text-gray-400">Loading...</div>
         ) : leaderboardData.length > 0 ? (
-          <div className="flex justify-center items-end gap-2 md:gap-6 mt-4 pb-4">
+          <div className="flex justify-center items-end gap-2 md:gap-6 mt-10 md:mt-8 pb-4">
             {leaderboardData[1] && <PodiumPosition user={leaderboardData[1]} position={2} metric={activeTab} />}
             {leaderboardData[0] && <PodiumPosition user={leaderboardData[0]} position={1} metric={activeTab} />}
             {leaderboardData[2] && <PodiumPosition user={leaderboardData[2]} position={3} metric={activeTab} />}
