@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader, InteractiveCardFooter } from "@/components/ui/interactive-card"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { AnimatedProgress } from "@/components/ui/animated-progress"
-import { Circle, Ellipsis, Gift, Check, Star, Coins, Clock } from "lucide-react"
+import { InteractiveCard, } from "@/components/ui/interactive-card"
+import { Circle, Gift, Check, Coins, Filter, } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { usePointsStore } from "@/app/store/pointsStore"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   Table,
   TableBody,
@@ -22,162 +26,214 @@ import {
 import { cn } from "@/lib/utils"
 import api from "@/utils/axios";
 
-// Import images
-import Gifts from "../../../public/gifts.png"
-import Chest from "../../../public/chest.png"
-
 // Components
 import Loader from "@/components/shared/loader"
 
 // Sub-components
-const PageHeader = () => (
-  <div className="flex flex-col gap-1 items-center justify-center w-full min-h-[220px] h-[220px] sm:h-[300px] bg-gradient-to-br from-game-primary to-game-secondary text-primary-foreground relative overflow-hidden">
-    <Image
-      src={Gifts}
-      height={180}
-      width={180}
-      alt="Rewards gifts"
-      className="absolute right-2 bottom-2 sm:right-9 sm:bottom-auto opacity-90 hover:opacity-100 transition-opacity w-32 h-32 sm:w-[300px] sm:h-[300px]"
-      priority
-    />
-    <h1 className="text-3xl sm:text-6xl font-bold mb-2 drop-shadow-lg text-center z-10">Get Rewards</h1>
-    <h2 className="text-lg sm:text-2xl font-bold text-primary-foreground/80 uppercase tracking-wide text-center z-10">
-      Earn points to unlock and redeem rewards from a wide variety of choices!
-    </h2>
+const RewardsHero = () => (
+  <div className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden">
+    <div className="relative z-10 max-w-2xl">
+      <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+        Rewards Dashboard
+      </h1>
+      <p className="text-blue-100 text-lg">
+        Earn points to unlock and redeem rewards from a wide variety of choices.
+      </p>
+    </div>
+    {/* Abstract shape decoration matching mockup */}
+    <div className="absolute right-0 top-0 h-full w-1/3 bg-white/10 blur-3xl transform rotate-12 translate-x-1/4 -translate-y-1/4" />
+    <div className="absolute right-0 bottom-0 h-2/3 w-1/4 bg-blue-500/20 blur-2xl rounded-full translate-x-1/8 translate-y-1/4" />
   </div>
 )
 
-const PointsBalance = ({ points }) => (
-  <section className="w-full max-w-4xl mx-auto my-8 px-2 sm:px-4">
-    <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
-      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">Your Points Balance</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-gradient-to-r from-points-primary to-points-secondary p-4 sm:p-6 rounded-xl border border-accent">
-        <div className="bg-accent rounded-full p-3 mb-2 sm:mb-0 animate-pulse">
-          <Star className="text-3xl sm:text-4xl" />
+const PointsBalance = ({ points }) => {
+  // Mock next tier data since store doesn't have it yet
+  const nextTierPoints = 8000;
+  const pointsToNextTier = Math.max(0, nextTierPoints - points);
+  const progress = Math.min(100, (points / nextTierPoints) * 100);
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="font-semibold text-gray-900 text-lg">Your Points Balance</h3>
+        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+          <Coins size={24} />
         </div>
-        <div className="flex flex-col items-center sm:items-start">
-          <span className="text-4xl sm:text-5xl font-bold text-foreground">
+      </div>
+
+      <div>
+        <div className="flex items-baseline gap-2 mb-2">
+          <span className="text-4xl font-bold text-gray-900">
             {new Intl.NumberFormat('en-US').format(points || 0)}
           </span>
-          <span className="text-muted-foreground text-base sm:text-lg">Available Points</span>
+          <span className="text-gray-500">Available Points</span>
         </div>
-      </div>
-    </InteractiveCard>
-  </section>
-)
 
-const DailyStreak = () => (
-  <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-    <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
-      <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Daily Streak</h2>
-      <div className="flex flex-col sm:flex-row gap-6 items-center justify-between">
-        <div className="flex flex-col items-center">
-          <div className="rounded-full bg-gradient-to-r from-accent to-accent-hover p-1 animate-pulse">
-            <div className="bg-card rounded-full p-4">
-              <span className="text-4xl sm:text-5xl font-bold">0</span>
-            </div>
-          </div>
-          <p className="mt-2 font-medium text-muted-foreground">Current Streak</p>
-        </div>
-        <div className="flex-1 max-w-md">
-          <div className="flex gap-2 sm:gap-4 justify-center mb-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center">
-                <Circle className="text-muted-foreground w-4 h-4 sm:w-5 sm:h-5" />
-                {i < 6 && <Ellipsis className="text-muted-foreground/50 w-4 h-4 sm:w-5 sm:h-5" />}
-              </div>
-            ))}
-          </div>
-          <p className="text-muted-foreground text-center sm:text-left">
-            Nice work! <strong>5 days away</strong> from unlocking your 500-point bonus.
-          </p>
-          <AnimatedProgress
-            value={0}
-            max={7}
-            variant="success"
-            className="mt-4"
-            showLabel={false}
-          />
-        </div>
-        <div className="flex flex-col items-center mt-4 sm:mt-0">
-          <Image
-            src={Chest}
-            width={60}
-            height={60}
-            alt="Streak bonus chest"
-            className="drop-shadow-md w-14 h-14 sm:w-20 sm:h-20 hover:scale-110 transition-transform duration-200"
-          />
-          <span className="mt-2 font-medium text-muted-foreground">Streak Bonus</span>
-        </div>
-      </div>
-    </InteractiveCard>
-  </section>
-)
-
-const RewardCard = ({ reward, onRedeem, disabled, isLoading }) => (
-  <HoverCard>
-    <HoverCardTrigger asChild>
-      <InteractiveCard className="w-full max-w-xs sm:max-w-sm transition-transform hover:scale-105 mx-auto">
-        <InteractiveCardHeader className="p-0">
-          <div className="relative h-40 sm:h-48 w-full">
-            <Image
-              src={reward.imageUrl}
-              fill
-              style={{ objectFit: 'cover' }}
-              alt={reward.prize}
-              className="rounded-t-lg transition-transform duration-300 group-hover:scale-105"
+        <div className="mt-4 space-y-2">
+          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${progress}%` }}
             />
-            <div className="absolute top-2 right-2 bg-card/70 text-card-foreground px-3 py-1 rounded-full text-sm sm:text-base backdrop-blur-sm">
-              <Star className="text-accent mr-1 inline" />
-              {new Intl.NumberFormat('en-US').format(reward.cost)}
-            </div>
           </div>
-        </InteractiveCardHeader>
-        <InteractiveCardContent className="p-4 sm:p-6">
-          <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">{reward.prize}</h3>
-          <p className="text-muted-foreground text-sm sm:text-base">{reward.description}</p>
-        </InteractiveCardContent>
-        <InteractiveCardFooter className="p-4 pt-0 sm:p-6 sm:pt-0">
-          <EnhancedButton
-            className="w-full font-medium"
-            onClick={() => onRedeem(reward)}
-            disabled={disabled || isLoading}
-            variant={disabled ? "secondary" : "default"}
-            loading={isLoading}
-          >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="animate-spin">⭐</span> Redeeming...
-              </span>
-            ) : disabled ? (
-              "Insufficient Points"
-            ) : (
-              "Redeem"
-            )}
-          </EnhancedButton>
-        </InteractiveCardFooter>
-      </InteractiveCard>
-    </HoverCardTrigger>
-    <HoverCardContent className="w-80">
-      <div className="space-y-2">
-        <h4 className="font-semibold text-foreground">{reward.prize}</h4>
-        <p className="text-sm text-muted-foreground">{reward.description}</p>
-        <div className="flex items-center gap-4 pt-2">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Coins className="h-4 w-4" />
-            <span>{new Intl.NumberFormat('en-US').format(reward.cost)} points</span>
+          <p className="text-sm text-gray-500">
+            {pointsToNextTier} points until next tier
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const DailyStreak = () => {
+  // Using existing store structure or default 0
+  const { streak } = usePointsStore();
+  const currentStreak = streak?.current || 0;
+
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="font-semibold text-gray-900 text-lg">Daily Streak</h3>
+        <div className="flex gap-1">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className={`w-2 h-2 rounded-full ${i === 4 ? 'bg-yellow-400' : 'border border-gray-300'}`} />
+          ))}
+        </div>
+      </div>
+      <div className="text-right text-xs font-medium text-orange-500 mb-4">Streak Bonus</div>
+
+      <div className="flex items-end justify-between">
+        <div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="text-4xl font-bold text-gray-900">{currentStreak}</span>
+            <span className="text-gray-500">Current Streak</span>
           </div>
-          {reward.featured && (
-            <div className="flex items-center gap-1 text-sm text-warning">
-              <Star className="h-4 w-4" />
-              <span>Featured</span>
-            </div>
+          <p className="text-sm text-gray-500 max-w-[200px]">
+            Nice! <span className="font-semibold text-gray-900">5 days away</span> from unlocking your 500-point bonus.
+          </p>
+        </div>
+        <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-100">
+          <Gift className="text-yellow-600 h-8 w-8" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
+  const { isOneTime, max, isFullyRedeemed } = status || {};
+
+  return (
+    <div className="bg-white rounded-3xl p-0 shadow-sm border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+      <div className="relative w-full md:w-2/5 h-64 md:h-auto bg-gray-900">
+        <Image
+          src={reward.imageUrl}
+          alt={reward.prize}
+          fill
+          className="object-contain p-8"
+        />
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold shadow-sm">
+          {new Intl.NumberFormat('en-US').format(reward.cost)} pts
+        </div>
+        <div className="absolute top-4 left-4 flex gap-2">
+          {isOneTime ? (
+            <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200">
+              One-time
+            </span>
+          ) : (
+            <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-purple-200">
+              {max ? `Limit: ${max}` : "Multiple"}
+            </span>
           )}
         </div>
       </div>
-    </HoverCardContent>
-  </HoverCard>
-)
+      <div className="flex-1 p-8 md:p-12 flex flex-col justify-center">
+        <h3 className="text-3xl font-bold text-gray-900 mb-4">{reward.prize}</h3>
+        <p className="text-gray-500 mb-8 max-w-lg leading-relaxed text-lg">
+          {reward.description}
+        </p>
+        <div>
+          <EnhancedButton
+            onClick={() => onRedeem(reward)}
+            disabled={disabled || isLoading}
+            loading={isLoading}
+            className={`px-8 py-6 text-lg rounded-xl min-w-[200px] ${isFullyRedeemed
+              ? "bg-gray-100/50 text-gray-400 cursor-pointer border border-gray-200"
+              : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+          >
+            {isLoading
+              ? "Processing..."
+              : isFullyRedeemed
+                ? (isOneTime ? "Already Redeemed" : "Max Redemptions Reached")
+                : "Redeem Reward"
+            }
+          </EnhancedButton>
+          {isFullyRedeemed && (
+            <p className="text-xs text-gray-400 mt-2">
+              * View details in Redemption History below
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
+  const { isOneTime, max, isFullyRedeemed } = status || {};
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+      <div className="relative h-48 w-full bg-gray-50 flex items-center justify-center p-4">
+        <div className="relative h-full w-full">
+          <Image
+            src={reward.imageUrl}
+            fill
+            className="object-contain"
+            alt={reward.prize}
+          />
+        </div>
+        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold shadow-sm border border-gray-100/50">
+          {new Intl.NumberFormat('en-US').format(reward.cost)} pts
+        </div>
+        <div className="absolute top-3 left-3">
+          {isOneTime ? (
+            <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border border-gray-200">
+              One-time
+            </span>
+          ) : (
+            <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border border-purple-200">
+              {max ? `Limit: ${max}` : "Multiple"}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="font-bold text-gray-900 mb-2 truncate" title={reward.prize}>{reward.prize}</h3>
+        <p className="text-sm text-gray-500 mb-4 line-clamp-2 flex-1" title={reward.description}>
+          {reward.description}
+        </p>
+        <EnhancedButton
+          className={`w-full rounded-xl py-5 ${isFullyRedeemed
+            ? "bg-gray-100/50 text-gray-400 border border-gray-200 hover:bg-gray-100 cursor-pointer transition-colors"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          onClick={() => onRedeem(reward)}
+          disabled={disabled || isLoading}
+          loading={isLoading}
+        >
+          {isLoading
+            ? "Processing..."
+            : isFullyRedeemed
+              ? (isOneTime ? "Redeemed" : "Max Reached")
+              : "Redeem"
+          }
+        </EnhancedButton>
+      </div>
+    </div>
+  )
+}
 
 const ClaimButton = ({ redemption, onClaim }) => {
   const [claiming, setClaiming] = useState(false)
@@ -271,6 +327,113 @@ const BlurredClaimUrl = ({ url }) => {
   );
 };
 
+const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, isLoading }) => {
+  if (!reward) return null;
+
+  const insufficientPoints = userPoints < reward.cost;
+  const pointDifference = reward.cost - userPoints;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl">
+        <div className="p-6 pb-0 relative z-10">
+          <div className="flex justify-between items-center mb-6">
+            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
+              {insufficientPoints ? (
+                <>
+                  <div className="p-2 bg-red-100 rounded-full">
+                    <div className="text-red-600 font-bold text-lg select-none">!</div>
+                  </div>
+                  <span className="text-gray-900">Insufficient Points</span>
+                </>
+              ) : (
+                <span className="text-gray-900">Confirm Redemption</span>
+              )}
+            </DialogTitle>
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <div className="relative w-full h-40 bg-gray-900 rounded-xl overflow-hidden shadow-inner">
+              <Image
+                src={reward.imageUrl}
+                alt={reward.prize}
+                fill
+                className="object-contain p-4"
+              />
+              <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded text-xs font-semibold shadow-sm">
+                {new Intl.NumberFormat('en-US').format(reward.cost)}
+              </div>
+            </div>
+          </div>
+
+          <h3 className="text-center text-xl font-bold text-gray-900 mb-2">{reward.prize}</h3>
+
+          <p className="text-center text-gray-500 text-sm mb-6 px-4">
+            {insufficientPoints
+              ? "You do not have enough points to redeem this reward yet. Complete more training modules to build your balance."
+              : "Are you sure you want to redeem this reward? This action will deduct points from your balance."
+            }
+          </p>
+
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-medium text-gray-500">Current Balance</span>
+              <span className="text-sm font-bold text-gray-900">{new Intl.NumberFormat('en-US').format(userPoints)} pts</span>
+            </div>
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-sm font-medium text-gray-500">Redemption Cost</span>
+              <span className="text-sm font-bold text-gray-900">{new Intl.NumberFormat('en-US').format(reward.cost)} pts</span>
+            </div>
+            <div className="h-px bg-gray-200 my-3"></div>
+            <div className="flex justify-between items-center">
+              <span className={`text-sm font-bold ${insufficientPoints ? 'text-red-500' : 'text-gray-500'}`}>
+                {insufficientPoints ? 'Points Shortfall' : 'Remaining Balance'}
+              </span>
+              <span className={`text-sm font-bold ${insufficientPoints ? 'text-red-500' : 'text-green-600'}`}>
+                {insufficientPoints
+                  ? (
+                    <span className="flex items-center gap-1">
+                      <span className="text-xs">📉</span> - {new Intl.NumberFormat('en-US').format(pointDifference)} pts
+                    </span>
+                  )
+                  : `${new Intl.NumberFormat('en-US').format(userPoints - reward.cost)} pts`
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 bg-gray-50 flex gap-3">
+          <EnhancedButton
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            className="flex-1 border-gray-200 hover:bg-gray-100/50 hover:text-gray-900 text-gray-700"
+            disabled={isLoading}
+          >
+            Cancel
+          </EnhancedButton>
+          {insufficientPoints ? (
+            <EnhancedButton
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => window.location.href = '/dashboard'} // Default action
+            >
+              Earn More Points
+            </EnhancedButton>
+          ) : (
+            <EnhancedButton
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={onConfirm}
+              loading={isLoading}
+            >
+              Confirm Redeem
+            </EnhancedButton>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const RedemptionGroup = ({ redemptions, onClaimReward }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const latestRedemption = redemptions[0]; // Assuming sorted by date desc
@@ -326,7 +489,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
         ) : (
           <div className="flex flex-col gap-3">
             {redemptions.map((redemption) => (
-              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 border-b border-border last:border-0">
+              <div key={redemption.id} className="flex items-center justify-between gap-4 py-2 h-[52px] border-b border-border last:border-0">
                 <ClaimButton
                   redemption={redemption}
                   onClaim={onClaimReward}
@@ -337,11 +500,23 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
         )}
       </TableCell>
       <TableCell>
-        <div className="text-sm">
-          <p className="font-medium">
-            {format(new Date(latestRedemption.createdAt), "MMM d, yyyy")}
-          </p>
-        </div>
+        {!isExpanded ? (
+          <div className="text-sm">
+            <p className="font-medium">
+              {format(new Date(latestRedemption.createdAt), "MMM d, yyyy")}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {redemptions.map((redemption) => (
+              <div key={redemption.id} className="flex items-center py-2 h-[52px] border-b border-border last:border-0">
+                <span className="text-sm font-medium">
+                  {format(new Date(redemption.createdAt), "MMM d, yyyy")}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </TableCell>
     </TableRow>
   );
@@ -415,6 +590,10 @@ export default function RewardsPage() {
   const { points, fetchPoints } = usePointsStore()
   const [redeemingRewardId, setRedeemingRewardId] = useState(null)
 
+  // Modal state
+  const [showRedeemModal, setShowRedeemModal] = useState(false);
+  const [selectedReward, setSelectedReward] = useState(null);
+
   useEffect(() => {
     fetchRewards()
     fetchPoints()
@@ -423,19 +602,66 @@ export default function RewardsPage() {
 
   const featuredReward = rewards.find(reward => reward.featured === true)
 
-  const handleRedeem = async (reward) => {
-    if (points < reward.cost) {
-      toast.error("You don't have enough points for this reward")
-      return
+  // Calculate redemption counts map
+  const redemptionCounts = rewardHistory.reduce((acc, r) => {
+    acc[r.rewardId] = (acc[r.rewardId] || 0) + 1;
+    return acc;
+  }, {});
+
+  const getRedemptionStatus = (reward) => {
+    const count = redemptionCounts[reward.id] || 0;
+    const isOneTime = !reward.allowMultiple;
+    const max = reward.maxRedemptions;
+
+    // Check if fully redeemed
+    let isFullyRedeemed = false;
+    if (isOneTime && count >= 1) isFullyRedeemed = true;
+    if (max && count >= max) isFullyRedeemed = true;
+
+    return { count, isOneTime, max, isFullyRedeemed };
+  };
+
+  const handleRedeemedClick = () => {
+    const historySection = document.getElementById('redemption-history');
+    if (historySection) {
+      historySection.scrollIntoView({ behavior: 'smooth' });
+      // Optional: highlight the table briefly
+      historySection.classList.add('ring-2', 'ring-blue-400', 'transition-all', 'duration-500');
+      setTimeout(() => historySection.classList.remove('ring-2', 'ring-blue-400'), 2000);
+    }
+  };
+
+  const handleRewardClick = (reward, status) => {
+    if (status.isFullyRedeemed) {
+      handleRedeemedClick();
+      return;
+    }
+    handleRedeem(reward);
+  };
+
+  const handleRedeem = (reward) => {
+    setSelectedReward(reward);
+    setShowRedeemModal(true);
+  }
+
+  const confirmRedemption = async () => {
+    if (!selectedReward) return;
+
+    // Check points again just in case
+    if (points < selectedReward.cost) {
+      // The modal handles this UI, but we prevent action here too
+      return;
     }
 
-    setRedeemingRewardId(reward.id)
+    setRedeemingRewardId(selectedReward.id)
     try {
-      const result = await redeemReward(reward.id)
+      const result = await redeemReward(selectedReward.id)
       if (result.success) {
-        toast.success(result.message || `Successfully redeemed ${reward.prize}`)
+        toast.success(result.message || `Successfully redeemed ${selectedReward.prize}`)
         // Refresh the reward history after successful redemption
         await fetchRewardHistory()
+        // Close modal on success
+        setShowRedeemModal(false);
       }
     } catch (error) {
       console.error('Error redeeming reward:', error)
@@ -465,62 +691,87 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageHeader />
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
+      <div className="max-w-7xl mx-auto pb-20">
+        <RewardsHero />
 
-      <main className="container mx-auto pb-20">
-        <section className="w-full max-w-4xl mx-auto px-2 sm:px-8 md:px-12 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <PointsBalance points={points} />
           <DailyStreak />
-          <div className="overflow-x-auto">
-            {/* Featured Reward */}
-            {featuredReward && (
-              <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-                <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Featured Reward</h2>
-                  <div className="max-w-2xl mx-auto">
-                    <RewardCard
-                      reward={featuredReward}
-                      onRedeem={handleRedeem}
-                      disabled={points < featuredReward.cost}
-                      isLoading={redeemingRewardId === featuredReward.id}
-                    />
-                  </div>
-                </InteractiveCard>
-              </section>
-            )}
+        </div>
+        {/* Featured Reward */}
+        {featuredReward && (
+          <section className="mb-12">
+            <div className="flex items-center gap-2 mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Featured Reward</h2>
+            </div>
+            <FeaturedRewardCard
+              reward={featuredReward}
+              status={getRedemptionStatus(featuredReward)}
+              onRedeem={(r) => handleRewardClick(r, getRedemptionStatus(r))}
+              disabled={false}
+              isLoading={redeemingRewardId === featuredReward.id}
+            />
+          </section>
+        )}
 
-            {/* All Rewards */}
-            <section className="w-full max-w-4xl mx-auto mb-8 px-2 sm:px-4">
-              <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">All Rewards</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {rewards.map((reward) => (
-                    <RewardCard
-                      key={reward.id}
-                      reward={reward}
-                      onRedeem={handleRedeem}
-                      disabled={points < reward.cost}
-                      isLoading={redeemingRewardId === reward.id}
-                    />
-                  ))}
-                </div>
-              </InteractiveCard>
-            </section>
-
-            {/* Redemption History */}
-            <section className="w-full max-w-4xl mx-auto px-2 sm:px-4">
-              <InteractiveCard className="rounded-2xl shadow-lg p-4 sm:p-8 border border-border">
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">Redemption History</h2>
-                <RedemptionHistory
-                  rewardHistory={rewardHistory}
-                  onClaimReward={handleClaimReward}
+        {/* All Rewards */}
+        <section className="mb-12">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 className="text-xl font-bold text-gray-900">All Rewards</h2>
+            <div className="flex gap-2">
+              {/* Placeholder for filters if needed, or simple text for now */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Sort by:</span>
+                <select className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white py-1.5 pl-3 pr-8">
+                  <option>Popularity</option>
+                  <option>Cost: Low to High</option>
+                  <option>Cost: High to Low</option>
+                </select>
+              </div>
+              <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <Filter className="h-4 w-4 mr-2 text-gray-500" />
+                Filter
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rewards.filter(r => r.id !== featuredReward?.id).map((reward) => {
+              const status = getRedemptionStatus(reward);
+              return (
+                <RewardCard
+                  key={reward.id}
+                  reward={reward}
+                  status={status}
+                  onRedeem={(r) => handleRewardClick(r, status)}
+                  disabled={false}
+                  isLoading={redeemingRewardId === reward.id}
                 />
-              </InteractiveCard>
-            </section>
+              );
+            })}
           </div>
         </section>
-      </main>
+
+        {/* Redemption History */}
+        <section id="redemption-history" className="scroll-mt-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Redemption History</h2>
+          <InteractiveCard className="rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <RedemptionHistory
+              rewardHistory={rewardHistory}
+              onClaimReward={handleClaimReward}
+            />
+          </InteractiveCard>
+        </section>
+      </div>
+
+      <RedemptionModal
+        open={showRedeemModal}
+        onOpenChange={setShowRedeemModal}
+        reward={selectedReward}
+        userPoints={points}
+        onConfirm={confirmRedemption}
+        isLoading={redeemingRewardId === selectedReward?.id}
+      />
     </div>
   )
 }
