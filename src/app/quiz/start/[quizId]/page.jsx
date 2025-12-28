@@ -29,6 +29,8 @@ export default function SelectedQuizPage() {
         categoryId: selectedQuiz.categoryId,
         quizId: selectedQuiz.id,
       });
+      // Clear any previous progress for this quiz
+      sessionStorage.removeItem('quizProgress');
       router.push("/quiz");
     } catch (error) {
       console.error("Error starting quiz: ", error);

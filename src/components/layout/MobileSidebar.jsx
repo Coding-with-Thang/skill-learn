@@ -41,7 +41,7 @@ export default function MobileSidebar() {
   const userNavItems = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
     { label: "My Training", href: "/training", icon: GraduationCap },
-    { label: "My Stats", href: "/stats", icon: BarChart2 },
+    { label: "My Stats", href: "/user/stats", icon: BarChart2 },
     { label: "Rewards", href: "/rewards", icon: Trophy },
   ];
 
