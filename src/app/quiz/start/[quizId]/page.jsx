@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Play, Trophy, Clock, Target, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
-import Loader from "@/components/shared/loader"
+import { Loader } from "@/components/ui/loader"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
 export default function SelectedQuizPage() {
@@ -76,7 +76,7 @@ export default function SelectedQuizPage() {
     fetchQuizStats();
   }, [selectedQuiz, router]);
 
-  if (isLoading) return <Loader />;
+  if (isLoading) return <Loader variant="gif" />;
 
   return (
     <>

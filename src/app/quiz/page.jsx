@@ -6,7 +6,7 @@ import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
 import { ArrowBigRightDash, CircleCheckBig, Clock, X, ChevronLeft, ChevronRight, BarChart2, GraduationCap, Check } from 'lucide-react'
-import Loader from "@/components/shared/loader"
+import { Loader } from "@/components/ui/loader"
 import Image from "next/image"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"

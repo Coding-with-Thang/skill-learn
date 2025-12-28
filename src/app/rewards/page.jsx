@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 import api from "@/utils/axios";
 
 // Components
-import Loader from "@/components/shared/loader"
+import { Loader } from "@/components/ui/loader"
 
 // Sub-components
 const RewardsHero = () => (
@@ -336,6 +336,7 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl">
+        {isLoading && <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50"><Loader variant="gif" /></div>}
         <div className="p-6 pb-0 relative z-10">
           <div className="flex justify-between items-center mb-6">
             <DialogTitle className="flex items-center gap-2 text-xl font-bold">
@@ -687,7 +688,7 @@ export default function RewardsPage() {
   }
 
   if (isLoading) {
-    return <Loader />
+    return <Loader variant="gif" />
   }
 
   return (

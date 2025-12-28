@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
-import { Loader2 } from "lucide-react"
+import { Loader } from "@/components/ui/loader"
 import { cn } from "@/lib/utils"
 
 const enhancedButtonVariants = cva(
@@ -63,7 +63,7 @@ const EnhancedButton = React.forwardRef(({
       {...props}
     >
       {loading && (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader variant="spinner" size="sm" className="mr-2" />
       )}
       {children}
       {/* Ripple effect */}
