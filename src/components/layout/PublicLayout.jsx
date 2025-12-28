@@ -28,7 +28,7 @@ export default function PublicLayout({ children }) {
       {/* Skip link for keyboard users */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-background focus:text-foreground focus:px-3 focus:py-2 focus:rounded-md focus:shadow-md focus:ring-2 focus:ring-primary"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-3 focus:py-2 focus:rounded-md focus:shadow-md focus:ring-2 focus:ring-teal-500"
       >
         Skip to main content
       </a>

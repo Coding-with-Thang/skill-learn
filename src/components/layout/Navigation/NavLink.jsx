@@ -8,7 +8,7 @@ export function NavLink({ href, icon: Icon, children, mobile }) {
       href={href}
       className={
         mobile
-          ? 'flex gap-2 items-center py-2 px-2 rounded text-lg font-medium hover:bg-muted transition-colors'
+          ? 'flex gap-2 items-center py-2 px-2 rounded text-lg font-medium hover:bg-gray-100 transition-colors'
           : 'flex gap-1 items-center hover:underline'
       }
     >
