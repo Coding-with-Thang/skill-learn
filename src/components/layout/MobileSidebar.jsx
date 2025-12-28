@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   GraduationCap,
   BarChart2,
+  Gamepad2,
   Trophy,
   ShieldCheck,
   User
@@ -42,6 +43,7 @@ export default function MobileSidebar() {
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
     { label: "My Training", href: "/training", icon: GraduationCap },
     { label: "My Stats", href: "/user/stats", icon: BarChart2 },
+    { label: "Games", href: "/user/stats", icon: Gamepad2 },
     { label: "Rewards", href: "/rewards", icon: Trophy },
   ];
 
