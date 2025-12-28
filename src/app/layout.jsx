@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
@@ -42,10 +43,17 @@ export default function RootLayout({ children }) {
         </head>
         <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
           <ErrorBoundaryProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-            <Toaster />
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+              <Toaster />
+            </ThemeProvider>
           </ErrorBoundaryProvider>
         </body>
       </html>

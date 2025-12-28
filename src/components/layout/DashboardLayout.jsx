@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50/50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar isOperations={isOperations} />
 
       <div className="flex-1 flex flex-col md:ml-64 transition-all duration-300">

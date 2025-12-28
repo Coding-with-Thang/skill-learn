@@ -13,7 +13,7 @@ export default function LandingHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -23,16 +23,16 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#platform" className="text-gray-700 hover:text-brand-teal transition-colors">
+            <Link href="#platform" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Platform
             </Link>
-            <Link href="#solutions" className="text-gray-700 hover:text-brand-teal transition-colors">
+            <Link href="#solutions" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Solutions
             </Link>
-            <Link href="#resources" className="text-gray-700 hover:text-brand-teal transition-colors">
+            <Link href="#resources" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Resources
             </Link>
-            <Link href="#pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
+            <Link href="#pricing" className="text-muted-foreground hover:text-primary transition-colors font-medium">
               Pricing
             </Link>
           </nav>
@@ -63,7 +63,7 @@ export default function LandingHeader() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-brand-teal hover:bg-gray-100"
+              className="p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-muted transition-colors"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -77,37 +77,37 @@ export default function LandingHeader() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-border py-4 bg-background/95 backdrop-blur-md">
             <nav className="flex flex-col gap-4">
               <Link
                 href="#platform"
-                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
+                className="text-muted-foreground hover:text-primary transition-colors px-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Platform
               </Link>
               <Link
                 href="#solutions"
-                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
+                className="text-muted-foreground hover:text-primary transition-colors px-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Solutions
               </Link>
               <Link
                 href="#resources"
-                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
+                className="text-muted-foreground hover:text-primary transition-colors px-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Resources
               </Link>
               <Link
                 href="#pricing"
-                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
+                className="text-muted-foreground hover:text-primary transition-colors px-2 font-medium"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
               </Link>
-              <div className="border-t border-gray-200 pt-4 mt-2">
+              <div className="border-t border-border pt-4 mt-2">
                 {isLoaded && (
                   <>
                     <SignedIn>
@@ -118,7 +118,7 @@ export default function LandingHeader() {
                     <SignedOut>
                       <Link
                         href="/sign-in"
-                        className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
+                        className="block text-muted-foreground hover:text-primary transition-colors px-2 py-2 font-medium"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         Log in

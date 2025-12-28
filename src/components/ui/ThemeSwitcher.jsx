@@ -1,3 +1,4 @@
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import {
     DropdownMenu,
@@ -5,57 +6,51 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Palette } from "lucide-react";
+import { Palette, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const THEMES = [
     { label: "Light", value: "light" },
     { label: "Dark", value: "dark" },
-    { label: "Ocean", value: "ocean" },
-    { label: "Sunset", value: "sunset" },
+    { label: "System", value: "system" },
 ];
 
 export default function ThemeSwitcher() {
-    const [theme, setTheme] = useState(() => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("theme") || "light";
-        }
-        return "light";
-    });
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        const root = document.documentElement;
-        // Remove all theme classes and data-theme
-        root.classList.remove("dark");
-        root.removeAttribute("data-theme");
-        if (theme === "dark") {
-            root.classList.add("dark");
-        } else if (theme !== "light") {
-            root.setAttribute("data-theme", theme);
-        }
-        localStorage.setItem("theme", theme);
-    }, [theme]);
+        setMounted(true);
+    }, []);
+
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="rounded-full w-10 h-10">
+                <Palette className="h-5 w-5" />
+                <span className="sr-only">Toggle theme</span>
+            </Button>
+        );
+    }
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    aria-label="Open theme switcher"
-                    className="flex items-center justify-center rounded-full p-2 bg-background text-foreground hover:bg-accent hover:text-accent-foreground transition"
-                    style={{ fontFamily: "var(--fun-font)", transition: "var(--transition)" }}
-                >
-                    <Palette className="w-6 h-6" />
-                </button>
+                <Button variant="ghost" size="icon" className="rounded-full w-10 h-10 transition-colors">
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" style={{ zIndex: 9999, background: "var(--background)", color: "var(--foreground)", boxShadow: "0 8px 32px 0 rgba(0,0,0,0.25)", border: "1px solid var(--border)" }}>
+            <DropdownMenuContent align="end" className="w-36">
                 {THEMES.map((t) => (
                     <DropdownMenuItem
                         key={t.value}
                         onClick={() => setTheme(t.value)}
-                        className={theme === t.value ? "font-bold bg-accent text-accent-foreground" : ""}
+                        className="flex items-center justify-between cursor-pointer"
                     >
                         {t.label}
                         {theme === t.value && (
-                            <span className="ml-auto">✓</span>
+                            <span className="ml-auto text-primary">✓</span>
                         )}
                     </DropdownMenuItem>
                 ))}

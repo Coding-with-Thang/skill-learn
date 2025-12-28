@@ -12,12 +12,12 @@ export default function Footer() {
   }
 
   return (
-    <footer className="p-4 mt-auto relative bg-gray-800 text-white">
+    <footer className="p-4 mt-auto relative bg-muted text-muted-foreground transition-colors duration-300">
       <div className="max-w-7xl mx-auto text-center">
         <p>Copyright &copy; 2025 - All rights reserved by Skill-Learn.ca</p>
         <div className="mt-4 space-x-6">
-          <Link href="/legal/privacy-policy" className="hover:text-gray-400">Privacy Policy</Link>
-          <Link href="/legal/terms-of-condition" className="hover:text-gray-400">Terms of Service</Link>
+          <Link href="/legal/privacy-policy" className="hover:text-foreground">Privacy Policy</Link>
+          <Link href="/legal/terms-of-condition" className="hover:text-foreground">Terms of Service</Link>
         </div>
       </div>
     </footer>
