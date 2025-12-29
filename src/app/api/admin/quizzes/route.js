@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { getSystemSetting } from "@/lib/actions/settings";
 
 export async function GET(request) {
   try {
@@ -53,6 +54,23 @@ export async function POST(request) {
         status: 400,
       });
     }
+
+    // Get default passing score from settings
+    const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
+
+    // Validate questions - ensure imageUrl and videoUrl are not both set
+    if (data.questions) {
+      for (const [index, question] of data.questions.entries()) {
+        if (question.imageUrl && question.videoUrl) {
+          throw new AppError(
+            `Question ${index + 1} cannot have both imageUrl and videoUrl. Please use only one.`,
+            ErrorType.VALIDATION,
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
       data: {
@@ -61,7 +79,7 @@ export async function POST(request) {
         imageUrl: data.imageUrl,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
-        passingScore: data.passingScore || 70,
+        passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
         questions: {
           create: (data.questions || Array(5).fill(null).map((_, i) => ({

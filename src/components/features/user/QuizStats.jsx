@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { format } from "date-fns"
 import { Clock, Trophy, Target } from "lucide-react"
+import { SCORE_THRESHOLDS } from "@/constants"
 import {
   Table,
   TableBody,
@@ -119,8 +120,8 @@ export default function QuizStats({ quizStats, categories }) {
                     {quiz.bestScore ? (
                       <span className={`
                         px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${quiz.bestScore >= 90 ? 'bg-green-100 text-green-800' :
-                          quiz.bestScore >= 70 ? 'bg-yellow-100 text-yellow-800' :
+                        ${quiz.bestScore >= SCORE_THRESHOLDS.EXCELLENT ? 'bg-green-100 text-green-800' :
+                          quiz.bestScore >= SCORE_THRESHOLDS.PASSING ? 'bg-yellow-100 text-yellow-800' :
                             'bg-red-100 text-red-800'}
                       `}>
                         {quiz.bestScore}%

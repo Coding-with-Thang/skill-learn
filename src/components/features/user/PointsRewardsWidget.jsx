@@ -7,6 +7,7 @@ import { usePointsStore } from "@/app/store/pointsStore";
 import api from "@/utils/axios";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ANIMATION, UI } from "@/constants";
 
 export default function PointsRewardsWidget() {
   const { points, lifetimePoints, dailyStatus, fetchUserData, isLoading } = usePointsStore();
@@ -50,8 +51,8 @@ export default function PointsRewardsWidget() {
 
   // Animated counter effect for points
   useEffect(() => {
-    const duration = 1000; // 1 second
-    const steps = 30;
+    const duration = ANIMATION.DURATION_MS;
+    const steps = ANIMATION.STEPS;
     const stepDuration = duration / steps;
 
     let currentStep = 0;
@@ -140,7 +141,7 @@ export default function PointsRewardsWidget() {
                   ? "bg-gradient-to-r from-red-400 to-red-500"
                   : "bg-gradient-to-r from-purple-500 to-blue-500"
               )}
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+              style={{ width: `${Math.min(progressPercentage, UI.MAX_PERCENTAGE)}%` }}
             />
           </div>
 

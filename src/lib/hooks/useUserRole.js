@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import api from "@/utils/axios";
+import { RETRY_CONFIG } from "@/constants";
 
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();
@@ -53,7 +54,7 @@ export function useUserRole() {
 
       // Retry logic for temporary failures
       if (
-        retryCountRef.current < 3 &&
+        retryCountRef.current < RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES &&
         (error.code === "ECONNABORTED" ||
           error.response?.status === 401 ||
           error.response?.status >= 500)
@@ -61,7 +62,7 @@ export function useUserRole() {
         retryCountRef.current += 1;
         timeoutRef.current = setTimeout(() => {
           fetchRole();
-        }, 1000 * retryCountRef.current); // Exponential backoff
+        }, RETRY_CONFIG.ROLE_FETCH_BACKOFF_BASE * retryCountRef.current); // Exponential backoff
         return;
       }
 

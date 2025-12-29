@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { getSystemSetting } from "@/lib/actions/settings";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -56,7 +57,25 @@ export async function PUT(request, { params }) {
       throw new AppError("Missing required fields", ErrorType.VALIDATION, {
         status: 400,
       });
-    }    // Update quiz and manage questions
+    }
+
+    // Get default passing score from settings
+    const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
+
+    // Validate questions - ensure imageUrl and videoUrl are not both set
+    if (data.questions) {
+      for (const [index, question] of data.questions.entries()) {
+        if (question.imageUrl && question.videoUrl) {
+          throw new AppError(
+            `Question ${index + 1} cannot have both imageUrl and videoUrl. Please use only one.`,
+            ErrorType.VALIDATION,
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Update quiz and manage questions
     let quiz = await prisma.quiz.update({
       where: { id: params.quizId },
       data: {
@@ -65,7 +84,7 @@ export async function PUT(request, { params }) {
         imageUrl: data.imageUrl,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
-        passingScore: data.passingScore || 70,
+        passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
       },
     });

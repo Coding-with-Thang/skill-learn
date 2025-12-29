@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { InteractiveCard, InteractiveCardContent } from "@/components/ui/interactive-card"
 import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { SCORE_THRESHOLDS, UI } from "@/constants"
 import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatTime } from '@/utils/formatTime'
@@ -181,8 +182,8 @@ export default function UserStats({ user }) {
                 </div>
                 <AnimatedProgress
                   value={category.averageScore || 0}
-                  max={100}
-                  variant={(category.averageScore || 0) >= 80 ? "success" : (category.averageScore || 0) >= 60 ? "warning" : "error"}
+                  max={UI.PROGRESS_BAR_MAX}
+                  variant={(category.averageScore || 0) >= SCORE_THRESHOLDS.GOOD ? "success" : (category.averageScore || 0) >= SCORE_THRESHOLDS.WARNING ? "warning" : "error"}
                   className="h-2"
                   showLabel={false}
                 />

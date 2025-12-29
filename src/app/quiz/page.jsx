@@ -11,6 +11,7 @@ import Image from "next/image"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
+import { UI } from "@/constants"
 
 // Utility functions
 const formatTime = (seconds) => {
@@ -32,26 +33,41 @@ const shuffleArray = (array) => {
 const QuestionMedia = ({ question }) => {
     const [mediaError, setMediaError] = useState(false);
 
-    if (mediaError || !question.imageUrl) {
+    // If no media exists or there's an error, don't render anything
+    if (mediaError || (!question.imageUrl && !question.videoUrl)) {
+        return null;
+    }
+
+    // Render video if videoUrl exists
+    if (question.videoUrl) {
         return (
-            <div className="flex flex-col items-center justify-center w-full h-64 bg-secondary/20 rounded-xl mb-8 text-muted-foreground">
-                <BarChart2 className="w-8 h-8 mb-2 opacity-50" />
-                <p className="text-xs font-semibold tracking-wider opacity-50">NO MEDIA REFERENCED</p>
+            <div className="relative w-full h-64 mb-8 bg-secondary/10 rounded-xl overflow-hidden">
+                <video
+                    src={question.videoUrl}
+                    controls
+                    className="w-full h-full object-contain"
+                    onError={() => setMediaError(true)}
+                />
             </div>
         );
     }
 
-    return (
-        <div className="relative w-full h-64 mb-8 bg-secondary/10 rounded-xl overflow-hidden">
-            <Image
-                src={question.imageUrl}
-                alt="Question illustration"
-                layout="fill"
-                objectFit="contain"
-                onError={() => setMediaError(true)}
-            />
-        </div>
-    );
+    // Render image if imageUrl exists
+    if (question.imageUrl) {
+        return (
+            <div className="relative w-full h-64 mb-8 bg-secondary/10 rounded-xl overflow-hidden">
+                <Image
+                    src={question.imageUrl}
+                    alt="Question illustration"
+                    layout="fill"
+                    objectFit="contain"
+                    onError={() => setMediaError(true)}
+                />
+            </div>
+        );
+    }
+
+    return null;
 };
 
 export default function QuizScreenPage() {
@@ -162,7 +178,7 @@ export default function QuizScreenPage() {
                 const currentQuestion = shuffledQuestionsMemo[currentIdx];
                 const correctOptions = currentQuestion.options.filter(opt => opt.isCorrect);
                 const correctOptionIds = correctOptions.map(opt => opt.id);
-                
+
                 // Calculate correctness for current question
                 const isCorrect =
                     currentSelected.length === correctOptionIds.length &&
@@ -196,7 +212,7 @@ export default function QuizScreenPage() {
 
                 const correctOptions = question.options.filter(opt => opt.isCorrect);
                 const correctOptionIds = correctOptions.map(opt => opt.id);
-                
+
                 // Recalculate correctness
                 const isCorrect =
                     response.selectedOptionIds.length === correctOptionIds.length &&
@@ -219,7 +235,7 @@ export default function QuizScreenPage() {
 
             // Score = correct answers / total questions (unanswered count as incorrect)
             const scorePercentage = totalQuestions > 0
-                ? Math.max(0, Math.min(100, (correctAnswers / totalQuestions) * 100))
+                ? Math.max(0, Math.min(UI.MAX_PERCENTAGE, (correctAnswers / totalQuestions) * UI.MAX_PERCENTAGE))
                 : 0;
 
             const resultsData = {

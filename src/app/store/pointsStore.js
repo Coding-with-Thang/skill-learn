@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+import { STORE } from "@/constants";
 
 // Request deduplication
 let fetchPromise = null;
-const FETCH_COOLDOWN = 5000; // 5 seconds
 
 export const usePointsStore = create((set, get) => ({
   points: 0,
@@ -28,7 +28,7 @@ export const usePointsStore = create((set, get) => ({
     if (
       !force &&
       state.lastUpdated &&
-      now - state.lastUpdated < FETCH_COOLDOWN
+      now - state.lastUpdated < STORE.FETCH_COOLDOWN
     ) {
       return {
         points: state.points,

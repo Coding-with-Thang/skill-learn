@@ -50,7 +50,7 @@ const PointsBalance = ({ points }) => {
   // Mock next tier data since store doesn't have it yet
   const nextTierPoints = 8000;
   const pointsToNextTier = Math.max(0, nextTierPoints - points);
-  const progress = Math.min(100, (points / nextTierPoints) * 100);
+  const progress = Math.min(UI.MAX_PERCENTAGE, (points / nextTierPoints) * UI.MAX_PERCENTAGE);
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
@@ -95,7 +95,7 @@ const DailyStreak = () => {
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-semibold text-gray-900 text-lg">Daily Streak</h3>
         <div className="flex gap-1">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(UI.STREAK_DISPLAY_DOTS)].map((_, i) => (
             <div key={i} className={`w-2 h-2 rounded-full ${i === 4 ? 'bg-yellow-400' : 'border border-gray-300'}`} />
           ))}
         </div>

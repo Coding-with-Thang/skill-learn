@@ -2,13 +2,14 @@
 // Note: This runs in Edge runtime (middleware), so we cannot use setInterval
 // Cleanup happens automatically when checking requests (lazy cleanup)
 // For production, consider using a shared cache like Redis or Upstash
+import { RATE_LIMIT } from "@/constants";
+
 const requests = new Map();
-const CLEANUP_INTERVAL = 15 * 60 * 1000; // 15 minutes
 
 export const rateLimiter = async (ip, options = {}) => {
   const {
-    windowMs = 15 * 60 * 1000, // 15 minutes
-    max = 100, // Limit each IP to 100 requests per windowMs
+    windowMs = RATE_LIMIT.WINDOW_MS,
+    max = RATE_LIMIT.MAX_REQUESTS,
   } = options;
 
   const now = Date.now();
@@ -17,7 +18,7 @@ export const rateLimiter = async (ip, options = {}) => {
 
   // Cleanup: Remove old entries that are beyond the cleanup interval
   // This is a lazy cleanup that happens during request processing
-  if (record && now - record.timestamp >= CLEANUP_INTERVAL) {
+  if (record && now - record.timestamp >= RATE_LIMIT.CLEANUP_INTERVAL) {
     requests.delete(key);
     record = null;
   }

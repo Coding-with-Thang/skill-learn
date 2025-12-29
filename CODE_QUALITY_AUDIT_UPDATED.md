@@ -454,19 +454,29 @@ export async function GET(request) {
 
 ---
 
-### M9. Magic Numbers in Code
+### M9. Magic Numbers in Code ✅ AUDITED
 
-**Files:** Multiple files
+**Files:** Multiple files (see `MAGIC_NUMBERS_AUDIT.md` for complete list)
 
 **Issue:** Hardcoded values without constants:
 
 - Score thresholds: `>= 90`, `>= 70` in QuizStats
-- Cache durations in axios.js
+- Score thresholds: `>= 80`, `>= 60` in UserStats
+- Cache durations in axios.js (1 hour, 5 minutes, 1 minute)
+- Retry counts and backoff delays (3 retries, 1000ms base, 30000ms max)
+- Rate limiting values (15 minutes, 100 requests)
+- Animation durations (1000ms, 30 steps)
+- Default passing score (70) in multiple files
+- UI constants (100%, 5 dots, etc.)
+
+**Status:** ✅ **AUDIT COMPLETE** - See `MAGIC_NUMBERS_AUDIT.md` for comprehensive list
 
 **Recommendation:**
 
-- Create constants file
-- Extract magic numbers
+- Create `src/constants/index.js` with organized constant groups
+- Extract all magic numbers to constants
+- Use constants consistently across codebase
+- Consider making some values configurable via system settings
 
 ---
 

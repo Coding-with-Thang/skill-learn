@@ -37,7 +37,7 @@ export default function QuizBuilder({ quizId = null }) {
         imageUrl: "",
         categoryId: "",
         timeLimit: 0,
-        passingScore: 70,
+        passingScore: 70, // Default, will be updated from settings if available
         isActive: true,
         questions: Array(5).fill(null).map((_, i) => ({
             text: "",
@@ -53,6 +53,7 @@ export default function QuizBuilder({ quizId = null }) {
 
     useEffect(() => {
         fetchCategories()
+        fetchQuizSettings()
         if (quizId) {
             fetchQuiz()
         } else {
@@ -67,6 +68,29 @@ export default function QuizBuilder({ quizId = null }) {
         } catch (error) {
             console.error("Failed to fetch categories:", error)
             toast.error("Failed to load categories")
+        }
+    }
+
+    const fetchQuizSettings = async () => {
+        try {
+            const response = await api.get("/quiz/settings")
+            const settings = response.data?.data?.quizSettings || response.data?.quizSettings
+            if (settings?.passingScoreDefault) {
+                // Only update if creating a new quiz (no quizId) or if passingScore is still the default 70
+                setQuiz(prev => {
+                    // If editing an existing quiz, keep the existing value; otherwise use settings
+                    if (quizId) {
+                        return prev; // Don't override when editing
+                    }
+                    return {
+                        ...prev,
+                        passingScore: settings.passingScoreDefault
+                    }
+                })
+            }
+        } catch (error) {
+            console.error("Failed to fetch quiz settings:", error)
+            // Keep existing default (70) if settings fetch fails
         }
     }
 
@@ -117,6 +141,12 @@ export default function QuizBuilder({ quizId = null }) {
             for (const [qIndex, question] of quiz.questions.entries()) {
                 if (!question.text.trim()) {
                     toast.error(`Question ${qIndex + 1} must have text`)
+                    return
+                }
+
+                // Validate that both imageUrl and videoUrl cannot be set
+                if (question.imageUrl && question.videoUrl) {
+                    toast.error(`Question ${qIndex + 1} cannot have both image and video. Please use only one.`)
                     return
                 }
 
@@ -205,9 +235,20 @@ export default function QuizBuilder({ quizId = null }) {
     const handleQuestionChange = (index, field, value) => {
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
-                i === index ? { ...q, [field]: value } : q
-            )
+            questions: prev.questions.map((q, i) => {
+                if (i !== index) return q;
+                
+                // If setting imageUrl, clear videoUrl
+                if (field === "imageUrl" && value) {
+                    return { ...q, imageUrl: value, videoUrl: "" };
+                }
+                // If setting videoUrl, clear imageUrl
+                if (field === "videoUrl" && value) {
+                    return { ...q, videoUrl: value, imageUrl: "" };
+                }
+                // Otherwise, just update the field
+                return { ...q, [field]: value };
+            })
         }))
     }
 
@@ -449,14 +490,30 @@ export default function QuizBuilder({ quizId = null }) {
                                 </div>
 
                                 {/* Question Settings */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label>Image URL</Label>
                                         <Input
                                             value={question.imageUrl || ""}
                                             onChange={e => handleQuestionChange(qIndex, "imageUrl", e.target.value)}
                                             placeholder="https://example.com/image.jpg"
+                                            disabled={!!question.videoUrl}
                                         />
+                                        {question.videoUrl && (
+                                            <p className="text-xs text-muted-foreground">Clear video URL to add image</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Video URL</Label>
+                                        <Input
+                                            value={question.videoUrl || ""}
+                                            onChange={e => handleQuestionChange(qIndex, "videoUrl", e.target.value)}
+                                            placeholder="https://example.com/video.mp4"
+                                            disabled={!!question.imageUrl}
+                                        />
+                                        {question.imageUrl && (
+                                            <p className="text-xs text-muted-foreground">Clear image URL to add video</p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Points</Label>
