@@ -4,7 +4,6 @@ import api from "@/utils/axios";
 // Request deduplication
 let fetchPromise = null;
 const FETCH_COOLDOWN = 5000; // 5 seconds
-let lastFetch = 0;
 
 export const usePointsStore = create((set, get) => ({
   points: 0,
