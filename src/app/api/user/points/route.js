@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { requireAuth } from "@/utils/auth";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -26,13 +27,11 @@ export async function GET(request) {
         status: 404,
       });
     }
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       points: dbUser.points,
       lifetimePoints: dbUser.lifetimePoints,
     });
   } catch (error) {
-    const errorResponse = handleApiError(error);
-    return NextResponse.json(errorResponse, { status: errorResponse.status });
+    return handleApiError(error);
   }
 }

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import api from "@/utils/axios";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
+import { extractField } from "@/utils/apiResponseAdapter";
 
 export const useRewardStore = create((set, get) => ({
   rewards: [],
@@ -12,8 +13,10 @@ export const useRewardStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get("/user/rewards");
+      // Use adapter to handle both old and new response formats
+      const rewards = extractField(response, "rewards") || [];
       set({
-        rewards: response.data.rewards,
+        rewards,
         isLoading: false,
       });
     } catch (error) {
@@ -65,8 +68,10 @@ export const useRewardStore = create((set, get) => ({
     try {
       set({ isLoading: true });
       const response = await api.get("/user/rewards/history");
+      // Use adapter to handle both old and new response formats
+      const history = extractField(response, "history") || [];
       set({
-        rewardHistory: response.data.history,
+        rewardHistory: history,
         isLoading: false,
       });
     } catch (error) {

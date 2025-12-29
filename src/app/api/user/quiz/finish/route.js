@@ -4,6 +4,7 @@ import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { awardPoints } from "@/lib/actions/points";
 import { getSystemSetting } from "@/lib/actions/settings";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(req) {
   try {
@@ -146,8 +147,7 @@ export async function POST(req) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       pointsAwarded,
       bonusAwarded,
       totalPointsAwarded: pointsAwarded + bonusAwarded,

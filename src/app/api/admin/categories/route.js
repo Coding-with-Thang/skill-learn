@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 // Get all categories
 export async function GET(request) {
@@ -23,7 +24,7 @@ export async function GET(request) {
             },
         });
 
-        return NextResponse.json(categories);
+        return successResponse({ categories });
     } catch (error) {
         return handleApiError(error);
     }
@@ -56,7 +57,7 @@ export async function POST(request) {
             },
         });
 
-        return NextResponse.json(category);
+        return successResponse({ category });
     } catch (error) {
         return handleApiError(error);
     }

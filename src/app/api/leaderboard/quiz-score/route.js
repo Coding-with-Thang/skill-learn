@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -65,10 +65,7 @@ export async function GET(request) {
       .sort((a, b) => b.averageScore - a.averageScore)
       .slice(0, 100); // Get top 100
 
-    return NextResponse.json({
-      success: true,
-      leaderboard,
-    });
+    return successResponse({ leaderboard });
   } catch (error) {
     return handleApiError(error);
   }

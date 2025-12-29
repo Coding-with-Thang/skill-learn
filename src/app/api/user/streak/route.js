@@ -2,6 +2,7 @@ import { updateStreak } from "@/lib/actions/streak";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request) {
     const userId = authResult;
 
     const result = await updateStreak(userId);
-    return NextResponse.json(result);
+    return successResponse(result);
   } catch (error) {
     return handleApiError(error);
   }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -37,10 +38,7 @@ export async function GET(request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({
-      success: true,
-      history,
-    });
+    return successResponse({ history });
   } catch (error) {
     return handleApiError(error);
   }

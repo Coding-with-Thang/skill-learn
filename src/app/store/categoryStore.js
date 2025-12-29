@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/utils/axios";
+import { extractField } from "@/utils/apiResponseAdapter";
 
 export const useCategoryStore = create(
   persist(
@@ -17,8 +18,10 @@ export const useCategoryStore = create(
           if (!response.data) {
             throw new Error("No data received from server");
           }
+          // Use adapter to handle both old and new response formats
+          const categories = extractField(response, "categories") || [];
           set({
-            categories: response.data.categories,
+            categories,
             isLoading: false,
             lastFetch: Date.now(),
           });
@@ -26,7 +29,7 @@ export const useCategoryStore = create(
           console.error("Category fetch error:", error);
           set({
             error:
-              error.response?.data?.message || "Failed to fetch categories",
+              error.response?.data?.error || error.response?.data?.message || "Failed to fetch categories",
             isLoading: false,
           });
         }

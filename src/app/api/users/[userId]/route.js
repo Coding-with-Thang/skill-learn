@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { updateClerkUser, deleteClerkUser } from "@/utils/clerk";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 // GET - Fetch single user
 export async function GET(request, { params }) {
@@ -34,7 +35,7 @@ export async function GET(request, { params }) {
             });
         }
 
-        return NextResponse.json(user);
+        return successResponse({ user });
     } catch (error) {
         return handleApiError(error);
     }
@@ -99,7 +100,7 @@ export async function PUT(request, { params }) {
             updateClerkUser(user.clerkId, { firstName, lastName })
         ]);
 
-        return NextResponse.json(updatedUser);
+        return successResponse({ user: updatedUser });
     } catch (error) {
         return handleApiError(error);
     }
@@ -131,7 +132,7 @@ export async function DELETE(request, { params }) {
             deleteClerkUser(user.clerkId)
         ]);
 
-        return NextResponse.json({ success: true });
+        return successResponse({ success: true });
     } catch (error) {
         return handleApiError(error);
     }

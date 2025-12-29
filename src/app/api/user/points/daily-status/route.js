@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getDailyPointStatus } from "@/lib/actions/points";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -12,7 +13,7 @@ export async function GET(request) {
     const userId = authResult;
 
     const status = await getDailyPointStatus(request);
-    return NextResponse.json(status);
+    return successResponse(status);
   } catch (error) {
     return handleApiError(error);
   }

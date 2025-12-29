@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -31,7 +32,7 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json(quizzes);
+    return successResponse({ quizzes });
   } catch (error) {
     return handleApiError(error);
   }
@@ -84,7 +85,7 @@ export async function POST(request) {
       }
     });
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
     return handleApiError(error);
   }

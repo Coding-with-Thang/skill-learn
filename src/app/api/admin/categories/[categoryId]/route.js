@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 // Get a specific category
 export async function GET(request, { params }) {
@@ -34,7 +35,7 @@ export async function GET(request, { params }) {
       });
     }
 
-    return NextResponse.json(category);
+    return successResponse({ category });
   } catch (error) {
     return handleApiError(error);
   }
@@ -68,7 +69,7 @@ export async function PUT(request, { params }) {
       },
     });
 
-    return NextResponse.json(category);
+    return successResponse({ category });
   } catch (error) {
     return handleApiError(error);
   }
@@ -119,7 +120,7 @@ export async function DELETE(request, { params }) {
       where: { id: categoryId },
     });
 
-    return NextResponse.json({ message: "Category deleted successfully" });
+    return successResponse({ message: "Category deleted successfully" });
   } catch (error) {
     return handleApiError(error);
   }

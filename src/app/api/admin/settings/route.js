@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server";
 import {
   getAllSystemSettings,
   updateSystemSetting,
 } from "@/lib/actions/settings";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET() {
   try {
     const settings = await getAllSystemSettings();
-    return NextResponse.json(settings);
+    return successResponse({ settings });
   } catch (error) {
     return handleApiError(error);
   }
@@ -25,7 +25,7 @@ export async function POST(request) {
     }
 
     const setting = await updateSystemSetting(key, value, description);
-    return NextResponse.json(setting);
+    return successResponse({ setting });
   } catch (error) {
     return handleApiError(error);
   }

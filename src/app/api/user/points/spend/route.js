@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(request) {
   try {
@@ -61,8 +62,7 @@ export async function POST(request) {
       return updatedUser;
     });
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       points: result.points,
       lifetimePoints: result.lifetimePoints,
     });

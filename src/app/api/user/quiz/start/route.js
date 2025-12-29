@@ -2,6 +2,7 @@ import prisma from "@/utils/connect";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(req) {
   try {
@@ -61,7 +62,7 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json({ success: true, stat });
+    return successResponse({ stat });
   } catch (error) {
     return handleApiError(error);
   }

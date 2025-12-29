@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(request, { params }) {
   try {
@@ -24,24 +25,38 @@ export async function POST(request, { params }) {
       });
     }
 
-    // Find the redemption and check if it can be claimed
-    const redemption = await prisma.rewardLog.findFirst({
-      where: {
-        id,
-        userId: user.id,
-        redeemed: true,
-        claimed: false,
-      },
+    // Use findUnique for unique identifier lookup
+    const redemption = await prisma.rewardLog.findUnique({
+      where: { id },
       include: {
         reward: true,
       },
     });
 
     if (!redemption) {
+      throw new AppError("Reward redemption not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
+    }
+
+    // Validate state after fetching
+    if (redemption.userId !== user.id) {
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 403 });
+    }
+
+    if (!redemption.redeemed) {
       throw new AppError(
-        "Reward redemption not found or already claimed",
-        ErrorType.NOT_FOUND,
-        { status: 404 }
+        "Reward redemption has not been redeemed yet",
+        ErrorType.VALIDATION,
+        { status: 400 }
+      );
+    }
+
+    if (redemption.claimed) {
+      throw new AppError(
+        "Reward redemption has already been claimed",
+        ErrorType.VALIDATION,
+        { status: 400 }
       );
     }
 
@@ -55,10 +70,7 @@ export async function POST(request, { params }) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      redemption: updatedRedemption,
-    });
+    return successResponse({ redemption: updatedRedemption });
   } catch (error) {
     return handleApiError(error);
   }

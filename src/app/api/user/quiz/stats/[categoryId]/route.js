@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(req, { params }) {
   try {
@@ -44,7 +45,7 @@ export async function GET(req, { params }) {
       },
     });
 
-    return NextResponse.json(
+    return successResponse(
       stats || {
         attempts: 0,
         completed: 0,

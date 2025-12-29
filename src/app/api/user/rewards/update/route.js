@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function PUT(request) {
   try {
@@ -51,10 +52,7 @@ export async function PUT(request) {
         `Updated reward: ${updateData.prize} (set as featured)`
       );
 
-      return NextResponse.json({
-        success: true,
-        reward: result,
-      });
+      return successResponse({ reward: result });
     } else {
       // If not setting as featured, just update the reward normally
       const updatedReward = await prisma.reward.update({
@@ -71,10 +69,7 @@ export async function PUT(request) {
         `Updated reward: ${updateData.prize}`
       );
 
-      return NextResponse.json({
-        success: true,
-        reward: updatedReward,
-      });
+      return successResponse({ reward: updatedReward });
     }
   } catch (error) {
     return handleApiError(error);

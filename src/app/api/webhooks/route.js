@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import prisma from "@/utils/connect";
 import { NextResponse } from "next/server";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(req) {
   try {
@@ -84,7 +85,7 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
     return handleApiError(error);
   }

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
       timeLimit: 30, // Default time limit in minutes
     };
 
-    return NextResponse.json(quizSettings, { status: 200 });
+    return successResponse({ quizSettings });
   } catch (error) {
     return handleApiError(error);
   }

@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -23,10 +23,7 @@ export async function GET(request) {
       rank: index + 1,
     }));
 
-    return NextResponse.json({
-      success: true,
-      leaderboard: rankedLeaderboard,
-    });
+    return successResponse({ leaderboard: rankedLeaderboard });
   } catch (error) {
     return handleApiError(error);
   }

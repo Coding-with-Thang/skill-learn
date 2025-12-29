@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request, { params }) {
   try {
@@ -14,11 +15,9 @@ export async function GET(request, { params }) {
 
     let category;
     try {
-      category = await prisma.category.findFirst({
-        where: {
-          id: categoryId,
-          isActive: true,
-        },
+      // Use findUnique for unique identifier lookup
+      category = await prisma.category.findUnique({
+        where: { id: categoryId },
         include: {
           _count: {
             select: { quizzes: true },
@@ -37,7 +36,14 @@ export async function GET(request, { params }) {
       });
     }
 
-    return NextResponse.json({ category });
+    // Validate business rule after fetching
+    if (!category.isActive) {
+      throw new AppError("Category is not active", ErrorType.VALIDATION, {
+        status: 403,
+      });
+    }
+
+    return successResponse({ category });
   } catch (error) {
     return handleApiError(error);
   }

@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { rewardRedeemed } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(request) {
   try {
@@ -120,8 +121,7 @@ export async function POST(request) {
     // Log audit event
     await rewardRedeemed(user.id, rewardId, reward.prize, reward.cost);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       message: `Successfully redeemed ${reward.prize}`,
       remainingPoints: result.updatedPoints,
       redemptionId: result.rewardLog.id,

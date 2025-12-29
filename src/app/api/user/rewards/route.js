@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET() {
   try {
@@ -18,9 +18,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({
-      rewards,
-    });
+    return successResponse({ rewards });
   } catch (error) {
     return handleApiError(error);
   }

@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
 import { requireAdmin, requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -51,7 +52,7 @@ export async function GET(request) {
       take: limit,
     });
 
-    return NextResponse.json({
+    return successResponse({
       logs,
       pagination: {
         total,
@@ -88,7 +89,7 @@ export async function POST(request) {
 
     await logAuditEvent(user.id, action, resource, resourceId, details);
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
     return handleApiError(error);
   }

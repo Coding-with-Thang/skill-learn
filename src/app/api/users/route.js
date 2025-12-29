@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { clerkClient } from '@clerk/nextjs/server';
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
@@ -30,7 +31,7 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({ users });
+    return successResponse({ users });
   } catch (error) {
     return handleApiError(error);
   }
@@ -97,7 +98,7 @@ export async function POST(request) {
       },
     });
 
-    return NextResponse.json(newUser);
+    return successResponse({ user: newUser });
   } catch (error) {
     return handleApiError(error, "Failed to create user");
   }

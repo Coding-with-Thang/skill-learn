@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createCourse } from '../actions';
 import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
+import { successResponse } from '@/utils/apiWrapper';
 
 export async function POST(req) {
     try {
@@ -10,7 +11,7 @@ export async function POST(req) {
         const result = await createCourse(body);
 
         if (result?.status === 'success') {
-            return NextResponse.json(result, { status: 200 });
+            return successResponse(result);
         }
 
         // For validation or other errors, throw AppError

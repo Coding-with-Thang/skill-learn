@@ -4,6 +4,7 @@ import { pointsAwarded } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { awardPoints } from "@/lib/actions/points";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(request) {
   try {
@@ -26,8 +27,7 @@ export async function POST(request) {
 
     await pointsAwarded(userId, result.awarded, reason);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       points: result.points,
       lifetimePoints: result.lifetimePoints,
       awarded: result.awarded,

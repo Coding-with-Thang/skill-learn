@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import { z } from 'zod';
 import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
+import { successResponse } from '@/utils/apiWrapper';
 
 export const fileUploadSchema = z.object({
     fileName: z.string().min(1, { message: "Filename is required" }),
@@ -115,7 +116,7 @@ export async function POST(req) {
         const [signedUrl] = await fileRef.getSignedUrl({ action: 'read', expires: expiresAt });
 
         // Return the signed URL and the storage path so the client can delete the file later
-        return NextResponse.json({ url: signedUrl, path: storageFileName });
+        return successResponse({ url: signedUrl, path: storageFileName });
     } catch (error) {
         return handleApiError(error);
     }
@@ -144,7 +145,7 @@ export async function DELETE(req) {
         // Attempt to delete the file. If the file does not exist, surface an informative error.
         await fileRef.delete();
 
-        return NextResponse.json({ success: true });
+        return successResponse({ success: true });
     } catch (error) {
         return handleApiError(error);
     }

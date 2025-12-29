@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -34,7 +35,7 @@ export async function GET(request, { params }) {
       });
     }
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
     return handleApiError(error);
   }
@@ -114,7 +115,7 @@ export async function PUT(request, { params }) {
       },
     });
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
     return handleApiError(error);
   }
@@ -133,7 +134,7 @@ export async function DELETE(request, { params }) {
       where: { id: params.quizId },
     });
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
     return handleApiError(error);
   }
