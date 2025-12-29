@@ -269,11 +269,11 @@ describe("getQuizStatus", () => {
 - **After**: Helper functions can be imported and reused across components
 - **Impact**: DRY principle, consistent behavior
 
-### 5. **Type Safety** (with JSDoc)
+### 5. **Type Safety** (with TypeScript)
 
 - **Before**: No type checking for nested ternaries
-- **After**: Functions can have JSDoc type annotations
-- **Impact**: Better IDE support and documentation
+- **After**: Functions can have explicit return types
+- **Impact**: Catch errors at compile time
 
 ### 6. **Performance** (with memoization)
 

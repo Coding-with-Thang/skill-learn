@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/utils/auth';
 import admin from 'firebase-admin';
 import { z } from 'zod';
 import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
@@ -54,6 +55,11 @@ const getStorage = () => {
 
 export async function POST(req) {
     try {
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
+        }
+
         try {
             const ct = req.headers.get('content-type');
         } catch (e) {
@@ -124,6 +130,11 @@ export async function POST(req) {
 
 export async function DELETE(req) {
     try {
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
+        }
+
         const body = await req.json();
         const { path } = body || {};
         if (!path) {

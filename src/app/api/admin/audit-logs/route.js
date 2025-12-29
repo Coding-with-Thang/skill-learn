@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
-import { requireAdmin, requireAuth } from "@/utils/auth";
+import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
 
@@ -67,23 +67,11 @@ export async function GET(request) {
 }
 export async function POST(request) {
   try {
-    const authResult = await requireAuth();
-    if (authResult instanceof NextResponse) {
-      return authResult;
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
-    const userId = authResult;
-
-    // Get the actual user ID from the database
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { id: true },
-    });
-
-    if (!user) {
-      throw new AppError("User not found", ErrorType.NOT_FOUND, {
-        status: 404,
-      });
-    }
+    const { user } = adminResult;
 
     const { action, resource, resourceId, details } = await request.json();
 

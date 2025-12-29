@@ -61,7 +61,7 @@ Based on codebase analysis, the following response formats are currently in use:
 #### Inconsistent Access Patterns
 
 - Stores and components must handle different response structures
-- Type safety is harder (must account for all variants in validation)
+- Type safety is harder (TypeScript interfaces must account for all variants)
 - Higher risk of runtime errors from accessing wrong properties
 
 #### Current Issues Found:
@@ -143,10 +143,10 @@ mockResponse = [...] // Different again!
 
 ### 6. **Type Safety Problems**
 
-#### Type Safety Challenges
+#### TypeScript Challenges
 
 - Can't create generic response types
-- Must define separate schemas for each route
+- Must define separate interfaces for each route
 - Shared response utilities are harder to type
 - Type inference breaks down with inconsistent shapes
 
@@ -235,21 +235,19 @@ function mockApiResponse(data) {
 
 ### 6. **Better Type Safety**
 
-```javascript
-// Generic response structure (using JSDoc)
-/**
- * @template T
- * @typedef {Object} ApiResponse
- * @property {boolean} success
- * @property {T} data
- * @property {Object} [error]
- * @property {string} error.message
- * @property {string} error.code
- */
+```typescript
+// Generic response type
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: {
+    message: string;
+    code: string;
+  };
+}
 
 // Works for all routes
-// @type {ApiResponse<Category[]>}
-const response = await api.get("/categories");
+const response: ApiResponse<Category[]> = await api.get("/categories");
 ```
 
 ## Potential Issues with Standardization
@@ -357,15 +355,15 @@ const response = await api.get("/categories");
 
 ### Proposed Structure:
 
-```javascript
+```typescript
 // Success Response
 {
   success: true,
   data: T,  // The actual response data
-  meta: {   // Optional metadata
-    timestamp: string,
-    version: string,
-    pagination: {...}
+  meta?: {  // Optional metadata
+    timestamp?: string;
+    version?: string;
+    pagination?: {...};
   }
 }
 
@@ -373,9 +371,9 @@ const response = await api.get("/categories");
 {
   success: false,
   error: {
-    message: string,
-    code: string,
-    details: any  // Optional
+    message: string;
+    code: string;
+    details?: any;
   }
 }
 ```
@@ -395,7 +393,6 @@ const response = await api.get("/categories");
    - Phase 4: Remaining routes
 
 3. **Client-Side Adapter** (temporary):
-
    ```javascript
    // utils/apiResponseAdapter.js
    export function getResponseData(response, endpoint) {

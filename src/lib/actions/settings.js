@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/utils/connect";
-import { auth } from "@clerk/nextjs/server";
+import { requireAdminForAction } from "@/utils/auth";
 
 const DEFAULT_SETTINGS = {
   // Points System
@@ -50,23 +50,17 @@ export async function getSystemSetting(key) {
   }
 }
 
+/**
+ * Update a system setting
+ * @param {string} key - Setting key
+ * @param {string|number} value - Setting value
+ * @param {string|null} description - Optional description
+ * @returns {Promise<object>} Updated setting
+ */
 export async function updateSystemSetting(key, value, description = null) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-
-    // Get user to check role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { id: true, role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      throw new Error("Unauthorized - Admin access required");
-    }
+    // Check admin authorization
+    const { user } = await requireAdminForAction();
 
     // Validate setting exists
     if (!DEFAULT_SETTINGS.hasOwnProperty(key)) {
@@ -96,24 +90,14 @@ export async function updateSystemSetting(key, value, description = null) {
   }
 }
 
+/**
+ * Get all system settings
+ * @returns {Promise<object>} All system settings merged with defaults
+ */
 export async function getAllSystemSettings() {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      throw new Error("Authentication required");
-    }
-
-    // Get user to check role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      throw new Error("Unauthorized - Admin access required");
-    }
-
+    // Check admin authorization
+    await requireAdminForAction();
     const settings = await prisma.systemSetting.findMany({
       include: {
         user: {

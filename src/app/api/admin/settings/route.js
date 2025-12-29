@@ -1,7 +1,9 @@
+import { NextResponse } from "next/server";
 import {
   getAllSystemSettings,
   updateSystemSetting,
 } from "@/lib/actions/settings";
+import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
 import { validateRequestBody } from "@/utils/validateRequest";
@@ -10,6 +12,11 @@ import { z } from "zod";
 
 export async function GET() {
   try {
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
     const settings = await getAllSystemSettings();
     return successResponse({ settings });
   } catch (error) {
@@ -19,6 +26,11 @@ export async function GET() {
 
 export async function POST(request) {
   try {
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
     const { key, value, description } = await validateRequestBody(request, settingUpdateSchema.extend({
       description: z.string().optional(),
     }));

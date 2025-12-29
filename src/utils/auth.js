@@ -48,3 +48,28 @@ export async function requireAdmin() {
   return { userId, user };
 }
 
+/**
+ * Require admin (OPERATIONS) role for server actions
+ * Throws Error if not authorized (for server actions that can't return NextResponse)
+ * @returns {Promise<{userId: string, user: object}>} The authenticated user's Clerk ID and user record
+ * @throws {Error} If not authenticated or not admin
+ */
+export async function requireAdminForAction() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    throw new Error("Authentication required");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true, role: true },
+  });
+
+  if (!user || user.role !== "OPERATIONS") {
+    throw new Error("Unauthorized - Requires OPERATIONS role");
+  }
+
+  return { userId, user };
+}
+

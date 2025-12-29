@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { successResponse } from "@/utils/apiWrapper";
+import { requireAdmin } from "@/utils/auth";
 import admin from "firebase-admin";
 import { z } from "zod";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
@@ -56,6 +57,11 @@ const getStorage = () => {
 
 export async function POST(req) {
   try {
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
     const formData = await req.formData();
     // Get the uploaded file from the form data
     const file = formData.get("file");
@@ -134,6 +140,11 @@ export async function POST(req) {
 
 export async function DELETE(req) {
   try {
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
     const body = await req.json();
     const { path } = body || {};
     if (!path) {

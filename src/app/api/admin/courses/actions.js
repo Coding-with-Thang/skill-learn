@@ -2,9 +2,15 @@
 
 import { courseSchema } from "@/lib/zodSchemas";
 import prisma from "@/utils/connect";
-import { auth } from "@clerk/nextjs/server";
 
-export async function createCourse(data) {
+/**
+ * Create a new course
+ * Note: Admin check should be performed at route level before calling this function
+ * @param {object} data - Course data to validate
+ * @param {string} userId - Database user ID (from requireAdmin result)
+ * @returns {Promise<object>} Result object with status, message, and course data
+ */
+export async function createCourse(data, userId) {
     try {
         const validation = courseSchema.safeParse(data);
 
@@ -17,29 +23,10 @@ export async function createCourse(data) {
             }
         }
 
-        // Get authenticated user id from Clerk (server-side)
-        const { userId: clerkUserId } = await auth();
-        if (!clerkUserId) {
+        if (!userId) {
             return {
                 status: "error",
-                message: "Authentication required",
-            };
-        }
-
-        // Translate Clerk user id to the Prisma User._id (ObjectId string) by looking up by clerkId.
-        const dbUser = await prisma.user.findUnique({ where: { clerkId: clerkUserId } });
-        if (!dbUser) {
-            return {
-                status: "error",
-                message: "Authenticated user not found in database. Please ensure the user exists in the users collection.",
-            };
-        }
-
-        // Role-based authorization: only OPERATIONS users may create courses
-        if (dbUser.role !== 'OPERATIONS') {
-            return {
-                status: 'error',
-                message: 'Forbidden: insufficient permissions. Only users with the OPERATIONS role can create courses.',
+                message: "User ID is required",
             };
         }
 
@@ -55,7 +42,7 @@ export async function createCourse(data) {
             excerptDescription: validation.data.excerptDescription,
             slug: validation.data.slug,
             status: validation.data.status,
-            userId: dbUser.id,
+            userId: userId,
         }
 
         const createdCourse = await prisma.course.create({ data: payload })

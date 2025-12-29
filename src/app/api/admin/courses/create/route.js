@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createCourse } from '../actions';
+import { requireAdmin } from '@/utils/auth';
 import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
 import { successResponse } from '@/utils/apiWrapper';
 
 export async function POST(req) {
     try {
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
+        }
+        const { user } = adminResult;
+
         const body = await req.json();
 
         // Forward to server action that performs validation and DB write
-        const result = await createCourse(body);
+        const result = await createCourse(body, user.id);
 
         if (result?.status === 'success') {
             return successResponse(result);

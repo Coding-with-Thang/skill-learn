@@ -9,7 +9,7 @@
 ## Executive Summary
 
 **Previous Audit:** 47 issues identified  
-**Current Status:** Significant improvements made, **31 remaining issues** identified
+**Current Status:** Significant improvements made, **30 remaining issues** identified
 
 ### ✅ Issues Resolved (15 fixed)
 
@@ -20,7 +20,7 @@
 5. ✅ **Stores consolidated** - All stores now in `src/app/store/`
 6. ✅ **Component structure reorganized** - Better organization in `src/components/features/`
 
-### ⚠️ Remaining Issues (31 issues)
+### ⚠️ Remaining Issues (30 issues)
 
 - **Critical:** 1 syntax error
 - **High Priority:** 8 issues
@@ -556,29 +556,65 @@ export async function GET(request) {
 
 ## 🟢 LOW PRIORITY ISSUES
 
-### L1. Inconsistent Component File Extensions
+### L1. Inconsistent Component File Extensions ✅ RESOLVED
 
-**Files:** Component files
+**Files:** `src/components/features/leaderboard/LifetimePointsLeaderboard.js`
 
-**Issue:** Mix of `.js` and `.jsx` (though most are correct now).
+**Issue:** One React component still used `.js` extension instead of `.jsx`.
 
-**Recommendation:**
+**Status:** ✅ **RESOLVED**
 
-- Use `.jsx` for all React components
-- Use `.js` only for non-JSX files
+**Resolution:**
+
+- Renamed `LifetimePointsLeaderboard.js` to `LifetimePointsLeaderboard.jsx`
+- All React components now use `.jsx` extension
+- No import updates needed (component was not in use)
+
+**Verification:**
+
+- ✅ File successfully renamed
+- ✅ All React components now use `.jsx` extension
+- ✅ No linter errors introduced
 
 ---
 
-### L2. Inconsistent Admin Role Checking
+### L2. Inconsistent Admin Role Checking ⚠️ AUDITED
 
 **Files:** Admin API routes
 
-**Issue:** Some routes may have inconsistent role checks.
+**Issue:** Multiple patterns for admin checking, and some routes missing checks entirely.
+
+**Status:** ⚠️ **AUDIT COMPLETE** - See `ADMIN_ROLE_CHECKING_AUDIT.md` for detailed findings
+
+**Findings:**
+
+1. **✅ Standardized Pattern (Most Common):**
+
+   - 20+ endpoints correctly use `requireAdmin()` from `@/utils/auth`
+   - Routes: categories, quizzes, courses (most), users, audit-logs (GET)
+
+2. **⚠️ Manual Pattern (Inconsistent):**
+
+   - `src/lib/actions/settings.js` - Manual role check with different error handling
+   - `src/app/api/admin/courses/actions.js` - Manual role check with different error format
+   - These duplicate logic and have inconsistent error messages
+
+3. **❌ Missing Admin Checks (CRITICAL):**
+   - `src/app/api/admin/users/points/route.js` - **NO ADMIN CHECK** (exposes all user data)
+   - `src/app/api/admin/courses/upload/route.js` - **NO ADMIN CHECK** (file upload/delete)
+   - `src/app/api/admin/upload/route.js` - **NO ADMIN CHECK** (file upload/delete)
+   - `src/app/api/admin/audit-logs/route.js` - POST uses `requireAuth()` instead of `requireAdmin()`
+
+**Security Risk:** 🔴 **HIGH** - 5 endpoints are accessible without proper authorization
 
 **Recommendation:**
 
-- Create shared `requireAdmin` utility
-- Audit all admin routes
+1. **CRITICAL:** Add `requireAdmin()` to all missing routes immediately
+2. **HIGH:** Standardize server actions to use `requireAdmin()` or check at route level
+3. **MEDIUM:** Create wrapper utility for server action admin checks
+4. **LOW:** Add tests to verify admin-only access
+
+**Detailed Report:** See `ADMIN_ROLE_CHECKING_AUDIT.md` for complete analysis and implementation examples
 
 ---
 
@@ -672,12 +708,12 @@ export async function GET(request) {
 - ✅ Font configs consolidated
 - ✅ Backup directory removed
 
-### Remaining Issues: 31
+### Remaining Issues: 30
 
 - Critical: 0
 - High: 8
-- Medium: 15
-- Low: 8
+- Medium: 14
+- Low: 7
 
 ### Bundle Size Impact
 
