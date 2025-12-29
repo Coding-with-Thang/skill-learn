@@ -3,6 +3,8 @@ import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { categoryCreateSchema } from "@/lib/zodSchemas";
 
 // Get all categories
 export async function GET(request) {
@@ -38,14 +40,7 @@ export async function POST(request) {
             return adminResult;
         }
 
-        const data = await request.json();
-
-        // Validate required fields
-        if (!data.name) {
-            throw new AppError("Name is required", ErrorType.VALIDATION, {
-                status: 400,
-            });
-        }
+        const data = await validateRequestBody(request, categoryCreateSchema);
 
         // Create new category
         const category = await prisma.category.create({

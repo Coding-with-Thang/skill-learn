@@ -4,6 +4,9 @@ import {
 } from "@/lib/actions/settings";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { settingUpdateSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
 
 export async function GET() {
   try {
@@ -16,13 +19,9 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { key, value, description } = await request.json();
-
-    if (!key || value === undefined) {
-      throw new AppError("Key and value are required", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { key, value, description } = await validateRequestBody(request, settingUpdateSchema.extend({
+      description: z.string().optional(),
+    }));
 
     const setting = await updateSystemSetting(key, value, description);
     return successResponse({ setting });

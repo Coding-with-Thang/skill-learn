@@ -5,6 +5,8 @@ import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { awardPoints } from "@/lib/actions/points";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { quizFinishSchema } from "@/lib/zodSchemas";
 
 export async function POST(req) {
   try {
@@ -14,18 +16,7 @@ export async function POST(req) {
     }
     const userId = authResult;
 
-    const { categoryId, quizId, score, responses, hasPassed, isPerfectScore } = await req.json();
-
-    if (
-      !categoryId ||
-      !quizId ||
-      typeof score !== "number" ||
-      !Array.isArray(responses)
-    ) {
-      throw new AppError("Invalid request data", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { categoryId, quizId, score, responses, hasPassed, isPerfectScore } = await validateRequestBody(req, quizFinishSchema);
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },

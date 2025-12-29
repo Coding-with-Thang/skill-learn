@@ -3,6 +3,10 @@ import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody, validateRequestParams } from "@/utils/validateRequest";
+import { categoryUpdateSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
+import { objectIdSchema } from "@/lib/zodSchemas";
 
 // Get a specific category
 export async function GET(request, { params }) {
@@ -12,13 +16,10 @@ export async function GET(request, { params }) {
       return adminResult;
     }
 
-    const { categoryId } = params;
-
-    if (!categoryId) {
-      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { categoryId } = await validateRequestParams(
+      z.object({ categoryId: objectIdSchema }),
+      params
+    );
 
     const category = await prisma.category.findUnique({
       where: { id: categoryId },
@@ -49,14 +50,11 @@ export async function PUT(request, { params }) {
       return adminResult;
     }
 
-    const { categoryId } = params;
-    const data = await request.json();
-
-    if (!categoryId) {
-      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { categoryId } = await validateRequestParams(
+      z.object({ categoryId: objectIdSchema }),
+      params
+    );
+    const data = await validateRequestBody(request, categoryUpdateSchema);
 
     // Update category
     const category = await prisma.category.update({
@@ -83,13 +81,10 @@ export async function DELETE(request, { params }) {
       return adminResult;
     }
 
-    const { categoryId } = params;
-
-    if (!categoryId) {
-      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { categoryId } = await validateRequestParams(
+      z.object({ categoryId: objectIdSchema }),
+      params
+    );
 
     // Check if category has any quizzes
     const category = await prisma.category.findUnique({

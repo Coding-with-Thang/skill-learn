@@ -4,6 +4,9 @@ import { logAuditEvent } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequest } from "@/utils/validateRequest";
+import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
 
 export async function PUT(request) {
   try {
@@ -13,12 +16,15 @@ export async function PUT(request) {
     }
     const userId = authResult;
 
-    const { id, featured, ...updateData } = await request.json();
+    const body = await request.json();
+    const { id, featured, ...updateData } = body;
 
-    if (!id) {
-      throw new AppError("Reward ID is required", ErrorType.VALIDATION, {
-        status: 400,
-      });
+    // Validate reward ID
+    z.object({ id: objectIdSchema }).parse({ id });
+
+    // Validate update data if provided
+    if (Object.keys(updateData).length > 0) {
+      await validateRequest(rewardUpdateSchema, updateData);
     }
 
     // If setting a reward as featured, we need to handle it in a transaction

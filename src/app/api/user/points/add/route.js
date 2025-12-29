@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { pointsAwarded } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { handleApiError } from "@/utils/errorHandler";
 import { awardPoints } from "@/lib/actions/points";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { addPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {
   try {
@@ -14,13 +16,7 @@ export async function POST(request) {
     }
     const userId = authResult;
 
-    const { amount, reason } = await request.json();
-
-    if (!amount || !reason) {
-      throw new AppError("Reason and Amount required!", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { amount, reason } = await validateRequestBody(request, addPointsSchema);
 
     // Use awardPoints function which enforces daily limit
     const result = await awardPoints(amount, reason, request);

@@ -4,6 +4,8 @@ import { rewardRedeemed } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { rewardRedeemSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {
   try {
@@ -13,7 +15,7 @@ export async function POST(request) {
     }
     const userId = authResult;
 
-    const { rewardId } = await request.json();
+    const { rewardId } = await validateRequestBody(request, rewardRedeemSchema);
 
     // Get the user and reward
     const [user, reward] = await prisma.$transaction([

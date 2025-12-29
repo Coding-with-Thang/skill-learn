@@ -3,6 +3,8 @@ import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { spendPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {
   try {
@@ -12,13 +14,7 @@ export async function POST(request) {
     }
     const userId = authResult;
 
-    const { amount, reason } = await request.json();
-
-    if (!amount || !reason) {
-      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const { amount, reason } = await validateRequestBody(request, spendPointsSchema);
 
     // Check if user has enough points
     const user = await prisma.user.findUnique({

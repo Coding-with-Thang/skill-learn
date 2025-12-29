@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
-import { courseSchema } from "@/lib/zodSchemas";
+import { courseSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@/utils/adminStorage";
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody, validateRequestParams } from "@/utils/validateRequest";
+import { z } from "zod";
 
 // Get a specific course
 export async function GET(request, { params }) {

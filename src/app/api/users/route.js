@@ -4,6 +4,8 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { userCreateSchema } from "@/lib/zodSchemas";
 
 export async function GET(request) {
   try {
@@ -46,14 +48,7 @@ export async function POST(request) {
     const { userId } = adminResult;
 
     const { username, firstName, lastName, password, manager, role } =
-      await request.json();
-
-    // Validate required fields
-    if (!username || !firstName || !lastName || !password) {
-      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+      await validateRequestBody(request, userCreateSchema);
 
     // Check if username exists
     const existingUser = await prisma.user.findUnique({

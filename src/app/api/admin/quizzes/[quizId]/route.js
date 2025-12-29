@@ -4,6 +4,8 @@ import { requireAdmin } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
 import { getSystemSetting } from "@/lib/actions/settings";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { quizUpdateSchema } from "@/lib/zodSchemas";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -13,8 +15,13 @@ export async function GET(request, { params }) {
       return adminResult;
     }
 
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
+
     const quiz = await prisma.quiz.findUnique({
-      where: { id: params.quizId },
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -50,34 +57,19 @@ export async function PUT(request, { params }) {
       return adminResult;
     }
 
-    const data = await request.json();
-
-    // Validate required fields
-    if (!data.title || !data.categoryId) {
-      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const data = await validateRequestBody(request, quizUpdateSchema);
 
     // Get default passing score from settings
     const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
 
-    // Validate questions - ensure imageUrl and videoUrl are not both set
-    if (data.questions) {
-      for (const [index, question] of data.questions.entries()) {
-        if (question.imageUrl && question.videoUrl) {
-          throw new AppError(
-            `Question ${index + 1} cannot have both imageUrl and videoUrl. Please use only one.`,
-            ErrorType.VALIDATION,
-            { status: 400 }
-          );
-        }
-      }
-    }
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
 
     // Update quiz and manage questions
     let quiz = await prisma.quiz.update({
-      where: { id: params.quizId },
+      where: { id: quizId },
       data: {
         title: data.title,
         description: data.description,
@@ -93,7 +85,7 @@ export async function PUT(request, { params }) {
     if (data.questions) {
       // Delete existing questions (cascade deletes options)
       await prisma.question.deleteMany({
-        where: { quizId: params.quizId },
+        where: { quizId: quizId },
       });
 
       // Create new questions with options
@@ -104,7 +96,7 @@ export async function PUT(request, { params }) {
             imageUrl: question.imageUrl,
             videoUrl: question.videoUrl,
             points: question.points || 1,
-            quizId: params.quizId,
+            quizId: quizId,
             options: {
               create: question.options.map(opt => ({
                 text: opt.text,
@@ -118,7 +110,7 @@ export async function PUT(request, { params }) {
 
     // Return updated quiz with all relations
     quiz = await prisma.quiz.findUnique({
-      where: { id: params.quizId },
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -148,9 +140,14 @@ export async function DELETE(request, { params }) {
       return adminResult;
     }
 
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
+
     // Delete quiz and all related data (questions and options will be deleted automatically due to cascade)
     await prisma.quiz.delete({
-      where: { id: params.quizId },
+      where: { id: quizId },
     });
 
     return successResponse({ success: true });
