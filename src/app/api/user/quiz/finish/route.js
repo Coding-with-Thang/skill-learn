@@ -1,15 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
 
 export async function POST(req) {
   try {
-    const authRequest = auth();
-    const { userId } = await authRequest;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const { categoryId, quizId, score, responses } = await req.json();
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { format } from "date-fns"
 import { Clock, Trophy, Target } from "lucide-react"
 import {
@@ -26,9 +26,13 @@ import {
 export default function QuizStats({ quizStats, categories }) {
   const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const filteredQuizzes = selectedCategory === "all"
-    ? quizStats
-    : quizStats.filter(quiz => quiz.category.id === selectedCategory)
+  // Memoize filtered quizzes to avoid recalculating on every render
+  const filteredQuizzes = useMemo(() => {
+    if (!quizStats) return [];
+    return selectedCategory === "all"
+      ? quizStats
+      : quizStats.filter((quiz) => quiz.category.id === selectedCategory);
+  }, [selectedCategory, quizStats]);
 
   return (
     <div className="space-y-6">

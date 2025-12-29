@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation";
 import Image from "next/image"
-import useCategoryStore from "../store/categoryStore";
+import { useCategoryStore } from "../store/categoryStore";
 import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader } from "@/components/ui/interactive-card";
 import { EnhancedButton } from "@/components/ui/enhanced-button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -13,7 +13,7 @@ import { BookOpen, Play, Trophy, Clock, Users } from 'lucide-react';
 
 export default function TrainingPage() {
 
-  const { categories, loading, error, fetchCategories } = useCategoryStore();
+  const { categories, isLoading, error, fetchCategories } = useCategoryStore();
 
   const router = useRouter();
 
@@ -30,7 +30,7 @@ export default function TrainingPage() {
         <EnhancedButton
           onClick={() => fetchCategories()}
           variant="outline"
-          loading={loading}
+          loading={isLoading}
         >
           Retry
         </EnhancedButton>
@@ -40,10 +40,10 @@ export default function TrainingPage() {
 
   return (
     <section className="w-full max-w-5xl mx-auto px-4 sm:px-8 md:px-12 py-8" aria-label="Training Categories">
-      <BreadCrumbCom endtrail="My Training" />
-      <h1 className="text-3xl sm:text-4xl font-bold my-10 flex self-center text-foreground" tabIndex="0">My Training</h1>
+      <BreadCrumbCom endtrail="Training" />
+      <h1 className="text-3xl sm:text-4xl font-bold my-10 flex self-center text-foreground" tabIndex="0">Training</h1>
       <h2 className="font-semibold text-2xl text-foreground" tabIndex="0">Categories</h2>
-      {!loading ? (
+      {!isLoading ? (
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {categories.map((category) => (
             <HoverCard key={category.id}>

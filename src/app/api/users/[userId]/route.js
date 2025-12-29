@@ -1,24 +1,14 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { updateClerkUser, deleteClerkUser } from "@/utils/clerk";
+import { requireAdmin } from "@/utils/auth";
 
 // GET - Fetch single user
 export async function GET(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
         const user = await prisma.user.findUnique({
@@ -54,19 +44,9 @@ export async function GET(request, { params }) {
 // PUT - Update user
 export async function PUT(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
         const data = await request.json();
@@ -133,19 +113,9 @@ export async function PUT(request, { params }) {
 // DELETE - Delete user
 export async function DELETE(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }        // Get user to delete
         const user = await prisma.user.findUnique({
             where: { id: params.userId },

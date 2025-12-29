@@ -1,14 +1,14 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     //Find the user in the db
     const user = await prisma.user.findUnique({

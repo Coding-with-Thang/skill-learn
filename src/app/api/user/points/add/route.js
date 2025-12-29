@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
 import { pointsAwarded } from "@/utils/auditLogger";
+import { requireAuth } from "@/utils/auth";
 
 export async function POST(request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const { amount, reason } = await request.json();
 

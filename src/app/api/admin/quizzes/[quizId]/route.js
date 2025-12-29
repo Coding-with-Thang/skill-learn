@@ -1,24 +1,13 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAdmin } from "@/utils/auth";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
     const quiz = await prisma.quiz.findUnique({
@@ -55,20 +44,9 @@ export async function GET(request, { params }) {
 // Update a quiz
 export async function PUT(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
     const data = await request.json();
@@ -151,20 +129,9 @@ export async function PUT(request, { params }) {
 // Delete a quiz
 export async function DELETE(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
     // Delete quiz and all related data (questions and options will be deleted automatically due to cascade)

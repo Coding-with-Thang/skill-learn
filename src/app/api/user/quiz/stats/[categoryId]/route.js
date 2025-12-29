@@ -1,14 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
 
 export async function GET(req, { params }) {
   try {
-    // Get auth session asynchronously
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const { categoryId } = await params;
     if (!categoryId) {

@@ -1,14 +1,14 @@
 import { updateStreak } from "@/lib/actions/streak";
 import { NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/utils/auth";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const result = await updateStreak(userId);
     return NextResponse.json(result);

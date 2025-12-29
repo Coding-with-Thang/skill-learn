@@ -43,13 +43,13 @@ export const useRewardStore = create((set, get) => ({
     try {
       const response = await api.post("/user/rewards/redeem", { rewardId });
 
-      // Update points in the points store
+      // Parallel fetch: Update points, rewards, and reward history simultaneously
       const pointsStore = usePointsStore.getState();
-      pointsStore.fetchPoints(); // Refresh points after redemption
-
-      // Refresh rewards and reward history
-      await get().fetchRewards();
-      await get().fetchRewardHistory();
+      await Promise.all([
+        pointsStore.fetchUserData(true), // Force refresh points after redemption
+        get().fetchRewards(),
+        get().fetchRewardHistory(),
+      ]);
 
       return response.data;
     } catch (error) {

@@ -1,25 +1,13 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
+import { requireAdmin, requireAuth } from "@/utils/auth";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    // Verify OPERATIONS role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return new Response("Unauthorized - Requires OPERATIONS role", {
-        status: 403,
-      });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
     // Get query parameters
@@ -78,10 +66,11 @@ export async function GET(request) {
 }
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     // Get the actual user ID from the database
     const user = await prisma.user.findUnique({

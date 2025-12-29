@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import useUsersStore from "@/app/store/usersStore";
+import { useUsersStore } from "@/app/store/usersStore";
 import { toast } from "sonner";
 
 export default function UserForm({ user = null, onSuccess }) {
-    const { createUser, updateUser, loading } = useUsersStore();
+    const { createUser, updateUser, isLoading } = useUsersStore();
     const [formData, setFormData] = useState({
         firstName: user?.firstName || "",
         lastName: user?.lastName || "",
@@ -120,8 +120,8 @@ export default function UserForm({ user = null, onSuccess }) {
                         <div className="text-error text-sm">{error}</div>
                     )}
 
-                    <Button type="submit" disabled={loading} className="w-full">
-                        {loading ? "Loading..." : user ? "Update User" : "Create User"}
+                    <Button type="submit" disabled={isLoading} className="w-full">
+                        {isLoading ? "Loading..." : user ? "Update User" : "Create User"}
                     </Button>
                 </form>
             </CardContent>

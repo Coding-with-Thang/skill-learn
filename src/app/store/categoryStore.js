@@ -2,16 +2,16 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/utils/axios";
 
-const useCategoryStore = create(
+export const useCategoryStore = create(
   persist(
     (set) => ({
       categories: [],
-      loading: false,
+      isLoading: false,
       error: null,
       lastFetch: null,
 
       fetchCategories: async (force = false) => {
-        set({ loading: true, error: null });
+        set({ isLoading: true, error: null });
         try {
           const response = await api.get("/categories");
           if (!response.data) {
@@ -19,7 +19,7 @@ const useCategoryStore = create(
           }
           set({
             categories: response.data.categories,
-            loading: false,
+            isLoading: false,
             lastFetch: Date.now(),
           });
         } catch (error) {
@@ -27,7 +27,7 @@ const useCategoryStore = create(
           set({
             error:
               error.response?.data?.message || "Failed to fetch categories",
-            loading: false,
+            isLoading: false,
           });
         }
       },
@@ -35,7 +35,7 @@ const useCategoryStore = create(
       reset: () => {
         set({
           categories: [],
-          loading: false,
+          isLoading: false,
           error: null,
           lastFetch: null,
         });
@@ -50,5 +50,3 @@ const useCategoryStore = create(
     }
   )
 );
-
-export default useCategoryStore;

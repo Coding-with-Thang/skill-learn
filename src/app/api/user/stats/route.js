@@ -1,18 +1,14 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
 
 export async function GET(request) {
   try {
-    const auth = getAuth(request);
-    const userId = auth.userId;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Please sign in to access this resource" },
-        { status: 401 }
-      );
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     // Verify database connection
     await prisma.$connect();

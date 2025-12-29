@@ -82,7 +82,7 @@ export default function SelectedQuizPage() {
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "My Training", href: "training" },
+          { name: "Training", href: "training" },
           { name: "Quiz Selection", href: `categories/${selectedQuiz?.categoryId}` }
         ]}
         endtrail={selectedQuiz?.title}

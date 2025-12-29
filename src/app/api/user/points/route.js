@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { requireAuth } from "@/utils/auth";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      throw new AppError("Unauthorized - No user found", ErrorType.AUTH, {
-        status: 401,
-      });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     // Find user in database
     const dbUser = await prisma.user.findUnique({
