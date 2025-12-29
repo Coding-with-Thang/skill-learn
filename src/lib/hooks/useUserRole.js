@@ -36,13 +36,16 @@ export function useUserRole() {
         throw new Error("No authentication token available");
       }
 
-      const { data } = await api.get("/user", {
+      const response = await api.get("/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      setRole(data.role);
+      // API returns { success: true, data: { user: {...} } }
+      const responseData = response.data?.data || response.data;
+      const userData = responseData?.user || responseData;
+      setRole(userData?.role);
       setError(null);
       retryCountRef.current = 0;
     } catch (error) {

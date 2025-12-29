@@ -305,17 +305,21 @@ export default function QuizScreenPage() {
                 });
 
                 // Update results with actual points awarded from API
-                if (response.data?.pointsAwarded !== undefined) {
-                    resultsData.pointsEarned = response.data.pointsAwarded + (response.data.bonusAwarded || 0);
-                    resultsData.pointsAwarded = response.data.pointsAwarded;
-                    resultsData.bonusAwarded = response.data.bonusAwarded || 0;
+                // API returns { success: true, data: { pointsAwarded, bonusAwarded, ... } }
+                const finishData = response.data?.data || response.data;
+                if (finishData?.pointsAwarded !== undefined) {
+                    resultsData.pointsEarned = finishData.pointsAwarded + (finishData.bonusAwarded || 0);
+                    resultsData.pointsAwarded = finishData.pointsAwarded;
+                    resultsData.bonusAwarded = finishData.bonusAwarded || 0;
 
                     // Fetch updated daily status for remaining points
                     try {
                         const dailyStatusResponse = await api.get("/user/points/daily-status");
-                        if (dailyStatusResponse.data) {
+                        // API returns { success: true, data: {...} }
+                        const dailyData = dailyStatusResponse.data?.data || dailyStatusResponse.data;
+                        if (dailyData) {
                             resultsData.remainingDailyPoints = Math.max(0,
-                                dailyStatusResponse.data.dailyLimit - dailyStatusResponse.data.todaysPoints
+                                dailyData.dailyLimit - dailyData.todaysPoints
                             );
                         }
                     } catch (dailyError) {

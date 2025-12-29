@@ -30,9 +30,10 @@ export default function PointsRewardsWidget() {
         await fetchUserData();
         const response = await api.get("/user/stats");
 
-        // Use standardized response format: { success: true, data: {...} }
-        if (response.data.success && response.data.data) {
-          const completed = response.data.data.categoryStats.filter(
+        // API returns { success: true, data: {...} }
+        const statsData = response.data?.data || response.data;
+        if (statsData?.categoryStats) {
+          const completed = statsData.categoryStats.filter(
             stat => stat.completed > 0
           ).length;
           setCompletedTopics(completed);

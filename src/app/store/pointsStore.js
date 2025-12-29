@@ -52,11 +52,15 @@ export const usePointsStore = create((set, get) => ({
         api.get("/user/streak"),
       ])
         .then(([pointsResponse, streakResponse]) => {
+          // All APIs return { success: true, data: {...} }
+          const pointsData = pointsResponse.data?.data || pointsResponse.data;
+          const streakData = streakResponse.data?.data || streakResponse.data;
+
           const data = {
-            dailyStatus: pointsResponse.data,
-            points: pointsResponse.data.user?.points || 0,
-            lifetimePoints: pointsResponse.data.user?.lifetimePoints || 0,
-            streak: streakResponse.data,
+            dailyStatus: pointsData,
+            points: pointsData?.user?.points || 0,
+            lifetimePoints: pointsData?.user?.lifetimePoints || 0,
+            streak: streakData,
           };
 
           set({

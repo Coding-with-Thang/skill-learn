@@ -56,7 +56,9 @@ export default function SelectedQuizPage() {
     }
     try {
       const response = await api.get(`/user/quiz/stats/${selectedQuiz.categoryId}`);
-      setStats(response.data);
+      // API returns { success: true, data: {...} }
+      const statsData = response.data?.data || response.data;
+      setStats(statsData);
     } catch (error) {
       console.error("Error fetching quiz stats:", error);
     } finally {

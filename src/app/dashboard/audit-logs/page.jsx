@@ -119,7 +119,8 @@ export default function AuditLogsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {logs.map((log) => (
+              {logs && logs.length > 0 ? (
+                logs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell>
                     {format(new Date(log.timestamp), "PPpp")}
@@ -148,7 +149,14 @@ export default function AuditLogsPage() {
                     </p>
                   </TableCell>
                 </TableRow>
-              ))}
+              ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    No audit logs found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
 

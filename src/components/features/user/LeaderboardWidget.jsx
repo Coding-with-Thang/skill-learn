@@ -82,7 +82,9 @@ export default function LeaderboardWidget() {
         const endpoint = activeTab === "points" ? "/leaderboard/points" : "/leaderboard/quiz-score";
         const response = await api.get(endpoint);
         // Use standardized response format: { success: true, data: { leaderboard: [...] } }
-        const leaderboard = response.data.success ? response.data.data?.leaderboard : response.data.leaderboard;
+        // API returns { success: true, data: { leaderboard: [...] } }
+        const responseData = response.data?.data || response.data;
+        const leaderboard = responseData?.leaderboard || responseData;
         setLeaderboardData((leaderboard || []).slice(0, 3));
       } catch (error) {
         console.error("Failed to fetch leaderboard", error);

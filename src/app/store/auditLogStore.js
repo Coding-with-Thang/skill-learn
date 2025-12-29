@@ -31,9 +31,12 @@ export const useAuditLogStore = create((set, get) => ({
 
       const response = await api.get(`/admin/audit-logs?${queryParams}`);
 
+      // API returns { success: true, data: { logs, pagination } }
+      const responseData = response.data?.data || response.data;
+
       set({
-        logs: response.data.logs,
-        pagination: response.data.pagination,
+        logs: responseData?.logs || [],
+        pagination: responseData?.pagination || null,
         isLoading: false,
       });
     } catch (error) {

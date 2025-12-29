@@ -12,9 +12,6 @@ export async function GET(request) {
     }
     const userId = authResult;
 
-    // Verify database connection
-    await prisma.$connect();
-
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { id: true },
@@ -137,7 +134,5 @@ export async function GET(request) {
     });
   } catch (error) {
     return handleApiError(error);
-  } finally {
-    await prisma.$disconnect();
   }
 }

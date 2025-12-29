@@ -17,8 +17,9 @@ export default function UserStats({ user }) {
     const fetchStats = async () => {
       try {
         const response = await api.get('/user/stats')
-        // API now returns data directly, not wrapped in {success: true, data: {...}}
-        setStats(response.data)
+        // API returns { success: true, data: {...} }
+        const statsData = response.data?.data || response.data
+        setStats(statsData)
       } catch (error) {
         console.error('Error fetching user stats:', error)
         setStats(null) // Set to null on error so component can handle empty state

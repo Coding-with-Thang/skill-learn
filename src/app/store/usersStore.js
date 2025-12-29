@@ -10,8 +10,11 @@ export const useUsersStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.get("/users");
+      // API returns { success: true, data: { users: [...] } }
+      const responseData = response.data?.data || response.data;
+      const users = responseData?.users || responseData || [];
       set({
-        users: response.data.users,
+        users,
         isLoading: false,
       });
     } catch (error) {
@@ -27,11 +30,14 @@ export const useUsersStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post("/users", userData);
+      // API returns { success: true, data: { user: {...} } }
+      const responseData = response.data?.data || response.data;
+      const newUser = responseData?.user || responseData;
       set((state) => ({
-        users: [response.data, ...state.users],
+        users: [newUser, ...state.users],
         isLoading: false,
       }));
-      return response.data;
+      return newUser;
     } catch (error) {
       console.error("Error creating user:", error);
       set({
@@ -46,13 +52,16 @@ export const useUsersStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.put(`/users/${userId}`, userData);
+      // API returns { success: true, data: { user: {...} } }
+      const responseData = response.data?.data || response.data;
+      const updatedUser = responseData?.user || responseData;
       set((state) => ({
         users: state.users.map((user) =>
-          user.id === userId ? response.data : user
+          user.id === userId ? updatedUser : user
         ),
         isLoading: false,
       }));
-      return response.data;
+      return updatedUser;
     } catch (error) {
       console.error("Error updating user:", error);
       set({

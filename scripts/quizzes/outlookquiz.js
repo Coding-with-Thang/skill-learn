@@ -53,13 +53,13 @@ const outlookQuestions = [
   {
     text: 'What is the function of the "Focused Inbox" in Outlook?',
     options: [
-      { text: "To sort emails by importance", isCorrect: false },
-      { text: "To prioritize important emails", isCorrect: false },
-      { text: "To show only unread emails", isCorrect: false },
       {
         text: "To show only emails from your most trusted contacts",
         isCorrect: true,
       },
+      { text: "To sort emails by importance", isCorrect: false },
+      { text: "To prioritize important emails", isCorrect: false },
+      { text: "To show only unread emails", isCorrect: false },
     ],
   },
 ];

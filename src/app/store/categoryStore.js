@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/utils/axios";
-import { extractField } from "@/utils/apiResponseAdapter";
 
 export const useCategoryStore = create(
   persist(
@@ -18,8 +17,9 @@ export const useCategoryStore = create(
           if (!response.data) {
             throw new Error("No data received from server");
           }
-          // Use adapter to handle both old and new response formats
-          const categories = extractField(response, "categories") || [];
+          // API returns { success: true, data: { categories: [...] } }
+          const responseData = response.data?.data || response.data;
+          const categories = responseData?.categories || responseData || [];
           set({
             categories,
             isLoading: false,
