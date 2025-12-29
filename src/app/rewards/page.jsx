@@ -588,7 +588,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
 
 export default function RewardsPage() {
   const { fetchRewards, fetchRewardHistory, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
-  const { points, fetchPoints } = usePointsStore()
+  const { points, fetchUserData } = usePointsStore()
   const [redeemingRewardId, setRedeemingRewardId] = useState(null)
 
   // Modal state
@@ -597,9 +597,9 @@ export default function RewardsPage() {
 
   useEffect(() => {
     fetchRewards()
-    fetchPoints()
+    fetchUserData()
     fetchRewardHistory()
-  }, [fetchRewards, fetchPoints, fetchRewardHistory])
+  }, [fetchRewards, fetchUserData, fetchRewardHistory])
 
   const featuredReward = rewards.find(reward => reward.featured === true)
 

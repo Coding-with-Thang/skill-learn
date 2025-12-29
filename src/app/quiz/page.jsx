@@ -293,7 +293,7 @@ export default function QuizScreenPage() {
 
             // API Call
             try {
-                await api.post("/user/quiz/finish", {
+                const response = await api.post("/user/quiz/finish", {
                     categoryId: selectedQuiz.categoryId,
                     quizId: selectedQuiz.id,
                     score: scorePercentage,
@@ -303,6 +303,29 @@ export default function QuizScreenPage() {
                     isPerfectScore: resultsData.isPerfectScore,
                     pointsBreakdown: {}
                 });
+
+                // Update results with actual points awarded from API
+                if (response.data?.pointsAwarded !== undefined) {
+                    resultsData.pointsEarned = response.data.pointsAwarded + (response.data.bonusAwarded || 0);
+                    resultsData.pointsAwarded = response.data.pointsAwarded;
+                    resultsData.bonusAwarded = response.data.bonusAwarded || 0;
+
+                    // Fetch updated daily status for remaining points
+                    try {
+                        const dailyStatusResponse = await api.get("/user/points/daily-status");
+                        if (dailyStatusResponse.data) {
+                            resultsData.remainingDailyPoints = Math.max(0,
+                                dailyStatusResponse.data.dailyLimit - dailyStatusResponse.data.todaysPoints
+                            );
+                        }
+                    } catch (dailyError) {
+                        console.warn("Could not fetch daily status:", dailyError);
+                    }
+
+                    // Update stored results
+                    await setQuizResponses(resultsData);
+                    sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+                }
             } catch (e) {
                 console.error("Save failed", e);
                 toast.error("Saved locally only");

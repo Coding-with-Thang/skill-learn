@@ -359,16 +359,43 @@ export async function GET(request) {
 
 ---
 
-### M4. Legacy Methods in Points Store
+### M4. Legacy Methods in Points Store ✅ RESOLVED
 
 **File:** `src/app/store/pointsStore.js` (lines 98-104)
 
 **Issue:** Legacy wrapper methods `fetchDailyStatus` and `fetchPoints` still present.
 
-**Recommendation:**
+**Status:** ✅ **RESOLVED**
 
-- Remove if unused
-- Update callers to use `fetchUserData()` directly
+**Investigation Results:**
+
+1. **`fetchDailyStatus`**: Not used anywhere in the codebase (only defined in store)
+2. **`fetchPoints`**: Used in 1 location:
+   - `src/app/rewards/page.jsx` (line 591, 600)
+
+**Resolution:**
+
+1. **Updated `src/app/rewards/page.jsx`**:
+
+   - Changed `fetchPoints` to `fetchUserData()`
+   - Updated dependency array in `useEffect`
+
+2. **Removed legacy methods from `pointsStore.js`**:
+   - Removed `fetchDailyStatus()` method (unused)
+   - Removed `fetchPoints()` method (replaced with direct `fetchUserData()` calls)
+
+**Benefits:**
+
+- Cleaner API surface - only one method (`fetchUserData`) to maintain
+- Reduced confusion about which method to use
+- Better performance - `fetchUserData` includes request deduplication and caching
+- All components now use the standardized method
+
+**Verification:**
+
+- ✅ No remaining references to `fetchDailyStatus` or `fetchPoints` in codebase
+- ✅ All components using `fetchUserData()` directly
+- ✅ No linter errors introduced
 
 ---
 

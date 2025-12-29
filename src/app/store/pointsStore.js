@@ -94,15 +94,6 @@ export const usePointsStore = create((set, get) => ({
     }
   },
 
-  // Legacy methods that now use the combined fetch
-  fetchDailyStatus: async () => {
-    return get().fetchUserData();
-  },
-
-  fetchPoints: async () => {
-    return get().fetchUserData();
-  },
-
   addPoints: async (amount, reason) => {
     try {
       set({ isLoading: true });

@@ -3,6 +3,7 @@ import prisma from "@/utils/connect";
 import { pointsAwarded } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { awardPoints } from "@/lib/actions/points";
 
 export async function POST(request) {
   try {
@@ -20,36 +21,20 @@ export async function POST(request) {
       });
     }
 
-    // Transaction to update points and create log
-    const result = await prisma.$transaction(async (tx) => {
-      // Update user points
-      const updatedUser = await tx.user.update({
-        where: { clerkId: userId },
-        data: {
-          points: { increment: amount },
-          lifetimePoints: { increment: amount },
-        },
-        select: { id: true, points: true, lifetimePoints: true },
-      });
+    // Use awardPoints function which enforces daily limit
+    const result = await awardPoints(amount, reason, request);
 
-      // Create point log
-      await tx.pointLog.create({
-        data: {
-          userId: updatedUser.id,
-          amount,
-          reason,
-        },
-      });
-
-      return updatedUser;
-    });
-
-    await pointsAwarded(userId, amount, reason);
+    await pointsAwarded(userId, result.awarded, reason);
 
     return NextResponse.json({
       success: true,
       points: result.points,
       lifetimePoints: result.lifetimePoints,
+      awarded: result.awarded,
+      message:
+        result.awarded < amount
+          ? `Daily limit reached. Awarded ${result.awarded} of ${amount} points.`
+          : "Points awarded successfully",
     });
   } catch (error) {
     return handleApiError(error);

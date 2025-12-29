@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { awardPoints } from "@/lib/actions/points";
+import { getSystemSetting } from "@/lib/actions/settings";
 
 export async function POST(req) {
   try {
@@ -11,7 +13,7 @@ export async function POST(req) {
     }
     const userId = authResult;
 
-    const { categoryId, quizId, score, responses } = await req.json();
+    const { categoryId, quizId, score, responses, hasPassed, isPerfectScore } = await req.json();
 
     if (
       !categoryId ||
@@ -33,6 +35,23 @@ export async function POST(req) {
         status: 404,
       });
     }
+
+    // Get quiz to check passing score
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { passingScore: true, title: true },
+    });
+
+    if (!quiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
+    }
+
+    // Determine if quiz was passed (use hasPassed from request or calculate)
+    const passed = hasPassed !== undefined 
+      ? hasPassed 
+      : (quiz.passingScore ? score >= quiz.passingScore : true);
 
     // Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
@@ -79,7 +98,60 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    // Award points if quiz was passed
+    let pointsAwarded = 0;
+    let bonusAwarded = 0;
+    
+    if (passed) {
+      try {
+        // Get points settings
+        const basePoints = parseInt(
+          await getSystemSetting("POINTS_FOR_PASSING_QUIZ"),
+          10
+        );
+        const perfectScoreBonus = parseInt(
+          await getSystemSetting("PERFECT_SCORE_BONUS"),
+          10
+        );
+
+        // Award base points for passing
+        const baseResult = await awardPoints(
+          basePoints,
+          `quiz_completed_${quizId}`,
+          req
+        );
+        pointsAwarded = baseResult.awarded;
+
+        // Award bonus for perfect score
+        const isPerfect = isPerfectScore !== undefined 
+          ? isPerfectScore 
+          : score === 100;
+        
+        if (isPerfect && perfectScoreBonus > 0) {
+          try {
+            const bonusResult = await awardPoints(
+              perfectScoreBonus,
+              `perfect_score_bonus_${quizId}`,
+              req
+            );
+            bonusAwarded = bonusResult.awarded;
+          } catch (bonusError) {
+            // If bonus can't be awarded (e.g., daily limit reached), log but don't fail
+            console.warn("Could not award perfect score bonus:", bonusError.message);
+          }
+        }
+      } catch (pointsError) {
+        // If points can't be awarded (e.g., daily limit reached), log but don't fail the quiz completion
+        console.warn("Could not award quiz points:", pointsError.message);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      pointsAwarded,
+      bonusAwarded,
+      totalPointsAwarded: pointsAwarded + bonusAwarded,
+    });
   } catch (error) {
     return handleApiError(error);
   }

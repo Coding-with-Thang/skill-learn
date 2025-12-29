@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import { Button } from "@/components/ui/button"
-import { RotateCcw, LayoutDashboard, Eye, Trophy, Timer, CheckCircle, XCircle, ListChecks, Calendar } from 'lucide-react'
+import { RotateCcw, LayoutDashboard, Eye, Trophy, Timer, CheckCircle, XCircle, ListChecks, Calendar, Coins, Sparkles } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuditLog } from '@/lib/hooks/useAuditLog';
@@ -139,6 +139,41 @@ export default function ResultsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Points Earned */}
+          {results.hasPassed && (results.pointsEarned || results.pointsAwarded) && (
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-gradient-to-br from-yellow-50 to-orange-50">
+              <CardContent className="p-6 flex flex-col justify-between h-full">
+                <div className="flex justify-between items-start">
+                  <span className="text-slate-500 font-medium">Points Earned</span>
+                  <div className="p-2 bg-yellow-100 text-yellow-600 rounded-full">
+                    <Coins className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-bold text-slate-900">
+                      {new Intl.NumberFormat().format(results.pointsEarned || results.pointsAwarded || 0)}
+                    </span>
+                    {results.bonusAwarded > 0 && (
+                      <span className="text-sm text-green-600 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        +{new Intl.NumberFormat().format(results.bonusAwarded)} bonus
+                      </span>
+                    )}
+                  </div>
+                  {results.remainingDailyPoints !== undefined && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      {results.remainingDailyPoints > 0
+                        ? `${new Intl.NumberFormat().format(results.remainingDailyPoints)} points remaining today`
+                        : "Daily limit reached"
+                      }
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Correct Answers */}
           <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300">
