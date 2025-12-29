@@ -7,9 +7,22 @@ export default async function QuizSelectPage({ params }) {
   const { categoryId } = await params
 
   if (!categoryId) {
-    return notFound()
+    notFound()
   }
+  
   try {
+    // Verify category exists and is active
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        isActive: true,
+      },
+    });
+
+    if (!category) {
+      notFound();
+    }
+
     const quizzes = await prisma.quiz.findMany({
       where: {
         categoryId,
