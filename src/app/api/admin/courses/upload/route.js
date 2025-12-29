@@ -124,8 +124,10 @@ export async function POST(req) {
     });
 
     // Make the file publicly readable (optional). Alternatively, create a signed URL.
-    // Here we'll create a signed URL valid for 7 days.
-    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+    // Here we'll create a signed URL valid for the configured number of days.
+    const { FILE_UPLOAD } = await import("@/constants");
+    const expiresAt =
+      Date.now() + FILE_UPLOAD.URL_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
     const [signedUrl] = await fileRef.getSignedUrl({
       action: "read",
       expires: expiresAt,

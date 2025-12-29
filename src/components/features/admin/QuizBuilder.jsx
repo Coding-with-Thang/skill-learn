@@ -26,6 +26,7 @@ import { Plus, Minus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/utils/axios"
 import { handleErrorWithNotification } from "@/utils/notifications"
+import { QUIZ_CONFIG } from "@/constants"
 
 export default function QuizBuilder({ quizId = null }) {
     const router = useRouter()
@@ -38,9 +39,9 @@ export default function QuizBuilder({ quizId = null }) {
         imageUrl: "",
         categoryId: "",
         timeLimit: 0,
-        passingScore: 70, // Default, will be updated from settings if available
+        passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE, // Default, will be updated from settings if available
         isActive: true,
-        questions: Array(5).fill(null).map((_, i) => ({
+        questions: Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT).fill(null).map((_, i) => ({
             text: "",
             imageUrl: "",
             videoUrl: "",
@@ -76,7 +77,7 @@ export default function QuizBuilder({ quizId = null }) {
             const response = await api.get("/quiz/settings")
             const settings = response.data?.data?.quizSettings || response.data?.quizSettings
             if (settings?.passingScoreDefault) {
-                // Only update if creating a new quiz (no quizId) or if passingScore is still the default 70
+                // Only update if creating a new quiz (no quizId) or if passingScore is still the default
                 setQuiz(prev => {
                     // If editing an existing quiz, keep the existing value; otherwise use settings
                     if (quizId) {

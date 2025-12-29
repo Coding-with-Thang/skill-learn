@@ -11,7 +11,7 @@ import Image from "next/image"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
-import { UI } from "@/constants"
+import { UI, QUIZ_CONFIG } from "@/constants"
 import { handleErrorWithNotification } from "@/utils/notifications"
 
 // Utility functions
@@ -249,7 +249,7 @@ export default function QuizScreenPage() {
                 totalQuestions,
                 correctAnswers,
                 remainingDailyPoints: 0, // Mock for now or fetch
-                pointsEarned: correctAnswers * 1000, // Simplified
+                pointsEarned: correctAnswers * QUIZ_CONFIG.POINTS_PER_CORRECT_ANSWER, // Points per correct answer
                 pointsBreakdown: {},
                 hasPassed: selectedQuiz.passingScore ? scorePercentage >= selectedQuiz.passingScore : true,
                 isPerfectScore: scorePercentage === 100,

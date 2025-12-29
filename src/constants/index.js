@@ -42,6 +42,7 @@ export const UI = {
   MAX_PERCENTAGE: 100,
   STREAK_DISPLAY_DOTS: 5,
   PROGRESS_BAR_MAX: 100,
+  TRANSITION_DURATION_MS: 1000, // 1 second
 };
 
 // Store Configuration
@@ -49,4 +50,14 @@ export const STORE = {
   FETCH_COOLDOWN: 5000, // 5 seconds
 };
 
+// Quiz Configuration
+export const QUIZ_CONFIG = {
+  DEFAULT_PASSING_SCORE: 70, // Percentage (should match DEFAULT_SETTINGS.DEFAULT_PASSING_SCORE)
+  POINTS_PER_CORRECT_ANSWER: 1000, // Base points per correct answer (should match DEFAULT_SETTINGS.POINTS_FOR_PASSING_QUIZ)
+  DEFAULT_QUESTIONS_COUNT: 5, // Default number of questions when creating new quiz
+};
 
+// File Upload Configuration
+export const FILE_UPLOAD = {
+  URL_EXPIRY_DAYS: 7, // Days until signed URL expires
+};

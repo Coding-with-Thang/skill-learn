@@ -8,6 +8,7 @@ import { Circle, Gift, Check, Coins, Filter, } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
 import { usePointsStore } from "@/app/store/pointsStore"
 import { toast } from "sonner"
+import { UI } from "@/constants"
 import { format } from "date-fns"
 import {
   Dialog,
@@ -72,8 +73,8 @@ const PointsBalance = ({ points }) => {
         <div className="mt-4 space-y-2">
           <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${progress}%` }}
+              className={`h-full bg-blue-600 rounded-full transition-all ease-out`}
+              style={{ width: `${progress}%`, transitionDuration: `${UI.TRANSITION_DURATION_MS}ms` }}
             />
           </div>
           <p className="text-sm text-gray-500">

@@ -12,7 +12,7 @@ export async function GET(request) {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) {
       return adminResult;
-    }    // Fetch all quizzes with their categories and question count
+    } // Fetch all quizzes with their categories and question count
     const quizzes = await prisma.quiz.findMany({
       include: {
         category: {
@@ -51,7 +51,10 @@ export async function POST(request) {
     const data = await validateRequestBody(request, quizCreateSchema);
 
     // Get default passing score from settings
-    const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
+    const defaultPassingScore = parseInt(
+      await getSystemSetting("DEFAULT_PASSING_SCORE"),
+      10
+    );
 
     // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
@@ -64,25 +67,31 @@ export async function POST(request) {
         passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
         questions: {
-          create: (data.questions || Array(5).fill(null).map((_, i) => ({
-            text: `Question ${i + 1}`,
-            points: 1,
-            options: {
-              create: Array(4).fill(null).map((_, j) => ({
-                text: `Option ${j + 1}`,
-                isCorrect: j === 0 // First option is correct by default
-              }))
-            }
-          })))
-        }
+          create:
+            data.questions ||
+            Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT)
+              .fill(null)
+              .map((_, i) => ({
+                text: `Question ${i + 1}`,
+                points: 1,
+                options: {
+                  create: Array(4)
+                    .fill(null)
+                    .map((_, j) => ({
+                      text: `Option ${j + 1}`,
+                      isCorrect: j === 0, // First option is correct by default
+                    })),
+                },
+              })),
+        },
       },
       include: {
         questions: {
           include: {
-            options: true
-          }
-        }
-      }
+            options: true,
+          },
+        },
+      },
     });
 
     return successResponse({ quiz });
