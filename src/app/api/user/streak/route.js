@@ -1,6 +1,7 @@
 import { updateStreak } from "@/lib/actions/streak";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -13,7 +14,6 @@ export async function GET(request) {
     const result = await updateStreak(userId);
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Auth error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error);
   }
 }

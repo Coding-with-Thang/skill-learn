@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { clerkClient } from '@clerk/nextjs/server';
 import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -31,11 +32,7 @@ export async function GET(request) {
 
     return NextResponse.json({ users });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -52,10 +49,9 @@ export async function POST(request) {
 
     // Validate required fields
     if (!username || !firstName || !lastName || !password) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     // Check if username exists
@@ -64,19 +60,20 @@ export async function POST(request) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 400 }
-      );
+      throw new AppError("Username already exists", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
+    
     // Check if username exists in Clerk
     const existingClerkUsers = await clerkClient.users.getUserList({
       username: [username],
     });
 
     if (existingClerkUsers.length > 0) {
-      return NextResponse.json(
-        { error: "Username already exists in authentication system" },
+      throw new AppError(
+        "Username already exists in authentication system",
+        ErrorType.VALIDATION,
         { status: 400 }
       );
     }
@@ -102,10 +99,6 @@ export async function POST(request) {
 
     return NextResponse.json(newUser);
   } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json(
-      { error: "Failed to create user" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to create user");
   }
 }

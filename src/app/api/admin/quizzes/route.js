@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -32,11 +33,7 @@ export async function GET(request) {
 
     return NextResponse.json(quizzes);
   } catch (error) {
-    console.error("Failed to fetch quizzes:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -51,10 +48,9 @@ export async function POST(request) {
 
     // Validate required fields
     if (!data.title || !data.categoryId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
     // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
@@ -90,10 +86,6 @@ export async function POST(request) {
 
     return NextResponse.json(quiz);
   } catch (error) {
-    console.error("Failed to create quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

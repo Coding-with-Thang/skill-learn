@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { updateClerkUser, deleteClerkUser } from "@/utils/clerk";
 import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 // GET - Fetch single user
 export async function GET(request, { params }) {
@@ -28,16 +29,14 @@ export async function GET(request, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
         return NextResponse.json(user);
     } catch (error) {
-        console.error("Error fetching user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
@@ -54,10 +53,9 @@ export async function PUT(request, { params }) {
 
         // Validate required fields
         if (!username || !firstName || !lastName) {
-            return NextResponse.json(
-                { error: "Missing required fields" },
-                { status: 400 }
-            );
+            throw new AppError("Missing required fields", ErrorType.VALIDATION, {
+                status: 400,
+            });
         }
 
         // Check if username exists for another user
@@ -71,10 +69,9 @@ export async function PUT(request, { params }) {
         });
 
         if (existingUser) {
-            return NextResponse.json(
-                { error: "Username already exists" },
-                { status: 400 }
-            );
+            throw new AppError("Username already exists", ErrorType.VALIDATION, {
+                status: 400,
+            });
         }        // Get user to update
         const user = await prisma.user.findUnique({
             where: { id: params.userId },
@@ -82,7 +79,9 @@ export async function PUT(request, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
         // Update both Clerk and database in parallel
@@ -102,11 +101,7 @@ export async function PUT(request, { params }) {
 
         return NextResponse.json(updatedUser);
     } catch (error) {
-        console.error("Error updating user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
@@ -123,7 +118,9 @@ export async function DELETE(request, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
         // Delete from both Clerk and database in parallel
@@ -136,10 +133,6 @@ export async function DELETE(request, { params }) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error("Error deleting user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

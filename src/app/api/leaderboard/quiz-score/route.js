@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { handleApiError } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -69,14 +70,6 @@ export async function GET(request) {
       leaderboard,
     });
   } catch (error) {
-    console.error("Error fetching quiz score leaderboard:", {
-      message: error.message,
-      stack: error.stack,
-      type: error.constructor.name,
-    });
-    return NextResponse.json(
-      { error: "Failed to fetch leaderboard", details: error.message },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

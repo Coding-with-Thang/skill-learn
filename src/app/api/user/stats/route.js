@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -122,14 +123,7 @@ export async function GET(request) {
       categories,
     });
   } catch (error) {
-    console.error("Error in /api/user/stats:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error.message,
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   } finally {
     await prisma.$disconnect();
   }

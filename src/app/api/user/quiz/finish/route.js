@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function POST(req) {
   try {
@@ -18,7 +19,9 @@ export async function POST(req) {
       typeof score !== "number" ||
       !Array.isArray(responses)
     ) {
-      return new Response("Invalid request", { status: 400 });
+      throw new AppError("Invalid request data", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -26,7 +29,9 @@ export async function POST(req) {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Fetch or create a categoryStat entry
@@ -76,7 +81,6 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error finishing quiz:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }

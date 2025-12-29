@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
 import { requireAdmin, requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -60,8 +61,7 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching audit logs:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }
 export async function POST(request) {
@@ -79,7 +79,9 @@ export async function POST(request) {
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     const { action, resource, resourceId, details } = await request.json();
@@ -88,7 +90,6 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error logging audit event:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }

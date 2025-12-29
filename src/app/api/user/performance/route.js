@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -16,7 +17,9 @@ export async function GET(request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Get user's quiz attempts and stats
@@ -84,10 +87,6 @@ export async function GET(request) {
       categoryProgress,
     });
   } catch (error) {
-    console.error("Error fetching performance stats:", error);
-    return NextResponse.json(
-      { error: "Internal server error", details: error.message },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

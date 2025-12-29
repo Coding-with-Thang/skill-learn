@@ -1,6 +1,7 @@
 import prisma from "@/utils/connect";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function POST(req) {
   try {
@@ -12,10 +13,9 @@ export async function POST(req) {
 
     const { categoryId } = await req.json();
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 }
-      );
+      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -23,7 +23,9 @@ export async function POST(req) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     let stat = await prisma.categoryStat.findUnique({
@@ -61,10 +63,6 @@ export async function POST(req) {
 
     return NextResponse.json({ success: true, stat });
   } catch (error) {
-    console.error("Error starting quiz:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

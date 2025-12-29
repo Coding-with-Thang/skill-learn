@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { handleApiError } from "@/utils/errorHandler";
 
 export async function GET() {
   try {
@@ -13,10 +14,6 @@ export async function GET() {
 
     return NextResponse.json(quizSettings, { status: 200 });
   } catch (error) {
-    console.error("Error fetching quiz settings:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch quiz settings" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

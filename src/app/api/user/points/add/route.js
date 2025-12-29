@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { pointsAwarded } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function POST(request) {
   try {
@@ -14,10 +15,9 @@ export async function POST(request) {
     const { amount, reason } = await request.json();
 
     if (!amount || !reason) {
-      return NextResponse.json(
-        { error: "Reason and Amount required!" },
-        { status: 400 }
-      );
+      throw new AppError("Reason and Amount required!", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     // Transaction to update points and create log
@@ -52,10 +52,6 @@ export async function POST(request) {
       lifetimePoints: result.lifetimePoints,
     });
   } catch (error) {
-    console.error("Error adding points:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

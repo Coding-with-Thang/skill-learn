@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 // Get all categories
 export async function GET(request) {
@@ -24,11 +25,7 @@ export async function GET(request) {
 
         return NextResponse.json(categories);
     } catch (error) {
-        console.error("Error fetching categories:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
@@ -44,10 +41,9 @@ export async function POST(request) {
 
         // Validate required fields
         if (!data.name) {
-            return NextResponse.json(
-                { error: "Name is required" },
-                { status: 400 }
-            );
+            throw new AppError("Name is required", ErrorType.VALIDATION, {
+                status: 400,
+            });
         }
 
         // Create new category
@@ -62,10 +58,6 @@ export async function POST(request) {
 
         return NextResponse.json(category);
     } catch (error) {
-        console.error("Error creating category:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

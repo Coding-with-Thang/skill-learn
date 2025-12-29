@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function POST(request, { params }) {
   try {
@@ -18,7 +19,9 @@ export async function POST(request, { params }) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Find the redemption and check if it can be claimed
@@ -35,8 +38,9 @@ export async function POST(request, { params }) {
     });
 
     if (!redemption) {
-      return NextResponse.json(
-        { error: "Reward redemption not found or already claimed" },
+      throw new AppError(
+        "Reward redemption not found or already claimed",
+        ErrorType.NOT_FOUND,
         { status: 404 }
       );
     }
@@ -56,10 +60,6 @@ export async function POST(request, { params }) {
       redemption: updatedRedemption,
     });
   } catch (error) {
-    console.error("Error claiming reward:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

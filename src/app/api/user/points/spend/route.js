@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function POST(request) {
   try {
@@ -13,10 +14,9 @@ export async function POST(request) {
     const { amount, reason } = await request.json();
 
     if (!amount || !reason) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     // Check if user has enough points
@@ -26,17 +26,16 @@ export async function POST(request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     if (user.points < amount) {
-      return NextResponse.json(
-        {
-          error: "Insufficient points",
-          points: user.points,
-        },
-        { status: 400 }
-      );
+      throw new AppError("Insufficient points", ErrorType.VALIDATION, {
+        status: 400,
+        details: { points: user.points },
+      });
     }
 
     // Transaction to update points and create log
@@ -68,10 +67,6 @@ export async function POST(request) {
       lifetimePoints: result.lifetimePoints,
     });
   } catch (error) {
-    console.error("Error spending points:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

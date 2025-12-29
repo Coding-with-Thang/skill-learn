@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { handleApiError } from "@/utils/errorHandler";
 
 export async function GET() {
   try {
@@ -23,10 +24,6 @@ export async function GET() {
 
     return NextResponse.json({ categories });
   } catch (error) {
-    console.error("Error fetching categories:", error);
-    return NextResponse.json(
-      { error: "There was an error getting Categories", categories: [] },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

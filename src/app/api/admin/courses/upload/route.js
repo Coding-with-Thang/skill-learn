@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import admin from 'firebase-admin';
 import { z } from 'zod';
+import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
 
 export const fileUploadSchema = z.object({
     fileName: z.string().min(1, { message: "Filename is required" }),
@@ -56,7 +57,9 @@ export async function POST(req) {
         // Get the uploaded file from the form data
         const file = formData.get('file');
         if (!file) {
-            return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+            throw new AppError('No file uploaded', ErrorType.VALIDATION, {
+                status: 400,
+            });
         }
 
         // Build a plain object with the metadata we expect and validate it with Zod
@@ -69,9 +72,10 @@ export async function POST(req) {
 
         const validation = fileUploadSchema.safeParse(metadata);
         if (!validation.success) {
-            // Return a helpful validation error payload
-            const formatted = validation.error.flatten();
-            return NextResponse.json({ error: 'Invalid file metadata', details: formatted }, { status: 400 });
+            throw new AppError('Invalid file metadata', ErrorType.VALIDATION, {
+                status: 400,
+                details: validation.error.flatten(),
+            });
         }
 
         // Use validated metadata for upload
@@ -83,7 +87,9 @@ export async function POST(req) {
         const storage = getStorage();
         // Ensure bucket is available
         if (!storage || !storage.bucket) {
-            return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
+            throw new AppError('Firebase Storage is not configured on the server', ErrorType.API, {
+                status: 500,
+            });
         }
 
         const bucket = storage.bucket();
@@ -106,8 +112,7 @@ export async function POST(req) {
         // Return the signed URL and the storage path so the client can delete the file later
         return NextResponse.json({ url: signedUrl, path: storageFileName });
     } catch (error) {
-        console.error('[api/admin/courses/upload] POST error:', error);
-        return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
+        return handleApiError(error);
     }
 }
 
@@ -116,12 +121,16 @@ export async function DELETE(req) {
         const body = await req.json();
         const { path } = body || {};
         if (!path) {
-            return NextResponse.json({ error: 'Missing "path" in request body' }, { status: 400 });
+            throw new AppError('Missing "path" in request body', ErrorType.VALIDATION, {
+                status: 400,
+            });
         }
 
         const storage = getStorage();
         if (!storage || !storage.bucket) {
-            return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
+            throw new AppError('Firebase Storage is not configured on the server', ErrorType.API, {
+                status: 500,
+            });
         }
 
         const bucket = storage.bucket();
@@ -132,7 +141,6 @@ export async function DELETE(req) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('[api/admin/courses/upload] DELETE error:', error);
-        return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
+        return handleApiError(error);
     }
 }

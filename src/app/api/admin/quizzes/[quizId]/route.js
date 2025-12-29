@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -28,16 +29,14 @@ export async function GET(request, { params }) {
     });
 
     if (!quiz) {
-      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     return NextResponse.json(quiz);
   } catch (error) {
-    console.error("Failed to fetch quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -53,10 +52,9 @@ export async function PUT(request, { params }) {
 
     // Validate required fields
     if (!data.title || !data.categoryId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+      throw new AppError("Missing required fields", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }    // Update quiz and manage questions
     let quiz = await prisma.quiz.update({
       where: { id: params.quizId },
@@ -118,11 +116,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json(quiz);
   } catch (error) {
-    console.error("Failed to update quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -141,10 +135,6 @@ export async function DELETE(request, { params }) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Failed to delete quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

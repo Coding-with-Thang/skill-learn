@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
 import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 
 export async function PUT(request) {
   try {
@@ -14,10 +15,9 @@ export async function PUT(request) {
     const { id, featured, ...updateData } = await request.json();
 
     if (!id) {
-      return NextResponse.json(
-        { error: "Reward ID is required" },
-        { status: 400 }
-      );
+      throw new AppError("Reward ID is required", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     // If setting a reward as featured, we need to handle it in a transaction
@@ -77,10 +77,6 @@ export async function PUT(request) {
       });
     }
   } catch (error) {
-    console.error("Error updating reward:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
