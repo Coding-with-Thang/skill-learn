@@ -10,19 +10,38 @@ if (privateKey && privateKey.includes('\\n')) {
     privateKey = privateKey.replace(/\\n/g, "\n")
 }
 
+let storage = null
+
 if (!admin.apps.length) {
     try {
-        admin.initializeApp({
-            credential: admin.credential.cert({ projectId, clientEmail, privateKey }),
-            storageBucket,
-        })
+        // firebase-admin expects keys using snake_case: project_id, client_email, private_key
+        const serviceAccount = {
+            project_id: projectId,
+            client_email: clientEmail,
+            private_key: privateKey,
+        }
+
+        // Only initialize if we have the required service account values
+        if (serviceAccount.project_id && serviceAccount.client_email && serviceAccount.private_key) {
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount),
+                storageBucket,
+            })
+            storage = admin.storage()
+        } else {
+            console.warn('Firebase Admin init skipped: missing service account env vars')
+        }
     } catch (e) {
         // If initialization fails, admin may already be initialized or config invalid
         console.warn('Firebase Admin init error:', e?.message || e)
     }
+} else {
+    try {
+        storage = admin.storage()
+    } catch (e) {
+        console.warn('Firebase Admin storage access error:', e?.message || e)
+    }
 }
-
-const storage = admin.storage()
 
 export async function getSignedUrl(path, expiresDays = 7) {
     if (!path) return null
@@ -42,5 +61,3 @@ export async function getSignedUrl(path, expiresDays = 7) {
         return null
     }
 }
-
-export default { getSignedUrl }

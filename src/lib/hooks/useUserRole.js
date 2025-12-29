@@ -35,7 +35,6 @@ export function useUserRole() {
           throw new Error("No authentication token available");
         }
 
-        console.log("Fetching user role...");
         const { data } = await api.get("/user", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -55,7 +54,6 @@ export function useUserRole() {
             error.response?.status === 401 ||
             error.response?.status >= 500)
         ) {
-          console.log(`Retrying user role fetch (attempt ${retryCount + 1})`);
           setRetryCount((prev) => prev + 1);
           setTimeout(() => {
             fetchRole();

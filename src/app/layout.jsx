@@ -1,9 +1,28 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark } from "@clerk/themes";
 import { Toaster } from "@/components/ui/sonner"
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
-import LayoutWrapper from "./components/LayoutWrapper";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
+import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700'],
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Skill-Learn",
@@ -20,14 +39,8 @@ export default function RootLayout({ children }) {
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap"
-            rel="stylesheet"
-          />
         </head>
-        <body className="flex flex-col min-h-screen font-sans" style={{ background: "var(--background)", color: "var(--foreground)", transition: "var(--transition-normal)" }}>
+        <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
           <ErrorBoundaryProvider>
             <LayoutWrapper>
               {children}

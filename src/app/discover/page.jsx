@@ -1,4 +1,4 @@
-import BreadCrumbCom from "../components/BreadCrumb"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
 export default function DiscoveryPage() {
   return (

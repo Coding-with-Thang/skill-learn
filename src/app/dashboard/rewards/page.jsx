@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/table"
 import { Star, StarOff } from "lucide-react"
 import { useRewardStore } from "@/app/store/rewardStore"
-import { RewardForm } from "@/app/components/Admin/rewards/RewardForm"
+import { RewardForm } from "@/components/features/admin/rewards/RewardForm"
 import { toast } from "sonner"
 import {
   Card,
@@ -160,11 +161,13 @@ export default function RewardsAdminPage() {
                 >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100">
-                        <img
+                      <div className="h-10 w-10 rounded-lg overflow-hidden bg-gray-100 relative">
+                        <Image
                           src={reward.imageUrl}
                           alt={reward.prize}
-                          className="h-full w-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="40px"
                         />
                       </div>
                       {reward.prize}
@@ -276,7 +279,7 @@ export default function RewardsAdminPage() {
             <DialogTitle>Delete Reward</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-            Are you sure you want to delete "{confirmDelete?.prize}"? This action cannot be undone.
+            Are you sure you want to delete &quot;{confirmDelete?.prize}&quot;? This action cannot be undone.
           </p>
           <div className="flex justify-end gap-3">
             <Button

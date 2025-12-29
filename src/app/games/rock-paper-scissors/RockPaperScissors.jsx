@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import useLocalStorage from "../../../lib/hooks/useLocalStorage";
 import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import QuizModal from "../../components/Quiz/QuizModal"
+import QuizModal from "@/components/features/quiz/QuizModal"
 
 const choices = ['Rock', 'Paper', 'Scissors'];
 export default function RockPaperScissors() {
@@ -34,7 +34,7 @@ export default function RockPaperScissors() {
     setComputerChoice(computer);
 
     if (choice === computer) {
-      setResult('It\'s a tie!');
+      setResult('It&apos;s a tie!');
     } else if (
       (choice === 'Rock' && computer === 'Scissors') ||
       (choice === 'Paper' && computer === 'Rock') ||
@@ -97,7 +97,7 @@ export default function RockPaperScissors() {
         <div>
           <p>1. Pick one: ROCK, PAPER, SCISSORS</p>
           <p>2. Oppenent will pick one as well</p>
-          <p>3. If you have the same choice as your opponent, it'll be a tie.</p>
+          <p>3. If you have the same choice as your opponent, it&apos;ll be a tie.</p>
           <p>4. Otherwise, rock beats scissors. Scissors beats paper. Paper beats rock.</p>
         </div>
       </div>

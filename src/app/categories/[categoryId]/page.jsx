@@ -1,6 +1,6 @@
-import QuizCard from '@/app/components/Quiz/QuizCard';
+import QuizCard from '@/components/features/quiz/QuizCard';
 import prisma from "@/utils/connect"
-import BreadCrumbCom from "../../components/BreadCrumb"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { notFound } from 'next/navigation'
 
 export default async function QuizSelectPage({ params }) {
@@ -27,10 +27,13 @@ export default async function QuizSelectPage({ params }) {
           select: {
             id: true,
             text: true,
+            imageUrl: true,
+            videoUrl: true,
             options: {
               select: {
                 id: true,
-                text: true
+                text: true,
+                isCorrect: true
               }
             }
           }

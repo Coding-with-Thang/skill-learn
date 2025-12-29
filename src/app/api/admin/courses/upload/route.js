@@ -24,24 +24,31 @@ if (!admin.apps.length) {
     if (!projectId || !clientEmail || !privateKey || !storageBucket) {
         // Do not throw here; we will surface an error at runtime if missing. But log for clarity.
         console.warn('Firebase Admin SDK not fully configured. Make sure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_STORAGE_BUCKET are set.');
-    }
-
-    try {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId,
-                clientEmail,
-                privateKey,
-            }),
-            storageBucket,
-        });
-    } catch (e) {
-        // If initialization fails, admin may already be initialized or config invalid
-        console.warn('Firebase Admin initialization error:', e?.message || e);
+    } else {
+        try {
+            admin.initializeApp({
+                credential: admin.credential.cert({
+                    projectId,
+                    clientEmail,
+                    privateKey,
+                }),
+                storageBucket,
+            });
+        } catch (e) {
+            // If initialization fails, admin may already be initialized or config invalid
+            console.warn('Firebase Admin initialization error:', e?.message || e);
+        }
     }
 }
 
-const storage = admin.storage();
+const getStorage = () => {
+    if (!admin.apps.length) return null;
+    try {
+        return admin.storage();
+    } catch (e) {
+        return null;
+    }
+};
 
 export async function POST(req) {
     try {
@@ -73,13 +80,14 @@ export async function POST(req) {
         // Create buffer
         const buffer = Buffer.from(await file.arrayBuffer());
 
+        const storage = getStorage();
         // Ensure bucket is available
         if (!storage || !storage.bucket) {
             return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
         }
 
         const bucket = storage.bucket();
-        const storageFileName = `courses/${Date.now()}_${originalName}`;
+        const storageFileName = `courses/content/${Date.now()}_${originalName}`;
         const fileRef = bucket.file(storageFileName);
 
         // Upload the buffer
@@ -98,6 +106,7 @@ export async function POST(req) {
         // Return the signed URL and the storage path so the client can delete the file later
         return NextResponse.json({ url: signedUrl, path: storageFileName });
     } catch (error) {
+        console.error('[api/admin/courses/upload] POST error:', error);
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
 }
@@ -110,6 +119,7 @@ export async function DELETE(req) {
             return NextResponse.json({ error: 'Missing "path" in request body' }, { status: 400 });
         }
 
+        const storage = getStorage();
         if (!storage || !storage.bucket) {
             return NextResponse.json({ error: 'Firebase Storage is not configured on the server' }, { status: 500 });
         }
@@ -122,6 +132,7 @@ export async function DELETE(req) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
+        console.error('[api/admin/courses/upload] DELETE error:', error);
         return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
     }
 }

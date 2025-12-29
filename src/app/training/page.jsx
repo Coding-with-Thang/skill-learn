@@ -7,8 +7,8 @@ import useCategoryStore from "../store/categoryStore";
 import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader } from "@/components/ui/interactive-card";
 import { EnhancedButton } from "@/components/ui/enhanced-button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import BreadCrumbCom from "../components/BreadCrumb"
-import Loader from '../components/loader';
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
+import { Loader } from "@/components/ui/loader";
 import { BookOpen, Play, Trophy, Clock, Users } from 'lucide-react';
 
 export default function TrainingPage() {

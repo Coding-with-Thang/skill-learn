@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Play, Trophy, Clock, Target, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
-import Loader from '@/app/components/loader'
-import BreadCrumbCom from '@/app/components/BreadCrumb'
+import { Loader } from "@/components/ui/loader"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
 export default function SelectedQuizPage() {
   const router = useRouter();
@@ -29,6 +29,8 @@ export default function SelectedQuizPage() {
         categoryId: selectedQuiz.categoryId,
         quizId: selectedQuiz.id,
       });
+      // Clear any previous progress for this quiz
+      sessionStorage.removeItem('quizProgress');
       router.push("/quiz");
     } catch (error) {
       console.error("Error starting quiz: ", error);
@@ -74,7 +76,7 @@ export default function SelectedQuizPage() {
     fetchQuizStats();
   }, [selectedQuiz, router]);
 
-  if (isLoading) return <Loader />;
+  if (isLoading) return <Loader variant="gif" />;
 
   return (
     <>

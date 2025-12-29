@@ -2,14 +2,13 @@
 
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import HeroSection from "./components/User/Landing/HeroSection";
-import BuiltForEveryone from './components/User/Landing/BuiltForEveryone';
-import VersatilePlatform from './components/User/Landing/VersatilePlatform';
-import EndlessVariety from './components/User/Landing/EndlessVariety';
-import SkillLearnHere from './components/User/Landing/SkillLearnHere';
-import FAQ from './components/User/Landing/FAQ';
-import Testimonials from './components/User/Landing/Testimonials';
+import { useRouter, usePathname } from 'next/navigation';
+import HeroSection from "@/components/features/landing/HeroSection";
+import BuiltForEveryone from '@/components/features/landing/BuiltForEveryone';
+import VersatilePlatform from '@/components/features/landing/VersatilePlatform';
+import SkillLearnHere from '@/components/features/landing/SkillLearnHere';
+import FAQ from '@/components/features/landing/FAQ';
+import Testimonials from '@/components/features/landing/Testimonials';
 import { LoadingPage } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 
@@ -21,6 +20,7 @@ export default function LandingPage() {
   const { isLoaded, user } = useUser();
   const router = useRouter();
   const [error, setError] = useState(null);
+  const pathname = usePathname();
 
   // Client-side redirect fallback (middleware handles server-side)
   useEffect(() => {
@@ -29,7 +29,9 @@ export default function LandingPage() {
     }
   }, [isLoaded, user, router]);
 
-  if (!isLoaded) {
+  // Don't show the global loading spinner when the client is still resolving
+  // on the landing page root ("/") — avoid blocker UI flicker for public root.
+  if (!isLoaded && pathname !== '/') {
     return <LoadingPage />;
   }
 
@@ -70,7 +72,6 @@ export default function LandingPage() {
       {renderSection(HeroSection)}
       {renderSection(BuiltForEveryone)}
       {renderSection(VersatilePlatform)}
-      {renderSection(EndlessVariety)}
       {renderSection(SkillLearnHere)}
       {renderSection(FAQ)}
       {renderSection(Testimonials)}
