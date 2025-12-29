@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useAuditLog } from '@/lib/hooks/useAuditLog';
 import { PieChart, Pie, Cell, ResponsiveContainer, Label } from 'recharts';
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 // Utility function to format time
 const formatTime = (seconds) => {
@@ -51,7 +52,7 @@ export default function ResultsPage() {
         const parsedResults = JSON.parse(savedResults);
         setResults(parsedResults);
       } catch (error) {
-        console.error('Error parsing quiz results:', error);
+        toast.error("Failed to load quiz results");
         setError(error.message);
         router.replace("/training");
       }
@@ -68,7 +69,12 @@ export default function ResultsPage() {
         'quiz',
         selectedQuiz.id,
         `Completed quiz with score: ${results.score}% (${results.hasPassed ? 'Passed' : 'Failed'})`
-      ).catch(e => console.error("Audit log error", e));
+      ).catch(e => {
+        // Audit log errors are not critical - only log for debugging
+        if (process.env.NODE_ENV === "development") {
+          console.error("Audit log error", e);
+        }
+      });
     }
   }, [results, selectedQuiz, logUserAction])
 

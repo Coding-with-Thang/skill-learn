@@ -9,6 +9,7 @@ import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatTime } from '@/utils/formatTime'
 import api from '@/utils/axios'
+import { handleErrorWithNotification } from '@/utils/notifications'
 
 export default function UserStats({ user }) {
   const [stats, setStats] = useState(null)
@@ -22,7 +23,7 @@ export default function UserStats({ user }) {
         const statsData = response.data?.data || response.data
         setStats(statsData)
       } catch (error) {
-        console.error('Error fetching user stats:', error)
+        handleErrorWithNotification(error, "Failed to load statistics")
         setStats(null) // Set to null on error so component can handle empty state
       } finally {
         setLoading(false)

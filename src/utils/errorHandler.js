@@ -100,13 +100,16 @@ export function handleClientError(
   error,
   fallbackMessage = "An error occurred"
 ) {
-  console.error("Client Error:", error);
-
   const message =
     error.response?.data?.error || error.message || fallbackMessage;
 
   // Show toast notification for user feedback
   toast.error(message);
+
+  // Log to console only in development for debugging
+  if (process.env.NODE_ENV === "development") {
+    console.error("Client Error:", error);
+  }
 
   return {
     error: message,

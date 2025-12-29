@@ -12,6 +12,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Progress } from "@/components/ui/progress"
 import { UI } from "@/constants"
+import { handleErrorWithNotification } from "@/utils/notifications"
 
 // Utility functions
 const formatTime = (seconds) => {
@@ -135,7 +136,11 @@ export default function QuizScreenPage() {
                         }
                     }
                 } catch (e) {
-                    console.error("Error loading progress", e);
+                    // Error loading saved progress - not critical, just continue
+                    // Only log for debugging
+                    if (process.env.NODE_ENV === "development") {
+                        console.error("Error loading progress", e);
+                    }
                 }
             }
             setIsLoading(false);
@@ -299,15 +304,14 @@ export default function QuizScreenPage() {
                     sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
                 }
             } catch (e) {
-                console.error("Save failed", e);
-                toast.error("Saved locally only");
+                handleErrorWithNotification(e, "Failed to save quiz results");
+                toast.warning("Quiz results saved locally only");
             }
 
             router.replace("/quiz/results");
 
         } catch (error) {
-            console.error("Error finishing quiz", error);
-            toast.error("Error completing quiz");
+            handleErrorWithNotification(error, "Error completing quiz");
             setIsLoading(false);
         }
     }, [shuffledQuestionsMemo, selectedQuiz, timeRemaining, router, setQuizResponses]);

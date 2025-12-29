@@ -504,6 +504,15 @@ export async function GET(request) {
 - Extract to helper function
 - Use lookup objects
 
+**Detailed Analysis:** See `CODE_QUALITY_AUDIT_M11_ANALYSIS.md` for:
+
+- Complete problem breakdown
+- Three solution approaches (Helper Functions, Lookup Objects, Custom Hooks)
+- Benefits: Improved readability, maintainability, testability, reusability
+- Downsides: Additional code, minimal performance overhead, file organization considerations
+- Recommended approach: Helper Functions (Solution 1)
+- Complete refactored code examples
+
 ---
 
 ### M12. Missing Input Validation

@@ -8,6 +8,7 @@ import api from "@/utils/axios";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ANIMATION, UI } from "@/constants";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export default function PointsRewardsWidget() {
   const { points, lifetimePoints, dailyStatus, fetchUserData, isLoading } = usePointsStore();
@@ -40,7 +41,7 @@ export default function PointsRewardsWidget() {
           setCompletedTopics(completed);
         }
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        handleErrorWithNotification(error, "Failed to load statistics");
       } finally {
         setStatsLoading(false);
       }

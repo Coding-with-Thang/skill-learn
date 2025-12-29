@@ -665,8 +665,8 @@ export default function RewardsPage() {
         setShowRedeemModal(false);
       }
     } catch (error) {
-      console.error('Error redeeming reward:', error)
-      // Only show generic error if no specific error was shown by the store
+      // Error notification is already handled by the store
+      // Only show additional notification if store didn't handle it
       if (!error.response?.data?.error) {
         toast.error('Failed to redeem reward')
       }
@@ -682,7 +682,7 @@ export default function RewardsPage() {
       // Refresh the reward history after claiming
       await fetchRewardHistory()
     } catch (error) {
-      console.error('Error claiming reward:', error)
+      toast.error(error.response?.data?.error || 'Failed to claim reward')
       throw error
     }
   }

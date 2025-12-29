@@ -87,7 +87,11 @@ export default function LeaderboardWidget() {
         const leaderboard = responseData?.leaderboard || responseData;
         setLeaderboardData((leaderboard || []).slice(0, 3));
       } catch (error) {
-        console.error("Failed to fetch leaderboard", error);
+        // Leaderboard fetch failure is not critical - just show empty state
+        // Only log for debugging
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch leaderboard", error);
+        }
         setLeaderboardData([]);
       } finally {
         setIsLoading(false);

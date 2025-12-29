@@ -2,6 +2,7 @@ import { create } from "zustand";
 import api from "@/utils/axios";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export const useRewardStore = create((set, get) => ({
   rewards: [],
@@ -20,7 +21,7 @@ export const useRewardStore = create((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching rewards:", error);
+      handleErrorWithNotification(error, "Failed to load rewards");
       set({ isLoading: false });
     }
   },
@@ -35,7 +36,7 @@ export const useRewardStore = create((set, get) => ({
 
       return true;
     } catch (error) {
-      console.error("Error adding reward:", error);
+      handleErrorWithNotification(error, "Failed to add reward");
       throw error;
     } finally {
       set({ isLoading: false });
@@ -56,10 +57,7 @@ export const useRewardStore = create((set, get) => ({
 
       return response.data;
     } catch (error) {
-      console.error("Error redeeming reward:", error);
-      if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
-      }
+      handleErrorWithNotification(error, "Failed to redeem reward");
       throw error; // Re-throw the error to be handled by the component
     }
   },
@@ -76,7 +74,7 @@ export const useRewardStore = create((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching reward history:", error);
+      handleErrorWithNotification(error, "Failed to load reward history");
       set({ isLoading: false });
     }
   },
@@ -103,7 +101,7 @@ export const useRewardStore = create((set, get) => ({
       await get().fetchRewards();
       return true;
     } catch (error) {
-      console.error("Error updating reward:", error);
+      handleErrorWithNotification(error, "Failed to update reward");
       throw error;
     } finally {
       set({ isLoading: false });

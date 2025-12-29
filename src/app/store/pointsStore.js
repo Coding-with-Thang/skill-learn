@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
 import { STORE } from "@/constants";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 // Request deduplication
 let fetchPromise = null;
@@ -72,7 +73,7 @@ export const usePointsStore = create((set, get) => ({
           return data;
         })
         .catch((error) => {
-          console.error("Error fetching user data:", error);
+          handleErrorWithNotification(error, "Failed to load user data");
           set({
             isLoading: false,
             dailyStatus: {
@@ -91,7 +92,7 @@ export const usePointsStore = create((set, get) => ({
 
       return fetchPromise;
     } catch (error) {
-      console.error("Error initiating fetch:", error);
+      handleErrorWithNotification(error, "Failed to load user data");
       set({ isLoading: false });
       throw error;
     }
@@ -111,7 +112,7 @@ export const usePointsStore = create((set, get) => ({
 
       return response.data;
     } catch (error) {
-      console.error("Error adding points:", error);
+      handleErrorWithNotification(error, "Failed to add points");
       set({ isLoading: false });
       throw error;
     }
@@ -134,7 +135,7 @@ export const usePointsStore = create((set, get) => ({
 
       return true;
     } catch (error) {
-      console.error("Error spending points:", error);
+      handleErrorWithNotification(error, "Failed to spend points");
       set({ isLoading: false });
       return false;
     }

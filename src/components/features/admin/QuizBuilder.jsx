@@ -25,6 +25,7 @@ import { LoadingSpinner } from "@/components/ui/loading"
 import { Plus, Minus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/utils/axios"
+import { handleErrorWithNotification } from "@/utils/notifications"
 
 export default function QuizBuilder({ quizId = null }) {
     const router = useRouter()
@@ -66,8 +67,7 @@ export default function QuizBuilder({ quizId = null }) {
             const response = await api.get("/admin/categories")
             setCategories(response.data)
         } catch (error) {
-            console.error("Failed to fetch categories:", error)
-            toast.error("Failed to load categories")
+            handleErrorWithNotification(error, "Failed to load categories")
         }
     }
 
@@ -89,8 +89,11 @@ export default function QuizBuilder({ quizId = null }) {
                 })
             }
         } catch (error) {
-            console.error("Failed to fetch quiz settings:", error)
-            // Keep existing default (70) if settings fetch fails
+            // Settings fetch failure is not critical - use default values
+            // Only log for debugging
+            if (process.env.NODE_ENV === "development") {
+                console.error("Failed to fetch quiz settings:", error)
+            }
         }
     }
 
@@ -99,8 +102,7 @@ export default function QuizBuilder({ quizId = null }) {
             const response = await api.get(`/admin/quizzes/${quizId}`)
             setQuiz(response.data)
         } catch (error) {
-            console.error("Failed to fetch quiz:", error)
-            toast.error("Failed to load quiz")
+            handleErrorWithNotification(error, "Failed to load quiz")
         } finally {
             setLoading(false)
         }
@@ -109,7 +111,7 @@ export default function QuizBuilder({ quizId = null }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSaving(true)
-        
+
         try {
             // Validate basic quiz info
             if (!quiz.title.trim()) {
@@ -189,8 +191,7 @@ export default function QuizBuilder({ quizId = null }) {
 
             router.push("/dashboard/quizzes")
         } catch (error) {
-            console.error("Failed to save quiz:", error)
-            toast.error(error.response?.data?.error || "Failed to save quiz")
+            handleErrorWithNotification(error, "Failed to save quiz")
         } finally {
             setSaving(false)
         }
@@ -237,7 +238,7 @@ export default function QuizBuilder({ quizId = null }) {
             ...prev,
             questions: prev.questions.map((q, i) => {
                 if (i !== index) return q;
-                
+
                 // If setting imageUrl, clear videoUrl
                 if (field === "imageUrl" && value) {
                     return { ...q, imageUrl: value, videoUrl: "" };
@@ -261,7 +262,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: [
@@ -293,7 +294,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: q.options.filter((_, j) => j !== optionIndex)
@@ -315,10 +316,10 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
-                    options: q.options.map((opt, j) => 
+                    options: q.options.map((opt, j) =>
                         j === optionIndex ? { ...opt, [field]: value } : opt
                     )
                 } : q
@@ -549,11 +550,10 @@ export default function QuizBuilder({ quizId = null }) {
 
                                     <div className="space-y-3">
                                         {question.options.map((option, oIndex) => (
-                                            <div 
-                                                key={oIndex} 
-                                                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                                                    option.isCorrect ? 'bg-green-50' : ''
-                                                }`}
+                                            <div
+                                                key={oIndex}
+                                                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${option.isCorrect ? 'bg-green-50' : ''
+                                                    }`}
                                             >
                                                 <Input
                                                     value={option.text}

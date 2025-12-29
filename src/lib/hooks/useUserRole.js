@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import api from "@/utils/axios";
 import { RETRY_CONFIG } from "@/constants";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();
@@ -50,7 +51,10 @@ export function useUserRole() {
       setError(null);
       retryCountRef.current = 0;
     } catch (error) {
-      console.error("Error fetching user role:", error);
+      // Only show notification if not retrying (to avoid spam)
+      if (retryCountRef.current >= RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES) {
+        handleErrorWithNotification(error, "Failed to load user information");
+      }
 
       // Retry logic for temporary failures
       if (

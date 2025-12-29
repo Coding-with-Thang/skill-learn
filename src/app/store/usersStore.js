@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export const useUsersStore = create((set, get) => ({
   users: [],
@@ -18,7 +19,7 @@ export const useUsersStore = create((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error("Error fetching users:", error);
+      handleErrorWithNotification(error, "Failed to load users");
       set({
         error: error.response?.data?.error || "Failed to fetch users",
         isLoading: false
@@ -39,7 +40,7 @@ export const useUsersStore = create((set, get) => ({
       }));
       return newUser;
     } catch (error) {
-      console.error("Error creating user:", error);
+      handleErrorWithNotification(error, "Failed to create user");
       set({
         error: error.response?.data?.error || "Failed to create user",
         isLoading: false
@@ -63,7 +64,7 @@ export const useUsersStore = create((set, get) => ({
       }));
       return updatedUser;
     } catch (error) {
-      console.error("Error updating user:", error);
+      handleErrorWithNotification(error, "Failed to update user");
       set({
         error: error.response?.data?.error || "Failed to update user",
         isLoading: false
@@ -81,7 +82,7 @@ export const useUsersStore = create((set, get) => ({
         isLoading: false,
       }));
     } catch (error) {
-      console.error("Error deleting user:", error);
+      handleErrorWithNotification(error, "Failed to delete user");
       set({
         error: error.response?.data?.error || "Failed to delete user",
         isLoading: false

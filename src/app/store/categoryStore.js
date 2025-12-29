@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "@/utils/axios";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export const useCategoryStore = create(
   persist(
@@ -26,7 +27,7 @@ export const useCategoryStore = create(
             lastFetch: Date.now(),
           });
         } catch (error) {
-          console.error("Category fetch error:", error);
+          handleErrorWithNotification(error, "Failed to load categories");
           set({
             error:
               error.response?.data?.error || error.response?.data?.message || "Failed to fetch categories",
