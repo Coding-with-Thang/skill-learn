@@ -2,9 +2,10 @@ import { create } from "zustand";
 import api from "@/utils/axios";
 import { STORE } from "@/constants";
 import { handleErrorWithNotification } from "@/utils/notifications";
+import { createRequestDeduplicator } from "@/utils/requestDeduplication";
 
 // Request deduplication
-let fetchPromise = null;
+const requestDeduplicator = createRequestDeduplicator();
 
 export const usePointsStore = create((set, get) => ({
   points: 0,
@@ -39,29 +40,22 @@ export const usePointsStore = create((set, get) => ({
       };
     }
 
-    // If there's an ongoing fetch, return its promise
-    if (fetchPromise) {
-      return fetchPromise;
-    }
+    // Use request deduplication utility with new consolidated dashboard endpoint
+    return requestDeduplicator.dedupe(
+      "fetchUserData",
+      async () => {
+        set({ isLoading: true });
 
-    try {
-      set({ isLoading: true });
-
-      // Create a new fetch promise
-      fetchPromise = Promise.all([
-        api.get("/user/points/daily-status"),
-        api.get("/user/streak"),
-      ])
-        .then(([pointsResponse, streakResponse]) => {
-          // All APIs return { success: true, data: {...} }
-          const pointsData = pointsResponse.data?.data || pointsResponse.data;
-          const streakData = streakResponse.data?.data || streakResponse.data;
+        try {
+          // Use new consolidated dashboard endpoint (combines points + streak)
+          const response = await api.get("/user/dashboard");
+          const responseData = response.data?.data || response.data;
 
           const data = {
-            dailyStatus: pointsData,
-            points: pointsData?.user?.points || 0,
-            lifetimePoints: pointsData?.user?.lifetimePoints || 0,
-            streak: streakData,
+            dailyStatus: responseData.dailyStatus,
+            points: responseData.points || 0,
+            lifetimePoints: responseData.lifetimePoints || 0,
+            streak: responseData.streak,
           };
 
           set({
@@ -71,8 +65,7 @@ export const usePointsStore = create((set, get) => ({
           });
 
           return data;
-        })
-        .catch((error) => {
+        } catch (error) {
           handleErrorWithNotification(error, "Failed to load user data");
           set({
             isLoading: false,
@@ -80,22 +73,24 @@ export const usePointsStore = create((set, get) => ({
               todaysPoints: 0,
               canEarnPoints: true,
               lifetimePoints: 0,
+              dailyLimit: 0,
+              todaysLogs: [],
             },
             points: 0,
             lifetimePoints: 0,
+            streak: {
+              current: 0,
+              longest: 0,
+              atRisk: false,
+              nextMilestone: 5,
+              pointsToNextMilestone: 5,
+            },
           });
           throw error;
-        })
-        .finally(() => {
-          fetchPromise = null;
-        });
-
-      return fetchPromise;
-    } catch (error) {
-      handleErrorWithNotification(error, "Failed to load user data");
-      set({ isLoading: false });
-      throw error;
-    }
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
   },
 
   addPoints: async (amount, reason) => {

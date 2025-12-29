@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { requireAuth } from "@/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { awardPoints } from "@/lib/actions/points";
+import { awardPoints, getDailyPointStatus } from "@/lib/actions/points";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { successResponse } from "@/utils/apiWrapper";
 import { validateRequestBody } from "@/utils/validateRequest";
@@ -138,10 +138,27 @@ export async function POST(req) {
       }
     }
 
+    // Fetch updated daily status to include in response (eliminates need for follow-up call)
+    let updatedDailyStatus = null;
+    try {
+      updatedDailyStatus = await getDailyPointStatus(req);
+    } catch (statusError) {
+      // If we can't get updated status, continue without it (non-critical)
+      console.warn("Could not fetch updated daily status:", statusError.message);
+    }
+
     return successResponse({
       pointsAwarded,
       bonusAwarded,
       totalPointsAwarded: pointsAwarded + bonusAwarded,
+      dailyStatus: updatedDailyStatus ? {
+        todaysPoints: updatedDailyStatus.todaysPoints || 0,
+        canEarnPoints: updatedDailyStatus.canEarnPoints !== false,
+        dailyLimit: updatedDailyStatus.dailyLimit || 0,
+        remainingDailyPoints: Math.max(0, 
+          (updatedDailyStatus.dailyLimit || 0) - (updatedDailyStatus.todaysPoints || 0)
+        ),
+      } : null,
     });
   } catch (error) {
     return handleApiError(error);

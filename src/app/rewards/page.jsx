@@ -588,7 +588,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
 }
 
 export default function RewardsPage() {
-  const { fetchRewards, fetchRewardHistory, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
+  const { fetchRewardsComplete, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
   const { points, fetchUserData } = usePointsStore()
   const [redeemingRewardId, setRedeemingRewardId] = useState(null)
 
@@ -597,10 +597,10 @@ export default function RewardsPage() {
   const [selectedReward, setSelectedReward] = useState(null);
 
   useEffect(() => {
-    fetchRewards()
+    // Use consolidated endpoints: fetchRewardsComplete combines rewards + history
+    fetchRewardsComplete()
     fetchUserData()
-    fetchRewardHistory()
-  }, [fetchRewards, fetchUserData, fetchRewardHistory])
+  }, [fetchRewardsComplete, fetchUserData])
 
   const featuredReward = rewards.find(reward => reward.featured === true)
 
@@ -660,8 +660,8 @@ export default function RewardsPage() {
       const result = await redeemReward(selectedReward.id)
       if (result.success) {
         toast.success(result.message || `Successfully redeemed ${selectedReward.prize}`)
-        // Refresh the reward history after successful redemption
-        await fetchRewardHistory()
+        // Refresh rewards and history (already done by redeemReward, but ensure UI is updated)
+        await fetchRewardsComplete()
         // Close modal on success
         setShowRedeemModal(false);
       }
@@ -680,8 +680,8 @@ export default function RewardsPage() {
     try {
       await api.post(`/user/rewards/claim/${redemption.id}`);
 
-      // Refresh the reward history after claiming
-      await fetchRewardHistory()
+      // Refresh rewards and history after claiming
+      await fetchRewardsComplete()
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to claim reward')
       throw error

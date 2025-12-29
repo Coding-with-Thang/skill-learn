@@ -286,18 +286,11 @@ export default function QuizScreenPage() {
                     resultsData.pointsAwarded = finishData.pointsAwarded;
                     resultsData.bonusAwarded = finishData.bonusAwarded || 0;
 
-                    // Fetch updated daily status for remaining points
-                    try {
-                        const dailyStatusResponse = await api.get("/user/points/daily-status");
-                        // API returns { success: true, data: {...} }
-                        const dailyData = dailyStatusResponse.data?.data || dailyStatusResponse.data;
-                        if (dailyData) {
-                            resultsData.remainingDailyPoints = Math.max(0,
-                                dailyData.dailyLimit - dailyData.todaysPoints
-                            );
-                        }
-                    } catch (dailyError) {
-                        console.warn("Could not fetch daily status:", dailyError);
+                    // Use dailyStatus from response (eliminates need for follow-up API call)
+                    if (finishData.dailyStatus) {
+                        resultsData.remainingDailyPoints = finishData.dailyStatus.remainingDailyPoints || Math.max(0,
+                            finishData.dailyStatus.dailyLimit - finishData.dailyStatus.todaysPoints
+                        );
                     }
 
                     // Update stored results

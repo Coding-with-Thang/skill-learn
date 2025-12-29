@@ -3,27 +3,68 @@ import api from "@/utils/axios";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
 import { handleErrorWithNotification } from "@/utils/notifications";
+import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { STORE } from "@/constants";
+
+// Request deduplication
+const requestDeduplicator = createRequestDeduplicator();
 
 export const useRewardStore = create((set, get) => ({
   rewards: [],
   rewardHistory: [],
   isLoading: false,
 
-  fetchRewards: async () => {
-    try {
-      set({ isLoading: true });
-      const response = await api.get("/user/rewards");
-      // API returns { success: true, data: { rewards: [...] } }
-      const responseData = response.data?.data || response.data;
-      const rewards = responseData?.rewards || responseData || [];
-      set({
-        rewards,
-        isLoading: false,
-      });
-    } catch (error) {
-      handleErrorWithNotification(error, "Failed to load rewards");
-      set({ isLoading: false });
-    }
+  fetchRewards: async (force = false) => {
+    return requestDeduplicator.dedupe(
+      "fetchRewards",
+      async () => {
+        set({ isLoading: true });
+        try {
+          const response = await api.get("/user/rewards");
+          // API returns { success: true, data: { rewards: [...] } }
+          const responseData = response.data?.data || response.data;
+          const rewards = responseData?.rewards || responseData || [];
+          set({
+            rewards,
+            isLoading: false,
+          });
+          return rewards;
+        } catch (error) {
+          handleErrorWithNotification(error, "Failed to load rewards");
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
+  },
+
+  // New method: Fetch both rewards and history in one call
+  fetchRewardsComplete: async (force = false) => {
+    return requestDeduplicator.dedupe(
+      "fetchRewardsComplete",
+      async () => {
+        set({ isLoading: true });
+        try {
+          const response = await api.get("/user/rewards/complete");
+          // API returns { success: true, data: { rewards: [...], history: [...] } }
+          const responseData = response.data?.data || response.data;
+          const rewards = responseData?.rewards || [];
+          const history = responseData?.history || [];
+          set({
+            rewards,
+            rewardHistory: history,
+            isLoading: false,
+          });
+          return { rewards, history };
+        } catch (error) {
+          handleErrorWithNotification(error, "Failed to load rewards");
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
   },
 
   addReward: async (data) => {
@@ -47,12 +88,11 @@ export const useRewardStore = create((set, get) => ({
     try {
       const response = await api.post("/user/rewards/redeem", { rewardId });
 
-      // Parallel fetch: Update points, rewards, and reward history simultaneously
+      // Use consolidated endpoints: dashboard + rewards complete
       const pointsStore = usePointsStore.getState();
       await Promise.all([
         pointsStore.fetchUserData(true), // Force refresh points after redemption
-        get().fetchRewards(),
-        get().fetchRewardHistory(),
+        get().fetchRewardsComplete(true), // Fetch both rewards and history in one call
       ]);
 
       return response.data;
@@ -62,21 +102,29 @@ export const useRewardStore = create((set, get) => ({
     }
   },
 
-  fetchRewardHistory: async () => {
-    try {
-      set({ isLoading: true });
-      const response = await api.get("/user/rewards/history");
-      // API returns { success: true, data: { history: [...] } }
-      const responseData = response.data?.data || response.data;
-      const history = responseData?.history || responseData || [];
-      set({
-        rewardHistory: history,
-        isLoading: false,
-      });
-    } catch (error) {
-      handleErrorWithNotification(error, "Failed to load reward history");
-      set({ isLoading: false });
-    }
+  fetchRewardHistory: async (force = false) => {
+    return requestDeduplicator.dedupe(
+      "fetchRewardHistory",
+      async () => {
+        set({ isLoading: true });
+        try {
+          const response = await api.get("/user/rewards/history");
+          // API returns { success: true, data: { history: [...] } }
+          const responseData = response.data?.data || response.data;
+          const history = responseData?.history || responseData || [];
+          set({
+            rewardHistory: history,
+            isLoading: false,
+          });
+          return history;
+        } catch (error) {
+          handleErrorWithNotification(error, "Failed to load reward history");
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
   },
 
   updateReward: async (id, updateData) => {
