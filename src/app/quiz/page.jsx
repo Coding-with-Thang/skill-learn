@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
@@ -66,6 +66,24 @@ export default function QuizScreenPage() {
         selectedQuiz?.timeLimit ? selectedQuiz.timeLimit * 60 : 0
     );
 
+    // Refs to store latest values for timer callback
+    const currentIndexRef = useRef(currentIndex);
+    const selectedOptionsRef = useRef(selectedOptions);
+    const responsesRef = useRef(responses);
+
+    // Keep refs in sync with state
+    useEffect(() => {
+        currentIndexRef.current = currentIndex;
+    }, [currentIndex]);
+
+    useEffect(() => {
+        selectedOptionsRef.current = selectedOptions;
+    }, [selectedOptions]);
+
+    useEffect(() => {
+        responsesRef.current = responses;
+    }, [responses]);
+
     // Memoize shuffled questions
     const shuffledQuestionsMemo = useMemo(() =>
         selectedQuiz ? shuffleArray(selectedQuiz.questions) : [],
@@ -125,6 +143,160 @@ export default function QuizScreenPage() {
     }, [currentIndex, shuffledQuestionsMemo, responses]);
 
 
+    const handleFinishQuiz = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            // Use refs to get latest values (important for timer expiration)
+            const currentIdx = currentIndexRef.current;
+            const currentSelected = selectedOptionsRef.current;
+            const currentResponses = responsesRef.current;
+
+            const totalQuestions = shuffledQuestionsMemo.length;
+
+            // Build complete responses array including current question
+            // Start with existing responses
+            let finalResponses = [...currentResponses];
+
+            // Ensure current question's response is included and up-to-date
+            if (shuffledQuestionsMemo[currentIdx]) {
+                const currentQuestion = shuffledQuestionsMemo[currentIdx];
+                const correctOptions = currentQuestion.options.filter(opt => opt.isCorrect);
+                const correctOptionIds = correctOptions.map(opt => opt.id);
+                
+                // Calculate correctness for current question
+                const isCorrect =
+                    currentSelected.length === correctOptionIds.length &&
+                    currentSelected.every(id => correctOptionIds.includes(id));
+
+                const currentResponse = {
+                    questionId: currentQuestion.id,
+                    selectedOptionIds: [...currentSelected], // Copy array
+                    isCorrect: isCorrect,
+                    question: currentQuestion.text,
+                    selectedAnswer: currentQuestion.options.filter(opt => currentSelected.includes(opt.id)).map(o => o.text).join(", "),
+                    correctAnswer: correctOptions.map(o => o.text).join(", ")
+                };
+
+                // Update or add current response
+                const existingIndex = finalResponses.findIndex((res) =>
+                    res.questionId === currentResponse.questionId
+                );
+
+                if (existingIndex !== -1) {
+                    finalResponses[existingIndex] = currentResponse;
+                } else {
+                    finalResponses.push(currentResponse);
+                }
+            }
+
+            // Recalculate correctness for all responses to ensure accuracy
+            finalResponses = finalResponses.map(response => {
+                const question = shuffledQuestionsMemo.find(q => q.id === response.questionId);
+                if (!question) return response;
+
+                const correctOptions = question.options.filter(opt => opt.isCorrect);
+                const correctOptionIds = correctOptions.map(opt => opt.id);
+                
+                // Recalculate correctness
+                const isCorrect =
+                    response.selectedOptionIds.length === correctOptionIds.length &&
+                    response.selectedOptionIds.every(id => correctOptionIds.includes(id));
+
+                return {
+                    ...response,
+                    isCorrect: isCorrect
+                };
+            });
+
+            // Save final responses to state
+            setResponses(finalResponses);
+
+            // Count correct answers
+            // Questions without responses are treated as incorrect (not counted in correctAnswers)
+            const correctAnswers = finalResponses.reduce((count, response) => {
+                return count + (Boolean(response.isCorrect) ? 1 : 0);
+            }, 0);
+
+            // Score = correct answers / total questions (unanswered count as incorrect)
+            const scorePercentage = totalQuestions > 0
+                ? Math.max(0, Math.min(100, (correctAnswers / totalQuestions) * 100))
+                : 0;
+
+            const resultsData = {
+                score: Number(scorePercentage.toFixed(1)),
+                totalQuestions,
+                correctAnswers,
+                remainingDailyPoints: 0, // Mock for now or fetch
+                pointsEarned: correctAnswers * 1000, // Simplified
+                pointsBreakdown: {},
+                hasPassed: selectedQuiz.passingScore ? scorePercentage >= selectedQuiz.passingScore : true,
+                isPerfectScore: scorePercentage === 100,
+                hasPassingRequirement: !!selectedQuiz.passingScore,
+                passingScore: selectedQuiz.passingScore || 0,
+                timeSpent: selectedQuiz?.timeLimit ? (selectedQuiz.timeLimit * 60) - timeRemaining : 0,
+                detailedResponses: finalResponses
+            };
+
+            // Save to store
+            await setQuizResponses(resultsData);
+            sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+            // Clear progress as the quiz is finished
+            sessionStorage.removeItem('quizProgress');
+
+            // API Call
+            try {
+                const response = await api.post("/user/quiz/finish", {
+                    categoryId: selectedQuiz.categoryId,
+                    quizId: selectedQuiz.id,
+                    score: scorePercentage,
+                    responses: finalResponses,
+                    timeSpent: resultsData.timeSpent,
+                    hasPassed: resultsData.hasPassed,
+                    isPerfectScore: resultsData.isPerfectScore,
+                    pointsBreakdown: {}
+                });
+
+                // Update results with actual points awarded from API
+                // API returns { success: true, data: { pointsAwarded, bonusAwarded, ... } }
+                const finishData = response.data?.data || response.data;
+                if (finishData?.pointsAwarded !== undefined) {
+                    resultsData.pointsEarned = finishData.pointsAwarded + (finishData.bonusAwarded || 0);
+                    resultsData.pointsAwarded = finishData.pointsAwarded;
+                    resultsData.bonusAwarded = finishData.bonusAwarded || 0;
+
+                    // Fetch updated daily status for remaining points
+                    try {
+                        const dailyStatusResponse = await api.get("/user/points/daily-status");
+                        // API returns { success: true, data: {...} }
+                        const dailyData = dailyStatusResponse.data?.data || dailyStatusResponse.data;
+                        if (dailyData) {
+                            resultsData.remainingDailyPoints = Math.max(0,
+                                dailyData.dailyLimit - dailyData.todaysPoints
+                            );
+                        }
+                    } catch (dailyError) {
+                        console.warn("Could not fetch daily status:", dailyError);
+                    }
+
+                    // Update stored results
+                    await setQuizResponses(resultsData);
+                    sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+                }
+            } catch (e) {
+                console.error("Save failed", e);
+                toast.error("Saved locally only");
+            }
+
+            router.replace("/quiz/results");
+
+        } catch (error) {
+            console.error("Error finishing quiz", error);
+            toast.error("Error completing quiz");
+            setIsLoading(false);
+        }
+    }, [shuffledQuestionsMemo, selectedQuiz, timeRemaining, router, setQuizResponses]);
+
+
     // Timer Logic
     useEffect(() => {
         if (timeRemaining > 0 && !isLoading) {
@@ -132,6 +304,7 @@ export default function QuizScreenPage() {
                 setTimeRemaining((prev) => {
                     if (prev <= 1) {
                         clearInterval(timer);
+                        // Call handleFinishQuiz with latest ref values
                         handleFinishQuiz();
                         return 0;
                     }
@@ -140,7 +313,7 @@ export default function QuizScreenPage() {
             }, 1000);
             return () => clearInterval(timer);
         }
-    }, [timeRemaining, isLoading]);
+    }, [timeRemaining, isLoading, handleFinishQuiz]);
 
 
     const toggleOption = useCallback((option) => {
@@ -236,113 +409,6 @@ export default function QuizScreenPage() {
         // Maybe just redirect to listing?
         router.push("/training");
     };
-
-
-    const handleFinishQuiz = useCallback(async () => {
-        // Ensure current response is saved if we trigger finish directly
-        // (Note: saveCurrentResponse depends on state, might be stale if called inside closure without refs,
-        // but here we rely on 'responses' state which should be updated if we navigated. 
-        // If we click Finish on last question, we called saveCurrentResponse in handleNextQuestion flow if that was the trigger.
-        // If timer ran out, we might miss last question unsaved changes if we don't trigger save.
-        // Ideally we'd call saveCurrentResponse() here but it uses hooks.
-        // For now assuming user clicks Next/Finish button which calls save.
-
-        // Calculate final score
-        // Since 'responses' state might not define all questions if user skipped,
-        // we should treat missing questions as incorrect? Or just count what's there?
-        // Usually missing = incorrect.
-
-        setIsLoading(true);
-        try {
-            // ... (reuse logic from original file, adapted for multi-select correctness) ...
-            const totalQuestions = shuffledQuestionsMemo.length;
-
-            // Re-calculate isCorrect for all responses just to be safe or rely on stored isCorrect
-            const correctAnswers = responses.reduce((count, response) => {
-                return count + (Boolean(response.isCorrect) ? 1 : 0);
-            }, 0);
-
-            const scorePercentage = totalQuestions > 0
-                ? Math.max(0, Math.min(100, (correctAnswers / totalQuestions) * 100))
-                : 0;
-
-            // ... (standard save logic) ...
-
-            const resultsData = {
-                score: Number(scorePercentage.toFixed(1)),
-                // ... points logic ...
-                totalQuestions,
-                correctAnswers, // etc
-                // Add other fields needed for results page
-                remainingDailyPoints: 0, // Mock for now or fetch
-                pointsEarned: correctAnswers * 1000, // Simplified
-                pointsBreakdown: {},
-                hasPassed: selectedQuiz.passingScore ? scorePercentage >= selectedQuiz.passingScore : true,
-                isPerfectScore: scorePercentage === 100,
-                hasPassingRequirement: !!selectedQuiz.passingScore,
-                passingScore: selectedQuiz.passingScore || 0,
-                timeSpent: selectedQuiz?.timeLimit ? (selectedQuiz.timeLimit * 60) - timeRemaining : 0,
-                detailedResponses: responses
-            };
-
-            // Save to store
-            await setQuizResponses(resultsData);
-            sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
-            // Clear progress as the quiz is finished
-            sessionStorage.removeItem('quizProgress');
-
-            // API Call
-            try {
-                const response = await api.post("/user/quiz/finish", {
-                    categoryId: selectedQuiz.categoryId,
-                    quizId: selectedQuiz.id,
-                    score: scorePercentage,
-                    responses,
-                    timeSpent: resultsData.timeSpent,
-                    hasPassed: resultsData.hasPassed,
-                    isPerfectScore: resultsData.isPerfectScore,
-                    pointsBreakdown: {}
-                });
-
-                // Update results with actual points awarded from API
-                // API returns { success: true, data: { pointsAwarded, bonusAwarded, ... } }
-                const finishData = response.data?.data || response.data;
-                if (finishData?.pointsAwarded !== undefined) {
-                    resultsData.pointsEarned = finishData.pointsAwarded + (finishData.bonusAwarded || 0);
-                    resultsData.pointsAwarded = finishData.pointsAwarded;
-                    resultsData.bonusAwarded = finishData.bonusAwarded || 0;
-
-                    // Fetch updated daily status for remaining points
-                    try {
-                        const dailyStatusResponse = await api.get("/user/points/daily-status");
-                        // API returns { success: true, data: {...} }
-                        const dailyData = dailyStatusResponse.data?.data || dailyStatusResponse.data;
-                        if (dailyData) {
-                            resultsData.remainingDailyPoints = Math.max(0,
-                                dailyData.dailyLimit - dailyData.todaysPoints
-                            );
-                        }
-                    } catch (dailyError) {
-                        console.warn("Could not fetch daily status:", dailyError);
-                    }
-
-                    // Update stored results
-                    await setQuizResponses(resultsData);
-                    sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
-                }
-            } catch (e) {
-                console.error("Save failed", e);
-                toast.error("Saved locally only");
-            }
-
-            router.replace("/quiz/results");
-
-        } catch (error) {
-            console.error("Error finishing quiz", error);
-            toast.error("Error completing quiz");
-            setIsLoading(false);
-        }
-    }, [responses, shuffledQuestionsMemo, selectedQuiz, timeRemaining, router, setQuizResponses]);
 
 
     // Effect to save progress to session storage

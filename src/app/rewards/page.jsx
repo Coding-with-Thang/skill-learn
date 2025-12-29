@@ -416,7 +416,7 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
           {insufficientPoints ? (
             <EnhancedButton
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => window.location.href = '/dashboard'} // Default action
+              onClick={() => window.location.href = '/training'} // Default action
             >
               Earn More Points
             </EnhancedButton>
