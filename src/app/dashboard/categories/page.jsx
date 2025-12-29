@@ -56,7 +56,10 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
         try {
             const response = await api.get('/admin/categories')
-            setCategories(response.data)
+            // API returns { success: true, data: { categories: [...] } }
+            const responseData = response.data?.data || response.data
+            const categoriesArray = responseData?.categories || []
+            setCategories(categoriesArray)
         } catch (error) {
             console.error('Failed to fetch categories:', error)
             setError(error.message)

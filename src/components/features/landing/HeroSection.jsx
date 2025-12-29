@@ -178,12 +178,12 @@ export default function HeroSection() {
           {/* Static gradient areas (responsive sizes) */}
           <div
             ref={topBlobRef}
-            className="absolute top-0 right-0 w-[520px] h-[520px] md:w-[600px] md:h-[600px] lg:w-[720px] lg:h-[720px] bg-gradient-to-br from-brand-teal/22 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
+            className="absolute top-0 right-0 w-[520px] h-[520px] md:w-[600px] md:h-[600px] lg:w-[720px] lg:h-[720px] bg-linear-to-br from-brand-teal/22 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
             aria-hidden
           />
           <div
             ref={bottomBlobRef}
-            className="absolute bottom-0 left-0 w-[360px] h-[360px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-gradient-to-tr from-brand-dark-blue/18 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
+            className="absolute bottom-0 left-0 w-[360px] h-[360px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] bg-linear-to-tr from-brand-dark-blue/18 to-transparent rounded-full blur-3xl transform-gpu will-change-transform"
             aria-hidden
           />
 
@@ -230,7 +230,7 @@ export default function HeroSection() {
             {/* Main Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
-                <span className="bg-gradient-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent">
+                <span className="bg-linear-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent">
                   AI-Powered
                 </span>
                 {' '}Learning That Actually Works
@@ -242,7 +242,7 @@ export default function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-brand-teal to-brand-dark-blue hover:from-brand-teal-dark hover:to-brand-dark-blue/90 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105">
+              <button className="group px-6 sm:px-8 py-3 sm:py-4 bg-linear-to-r from-brand-teal to-brand-dark-blue hover:from-brand-teal-dark hover:to-brand-dark-blue/90 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105">
                 Join Waitlist
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -279,7 +279,7 @@ export default function HeroSection() {
             {/* Outcome-based Features */}
             <div className="space-y-4 pt-4">
               <div className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-brand-teal/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-brand-teal/10 flex items-center justify-center shrink-0">
                   <Zap className="w-6 h-6 text-brand-teal" />
                 </div>
                 <div>
@@ -341,7 +341,7 @@ export default function HeroSection() {
             {/* Profile Card (Front) */}
             <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-2xl shadow-2xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-20 overflow-hidden">
               {/* Gradient Header */}
-              <div className="h-24 bg-gradient-to-r from-brand-teal/60 via-brand-dark-blue/40 to-brand-teal/40 relative">
+              <div className="h-24 bg-linear-to-r from-brand-teal/60 via-brand-dark-blue/40 to-brand-teal/40 relative">
                 <div className="absolute -bottom-10 left-6">
                   <div className="w-20 h-20 rounded-full border-4 border-white shadow-lg overflow-hidden relative">
                     <Image
@@ -371,7 +371,7 @@ export default function HeroSection() {
                       </div>
                       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-brand-teal to-brand-dark-blue rounded-full animate-progress"
+                          className="h-full bg-linear-to-r from-brand-teal to-brand-dark-blue rounded-full animate-progress"
                           style={{ width: `${85 - index * 10}%` }}
                         ></div>
                       </div>
@@ -393,7 +393,7 @@ export default function HeroSection() {
               { value: "Q2 2026", label: "Launch Date" }
             ].map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent mb-2">
+                <div className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent mb-2">
                   {stat.value}
                 </div>
                 <div className="text-xs sm:text-sm text-gray-600">{stat.label}</div>

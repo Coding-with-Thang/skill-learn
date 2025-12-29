@@ -32,7 +32,7 @@ import { Loader } from "@/components/ui/loader"
 
 // Sub-components
 const RewardsHero = () => (
-  <div className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden">
+  <div className="w-full bg-linear-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden">
     <div className="relative z-10 max-w-2xl">
       <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
         Rewards Dashboard

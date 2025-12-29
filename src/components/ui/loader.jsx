@@ -61,6 +61,7 @@ export function Loader({
           alt={text || "Loading..."}
           height={300}
           width={300}
+          unoptimized
           className={cn(
             size === "sm" && "h-16 w-16",
             size === "md" && "h-32 w-32",

@@ -50,9 +50,11 @@ async function getCourses({ page = 1, pageSize = 5, category } = {}) {
 }
 
 export default async function CoursesPage({ searchParams }) {
-    const page = parseInt(searchParams?.page || "1", 10) || 1;
-    const pageSize = parseInt(searchParams?.pageSize || "5", 10) || 5;
-    const category = searchParams?.category || "";
+
+    const params = await searchParams;
+    const page = parseInt(params?.page || "1", 10) || 1;
+    const pageSize = parseInt(params?.pageSize || "5", 10) || 5;
+    const category = params?.category || "";
 
     const [{ courses, total, totalPages, currentPage }, categories] = await Promise.all([
         getCourses({ page, pageSize, category: category || undefined }),
