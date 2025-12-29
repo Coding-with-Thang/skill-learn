@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { format } from "date-fns"
 import { Download } from "lucide-react"
 import { useAuditLogStore } from "@/app/store/auditLogStore"
@@ -25,18 +25,42 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker"
 export default function AuditLogsPage() {
   const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
   const [dateRange, setDateRange] = useState({ from: null, to: null })
+  const debounceTimerRef = useRef(null)
 
   useEffect(() => {
     fetchLogs()
   }, [])
 
+  // Debounced filter update function
+  const debouncedSetFilters = (newFilters) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      setFilters(newFilters)
+    }, 300)
+  }
+
   const handleDateRangeChange = (range) => {
     setDateRange(range)
-    setFilters({
+    debouncedSetFilters({
       startDate: range.from ? range.from.toISOString() : null,
       endDate: range.to ? range.to.toISOString() : null,
     })
   }
+
+  const handleFilterChange = (newFilters) => {
+    debouncedSetFilters(newFilters)
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleExport = () => {
     //TODO: Implement CSV export functionality
@@ -71,7 +95,7 @@ export default function AuditLogsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Select
               value={filters.resource}
-              onValueChange={(value) => setFilters({ resource: value })}
+              onValueChange={(value) => handleFilterChange({ resource: value })}
             >
               <option value="">All Resources</option>
               <option value="reward">Rewards</option>
@@ -81,7 +105,7 @@ export default function AuditLogsPage() {
 
             <Select
               value={filters.action}
-              onValueChange={(value) => setFilters({ action: value })}
+              onValueChange={(value) => handleFilterChange({ action: value })}
             >
               <option value="">All Actions</option>
               <option value="create">Create</option>

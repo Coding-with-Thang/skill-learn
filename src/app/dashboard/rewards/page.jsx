@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useDebounce } from "@/lib/hooks/useDebounce"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import {
@@ -40,7 +41,8 @@ export default function RewardsAdminPage() {
   const { fetchRewards, rewards, isLoading, updateReward, deleteReward } = useRewardStore()
   const [showModal, setShowModal] = useState(false)
   const [editingReward, setEditingReward] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const searchTerm = useDebounce(searchInput, 300)
   const [confirmDelete, setConfirmDelete] = useState(null)
 
   useEffect(() => {
@@ -123,7 +125,11 @@ export default function RewardsAdminPage() {
         <CardContent>
           {/* Advanced Filters */}
           <div className="flex gap-4 mb-4">
-            <Input placeholder="Search rewards..." />
+            <Input 
+              placeholder="Search rewards..." 
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
             <Select>
               <option>Status</option>
               <option>Active</option>

@@ -1,12 +1,22 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
+import { useDebounce } from "@/lib/hooks/useDebounce"
 
 export function UserFilters({ onFilterChange }) {
+    const [searchValue, setSearchValue] = useState('')
+    const debouncedSearchValue = useDebounce(searchValue, 300)
+
+    // Update parent when debounced value changes
+    useEffect(() => {
+        onFilterChange('search', debouncedSearchValue)
+    }, [debouncedSearchValue, onFilterChange])
+
     const handleSearchChange = (e) => {
-        onFilterChange('search', e.target.value)
+        setSearchValue(e.target.value)
     }
 
     const handleRoleFilterChange = (value) => {
@@ -23,6 +33,7 @@ export function UserFilters({ onFilterChange }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Input
                         placeholder="Search users..."
+                        value={searchValue}
                         onChange={handleSearchChange}
                     />
                     <Select onValueChange={handleRoleFilterChange}>
