@@ -60,8 +60,9 @@ const QuestionMedia = ({ question }) => {
                 <Image
                     src={question.imageUrl}
                     alt="Question illustration"
-                    layout="fill"
-                    objectFit="contain"
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 768px"
                     onError={() => setMediaError(true)}
                 />
             </div>

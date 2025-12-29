@@ -40,8 +40,9 @@ export default function AboutPage() {
                         src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/profound.png?alt=media&token=17cca178-6400-431e-85fc-1bc26c2a91e1"
                         alt="Diverse team collaborating with green tech overlay"
                         fill
-                        unoptimized
+                        sizes="100vw"
                         className="object-cover"
+                        priority
                     />
                 </div>
 
@@ -58,7 +59,7 @@ export default function AboutPage() {
                         src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/grow.png?alt=media&token=29ab7fc4-91c2-4522-8329-d97058f6361f"
                         alt="Abstract representation of growth and innovation"
                         fill
-                        unoptimized
+                        sizes="100vw"
                         className="object-cover"
                     />
                 </div>
@@ -80,7 +81,7 @@ export default function AboutPage() {
                         src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/unnamed.png?alt=media&token=14ee642f-e888-425c-a546-48f3935ecba4"
                         alt="Diverse professionals collaborating and achieving goals"
                         fill
-                        unoptimized
+                        sizes="100vw"
                         className="object-cover"
                     />
                 </div>
@@ -134,7 +135,7 @@ export default function AboutPage() {
                         src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/galaxy.png?alt=media&token=8cf178ff-c3f1-47a8-b87f-ce9a93516c46"
                         alt="connections graphic"
                         fill
-                        unoptimized
+                        sizes="100vw"
                         className="object-cover" />
                 </div>
 
