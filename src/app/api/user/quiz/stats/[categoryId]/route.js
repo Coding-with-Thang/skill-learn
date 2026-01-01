@@ -1,21 +1,22 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(req, { params }) {
   try {
-    // Get auth session asynchronously
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const { categoryId } = await params;
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 }
-      );
+      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     const user = await prisma.user.findUnique({
@@ -23,7 +24,9 @@ export async function GET(req, { params }) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     const stats = await prisma.categoryStat.findUnique({
@@ -42,7 +45,7 @@ export async function GET(req, { params }) {
       },
     });
 
-    return NextResponse.json(
+    return successResponse(
       stats || {
         attempts: 0,
         completed: 0,
@@ -52,10 +55,6 @@ export async function GET(req, { params }) {
       }
     );
   } catch (error) {
-    console.error("Error fetching quiz stats:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

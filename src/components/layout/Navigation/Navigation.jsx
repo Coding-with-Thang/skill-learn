@@ -15,7 +15,7 @@ export function Navigation({ isOperations, mobile }) {
       <NavLink href="/training" icon={BookOpenText} mobile={mobile}>
         Training
       </NavLink>
-      <NavLink href="/stats" icon={ChartColumnBig} mobile={mobile}>
+      <NavLink href="/user/stats" icon={ChartColumnBig} mobile={mobile}>
         My Stats
       </NavLink>
       <NavLink href="/rewards" icon={Star} mobile={mobile}>

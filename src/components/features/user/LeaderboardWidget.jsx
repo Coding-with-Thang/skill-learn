@@ -81,9 +81,17 @@ export default function LeaderboardWidget() {
         // Fetch based on active tab
         const endpoint = activeTab === "points" ? "/leaderboard/points" : "/leaderboard/quiz-score";
         const response = await api.get(endpoint);
-        setLeaderboardData(response.data.leaderboard.slice(0, 3));
+        // Use standardized response format: { success: true, data: { leaderboard: [...] } }
+        // API returns { success: true, data: { leaderboard: [...] } }
+        const responseData = response.data?.data || response.data;
+        const leaderboard = responseData?.leaderboard || responseData;
+        setLeaderboardData((leaderboard || []).slice(0, 3));
       } catch (error) {
-        console.error("Failed to fetch leaderboard", error);
+        // Leaderboard fetch failure is not critical - just show empty state
+        // Only log for debugging
+        if (process.env.NODE_ENV === "development") {
+          console.error("Failed to fetch leaderboard", error);
+        }
         setLeaderboardData([]);
       } finally {
         setIsLoading(false);

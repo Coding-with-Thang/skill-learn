@@ -3,44 +3,41 @@ import {
   getAllSystemSettings,
   updateSystemSetting,
 } from "@/lib/actions/settings";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { settingUpdateSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
 
 export async function GET() {
   try {
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
     const settings = await getAllSystemSettings();
-    return NextResponse.json(settings);
+    return successResponse({ settings });
   } catch (error) {
-    console.error("Error in settings API:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error.message,
-      },
-      { status: error.message.includes("Unauthorized") ? 401 : 500 }
-    );
+    return handleApiError(error);
   }
 }
 
 export async function POST(request) {
   try {
-    const { key, value, description } = await request.json();
-
-    if (!key || value === undefined) {
-      return NextResponse.json(
-        { error: "Key and value are required" },
-        { status: 400 }
-      );
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
+    const { key, value, description } = await validateRequestBody(request, settingUpdateSchema.extend({
+      description: z.string().optional(),
+    }));
+
     const setting = await updateSystemSetting(key, value, description);
-    return NextResponse.json(setting);
+    return successResponse({ setting });
   } catch (error) {
-    console.error("Error in settings API:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error.message,
-      },
-      { status: error.message.includes("Unauthorized") ? 401 : 500 }
-    );
+    return handleApiError(error);
   }
 }

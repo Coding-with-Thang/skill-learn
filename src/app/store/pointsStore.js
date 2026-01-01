@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+import { STORE } from "@/constants";
+import { handleErrorWithNotification } from "@/utils/notifications";
+import { createRequestDeduplicator } from "@/utils/requestDeduplication";
 
 // Request deduplication
-let fetchPromise = null;
-const FETCH_COOLDOWN = 5000; // 5 seconds
-let lastFetch = 0;
+const requestDeduplicator = createRequestDeduplicator();
 
 export const usePointsStore = create((set, get) => ({
   points: 0,
@@ -29,7 +30,7 @@ export const usePointsStore = create((set, get) => ({
     if (
       !force &&
       state.lastUpdated &&
-      now - state.lastUpdated < FETCH_COOLDOWN
+      now - state.lastUpdated < STORE.FETCH_COOLDOWN
     ) {
       return {
         points: state.points,
@@ -39,25 +40,22 @@ export const usePointsStore = create((set, get) => ({
       };
     }
 
-    // If there's an ongoing fetch, return its promise
-    if (fetchPromise) {
-      return fetchPromise;
-    }
+    // Use request deduplication utility with new consolidated dashboard endpoint
+    return requestDeduplicator.dedupe(
+      "fetchUserData",
+      async () => {
+        set({ isLoading: true });
 
-    try {
-      set({ isLoading: true });
+        try {
+          // Use new consolidated dashboard endpoint (combines points + streak)
+          const response = await api.get("/user/dashboard");
+          const responseData = response.data?.data || response.data;
 
-      // Create a new fetch promise
-      fetchPromise = Promise.all([
-        api.get("/user/points/daily-status"),
-        api.get("/user/streak"),
-      ])
-        .then(([pointsResponse, streakResponse]) => {
           const data = {
-            dailyStatus: pointsResponse.data,
-            points: pointsResponse.data.user?.points || 0,
-            lifetimePoints: pointsResponse.data.user?.lifetimePoints || 0,
-            streak: streakResponse.data,
+            dailyStatus: responseData.dailyStatus,
+            points: responseData.points || 0,
+            lifetimePoints: responseData.lifetimePoints || 0,
+            streak: responseData.streak,
           };
 
           set({
@@ -67,40 +65,32 @@ export const usePointsStore = create((set, get) => ({
           });
 
           return data;
-        })
-        .catch((error) => {
-          console.error("Error fetching user data:", error);
+        } catch (error) {
+          handleErrorWithNotification(error, "Failed to load user data");
           set({
             isLoading: false,
             dailyStatus: {
               todaysPoints: 0,
               canEarnPoints: true,
               lifetimePoints: 0,
+              dailyLimit: 0,
+              todaysLogs: [],
             },
             points: 0,
             lifetimePoints: 0,
+            streak: {
+              current: 0,
+              longest: 0,
+              atRisk: false,
+              nextMilestone: 5,
+              pointsToNextMilestone: 5,
+            },
           });
           throw error;
-        })
-        .finally(() => {
-          fetchPromise = null;
-        });
-
-      return fetchPromise;
-    } catch (error) {
-      console.error("Error initiating fetch:", error);
-      set({ isLoading: false });
-      throw error;
-    }
-  },
-
-  // Legacy methods that now use the combined fetch
-  fetchDailyStatus: async () => {
-    return get().fetchUserData();
-  },
-
-  fetchPoints: async () => {
-    return get().fetchUserData();
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
   },
 
   addPoints: async (amount, reason) => {
@@ -117,7 +107,7 @@ export const usePointsStore = create((set, get) => ({
 
       return response.data;
     } catch (error) {
-      console.error("Error adding points:", error);
+      handleErrorWithNotification(error, "Failed to add points");
       set({ isLoading: false });
       throw error;
     }
@@ -140,7 +130,7 @@ export const usePointsStore = create((set, get) => ({
 
       return true;
     } catch (error) {
-      console.error("Error spending points:", error);
+      handleErrorWithNotification(error, "Failed to spend points");
       set({ isLoading: false });
       return false;
     }

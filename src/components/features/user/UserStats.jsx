@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import { InteractiveCard, InteractiveCardContent } from "@/components/ui/interactive-card"
 import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { SCORE_THRESHOLDS, UI } from "@/constants"
 import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatTime } from '@/utils/formatTime'
 import api from '@/utils/axios'
+import { handleErrorWithNotification } from '@/utils/notifications'
 
 export default function UserStats({ user }) {
   const [stats, setStats] = useState(null)
@@ -17,9 +19,12 @@ export default function UserStats({ user }) {
     const fetchStats = async () => {
       try {
         const response = await api.get('/user/stats')
-        setStats(response.data)
+        // API returns { success: true, data: {...} }
+        const statsData = response.data?.data || response.data
+        setStats(statsData)
       } catch (error) {
-        console.error('Error fetching user stats:', error)
+        handleErrorWithNotification(error, "Failed to load statistics")
+        setStats(null) // Set to null on error so component can handle empty state
       } finally {
         setLoading(false)
       }
@@ -36,6 +41,14 @@ export default function UserStats({ user }) {
     )
   }
 
+  if (!stats) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Failed to load stats. Please try again.</p>
+      </div>
+    )
+  }
+
   const {
     totalAttempts = 0,
     totalCompleted = 0,
@@ -44,7 +57,7 @@ export default function UserStats({ user }) {
     totalPoints = 0,
     recentAttemptDate = null,
     categoryStats = []
-  } = stats || {}
+  } = stats
 
   return (
     <div className="space-y-6">
@@ -169,15 +182,15 @@ export default function UserStats({ user }) {
                   </span>
                 </div>
                 <AnimatedProgress
-                  value={category.averageScore}
-                  max={100}
-                  variant={category.averageScore >= 80 ? "success" : category.averageScore >= 60 ? "warning" : "error"}
+                  value={category.averageScore || 0}
+                  max={UI.PROGRESS_BAR_MAX}
+                  variant={(category.averageScore || 0) >= SCORE_THRESHOLDS.GOOD ? "success" : (category.averageScore || 0) >= SCORE_THRESHOLDS.WARNING ? "warning" : "error"}
                   className="h-2"
                   showLabel={false}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Average: {category.averageScore.toFixed(1)}%</span>
-                  <span>Best: {category.bestScore}%</span>
+                  <span>Average: {(category.averageScore || 0).toFixed(1)}%</span>
+                  <span>Best: {category.bestScore || 0}%</span>
                 </div>
               </div>
             ))}

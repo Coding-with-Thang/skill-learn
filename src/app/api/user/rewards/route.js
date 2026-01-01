@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET() {
   try {
@@ -17,18 +18,8 @@ export async function GET() {
       },
     });
 
-    if (!rewards) {
-      return NextResponse.json({ error: "Rewards not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      rewards,
-    });
+    return successResponse({ rewards });
   } catch (error) {
-    console.error("Error fetching rewards:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

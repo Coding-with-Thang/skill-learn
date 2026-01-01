@@ -37,8 +37,10 @@ export async function getDailyPointStatus(request) {
       (log) => new Date(log.createdAt) >= today
     );
 
-    //Calculate points earned today
-    const todaysPoints = todaysLogs.reduce((sum, log) => sum + log.amount, 0);
+    //Calculate points earned today (only positive amounts - earned points, not spent)
+    const todaysPoints = todaysLogs
+      .filter((log) => log.amount > 0) // Only count earned points (positive amounts)
+      .reduce((sum, log) => sum + log.amount, 0);
 
     return {
       user,
@@ -59,7 +61,7 @@ export async function getDailyPointStatus(request) {
   }
 }
 
-export async function awardPoints(amount, reason) {
+export async function awardPoints(amount, reason, request = null) {
   if (!amount || typeof amount !== "number") {
     throw new Error("Point amount must be a number");
   }
@@ -74,13 +76,58 @@ export async function awardPoints(amount, reason) {
     throw new Error("Reason must be provided");
   }
 
-  const { userId } = await auth();
-
-  if (!userId) {
-    throw new Error("Authentication required");
+  // Get userId from request if provided, otherwise use auth()
+  let userId;
+  if (request) {
+    const { userId: reqUserId } = getAuth(request);
+    if (!reqUserId) {
+      throw new Error("Authentication required");
+    }
+    userId = reqUserId;
+  } else {
+    const { auth } = await import("@clerk/nextjs/server");
+    const { userId: authUserId } = await auth();
+    if (!authUserId) {
+      throw new Error("Authentication required");
+    }
+    userId = authUserId;
   }
 
-  const status = await getDailyPointStatus();
+  // Check daily limit status - need to create a mock request if not provided
+  let status;
+  if (request) {
+    status = await getDailyPointStatus(request);
+  } else {
+    // For server actions, we need to manually check the daily limit
+    const dailyLimit = parseInt(await getSystemSetting("DAILY_POINTS_LIMIT"), 10);
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    
+    const user = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      include: {
+        pointLogs: {
+          where: {
+            createdAt: { gte: today },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const todaysPoints = user.pointLogs
+      .filter((log) => log.amount > 0)
+      .reduce((sum, log) => sum + log.amount, 0);
+
+    status = {
+      user,
+      todaysPoints,
+      canEarnPoints: todaysPoints < dailyLimit,
+      dailyLimit,
+    };
+  }
 
   if (!status.canEarnPoints) {
     throw new Error("Daily point limit reached");
@@ -91,13 +138,17 @@ export async function awardPoints(amount, reason) {
     status.dailyLimit - status.todaysPoints
   );
 
+  if (pointsToAward <= 0) {
+    throw new Error("Daily point limit reached");
+  }
+
   try {
     // Use transaction to ensure atomic updates
     const result = await prisma.$transaction(async (tx) => {
       // First, verify user exists and get current points
       const user = await tx.user.findUnique({
         where: { clerkId: userId },
-        select: { id: true, lifetimePoints: true },
+        select: { id: true, points: true, lifetimePoints: true },
       });
 
       if (!user) {
@@ -113,12 +164,14 @@ export async function awardPoints(amount, reason) {
         },
       });
 
-      // Update user points
+      // Update user points (both current and lifetime)
       const updatedUser = await tx.user.update({
         where: { id: user.id },
         data: {
+          points: { increment: pointsToAward },
           lifetimePoints: { increment: pointsToAward },
         },
+        select: { id: true, points: true, lifetimePoints: true },
       });
 
       // Update streak
@@ -126,7 +179,8 @@ export async function awardPoints(amount, reason) {
 
       return {
         awarded: pointsToAward,
-        newTotal: updatedUser.lifetimePoints,
+        points: updatedUser.points,
+        lifetimePoints: updatedUser.lifetimePoints,
         logId: pointLog.id,
       };
     });

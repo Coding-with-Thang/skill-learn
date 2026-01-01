@@ -1,24 +1,18 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { getSystemSetting } from "@/lib/actions/settings";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { quizCreateSchema } from "@/lib/zodSchemas";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify admin role (you should implement your own admin check)
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }    // Fetch all quizzes with their categories and question count
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    } // Fetch all quizzes with their categories and question count
     const quizzes = await prisma.quiz.findMany({
       include: {
         category: {
@@ -41,43 +35,27 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json(quizzes);
+    return successResponse({ quizzes });
   } catch (error) {
-    console.error("Failed to fetch quizzes:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
+    const data = await validateRequestBody(request, quizCreateSchema);
 
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    // Get default passing score from settings
+    const defaultPassingScore = parseInt(
+      await getSystemSetting("DEFAULT_PASSING_SCORE"),
+      10
+    );
 
-    const data = await request.json();
-
-    // Validate required fields
-    if (!data.title || !data.categoryId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
     // Create new quiz with default questions and options
     const quiz = await prisma.quiz.create({
       data: {
@@ -86,36 +64,38 @@ export async function POST(request) {
         imageUrl: data.imageUrl,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
-        passingScore: data.passingScore || 70,
+        passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
         questions: {
-          create: (data.questions || Array(5).fill(null).map((_, i) => ({
-            text: `Question ${i + 1}`,
-            points: 1,
-            options: {
-              create: Array(4).fill(null).map((_, j) => ({
-                text: `Option ${j + 1}`,
-                isCorrect: j === 0 // First option is correct by default
-              }))
-            }
-          })))
-        }
+          create:
+            data.questions ||
+            Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT)
+              .fill(null)
+              .map((_, i) => ({
+                text: `Question ${i + 1}`,
+                points: 1,
+                options: {
+                  create: Array(4)
+                    .fill(null)
+                    .map((_, j) => ({
+                      text: `Option ${j + 1}`,
+                      isCorrect: j === 0, // First option is correct by default
+                    })),
+                },
+              })),
+        },
       },
       include: {
         questions: {
           include: {
-            options: true
-          }
-        }
-      }
+            options: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
-    console.error("Failed to create quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

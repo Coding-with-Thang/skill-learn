@@ -7,6 +7,7 @@ import {
   LayoutGrid,
   GraduationCap,
   BarChart2,
+  Gamepad2,
   Trophy,
   ShieldCheck,
   User
@@ -40,8 +41,9 @@ export default function MobileSidebar() {
   // User Navigation Items
   const userNavItems = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
-    { label: "My Training", href: "/training", icon: GraduationCap },
-    { label: "My Stats", href: "/stats", icon: BarChart2 },
+    { label: "Training", href: "/training", icon: GraduationCap },
+    { label: "Report Card", href: "/user/stats", icon: BarChart2 },
+    { label: "Games", href: "/games", icon: Gamepad2 },
     { label: "Rewards", href: "/rewards", icon: Trophy },
   ];
 

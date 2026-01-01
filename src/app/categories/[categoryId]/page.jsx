@@ -7,9 +7,22 @@ export default async function QuizSelectPage({ params }) {
   const { categoryId } = await params
 
   if (!categoryId) {
-    return notFound()
+    notFound()
   }
+  
   try {
+    // Verify category exists and is active
+    const category = await prisma.category.findFirst({
+      where: {
+        id: categoryId,
+        isActive: true,
+      },
+    });
+
+    if (!category) {
+      notFound();
+    }
+
     const quizzes = await prisma.quiz.findMany({
       where: {
         categoryId,
@@ -47,7 +60,7 @@ export default async function QuizSelectPage({ params }) {
     return (
       <section className="flex flex-col w-full max-w-5xl mx-auto px-2 sm:px-6">
         <BreadCrumbCom
-          crumbs={[{ name: "My Training", href: "training" }]}
+          crumbs={[{ name: "Training", href: "training" }]}
           endtrail="Quiz Selection"
         />
         <h1 className="mb-6 text-2xl sm:text-4xl font-bold mt-8 sm:mt-20">Quizzes</h1>

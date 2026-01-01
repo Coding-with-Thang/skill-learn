@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useDebounce } from '@/lib/hooks/useDebounce'
 import {
     Table,
     TableBody,
@@ -45,7 +46,8 @@ export default function CategoriesPage() {
         isActive: true
     })
     const [editingId, setEditingId] = useState(null)
-    const [searchTerm, setSearchTerm] = useState('')
+    const [searchInput, setSearchInput] = useState('')
+    const searchTerm = useDebounce(searchInput, 300)
 
     useEffect(() => {
         fetchCategories()
@@ -54,7 +56,10 @@ export default function CategoriesPage() {
     const fetchCategories = async () => {
         try {
             const response = await api.get('/admin/categories')
-            setCategories(response.data)
+            // API returns { success: true, data: { categories: [...] } }
+            const responseData = response.data?.data || response.data
+            const categoriesArray = responseData?.categories || []
+            setCategories(categoriesArray)
         } catch (error) {
             console.error('Failed to fetch categories:', error)
             setError(error.message)
@@ -157,8 +162,8 @@ export default function CategoriesPage() {
                     <div className="mb-6">
                         <Input
                             placeholder="Search categories..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
                             className="w-full max-w-sm"
                         />
                     </div>

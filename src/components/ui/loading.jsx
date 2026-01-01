@@ -1,34 +1,30 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
+import { Loader } from "@/components/ui/loader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export function LoadingSpinner({ className, size = "default" }) {
-  const sizeClasses = {
-    small: "h-4 w-4",
-    default: "h-8 w-8",
-    large: "h-12 w-12"
+  // Map old size names to new size names
+  const sizeMap = {
+    small: "sm",
+    default: "md",
+    large: "lg"
   }
 
   return (
     <div className="flex justify-center items-center w-full p-4">
-      <Loader2 className={`animate-spin text-muted-foreground ${sizeClasses[size]} ${className}`} />
+      <Loader
+        variant="spinner"
+        size={sizeMap[size] || size}
+        className={className}
+      />
     </div>
   )
 }
 
 export function LoadingPage() {
-  return (
-    <div className="container mx-auto px-4 py-8 min-h-[80dvh]">
-      <Card className="w-full p-8">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <LoadingSpinner size="large" />
-          <p className="text-muted-foreground">Loading your content...</p>
-        </div>
-      </Card>
-    </div>
-  )
+  return <Loader variant="page" />
 }
 
 export function LoadingCard() {

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import api from "@/utils/axios";
+import { RETRY_CONFIG } from "@/constants";
+import { handleErrorWithNotification } from "@/utils/notifications";
 
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();
@@ -10,70 +12,98 @@ export function useUserRole() {
   const [role, setRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [retryCount, setRetryCount] = useState(0);
+  const retryCountRef = useRef(0);
+  const timeoutRef = useRef(null);
 
-  useEffect(() => {
-    const fetchRole = async () => {
-      if (!clerkLoaded) {
-        return; // Wait for Clerk to load
+  const fetchRole = useCallback(async () => {
+    if (!clerkLoaded) {
+      return; // Wait for Clerk to load
+    }
+
+    if (!user) {
+      setIsLoading(false);
+      setRole(null);
+      retryCountRef.current = 0;
+      return;
+    }
+
+    try {
+      // Wait a bit for the session to be fully established
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Get token from the auth session
+      const token = await getToken();
+
+      if (!token) {
+        throw new Error("No authentication token available");
       }
 
-      if (!user) {
-        setIsLoading(false);
-        setRole(null);
+      const response = await api.get("/user", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // API returns { success: true, data: { user: {...} } }
+      const responseData = response.data?.data || response.data;
+      const userData = responseData?.user || responseData;
+      setRole(userData?.role);
+      setError(null);
+      retryCountRef.current = 0;
+    } catch (error) {
+      // Only show notification if not retrying (to avoid spam)
+      if (retryCountRef.current >= RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES) {
+        handleErrorWithNotification(error, "Failed to load user information");
+      }
+
+      // Retry logic for temporary failures
+      if (
+        retryCountRef.current < RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES &&
+        (error.code === "ECONNABORTED" ||
+          error.response?.status === 401 ||
+          error.response?.status >= 500)
+      ) {
+        retryCountRef.current += 1;
+        timeoutRef.current = setTimeout(() => {
+          fetchRole();
+        }, RETRY_CONFIG.ROLE_FETCH_BACKOFF_BASE * retryCountRef.current); // Exponential backoff
         return;
       }
 
-      try {
-        // Wait a bit for the session to be fully established
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to fetch user data"
+      );
+      setRole(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [clerkLoaded, user, getToken]);
 
-        // Get token from the auth session
-        const token = await getToken();
+  useEffect(() => {
+    fetchRole();
 
-        if (!token) {
-          throw new Error("No authentication token available");
-        }
-
-        const { data } = await api.get("/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        setRole(data.role);
-        setError(null);
-        setRetryCount(0);
-      } catch (error) {
-        console.error("Error fetching user role:", error);
-
-        // Retry logic for temporary failures
-        if (
-          retryCount < 3 &&
-          (error.code === "ECONNABORTED" ||
-            error.response?.status === 401 ||
-            error.response?.status >= 500)
-        ) {
-          setRetryCount((prev) => prev + 1);
-          setTimeout(() => {
-            fetchRole();
-          }, 1000 * (retryCount + 1)); // Exponential backoff
-          return;
-        }
-
-        setError(
-          error.response?.data?.message ||
-            error.message ||
-            "Failed to fetch user data"
-        );
-        setRole(null);
-      } finally {
-        setIsLoading(false);
+    // Cleanup function to clear timeout on unmount or dependency change
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
+  }, [fetchRole]);
 
+  const retry = useCallback(() => {
+    // Clear any pending retry timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    retryCountRef.current = 0;
+    setError(null);
+    setIsLoading(true);
     fetchRole();
-  }, [clerkLoaded, user, getToken, retryCount]);
+  }, [fetchRole]);
 
-  return { role, isLoading, error, retry: () => setRetryCount(0) };
+  return { role, isLoading, error, retry };
 }

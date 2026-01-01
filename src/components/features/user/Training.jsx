@@ -36,7 +36,7 @@ export default function MoreTraining() {
         <Card className="w-full md:min-w-[40ch] flex flex-col justify-between">
           <CardHeader className="flex flex-row gap-3 items-center">
             <NotebookPen className="w-6 h-6" />
-            <CardTitle className="text-base md:text-lg">My Training</CardTitle>
+            <CardTitle className="text-base md:text-lg">Training</CardTitle>
           </CardHeader>
           <CardFooter className="flex flex-col gap-3 items-end flex-1 justify-end">
             <Progress value={33} />

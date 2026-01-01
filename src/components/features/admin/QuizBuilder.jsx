@@ -25,6 +25,8 @@ import { LoadingSpinner } from "@/components/ui/loading"
 import { Plus, Minus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/utils/axios"
+import { handleErrorWithNotification } from "@/utils/notifications"
+import { QUIZ_CONFIG } from "@/constants"
 
 export default function QuizBuilder({ quizId = null }) {
     const router = useRouter()
@@ -37,9 +39,9 @@ export default function QuizBuilder({ quizId = null }) {
         imageUrl: "",
         categoryId: "",
         timeLimit: 0,
-        passingScore: 70,
+        passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE, // Default, will be updated from settings if available
         isActive: true,
-        questions: Array(5).fill(null).map((_, i) => ({
+        questions: Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT).fill(null).map((_, i) => ({
             text: "",
             imageUrl: "",
             videoUrl: "",
@@ -53,6 +55,7 @@ export default function QuizBuilder({ quizId = null }) {
 
     useEffect(() => {
         fetchCategories()
+        fetchQuizSettings()
         if (quizId) {
             fetchQuiz()
         } else {
@@ -65,8 +68,33 @@ export default function QuizBuilder({ quizId = null }) {
             const response = await api.get("/admin/categories")
             setCategories(response.data)
         } catch (error) {
-            console.error("Failed to fetch categories:", error)
-            toast.error("Failed to load categories")
+            handleErrorWithNotification(error, "Failed to load categories")
+        }
+    }
+
+    const fetchQuizSettings = async () => {
+        try {
+            const response = await api.get("/quiz/settings")
+            const settings = response.data?.data?.quizSettings || response.data?.quizSettings
+            if (settings?.passingScoreDefault) {
+                // Only update if creating a new quiz (no quizId) or if passingScore is still the default
+                setQuiz(prev => {
+                    // If editing an existing quiz, keep the existing value; otherwise use settings
+                    if (quizId) {
+                        return prev; // Don't override when editing
+                    }
+                    return {
+                        ...prev,
+                        passingScore: settings.passingScoreDefault
+                    }
+                })
+            }
+        } catch (error) {
+            // Settings fetch failure is not critical - use default values
+            // Only log for debugging
+            if (process.env.NODE_ENV === "development") {
+                console.error("Failed to fetch quiz settings:", error)
+            }
         }
     }
 
@@ -75,8 +103,7 @@ export default function QuizBuilder({ quizId = null }) {
             const response = await api.get(`/admin/quizzes/${quizId}`)
             setQuiz(response.data)
         } catch (error) {
-            console.error("Failed to fetch quiz:", error)
-            toast.error("Failed to load quiz")
+            handleErrorWithNotification(error, "Failed to load quiz")
         } finally {
             setLoading(false)
         }
@@ -85,7 +112,7 @@ export default function QuizBuilder({ quizId = null }) {
     const handleSubmit = async (e) => {
         e.preventDefault()
         setSaving(true)
-        
+
         try {
             // Validate basic quiz info
             if (!quiz.title.trim()) {
@@ -117,6 +144,12 @@ export default function QuizBuilder({ quizId = null }) {
             for (const [qIndex, question] of quiz.questions.entries()) {
                 if (!question.text.trim()) {
                     toast.error(`Question ${qIndex + 1} must have text`)
+                    return
+                }
+
+                // Validate that both imageUrl and videoUrl cannot be set
+                if (question.imageUrl && question.videoUrl) {
+                    toast.error(`Question ${qIndex + 1} cannot have both image and video. Please use only one.`)
                     return
                 }
 
@@ -159,8 +192,7 @@ export default function QuizBuilder({ quizId = null }) {
 
             router.push("/dashboard/quizzes")
         } catch (error) {
-            console.error("Failed to save quiz:", error)
-            toast.error(error.response?.data?.error || "Failed to save quiz")
+            handleErrorWithNotification(error, "Failed to save quiz")
         } finally {
             setSaving(false)
         }
@@ -205,9 +237,20 @@ export default function QuizBuilder({ quizId = null }) {
     const handleQuestionChange = (index, field, value) => {
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
-                i === index ? { ...q, [field]: value } : q
-            )
+            questions: prev.questions.map((q, i) => {
+                if (i !== index) return q;
+
+                // If setting imageUrl, clear videoUrl
+                if (field === "imageUrl" && value) {
+                    return { ...q, imageUrl: value, videoUrl: "" };
+                }
+                // If setting videoUrl, clear imageUrl
+                if (field === "videoUrl" && value) {
+                    return { ...q, videoUrl: value, imageUrl: "" };
+                }
+                // Otherwise, just update the field
+                return { ...q, [field]: value };
+            })
         }))
     }
 
@@ -220,7 +263,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: [
@@ -252,7 +295,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: q.options.filter((_, j) => j !== optionIndex)
@@ -274,10 +317,10 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => 
+            questions: prev.questions.map((q, i) =>
                 i === questionIndex ? {
                     ...q,
-                    options: q.options.map((opt, j) => 
+                    options: q.options.map((opt, j) =>
                         j === optionIndex ? { ...opt, [field]: value } : opt
                     )
                 } : q
@@ -449,14 +492,30 @@ export default function QuizBuilder({ quizId = null }) {
                                 </div>
 
                                 {/* Question Settings */}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label>Image URL</Label>
                                         <Input
                                             value={question.imageUrl || ""}
                                             onChange={e => handleQuestionChange(qIndex, "imageUrl", e.target.value)}
                                             placeholder="https://example.com/image.jpg"
+                                            disabled={!!question.videoUrl}
                                         />
+                                        {question.videoUrl && (
+                                            <p className="text-xs text-muted-foreground">Clear video URL to add image</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Video URL</Label>
+                                        <Input
+                                            value={question.videoUrl || ""}
+                                            onChange={e => handleQuestionChange(qIndex, "videoUrl", e.target.value)}
+                                            placeholder="https://example.com/video.mp4"
+                                            disabled={!!question.imageUrl}
+                                        />
+                                        {question.imageUrl && (
+                                            <p className="text-xs text-muted-foreground">Clear image URL to add video</p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <Label>Points</Label>
@@ -492,11 +551,10 @@ export default function QuizBuilder({ quizId = null }) {
 
                                     <div className="space-y-3">
                                         {question.options.map((option, oIndex) => (
-                                            <div 
-                                                key={oIndex} 
-                                                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                                                    option.isCorrect ? 'bg-green-50' : ''
-                                                }`}
+                                            <div
+                                                key={oIndex}
+                                                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${option.isCorrect ? 'bg-green-50' : ''
+                                                    }`}
                                             >
                                                 <Input
                                                     value={option.text}

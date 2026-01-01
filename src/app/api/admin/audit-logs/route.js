@@ -1,25 +1,15 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-
-    // Verify OPERATIONS role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return new Response("Unauthorized - Requires OPERATIONS role", {
-        status: 403,
-      });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
     // Get query parameters
@@ -62,7 +52,7 @@ export async function GET(request) {
       take: limit,
     });
 
-    return NextResponse.json({
+    return successResponse({
       logs,
       pagination: {
         total,
@@ -72,34 +62,23 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching audit logs:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return new Response("Unauthorized", { status: 401 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
-
-    // Get the actual user ID from the database
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { id: true },
-    });
-
-    if (!user) {
-      return new Response("User not found", { status: 404 });
-    }
+    const { user } = adminResult;
 
     const { action, resource, resourceId, details } = await request.json();
 
     await logAuditEvent(user.id, action, resource, resourceId, details);
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
-    console.error("Error logging audit event:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }

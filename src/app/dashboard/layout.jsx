@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/sidebar"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import Footer from "@/components/layout/Footer"
+import { PageErrorBoundary } from "@/components/layout/PageErrorBoundary"
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname()
@@ -49,7 +50,9 @@ export default function DashboardLayout({ children }) {
                             <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
                         </header>
                         <main className="flex-1 flex flex-col p-2 sm:p-6 w-full min-w-0 max-w-6xl mx-auto gap-4">
-                            {children}
+                            <PageErrorBoundary pageName="Dashboard">
+                                {children}
+                            </PageErrorBoundary>
                         </main>
                         <Footer />
                     </div>

@@ -1,28 +1,28 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { updateClerkUser, deleteClerkUser } from "@/utils/clerk";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody, validateRequestParams } from "@/utils/validateRequest";
+import { userUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
 
 // GET - Fetch single user
 export async function GET(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-        }
+        const { userId } = await validateRequestParams(
+            z.object({ userId: objectIdSchema }),
+            params
+        );
 
         const user = await prisma.user.findUnique({
-            where: { id: params.userId },
+            where: { id: userId },
             select: {
                 id: true,
                 username: true,
@@ -38,77 +38,64 @@ export async function GET(request, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
-        return NextResponse.json(user);
+        return successResponse({ user });
     } catch (error) {
-        console.error("Error fetching user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
 // PUT - Update user
 export async function PUT(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
+        const { username, firstName, lastName, role, manager } = await validateRequestBody(request, userUpdateSchema);
 
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-        }
-
-        const data = await request.json();
-        const { username, firstName, lastName, role, manager } = data;
-
-        // Validate required fields
-        if (!username || !firstName || !lastName) {
-            return NextResponse.json(
-                { error: "Missing required fields" },
-                { status: 400 }
-            );
-        }
+        const { userId } = await validateRequestParams(
+            z.object({ userId: objectIdSchema }),
+            params
+        );
 
         // Check if username exists for another user
         const existingUser = await prisma.user.findFirst({
             where: {
                 username,
                 NOT: {
-                    id: params.userId,
+                    id: userId,
                 },
             },
         });
 
         if (existingUser) {
-            return NextResponse.json(
-                { error: "Username already exists" },
-                { status: 400 }
-            );
-        }        // Get user to update
+            throw new AppError("Username already exists", ErrorType.VALIDATION, {
+                status: 400,
+            });
+        }
+
+        // Get user to update
         const user = await prisma.user.findUnique({
-            where: { id: params.userId },
+            where: { id: userId },
             select: { clerkId: true }
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
         // Update both Clerk and database in parallel
         const [updatedUser] = await Promise.all([
             prisma.user.update({
-                where: { id: params.userId },
+                where: { id: userId },
                 data: {
                     username,
                     firstName,
@@ -120,56 +107,47 @@ export async function PUT(request, { params }) {
             updateClerkUser(user.clerkId, { firstName, lastName })
         ]);
 
-        return NextResponse.json(updatedUser);
+        return successResponse({ user: updatedUser });
     } catch (error) {
-        console.error("Error updating user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
 // DELETE - Delete user
 export async function DELETE(request, { params }) {
     try {
-        const { userId } = getAuth(request);
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
-        // Verify admin role
-        const adminUser = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
+        const { userId } = await validateRequestParams(
+            z.object({ userId: objectIdSchema }),
+            params
+        );
 
-        if (!adminUser || adminUser.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-        }        // Get user to delete
+        // Get user to delete
         const user = await prisma.user.findUnique({
-            where: { id: params.userId },
+            where: { id: userId },
             select: { clerkId: true }
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
         }
 
         // Delete from both Clerk and database in parallel
         await Promise.all([
             prisma.user.delete({
-                where: { id: params.userId },
+                where: { id: userId },
             }),
             deleteClerkUser(user.clerkId)
         ]);
 
-        return NextResponse.json({ success: true });
+        return successResponse({ success: true });
     } catch (error) {
-        console.error("Error deleting user:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

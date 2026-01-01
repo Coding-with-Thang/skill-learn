@@ -11,6 +11,7 @@ import FAQ from '@/components/features/landing/FAQ';
 import Testimonials from '@/components/features/landing/Testimonials';
 import { LoadingPage } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
+import { ErrorBoundary } from "@/components/ui/error-boundary"
 
 /**
  * Landing Page - Public facing marketing page for non-authenticated users
@@ -52,29 +53,26 @@ export default function LandingPage() {
     );
   }
 
-  // Wrap each section in error boundaries
-  const renderSection = (Component, props = {}) => {
-    try {
-      return <Component {...props} />;
-    } catch (err) {
-      console.error(`Failed to render ${Component.name}:`, err);
-      return (
-        <ErrorCard
-          error={err}
-          message={`Failed to load ${Component.name}`}
-        />
-      );
-    }
-  };
-
   return (
     <main className="w-full">
-      {renderSection(HeroSection)}
-      {renderSection(BuiltForEveryone)}
-      {renderSection(VersatilePlatform)}
-      {renderSection(SkillLearnHere)}
-      {renderSection(FAQ)}
-      {renderSection(Testimonials)}
+      <ErrorBoundary message="Failed to load Hero Section">
+        <HeroSection />
+      </ErrorBoundary>
+      <ErrorBoundary message="Failed to load Features">
+        <BuiltForEveryone />
+      </ErrorBoundary>
+      <ErrorBoundary message="Failed to load Platform Info">
+        <VersatilePlatform />
+      </ErrorBoundary>
+      <ErrorBoundary message="Failed to load Learning Section">
+        <SkillLearnHere />
+      </ErrorBoundary>
+      <ErrorBoundary message="Failed to load FAQ">
+        <FAQ />
+      </ErrorBoundary>
+      <ErrorBoundary message="Failed to load Testimonials">
+        <Testimonials />
+      </ErrorBoundary>
     </main>
   );
 }

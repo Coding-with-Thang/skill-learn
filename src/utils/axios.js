@@ -1,4 +1,5 @@
 import axios from "axios";
+import { CACHE_DURATIONS, RETRY_CONFIG } from "@/constants";
 
 // Create an axios instance with defaults
 const api = axios.create({
@@ -26,14 +27,13 @@ api.interceptors.request.use(async (config) => {
 
 // Rate limiting management
 const retryDelays = new Map();
-const MAX_RETRIES = 3;
 
 // Cache configuration
 const cache = new Map();
 const cacheDurations = {
-  "/api/categories": 60 * 60 * 1000, // 1 hour
-  "/api/user/rewards": 5 * 60 * 1000, // 5 minutes
-  "/api/user/points": 1 * 60 * 1000, // 1 minute
+  "/api/categories": CACHE_DURATIONS.CATEGORIES,
+  "/api/user/rewards": CACHE_DURATIONS.REWARDS,
+  "/api/user/points": CACHE_DURATIONS.POINTS,
 };
 
 // Remove any double /api prefixes from URLs
@@ -65,7 +65,7 @@ api.interceptors.request.use(
     if (config.method === "get") {
       const key = `${config.url}${JSON.stringify(config.params || {})}`;
       const cachedResponse = cache.get(key);
-      const cacheDuration = cacheDurations[config.url] || 5 * 60 * 1000;
+      const cacheDuration = cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
 
       if (
         cachedResponse &&
@@ -122,15 +122,18 @@ api.interceptors.response.use(
 
     // Handle rate limiting
     if (response?.status === 429) {
-      const retryAfter = response.data.retryAfter || 60;
+      const retryAfter = response.data.retryAfter || RETRY_CONFIG.DEFAULT_RETRY_AFTER;
       const retryKey = config.url;
       const retryTime = Date.now() + retryAfter * 1000;
       retryDelays.set(retryKey, retryTime);
 
       // If we haven't retried too many times, retry after backoff
-      if (config.retryCount < MAX_RETRIES) {
+      if (config.retryCount < RETRY_CONFIG.MAX_RETRIES) {
         config.retryCount = (config.retryCount || 0) + 1;
-        const backoff = Math.min(1000 * Math.pow(2, config.retryCount), 30000);
+        const backoff = Math.min(
+          RETRY_CONFIG.BACKOFF_BASE * Math.pow(2, config.retryCount),
+          RETRY_CONFIG.BACKOFF_MAX
+        );
         await new Promise((resolve) => setTimeout(resolve, backoff));
         return api(config);
       }

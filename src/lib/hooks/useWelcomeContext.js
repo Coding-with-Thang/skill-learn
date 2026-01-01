@@ -13,8 +13,9 @@ import api from "@/utils/axios";
 export function useWelcomeContext() {
   const { user, isLoaded: clerkLoaded } = useUser();
   const { role } = useUserRole();
-  const { points, lifetimePoints, streak, dailyStatus, fetchUserData } = usePointsStore();
-  
+  const { points, lifetimePoints, streak, dailyStatus, fetchUserData } =
+    usePointsStore();
+
   const [leaderboardPosition, setLeaderboardPosition] = useState(null);
   const [lastQuizScore, setLastQuizScore] = useState(null);
   const [isFirstTime, setIsFirstTime] = useState(false);
@@ -39,7 +40,7 @@ export function useWelcomeContext() {
         const hasVisited = localStorage.getItem(hasVisitedKey);
         if (!hasVisited) {
           setIsFirstTime(true);
-          localStorage.setItem(hasVisitedKey, 'true');
+          localStorage.setItem(hasVisitedKey, "true");
         } else {
           setIsFirstTime(false);
         }
@@ -48,41 +49,50 @@ export function useWelcomeContext() {
         const lastActivityKey = `lastActivity_${user.id}`;
         const lastActivity = localStorage.getItem(lastActivityKey);
         setLastActivityDate(lastActivity);
-        
+
         // Update last activity to now
         localStorage.setItem(lastActivityKey, new Date().toISOString());
 
         // Track visit count for greeting rotation
         const visitCountKey = `visitCount_${user.id}`;
-        const currentVisitCount = parseInt(localStorage.getItem(visitCountKey) || '0', 10);
+        const currentVisitCount = parseInt(
+          localStorage.getItem(visitCountKey) || "0",
+          10
+        );
         const newVisitCount = currentVisitCount + 1;
         localStorage.setItem(visitCountKey, newVisitCount.toString());
 
-        // Fetch leaderboard position (parallel requests)
-        const [leaderboardRes, quizStatsRes] = await Promise.allSettled([
+        // Fetch leaderboard position and user stats (parallel requests)
+        const [leaderboardRes, userStatsRes] = await Promise.allSettled([
           api.get("/leaderboard/points"),
-          api.get("/user/quiz/stats"),
+          api.get("/user/stats"),
         ]);
 
         // Process leaderboard data
-        if (leaderboardRes.status === "fulfilled" && leaderboardRes.value?.data?.leaderboard) {
-          const userPosition = leaderboardRes.value.data.leaderboard.findIndex(
-            (entry) => entry.clerkId === user.id
-          );
-          if (userPosition !== -1) {
-            setLeaderboardPosition(userPosition + 1);
+        if (leaderboardRes.status === "fulfilled") {
+          // API returns { success: true, data: { leaderboard: [...] } }
+          const leaderboardData = leaderboardRes.value.data?.data || leaderboardRes.value.data;
+          const leaderboard = leaderboardData?.leaderboard || leaderboardData;
+          if (Array.isArray(leaderboard)) {
+            const userPosition = leaderboard.findIndex(
+              (entry) => entry.clerkId === user.id
+            );
+            if (userPosition !== -1) {
+              setLeaderboardPosition(userPosition + 1);
+            }
           }
         }
 
-        // Process quiz stats
-        if (quizStatsRes.status === "fulfilled" && quizStatsRes.value?.data) {
-          const quizData = quizStatsRes.value.data;
-          // Get the most recent quiz score if available
-          if (quizData.recentQuizzes && quizData.recentQuizzes.length > 0) {
-            const mostRecent = quizData.recentQuizzes[0];
-            setLastQuizScore(mostRecent.score);
-          } else if (quizData.averageScore) {
-            setLastQuizScore(quizData.averageScore);
+        // Process quiz stats from user stats endpoint
+        if (userStatsRes.status === "fulfilled") {
+          // API returns { success: true, data: {...} }
+          const statsData = userStatsRes.value.data?.data || userStatsRes.value.data;
+          // Get the most recent quiz score from quizStats array
+          if (statsData?.quizStats && statsData.quizStats.length > 0) {
+            const mostRecent = statsData.quizStats[0];
+            setLastQuizScore(mostRecent.bestScore || mostRecent.averageScore);
+          } else if (statsData?.averageScore) {
+            setLastQuizScore(statsData.averageScore);
           }
         }
       } catch (error) {
@@ -100,29 +110,31 @@ export function useWelcomeContext() {
     // User info
     firstName: user?.firstName || user?.username || "there",
     role,
-    
+
     // Points and streak
     points: points || lifetimePoints || 0,
     lifetimePoints: lifetimePoints || 0,
     streak: streak?.current || 0,
     streakAtRisk: streak?.atRisk || false,
     longestStreak: streak?.longest || 0,
-    
+
     // Leaderboard
     leaderboardPosition,
-    
+
     // Quiz performance
     lastQuizScore,
-    
+
     // Activity tracking
     isFirstTime,
     lastActivityDate,
-    visitCount: user ? parseInt(localStorage.getItem(`visitCount_${user.id}`) || '0', 10) : 0,
-    
+    visitCount: user
+      ? parseInt(localStorage.getItem(`visitCount_${user.id}`) || "0", 10)
+      : 0,
+
     // Daily status
     todaysPoints: dailyStatus?.todaysPoints || 0,
     canEarnPoints: dailyStatus?.canEarnPoints ?? true,
-    
+
     // Loading state
     isLoading,
   };

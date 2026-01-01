@@ -1,19 +1,20 @@
 import { updateStreak } from "@/lib/actions/streak";
 import { NextResponse } from "next/server";
-import { getAuth } from "@clerk/nextjs/server";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const result = await updateStreak(userId);
-    return NextResponse.json(result);
+    return successResponse(result);
   } catch (error) {
-    console.error("Auth error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error);
   }
 }

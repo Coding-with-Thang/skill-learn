@@ -1,25 +1,19 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { clerkClient } from '@clerk/nextjs/server';
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { userCreateSchema } from "@/lib/zodSchemas";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    } // Verify operations role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json(
-        { error: "Unauthorized - Requires OPERATIONS role" },
-        { status: 403 }
-      );
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
+    const { userId } = adminResult;
 
     const users = await prisma.user.findMany({
       select: {
@@ -39,44 +33,22 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({ users });
+    return successResponse({ users });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    } // Verify operations role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json(
-        { error: "Unauthorized - Requires OPERATIONS role" },
-        { status: 403 }
-      );
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
+    const { userId } = adminResult;
 
     const { username, firstName, lastName, password, manager, role } =
-      await request.json();
-
-    // Validate required fields
-    if (!username || !firstName || !lastName || !password) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+      await validateRequestBody(request, userCreateSchema);
 
     // Check if username exists
     const existingUser = await prisma.user.findUnique({
@@ -84,19 +56,20 @@ export async function POST(request) {
     });
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: "Username already exists" },
-        { status: 400 }
-      );
+      throw new AppError("Username already exists", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
+    
     // Check if username exists in Clerk
     const existingClerkUsers = await clerkClient.users.getUserList({
       username: [username],
     });
 
     if (existingClerkUsers.length > 0) {
-      return NextResponse.json(
-        { error: "Username already exists in authentication system" },
+      throw new AppError(
+        "Username already exists in authentication system",
+        ErrorType.VALIDATION,
         { status: 400 }
       );
     }
@@ -120,12 +93,8 @@ export async function POST(request) {
       },
     });
 
-    return NextResponse.json(newUser);
+    return successResponse({ user: newUser });
   } catch (error) {
-    console.error("Error creating user:", error);
-    return NextResponse.json(
-      { error: "Failed to create user" },
-      { status: 500 }
-    );
+    return handleApiError(error, "Failed to create user");
   }
 }

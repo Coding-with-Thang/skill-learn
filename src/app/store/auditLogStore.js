@@ -1,5 +1,10 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
+import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { STORE } from "@/constants";
+
+// Request deduplication
+const requestDeduplicator = createRequestDeduplicator();
 
 export const useAuditLogStore = create((set, get) => ({
   logs: [],
@@ -12,34 +17,53 @@ export const useAuditLogStore = create((set, get) => ({
   },
   isLoading: false,
 
-  fetchLogs: async (page = 1) => {
-    try {
-      set({ isLoading: true });
-      const filters = get().filters;
+  fetchLogs: async (page = 1, force = false) => {
+    const filters = get().filters;
+    
+    // Create unique key based on page and filters to deduplicate properly
+    const cacheKey = `fetchLogs-${page}-${JSON.stringify(filters)}`;
 
-      // Build query string manually to avoid URLSearchParams issues
-      let queryParams = `page=${page}&limit=50`;
+    return requestDeduplicator.dedupe(
+      cacheKey,
+      async () => {
+        try {
+          set({ isLoading: true });
 
-      if (filters.resource)
-        queryParams += `&resource=${encodeURIComponent(filters.resource)}`;
-      if (filters.action)
-        queryParams += `&action=${encodeURIComponent(filters.action)}`;
-      if (filters.startDate)
-        queryParams += `&startDate=${encodeURIComponent(filters.startDate)}`;
-      if (filters.endDate)
-        queryParams += `&endDate=${encodeURIComponent(filters.endDate)}`;
+          // Build query string manually to avoid URLSearchParams issues
+          let queryParams = `page=${page}&limit=50`;
 
-      const response = await api.get(`/admin/audit-logs?${queryParams}`);
+          if (filters.resource)
+            queryParams += `&resource=${encodeURIComponent(filters.resource)}`;
+          if (filters.action)
+            queryParams += `&action=${encodeURIComponent(filters.action)}`;
+          if (filters.startDate)
+            queryParams += `&startDate=${encodeURIComponent(filters.startDate)}`;
+          if (filters.endDate)
+            queryParams += `&endDate=${encodeURIComponent(filters.endDate)}`;
 
-      set({
-        logs: response.data.logs,
-        pagination: response.data.pagination,
-        isLoading: false,
-      });
-    } catch (error) {
-      console.error("Error fetching audit logs:", error);
-      set({ isLoading: false });
-    }
+          const response = await api.get(`/admin/audit-logs?${queryParams}`);
+
+          // API returns { success: true, data: { logs, pagination } }
+          const responseData = response.data?.data || response.data;
+
+          set({
+            logs: responseData?.logs || [],
+            pagination: responseData?.pagination || null,
+            isLoading: false,
+          });
+
+          return {
+            logs: responseData?.logs || [],
+            pagination: responseData?.pagination || null,
+          };
+        } catch (error) {
+          console.error("Error fetching audit logs:", error);
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
   },
 
   setFilters: (newFilters) => {

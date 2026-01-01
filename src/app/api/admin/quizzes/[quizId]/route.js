@@ -1,28 +1,27 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { getSystemSetting } from "@/lib/actions/settings";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { quizUpdateSchema } from "@/lib/zodSchemas";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
 
     const quiz = await prisma.quiz.findUnique({
-      where: { id: params.quizId },
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -39,56 +38,45 @@ export async function GET(request, { params }) {
     });
 
     if (!quiz) {
-      return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
-    console.error("Failed to fetch quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
 // Update a quiz
 export async function PUT(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
+    const data = await validateRequestBody(request, quizUpdateSchema);
 
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    // Get default passing score from settings
+    const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
 
-    const data = await request.json();
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
 
-    // Validate required fields
-    if (!data.title || !data.categoryId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }    // Update quiz and manage questions
+    // Update quiz and manage questions
     let quiz = await prisma.quiz.update({
-      where: { id: params.quizId },
+      where: { id: quizId },
       data: {
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
-        passingScore: data.passingScore || 70,
+        passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
       },
     });
@@ -97,7 +85,7 @@ export async function PUT(request, { params }) {
     if (data.questions) {
       // Delete existing questions (cascade deletes options)
       await prisma.question.deleteMany({
-        where: { quizId: params.quizId },
+        where: { quizId: quizId },
       });
 
       // Create new questions with options
@@ -108,7 +96,7 @@ export async function PUT(request, { params }) {
             imageUrl: question.imageUrl,
             videoUrl: question.videoUrl,
             points: question.points || 1,
-            quizId: params.quizId,
+            quizId: quizId,
             options: {
               create: question.options.map(opt => ({
                 text: opt.text,
@@ -122,7 +110,7 @@ export async function PUT(request, { params }) {
 
     // Return updated quiz with all relations
     quiz = await prisma.quiz.findUnique({
-      where: { id: params.quizId },
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -138,46 +126,32 @@ export async function PUT(request, { params }) {
       },
     });
 
-    return NextResponse.json(quiz);
+    return successResponse({ quiz });
   } catch (error) {
-    console.error("Failed to update quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
 // Delete a quiz
 export async function DELETE(request, { params }) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const adminResult = await requireAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
     }
 
-    // Verify admin role
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { role: true },
-    });
-
-    if (!user || user.role !== "OPERATIONS") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
 
     // Delete quiz and all related data (questions and options will be deleted automatically due to cascade)
     await prisma.quiz.delete({
-      where: { id: params.quizId },
+      where: { id: quizId },
     });
 
-    return NextResponse.json({ success: true });
+    return successResponse({ success: true });
   } catch (error) {
-    console.error("Failed to delete quiz:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

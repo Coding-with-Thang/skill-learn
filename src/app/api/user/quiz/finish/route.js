@@ -1,34 +1,49 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { awardPoints, getDailyPointStatus } from "@/lib/actions/points";
+import { getSystemSetting } from "@/lib/actions/settings";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { quizFinishSchema } from "@/lib/zodSchemas";
 
 export async function POST(req) {
   try {
-    const authRequest = auth();
-    const { userId } = await authRequest;
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
-    const { categoryId, quizId, score, responses } = await req.json();
-
-    if (
-      !categoryId ||
-      !quizId ||
-      typeof score !== "number" ||
-      !Array.isArray(responses)
-    ) {
-      return new Response("Invalid request", { status: 400 });
-    }
+    const { categoryId, quizId, score, responses, hasPassed, isPerfectScore } = await validateRequestBody(req, quizFinishSchema);
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
     if (!user) {
-      return new Response("User not found", { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
+
+    // Get quiz to check passing score
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { passingScore: true, title: true },
+    });
+
+    if (!quiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
+    }
+
+    // Determine if quiz was passed (use hasPassed from request or calculate)
+    const passed = hasPassed !== undefined 
+      ? hasPassed 
+      : (quiz.passingScore ? score >= quiz.passingScore : true);
 
     // Fetch or create a categoryStat entry
     let stat = await prisma.categoryStat.findUnique({
@@ -75,9 +90,77 @@ export async function POST(req) {
       });
     }
 
-    return NextResponse.json({ success: true });
+    // Award points if quiz was passed
+    let pointsAwarded = 0;
+    let bonusAwarded = 0;
+    
+    if (passed) {
+      try {
+        // Get points settings
+        const basePoints = parseInt(
+          await getSystemSetting("POINTS_FOR_PASSING_QUIZ"),
+          10
+        );
+        const perfectScoreBonus = parseInt(
+          await getSystemSetting("PERFECT_SCORE_BONUS"),
+          10
+        );
+
+        // Award base points for passing
+        const baseResult = await awardPoints(
+          basePoints,
+          `quiz_completed_${quizId}`,
+          req
+        );
+        pointsAwarded = baseResult.awarded;
+
+        // Award bonus for perfect score
+        const isPerfect = isPerfectScore !== undefined 
+          ? isPerfectScore 
+          : score === 100;
+        
+        if (isPerfect && perfectScoreBonus > 0) {
+          try {
+            const bonusResult = await awardPoints(
+              perfectScoreBonus,
+              `perfect_score_bonus_${quizId}`,
+              req
+            );
+            bonusAwarded = bonusResult.awarded;
+          } catch (bonusError) {
+            // If bonus can't be awarded (e.g., daily limit reached), log but don't fail
+            console.warn("Could not award perfect score bonus:", bonusError.message);
+          }
+        }
+      } catch (pointsError) {
+        // If points can't be awarded (e.g., daily limit reached), log but don't fail the quiz completion
+        console.warn("Could not award quiz points:", pointsError.message);
+      }
+    }
+
+    // Fetch updated daily status to include in response (eliminates need for follow-up call)
+    let updatedDailyStatus = null;
+    try {
+      updatedDailyStatus = await getDailyPointStatus(req);
+    } catch (statusError) {
+      // If we can't get updated status, continue without it (non-critical)
+      console.warn("Could not fetch updated daily status:", statusError.message);
+    }
+
+    return successResponse({
+      pointsAwarded,
+      bonusAwarded,
+      totalPointsAwarded: pointsAwarded + bonusAwarded,
+      dailyStatus: updatedDailyStatus ? {
+        todaysPoints: updatedDailyStatus.todaysPoints || 0,
+        canEarnPoints: updatedDailyStatus.canEarnPoints !== false,
+        dailyLimit: updatedDailyStatus.dailyLimit || 0,
+        remainingDailyPoints: Math.max(0, 
+          (updatedDailyStatus.dailyLimit || 0) - (updatedDailyStatus.todaysPoints || 0)
+        ),
+      } : null,
+    });
   } catch (error) {
-    console.error("Error finishing quiz:", error);
-    return new Response("Internal server error", { status: 500 });
+    return handleApiError(error);
   }
 }

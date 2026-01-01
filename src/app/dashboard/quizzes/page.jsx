@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { useDebounce } from '@/lib/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import {
   Table,
@@ -60,6 +61,13 @@ export default function QuizzesAdminPage() {
     status: 'all',
     category: 'all'
   })
+  const [searchInput, setSearchInput] = useState('')
+  const debouncedSearch = useDebounce(searchInput, 300)
+
+  // Update filters when debounced search changes
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, search: debouncedSearch }))
+  }, [debouncedSearch])
   const [categories, setCategories] = useState([])
   const [pagination, setPagination] = useState({
     currentPage: 1,
@@ -284,8 +292,8 @@ export default function QuizzesAdminPage() {
                   <Input
                     placeholder="Search quizzes..."
                     className="pl-8"
-                    value={filters.search}
-                    onChange={(e) => handleFilter('search', e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                   />
                 </div>
               </div>

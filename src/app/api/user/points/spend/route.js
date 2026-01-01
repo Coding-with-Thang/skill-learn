@@ -1,23 +1,20 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { spendPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
-    const { amount, reason } = await request.json();
-
-    if (!amount || !reason) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+    const { amount, reason } = await validateRequestBody(request, spendPointsSchema);
 
     // Check if user has enough points
     const user = await prisma.user.findUnique({
@@ -26,17 +23,16 @@ export async function POST(request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     if (user.points < amount) {
-      return NextResponse.json(
-        {
-          error: "Insufficient points",
-          points: user.points,
-        },
-        { status: 400 }
-      );
+      throw new AppError("Insufficient points", ErrorType.VALIDATION, {
+        status: 400,
+        details: { points: user.points },
+      });
     }
 
     // Transaction to update points and create log
@@ -62,16 +58,11 @@ export async function POST(request) {
       return updatedUser;
     });
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       points: result.points,
       lifetimePoints: result.lifetimePoints,
     });
   } catch (error) {
-    console.error("Error spending points:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

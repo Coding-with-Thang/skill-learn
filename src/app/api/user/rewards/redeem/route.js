@@ -1,15 +1,21 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { rewardRedeemed } from "@/utils/auditLogger";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { rewardRedeemSchema } from "@/lib/zodSchemas";
+
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
-    const { rewardId } = await request.json();
+    const { rewardId } = await validateRequestBody(request, rewardRedeemSchema);
 
     // Get the user and reward
     const [user, reward] = await prisma.$transaction([
@@ -32,22 +38,24 @@ export async function POST(request) {
 
     // Validate user and reward
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
     if (!reward) {
-      return NextResponse.json({ error: "Reward not found" }, { status: 404 });
+      throw new AppError("Reward not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
     if (!reward.enabled) {
-      return NextResponse.json(
-        { error: "Reward not available" },
-        { status: 400 }
-      );
+      throw new AppError("Reward not available", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
     if (user.points < reward.cost) {
-      return NextResponse.json(
-        { error: "Insufficient points" },
-        { status: 400 }
-      );
+      throw new AppError("Insufficient points", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     // Check redemption limits
@@ -61,8 +69,9 @@ export async function POST(request) {
       });
 
       if (existingRedemption) {
-        return NextResponse.json(
-          { error: "You have already redeemed this reward" },
+        throw new AppError(
+          "You have already redeemed this reward",
+          ErrorType.VALIDATION,
           { status: 400 }
         );
       }
@@ -76,10 +85,9 @@ export async function POST(request) {
       });
 
       if (redemptionCount >= reward.maxRedemptions) {
-        return NextResponse.json(
-          {
-            error: `You have reached the maximum redemptions (${reward.maxRedemptions}) for this reward`,
-          },
+        throw new AppError(
+          `You have reached the maximum redemptions (${reward.maxRedemptions}) for this reward`,
+          ErrorType.VALIDATION,
           { status: 400 }
         );
       }
@@ -115,17 +123,12 @@ export async function POST(request) {
     // Log audit event
     await rewardRedeemed(user.id, rewardId, reward.prize, reward.cost);
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       message: `Successfully redeemed ${reward.prize}`,
       remainingPoints: result.updatedPoints,
       redemptionId: result.rewardLog.id,
     });
   } catch (error) {
-    console.error("Error redeeming reward:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

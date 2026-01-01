@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { format } from "date-fns"
 import { Clock, Trophy, Target } from "lucide-react"
+import { SCORE_THRESHOLDS } from "@/constants"
 import {
   Table,
   TableBody,
@@ -23,12 +24,54 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+// Helper function to get quiz status configuration
+function getQuizStatus(quiz) {
+  if (quiz.completed > 0) {
+    return {
+      label: "Completed",
+      icon: Trophy,
+      className: "bg-green-100 text-green-800",
+    };
+  }
+
+  if (quiz.attempts > 0) {
+    return {
+      label: "In Progress",
+      icon: Clock,
+      className: "bg-yellow-100 text-yellow-800",
+    };
+  }
+
+  return {
+    label: "Not Started",
+    icon: Target,
+    className: "bg-gray-100 text-gray-800",
+  };
+}
+
+// Helper function to get score badge styling
+function getScoreBadgeClass(score) {
+  if (score >= SCORE_THRESHOLDS.EXCELLENT) {
+    return "bg-green-100 text-green-800";
+  }
+
+  if (score >= SCORE_THRESHOLDS.PASSING) {
+    return "bg-yellow-100 text-yellow-800";
+  }
+
+  return "bg-red-100 text-red-800";
+}
+
 export default function QuizStats({ quizStats, categories }) {
   const [selectedCategory, setSelectedCategory] = useState("all")
 
-  const filteredQuizzes = selectedCategory === "all"
-    ? quizStats
-    : quizStats.filter(quiz => quiz.category.id === selectedCategory)
+  // Memoize filtered quizzes to avoid recalculating on every render
+  const filteredQuizzes = useMemo(() => {
+    if (!quizStats) return [];
+    return selectedCategory === "all"
+      ? quizStats
+      : quizStats.filter((quiz) => quiz.category.id === selectedCategory);
+  }, [selectedCategory, quizStats]);
 
   return (
     <div className="space-y-6">
@@ -82,43 +125,23 @@ export default function QuizStats({ quizStats, categories }) {
                     {quiz.category.name}
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className={`
-                      inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${quiz.completed > 0
-                        ? 'bg-green-100 text-green-800'
-                        : quiz.attempts > 0
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'}
-                    `}>
-                      {quiz.completed > 0 ? (
-                        <>
-                          <Trophy className="w-3 h-3" />
-                          Completed
-                        </>
-                      ) : quiz.attempts > 0 ? (
-                        <>
-                          <Clock className="w-3 h-3" />
-                          In Progress
-                        </>
-                      ) : (
-                        <>
-                          <Target className="w-3 h-3" />
-                          Not Started
-                        </>
-                      )}
-                    </span>
+                    {(() => {
+                      const status = getQuizStatus(quiz);
+                      const Icon = status.icon;
+                      return (
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.className}`}>
+                          <Icon className="w-3 h-3" />
+                          {status.label}
+                        </span>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center">
                     {quiz.attempts || '0'}
                   </TableCell>
                   <TableCell className="text-center">
                     {quiz.bestScore ? (
-                      <span className={`
-                        px-2.5 py-0.5 rounded-full text-xs font-medium
-                        ${quiz.bestScore >= 90 ? 'bg-green-100 text-green-800' :
-                          quiz.bestScore >= 70 ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'}
-                      `}>
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getScoreBadgeClass(quiz.bestScore)}`}>
                         {quiz.bestScore}%
                       </span>
                     ) : (

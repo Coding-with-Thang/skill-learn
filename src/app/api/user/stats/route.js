@@ -1,21 +1,16 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
-    const auth = getAuth(request);
-    const userId = auth.userId;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Please sign in to access this resource" },
-        { status: 401 }
-      );
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
-
-    // Verify database connection
-    await prisma.$connect();
+    const userId = authResult;
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -23,43 +18,95 @@ export async function GET(request) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
+      throw new AppError("User not found in database", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Get category stats with category information
-    const categoryStats = await prisma.categoryStat.findMany({
+    const categoryStatsRaw = await prisma.categoryStat.findMany({
       where: {
         userId: user.id,
       },
       include: {
         category: true,
       },
-    });    // Get quiz stats based on category stats
-    const quizStats = await prisma.categoryStat.findMany({
-      where: {
-        userId: user.id,
-      },
-      select: {
-        attempts: true,
-        completed: true,
-        averageScore: true,
-        bestScore: true,
-        lastAttempt: true,
-        createdAt: true,
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        lastAttempt: "desc",
-      },
     });
+
+    // Calculate aggregated stats
+    const totalAttempts = categoryStatsRaw.reduce(
+      (sum, stat) => sum + (stat.attempts || 0),
+      0
+    );
+    const totalCompleted = categoryStatsRaw.reduce(
+      (sum, stat) => sum + (stat.completed || 0),
+      0
+    );
+
+    // Calculate average score across all categories
+    const scoresWithValues = categoryStatsRaw
+      .map((stat) => stat.averageScore)
+      .filter((score) => score !== null && score !== undefined);
+    const averageScore =
+      scoresWithValues.length > 0
+        ? scoresWithValues.reduce((sum, score) => sum + score, 0) /
+          scoresWithValues.length
+        : 0;
+
+    // Find best score across all categories
+    const allBestScores = categoryStatsRaw
+      .map((stat) => stat.bestScore)
+      .filter((score) => score !== null && score !== undefined);
+    const bestScore = allBestScores.length > 0 ? Math.max(...allBestScores) : 0;
+
+    // Find most recent attempt date
+    const allLastAttempts = categoryStatsRaw
+      .map((stat) => stat.lastAttempt)
+      .filter((date) => date !== null);
+    const recentAttemptDate =
+      allLastAttempts.length > 0
+        ? new Date(
+            Math.max(...allLastAttempts.map((date) => new Date(date).getTime()))
+          )
+        : null;
+
+    // Get user points (if available)
+    const userWithPoints = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { points: true },
+    });
+    const totalPoints = userWithPoints?.points || 0;
+
+    // Transform category stats to match component expectations
+    const categoryStats = categoryStatsRaw.map((stat) => ({
+      name: stat.category.name,
+      attempts: stat.attempts || 0,
+      completed: stat.completed || 0,
+      averageScore: stat.averageScore || 0,
+      bestScore: stat.bestScore || 0,
+      lastAttempt: stat.lastAttempt,
+      categoryId: stat.categoryId,
+    }));
+
+    // Get quiz stats based on category stats
+    const quizStats = categoryStatsRaw
+      .map((stat) => ({
+        attempts: stat.attempts,
+        completed: stat.completed,
+        averageScore: stat.averageScore,
+        bestScore: stat.bestScore,
+        lastAttempt: stat.lastAttempt,
+        createdAt: stat.createdAt,
+        category: {
+          id: stat.category.id,
+          name: stat.category.name,
+        },
+      }))
+      .sort((a, b) => {
+        if (!a.lastAttempt) return 1;
+        if (!b.lastAttempt) return -1;
+        return new Date(b.lastAttempt) - new Date(a.lastAttempt);
+      });
 
     // Get all categories for filtering
     const categories = await prisma.category.findMany({
@@ -72,24 +119,20 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        categoryStats,
-        quizStats,
-        categories,
-      },
+    return successResponse({
+      totalAttempts,
+      totalCompleted,
+      averageScore: Math.round(averageScore * 10) / 10, // Round to 1 decimal
+      bestScore,
+      totalPoints,
+      recentAttemptDate: recentAttemptDate
+        ? recentAttemptDate.toISOString()
+        : null,
+      categoryStats,
+      quizStats,
+      categories,
     });
   } catch (error) {
-    console.error("Error in /api/user/stats:", error);
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error.message,
-      },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    return handleApiError(error);
   }
 }

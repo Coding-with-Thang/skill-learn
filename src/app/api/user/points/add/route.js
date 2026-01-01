@@ -1,61 +1,38 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import prisma from "@/utils/connect";
 import { pointsAwarded } from "@/utils/auditLogger";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError } from "@/utils/errorHandler";
+import { awardPoints } from "@/lib/actions/points";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { addPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
-    const { amount, reason } = await request.json();
+    const { amount, reason } = await validateRequestBody(request, addPointsSchema);
 
-    if (!amount || !reason) {
-      return NextResponse.json(
-        { error: "Reason and Amount required!" },
-        { status: 400 }
-      );
-    }
+    // Use awardPoints function which enforces daily limit
+    const result = await awardPoints(amount, reason, request);
 
-    // Transaction to update points and create log
-    const result = await prisma.$transaction(async (tx) => {
-      // Update user points
-      const updatedUser = await tx.user.update({
-        where: { clerkId: userId },
-        data: {
-          points: { increment: amount },
-          lifetimePoints: { increment: amount },
-        },
-        select: { id: true, points: true, lifetimePoints: true },
-      });
+    await pointsAwarded(userId, result.awarded, reason);
 
-      // Create point log
-      await tx.pointLog.create({
-        data: {
-          userId: updatedUser.id,
-          amount,
-          reason,
-        },
-      });
-
-      return updatedUser;
-    });
-
-    await pointsAwarded(userId, amount, reason);
-
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       points: result.points,
       lifetimePoints: result.lifetimePoints,
+      awarded: result.awarded,
+      message:
+        result.awarded < amount
+          ? `Daily limit reached. Awarded ${result.awarded} of ${amount} points.`
+          : "Points awarded successfully",
     });
   } catch (error) {
-    console.error("Error adding points:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

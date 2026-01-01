@@ -1,22 +1,30 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
 import { logAuditEvent } from "@/utils/auditLogger";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequest } from "@/utils/validateRequest";
+import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
+import { z } from "zod";
 
 export async function PUT(request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
-    const { id, featured, ...updateData } = await request.json();
+    const body = await request.json();
+    const { id, featured, ...updateData } = body;
 
-    if (!id) {
-      return NextResponse.json(
-        { error: "Reward ID is required" },
-        { status: 400 }
-      );
+    // Validate reward ID
+    z.object({ id: objectIdSchema }).parse({ id });
+
+    // Validate update data if provided
+    if (Object.keys(updateData).length > 0) {
+      await validateRequest(rewardUpdateSchema, updateData);
     }
 
     // If setting a reward as featured, we need to handle it in a transaction
@@ -50,10 +58,7 @@ export async function PUT(request) {
         `Updated reward: ${updateData.prize} (set as featured)`
       );
 
-      return NextResponse.json({
-        success: true,
-        reward: result,
-      });
+      return successResponse({ reward: result });
     } else {
       // If not setting as featured, just update the reward normally
       const updatedReward = await prisma.reward.update({
@@ -70,16 +75,9 @@ export async function PUT(request) {
         `Updated reward: ${updateData.prize}`
       );
 
-      return NextResponse.json({
-        success: true,
-        reward: updatedReward,
-      });
+      return successResponse({ reward: updatedReward });
     }
   } catch (error) {
-    console.error("Error updating reward:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

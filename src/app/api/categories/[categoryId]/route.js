@@ -1,24 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request, { params }) {
   try {
     const { categoryId } = params;
 
     if (!categoryId) {
-      return NextResponse.json(
-        { error: "Category ID is required" },
-        { status: 400 }
-      );
+      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     let category;
     try {
-      category = await prisma.category.findFirst({
-        where: {
-          id: categoryId,
-          isActive: true,
-        },
+      // Use findUnique for unique identifier lookup
+      category = await prisma.category.findUnique({
+        where: { id: categoryId },
         include: {
           _count: {
             select: { quizzes: true },
@@ -26,26 +25,26 @@ export async function GET(request, { params }) {
         },
       });
     } catch (prismaError) {
-      console.error("Prisma query error:", prismaError);
-      return NextResponse.json(
-        { error: "Invalid category ID format" },
-        { status: 400 }
-      );
+      throw new AppError("Invalid category ID format", ErrorType.VALIDATION, {
+        status: 400,
+      });
     }
 
     if (!category) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      );
+      throw new AppError("Category not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
-    return NextResponse.json({ category });
+    // Validate business rule after fetching
+    if (!category.isActive) {
+      throw new AppError("Category is not active", ErrorType.VALIDATION, {
+        status: 403,
+      });
+    }
+
+    return successResponse({ category });
   } catch (error) {
-    console.error("Error fetching category:", error);
-    return NextResponse.json(
-      { error: "Internal server error", details: error.message },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

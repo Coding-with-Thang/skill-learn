@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Play, Trophy, Clock, Target, BarChart2 } from 'lucide-react'
 import { Card, CardContent } from "@/components/ui/card"
-import Loader from "@/components/shared/loader"
+import { Loader } from "@/components/ui/loader"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 
 export default function SelectedQuizPage() {
@@ -29,6 +29,8 @@ export default function SelectedQuizPage() {
         categoryId: selectedQuiz.categoryId,
         quizId: selectedQuiz.id,
       });
+      // Clear any previous progress for this quiz
+      sessionStorage.removeItem('quizProgress');
       router.push("/quiz");
     } catch (error) {
       console.error("Error starting quiz: ", error);
@@ -54,7 +56,9 @@ export default function SelectedQuizPage() {
     }
     try {
       const response = await api.get(`/user/quiz/stats/${selectedQuiz.categoryId}`);
-      setStats(response.data);
+      // API returns { success: true, data: {...} }
+      const statsData = response.data?.data || response.data;
+      setStats(statsData);
     } catch (error) {
       console.error("Error fetching quiz stats:", error);
     } finally {
@@ -74,13 +78,13 @@ export default function SelectedQuizPage() {
     fetchQuizStats();
   }, [selectedQuiz, router]);
 
-  if (isLoading) return <Loader />;
+  if (isLoading) return <Loader variant="gif" />;
 
   return (
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "My Training", href: "training" },
+          { name: "Training", href: "training" },
           { name: "Quiz Selection", href: `categories/${selectedQuiz?.categoryId}` }
         ]}
         endtrail={selectedQuiz?.title}

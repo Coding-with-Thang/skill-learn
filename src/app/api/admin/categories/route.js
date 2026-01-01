@@ -1,24 +1,17 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAdmin } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
+import { validateRequestBody } from "@/utils/validateRequest";
+import { categoryCreateSchema } from "@/lib/zodSchemas";
 
 // Get all categories
 export async function GET(request) {
     try {
-        const { userId } = getAuth(request);
-
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Verify admin role
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!user || user.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
         // Fetch all categories with quiz count
@@ -33,43 +26,21 @@ export async function GET(request) {
             },
         });
 
-        return NextResponse.json(categories);
+        return successResponse({ categories });
     } catch (error) {
-        console.error("Error fetching categories:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }
 
 // Create a new category
 export async function POST(request) {
     try {
-        const { userId } = getAuth(request);
-
-        if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const adminResult = await requireAdmin();
+        if (adminResult instanceof NextResponse) {
+            return adminResult;
         }
 
-        const user = await prisma.user.findUnique({
-            where: { clerkId: userId },
-            select: { role: true },
-        });
-
-        if (!user || user.role !== "OPERATIONS") {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-        }
-
-        const data = await request.json();
-
-        // Validate required fields
-        if (!data.name) {
-            return NextResponse.json(
-                { error: "Name is required" },
-                { status: 400 }
-            );
-        }
+        const data = await validateRequestBody(request, categoryCreateSchema);
 
         // Create new category
         const category = await prisma.category.create({
@@ -81,12 +52,8 @@ export async function POST(request) {
             },
         });
 
-        return NextResponse.json(category);
+        return successResponse({ category });
     } catch (error) {
-        console.error("Error creating category:", error);
-        return NextResponse.json(
-            { error: "Internal server error" },
-            { status: 500 }
-        );
+        return handleApiError(error);
     }
 }

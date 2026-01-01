@@ -9,15 +9,11 @@ export function useAuditLog() {
     if (!user) return;
 
     try {
-      await api.get("/audit-log", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action,
-          resource,
-          resourceId,
-          details,
-        }),
+      await api.post("/admin/audit-logs", {
+        action,
+        resource,
+        resourceId,
+        details,
       });
     } catch (error) {
       console.error("Failed to log audit event:", error);

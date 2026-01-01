@@ -1,14 +1,16 @@
-import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import prisma from "@/utils/connect";
+import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { successResponse } from "@/utils/apiWrapper";
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const userId = authResult;
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -16,7 +18,9 @@ export async function GET(request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Get points history
@@ -57,8 +61,7 @@ export async function GET(request) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
+    return successResponse({
       history,
       summary: {
         currentPoints: summary?.points || 0,
@@ -67,10 +70,6 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error("Error fetching points history:", error);
-    return NextResponse.json(
-      { error: "Internal server error", details: error.message },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
