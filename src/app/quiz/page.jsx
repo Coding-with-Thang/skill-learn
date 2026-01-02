@@ -107,6 +107,12 @@ export default function QuizScreenPage() {
         if (!selectedQuiz || !selectedQuiz.questions || !Array.isArray(selectedQuiz.questions)) {
             return [];
         }
+        console.log("[Quiz Debug] Shuffling questions, first question structure:", {
+            id: selectedQuiz.questions[0]?.id,
+            hasText: !!selectedQuiz.questions[0]?.text,
+            hasOptions: !!selectedQuiz.questions[0]?.options,
+            keys: selectedQuiz.questions[0] ? Object.keys(selectedQuiz.questions[0]) : []
+        });
         return shuffleArray(selectedQuiz.questions);
     }, [selectedQuiz]);
 
@@ -130,7 +136,14 @@ export default function QuizScreenPage() {
                     id: quizData.id,
                     title: quizData.title,
                     questionsCount: quizData.questions?.length || 0,
-                    hasQuestions: !!quizData.questions && Array.isArray(quizData.questions) && quizData.questions.length > 0
+                    hasQuestions: !!quizData.questions && Array.isArray(quizData.questions) && quizData.questions.length > 0,
+                    firstQuestion: quizData.questions?.[0] ? {
+                        id: quizData.questions[0].id,
+                        hasText: !!quizData.questions[0].text,
+                        text: quizData.questions[0].text?.substring(0, 50),
+                        hasOptions: !!quizData.questions[0].options,
+                        optionsCount: quizData.questions[0].options?.length || 0
+                    } : null
                 });
                 setSelectedQuiz(quizData);
                 return quizData;
@@ -152,17 +165,24 @@ export default function QuizScreenPage() {
                 title: selectedQuiz?.title,
                 hasQuestions: !!selectedQuiz?.questions,
                 questionsCount: selectedQuiz?.questions?.length || 0,
-                questionsType: Array.isArray(selectedQuiz?.questions) ? 'array' : typeof selectedQuiz?.questions
+                questionsType: Array.isArray(selectedQuiz?.questions) ? 'array' : typeof selectedQuiz?.questions,
+                firstQuestionSample: selectedQuiz?.questions?.[0] ? {
+                    id: selectedQuiz.questions[0].id,
+                    hasText: !!selectedQuiz.questions[0].text,
+                    text: selectedQuiz.questions[0].text,
+                    hasOptions: !!selectedQuiz.questions[0].options,
+                    optionsCount: selectedQuiz.questions[0].options?.length || 0,
+                    keys: Object.keys(selectedQuiz.questions[0])
+                } : null
             });
 
             let quiz = selectedQuiz;
+            let quizId = quiz?.id;
 
-            // If no quiz in store OR quiz doesn't have questions, try to fetch it
-            if (!quiz || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+            // Get quizId from saved progress if needed
+            if (!quizId) {
                 const savedProgress = sessionStorage.getItem('quizProgress');
-                let quizId = quiz?.id;
-
-                if (!quizId && savedProgress) {
+                if (savedProgress) {
                     try {
                         const parsed = JSON.parse(savedProgress);
                         quizId = parsed.quizId;
@@ -170,16 +190,21 @@ export default function QuizScreenPage() {
                         console.error("[Quiz Debug] Error parsing saved progress:", e);
                     }
                 }
+            }
 
-                if (quizId) {
-                    console.log("[Quiz Debug] Fetching quiz data for ID:", quizId);
-                    quiz = await fetchQuizData(quizId);
-                    if (!quiz) {
-                        router.push("/training");
-                        return;
-                    }
-                } else {
-                    console.log("[Quiz Debug] No quizId available, redirecting to training");
+            // Always fetch from API to ensure we have complete data structure
+            // The store data might be incomplete or stale
+            if (quizId) {
+                console.log("[Quiz Debug] Fetching quiz data from API for ID:", quizId);
+                quiz = await fetchQuizData(quizId);
+                if (!quiz) {
+                    router.push("/training");
+                    return;
+                }
+            } else {
+                // Fallback: Use store data if no quizId available
+                if (!quiz || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+                    console.log("[Quiz Debug] No quizId available and no valid quiz in store, redirecting to training");
                     router.push("/training");
                     return;
                 }
@@ -191,10 +216,20 @@ export default function QuizScreenPage() {
                 return;
             }
 
-            // Final validation: Check if quiz has questions
+            // Final validation: Check if quiz has questions with proper structure
             if (!quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
                 console.error("[Quiz Debug] Quiz has no questions after fetch:", quiz);
                 toast.error("This quiz has no questions available. Please select another quiz.");
+                router.push("/training");
+                return;
+            }
+
+            // Validate that questions have text and options
+            const questionsAreValid = quiz.questions.every(q => q.text && q.options && Array.isArray(q.options));
+            if (!questionsAreValid) {
+                console.error("[Quiz Debug] Quiz questions are missing text or options:", quiz.questions);
+                console.log("[Quiz Debug] Sample question structure:", quiz.questions[0]);
+                toast.error("Quiz data is incomplete. Please try again.");
                 router.push("/training");
                 return;
             }
@@ -541,6 +576,12 @@ export default function QuizScreenPage() {
 
     // Validate current question exists
     if (!currentQuestion) {
+        console.error("[Quiz Debug] Current question is undefined:", {
+            currentIndex,
+            shuffledQuestionsMemoLength: shuffledQuestionsMemo.length,
+            shuffledQuestionsMemo: shuffledQuestionsMemo,
+            selectedQuiz: selectedQuiz
+        });
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center p-8">
@@ -553,6 +594,17 @@ export default function QuizScreenPage() {
             </div>
         );
     }
+
+    // Debug logging for current question
+    console.log("[Quiz Debug] Current question data:", {
+        questionId: currentQuestion.id,
+        questionText: currentQuestion.text,
+        hasText: !!currentQuestion.text,
+        textLength: currentQuestion.text?.length || 0,
+        optionsCount: currentQuestion.options?.length || 0,
+        options: currentQuestion.options,
+        shuffledOptionsCount: shuffledOptions.length
+    });
 
     // Calculate specific progress
     const progressPercentage = ((currentIndex + 1) / shuffledQuestionsMemo.length) * 100;
@@ -611,7 +663,7 @@ export default function QuizScreenPage() {
                             </div>
 
                             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
-                                {currentQuestion.text}
+                                {currentQuestion.text || "Question text not available"}
                             </h2>
                             <p className="text-gray-500 mb-8">Select all that apply.</p>
 
@@ -619,36 +671,43 @@ export default function QuizScreenPage() {
 
                             {/* Options */}
                             <div className="space-y-4">
-                                {shuffledOptions.map((option) => {
-                                    const isSelected = selectedOptions.includes(option.id);
-                                    return (
-                                        <div
-                                            key={option.id}
-                                            onClick={() => !isTransitioning && toggleOption(option)}
-                                            className={cn(
-                                                "group relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
-                                                isSelected
-                                                    ? "border-blue-500 bg-blue-50 shadow-md"
-                                                    : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
-                                            )}
-                                        >
-                                            <div className={cn(
-                                                "flex items-center justify-center w-6 h-6 rounded border-2 mr-4 transition-colors",
-                                                isSelected
-                                                    ? "bg-blue-500 border-blue-500 text-white"
-                                                    : "border-gray-300 bg-white group-hover:border-gray-400"
-                                            )}>
-                                                {isSelected && <Check className="w-4 h-4" />}
+                                {shuffledOptions && shuffledOptions.length > 0 ? (
+                                    shuffledOptions.map((option) => {
+                                        const isSelected = selectedOptions.includes(option.id);
+                                        return (
+                                            <div
+                                                key={option.id}
+                                                onClick={() => !isTransitioning && toggleOption(option)}
+                                                className={cn(
+                                                    "group relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                                                    isSelected
+                                                        ? "border-blue-500 bg-blue-50 shadow-md"
+                                                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                                                )}
+                                            >
+                                                <div className={cn(
+                                                    "flex items-center justify-center w-6 h-6 rounded border-2 mr-4 transition-colors",
+                                                    isSelected
+                                                        ? "bg-blue-500 border-blue-500 text-white"
+                                                        : "border-gray-300 bg-white group-hover:border-gray-400"
+                                                )}>
+                                                    {isSelected && <Check className="w-4 h-4" />}
+                                                </div>
+                                                <span className={cn(
+                                                    "text-lg font-medium",
+                                                    isSelected ? "text-blue-900" : "text-gray-700"
+                                                )}>
+                                                    {option.text}
+                                                </span>
                                             </div>
-                                            <span className={cn(
-                                                "text-lg font-medium",
-                                                isSelected ? "text-blue-900" : "text-gray-700"
-                                            )}>
-                                                {option.text}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                ) : (
+                                    <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
+                                        <p className="text-lg font-medium">No options available for this question.</p>
+                                        <p className="text-sm mt-2">Please contact support if this issue persists.</p>
+                                    </div>
+                                )}
                             </div>
                         </>
                     )}

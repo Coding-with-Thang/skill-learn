@@ -46,7 +46,7 @@ export function QuizCard({
           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0">
             <div className="flex items-center gap-1">
               <Circle className="h-3 w-3 fill-current" />
-              <span>{quiz.questionCount || 20} Questions</span>
+              <span>{quiz.questionCount} Questions</span>
             </div>
             {isCompleted && quiz.score && (
               <span className="font-semibold text-green-600 dark:text-green-400">
@@ -89,7 +89,6 @@ export function QuizCard({
           ? "border-green-200 dark:border-green-900/30 bg-green-50/50 dark:bg-green-900/10"
           : "border-border hover:border-brand-teal/50"
       )}>
-        2
         {/* Content */}
         <h4 className="font-bold text-foreground group-hover:text-brand-teal transition-colors line-clamp-2 mb-2">
           {quiz.title}

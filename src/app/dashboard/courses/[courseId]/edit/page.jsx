@@ -67,8 +67,10 @@ export default function EditCoursePage() {
             try {
                 const response = await fetch('/api/categories');
                 const data = await response.json();
-                if (data.categories) {
-                    setCategories(data.categories);
+                // API returns { success: true, data: { categories: [...] } }
+                const categories = data.data?.categories || data.categories || [];
+                if (categories.length > 0) {
+                    setCategories(categories);
                 }
             } catch (error) {
                 console.error('Error fetching categories:', error);

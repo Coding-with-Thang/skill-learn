@@ -73,6 +73,18 @@ const nextConfig = {
       },
     ];
   },
+  // Optimize webpack cache for large strings
+  webpack: (config, { isServer }) => {
+    // Optimize cache serialization for large strings
+    if (config.cache) {
+      config.cache = {
+        ...config.cache,
+        compression: 'gzip',
+        maxMemoryGenerations: 1,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
