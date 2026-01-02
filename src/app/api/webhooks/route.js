@@ -1,18 +1,21 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import prisma from "@/utils/connect";
-import { NextResponse } from "next/server";
 import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
 import { successResponse } from "@/utils/apiWrapper";
 
 export async function POST(req) {
   try {
-    const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+    // Support both CLERK_WEBHOOK_SECRET (Vercel standard) and WEBHOOK_SECRET
+    const WEBHOOK_SECRET =
+      process.env.CLERK_WEBHOOK_SECRET || process.env.WEBHOOK_SECRET;
 
     if (!WEBHOOK_SECRET) {
-      console.error("[Webhook] WEBHOOK_SECRET is missing from environment variables");
+      console.error(
+        "[Webhook] CLERK_WEBHOOK_SECRET or WEBHOOK_SECRET is missing from environment variables"
+      );
       throw new AppError(
-        "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local",
+        "Please add CLERK_WEBHOOK_SECRET (or WEBHOOK_SECRET) from Clerk Dashboard to .env or .env.local",
         ErrorType.API,
         { status: 500 }
       );
@@ -26,7 +29,11 @@ export async function POST(req) {
 
     // If there are no headers, error out
     if (!svix_id || !svix_timestamp || !svix_signature) {
-      console.error("[Webhook] Missing svix headers", { svix_id: !!svix_id, svix_timestamp: !!svix_timestamp, svix_signature: !!svix_signature });
+      console.error("[Webhook] Missing svix headers", {
+        svix_id: !!svix_id,
+        svix_timestamp: !!svix_timestamp,
+        svix_signature: !!svix_signature,
+      });
       throw new AppError(
         "Error occurred -- no svix headers",
         ErrorType.VALIDATION,
@@ -52,7 +59,10 @@ export async function POST(req) {
         "svix-signature": svix_signature,
       });
     } catch (err) {
-      console.error("[Webhook] Error verifying webhook signature:", err.message);
+      console.error(
+        "[Webhook] Error verifying webhook signature:",
+        err.message
+      );
       throw new AppError("Error verifying webhook", ErrorType.VALIDATION, {
         status: 400,
       });
@@ -67,7 +77,10 @@ export async function POST(req) {
       if (attributes.username !== null && attributes.username !== undefined) {
         updateData.username = attributes.username;
       }
-      if (attributes.first_name !== null && attributes.first_name !== undefined) {
+      if (
+        attributes.first_name !== null &&
+        attributes.first_name !== undefined
+      ) {
         updateData.firstName = attributes.first_name;
       }
       if (attributes.last_name !== null && attributes.last_name !== undefined) {
@@ -91,7 +104,11 @@ export async function POST(req) {
         },
       });
 
-      console.log(`[Webhook] Successfully ${eventType === "user.created" ? "created" : "updated"} user: ${id}`);
+      console.log(
+        `[Webhook] Successfully ${
+          eventType === "user.created" ? "created" : "updated"
+        } user: ${id}`
+      );
     }
 
     if (eventType === "user.deleted") {
