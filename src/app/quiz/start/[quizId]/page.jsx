@@ -21,6 +21,15 @@ export default function SelectedQuizPage() {
   const startQuiz = async () => {
     if (!selectedQuiz?.id || !selectedQuiz?.categoryId) {
       console.error('Invalid quiz data:', selectedQuiz);
+      alert('Invalid quiz data. Please try selecting the quiz again.');
+      router.push("/training");
+      return;
+    }
+
+    // Validate that quiz has questions
+    if (!selectedQuiz.questions || !Array.isArray(selectedQuiz.questions) || selectedQuiz.questions.length === 0) {
+      console.error('Quiz has no questions:', selectedQuiz);
+      alert('This quiz has no questions available. Please contact an administrator.');
       return;
     }
 
@@ -37,6 +46,8 @@ export default function SelectedQuizPage() {
       // Handle specific error types
       if (error.response?.status === 401) {
         router.push("/sign-in");
+      } else {
+        alert('Failed to start quiz. Please try again.');
       }
     }
   };
@@ -73,6 +84,14 @@ export default function SelectedQuizPage() {
     }
     if (!selectedQuiz.categoryId) {
       console.error("No category ID found for quiz");
+      router.push("/training");
+      return;
+    }
+    // Validate that quiz has questions
+    if (!selectedQuiz.questions || !Array.isArray(selectedQuiz.questions) || selectedQuiz.questions.length === 0) {
+      console.error("Quiz has no questions:", selectedQuiz);
+      alert('This quiz has no questions available. Redirecting to training page.');
+      router.push("/training");
       return;
     }
     fetchQuizStats();

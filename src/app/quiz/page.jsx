@@ -74,7 +74,7 @@ const QuestionMedia = ({ question }) => {
 
 export default function QuizScreenPage() {
     const router = useRouter();
-    const { selectedQuiz, setQuizResponses } = useQuizStartStore();
+    const { selectedQuiz, setSelectedQuiz, setQuizResponses } = useQuizStartStore();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState([]); // Array of selected option IDs
     const [responses, setResponses] = useState([]);
@@ -103,10 +103,12 @@ export default function QuizScreenPage() {
     }, [responses]);
 
     // Memoize shuffled questions
-    const shuffledQuestionsMemo = useMemo(() =>
-        selectedQuiz ? shuffleArray(selectedQuiz.questions) : [],
-        [selectedQuiz]
-    );
+    const shuffledQuestionsMemo = useMemo(() => {
+        if (!selectedQuiz || !selectedQuiz.questions || !Array.isArray(selectedQuiz.questions)) {
+            return [];
+        }
+        return shuffleArray(selectedQuiz.questions);
+    }, [selectedQuiz]);
 
     // Memoize shuffled options for current question
     const shuffledOptions = useMemo(() =>
@@ -116,21 +118,102 @@ export default function QuizScreenPage() {
         [shuffledQuestionsMemo, currentIndex]
     );
 
+    // Fetch quiz data if missing or incomplete
+    const fetchQuizData = useCallback(async (quizId) => {
+        try {
+            console.log("[Quiz Debug] Fetching quiz data for ID:", quizId);
+            const response = await api.get(`/user/quiz/${quizId}`);
+            const quizData = response.data?.data?.quiz || response.data?.quiz;
+
+            if (quizData) {
+                console.log("[Quiz Debug] Fetched quiz data:", {
+                    id: quizData.id,
+                    title: quizData.title,
+                    questionsCount: quizData.questions?.length || 0,
+                    hasQuestions: !!quizData.questions && Array.isArray(quizData.questions) && quizData.questions.length > 0
+                });
+                setSelectedQuiz(quizData);
+                return quizData;
+            }
+            return null;
+        } catch (error) {
+            console.error("[Quiz Debug] Error fetching quiz data:", error);
+            handleErrorWithNotification(error, "Failed to load quiz data");
+            return null;
+        }
+    }, [setSelectedQuiz]);
+
     // Load saved state from session storage on mount
     useEffect(() => {
-        if (selectedQuiz) {
+        const initializeQuiz = async () => {
+            console.log("[Quiz Debug] Initializing quiz, selectedQuiz:", {
+                exists: !!selectedQuiz,
+                id: selectedQuiz?.id,
+                title: selectedQuiz?.title,
+                hasQuestions: !!selectedQuiz?.questions,
+                questionsCount: selectedQuiz?.questions?.length || 0,
+                questionsType: Array.isArray(selectedQuiz?.questions) ? 'array' : typeof selectedQuiz?.questions
+            });
+
+            let quiz = selectedQuiz;
+
+            // If no quiz in store OR quiz doesn't have questions, try to fetch it
+            if (!quiz || !quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+                const savedProgress = sessionStorage.getItem('quizProgress');
+                let quizId = quiz?.id;
+
+                if (!quizId && savedProgress) {
+                    try {
+                        const parsed = JSON.parse(savedProgress);
+                        quizId = parsed.quizId;
+                    } catch (e) {
+                        console.error("[Quiz Debug] Error parsing saved progress:", e);
+                    }
+                }
+
+                if (quizId) {
+                    console.log("[Quiz Debug] Fetching quiz data for ID:", quizId);
+                    quiz = await fetchQuizData(quizId);
+                    if (!quiz) {
+                        router.push("/training");
+                        return;
+                    }
+                } else {
+                    console.log("[Quiz Debug] No quizId available, redirecting to training");
+                    router.push("/training");
+                    return;
+                }
+            }
+
+            if (!quiz) {
+                console.log("[Quiz Debug] No quiz available, redirecting");
+                router.push("/training");
+                return;
+            }
+
+            // Final validation: Check if quiz has questions
+            if (!quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+                console.error("[Quiz Debug] Quiz has no questions after fetch:", quiz);
+                toast.error("This quiz has no questions available. Please select another quiz.");
+                router.push("/training");
+                return;
+            }
+
+            console.log("[Quiz Debug] Quiz validated successfully, questions count:", quiz.questions.length);
+
+            // Restore saved progress if available
             const savedProgress = sessionStorage.getItem('quizProgress');
             if (savedProgress) {
                 try {
-                    const { currentIndex: savedIndex, responses: savedResponses } = JSON.parse(savedProgress);
+                    const { currentIndex: savedIndex, responses: savedResponses, quizId: savedQuizId } = JSON.parse(savedProgress);
                     // Validate quiz ID matches
-                    const savedQuizId = JSON.parse(savedProgress).quizId;
-                    if (savedQuizId === selectedQuiz.id) {
+                    if (savedQuizId === quiz.id) {
+                        console.log("[Quiz Debug] Restoring saved progress, index:", savedIndex);
                         setCurrentIndex(savedIndex);
                         setResponses(savedResponses);
 
                         // Restore selection for current question if it exists in responses
-                        const currentQuestionId = shuffledQuestionsMemo[savedIndex]?.id;
+                        const currentQuestionId = quiz.questions[savedIndex]?.id;
                         const existingResponse = savedResponses.find(r => r.questionId === currentQuestionId);
                         if (existingResponse) {
                             setSelectedOptions(existingResponse.selectedOptionIds || []);
@@ -138,17 +221,17 @@ export default function QuizScreenPage() {
                     }
                 } catch (e) {
                     // Error loading saved progress - not critical, just continue
-                    // Only log for debugging
                     if (process.env.NODE_ENV === "development") {
-                        console.error("Error loading progress", e);
+                        console.error("[Quiz Debug] Error loading progress", e);
                     }
                 }
             }
             setIsLoading(false);
-        } else {
-            router.push("/training");
-        }
-    }, [selectedQuiz, router, shuffledQuestionsMemo]);
+        };
+
+        initializeQuiz();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run once on mount - we'll handle selectedQuiz updates separately
 
 
     // Update local selection state when index changes
@@ -439,7 +522,38 @@ export default function QuizScreenPage() {
 
     if (isLoading) return <Loader />;
 
+    // Validate that we have questions
+    if (!selectedQuiz || !selectedQuiz.questions || selectedQuiz.questions.length === 0) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center p-8">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">No Questions Available</h1>
+                    <p className="text-gray-600 mb-6">This quiz does not have any questions. Please select another quiz.</p>
+                    <Button onClick={() => router.push("/training")} className="bg-blue-600 hover:bg-blue-700">
+                        Go Back to Training
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     const currentQuestion = shuffledQuestionsMemo[currentIndex];
+
+    // Validate current question exists
+    if (!currentQuestion) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center p-8">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Question Not Found</h1>
+                    <p className="text-gray-600 mb-6">Unable to load the current question. Please try again.</p>
+                    <Button onClick={() => router.push("/training")} className="bg-blue-600 hover:bg-blue-700">
+                        Go Back to Training
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
     // Calculate specific progress
     const progressPercentage = ((currentIndex + 1) / shuffledQuestionsMemo.length) * 100;
 

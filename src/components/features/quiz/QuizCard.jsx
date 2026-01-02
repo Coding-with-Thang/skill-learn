@@ -15,9 +15,27 @@ export default function QuizCard({ quiz }) {
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
   const handleClick = () => {
     if (!quiz || !quiz.id || !quiz.categoryId) {
-      console.error('Invalid quiz data:', quiz);
+      console.error('[QuizCard Debug] Invalid quiz data:', quiz);
       return;
     }
+    
+    console.log('[QuizCard Debug] Quiz data being set:', {
+      id: quiz.id,
+      title: quiz.title,
+      hasQuestions: !!quiz.questions,
+      questionsCount: quiz.questions?.length || 0,
+      questionsType: Array.isArray(quiz.questions) ? 'array' : typeof quiz.questions,
+      questionsPreview: quiz.questions?.slice(0, 2).map(q => ({ id: q.id, text: q.text?.substring(0, 50) }))
+    });
+    
+    // Validate that quiz has questions before setting
+    if (!quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
+      console.error('[QuizCard Debug] Quiz has no questions:', quiz);
+      alert('This quiz has no questions available. Please contact an administrator.');
+      return;
+    }
+    
+    console.log('[QuizCard Debug] Setting quiz in store and navigating');
     setSelectedQuiz(quiz);
     router.push(`/quiz/start/${quiz.id}`);
   }
