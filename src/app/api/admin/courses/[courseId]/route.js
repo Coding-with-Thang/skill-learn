@@ -16,7 +16,7 @@ export async function GET(request, { params }) {
       return adminResult;
     }
 
-    const { courseId } = params;
+    const { courseId } = await params;
 
     if (!courseId) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
@@ -65,7 +65,7 @@ export async function PUT(request, { params }) {
       return adminResult;
     }
 
-    const { courseId } = params;
+    const { courseId } = await params;
     const data = await request.json();
 
     if (!courseId) {
@@ -130,7 +130,7 @@ export async function DELETE(request, { params }) {
       return adminResult;
     }
 
-    const { courseId } = params;
+    const { courseId } = await params;
 
     if (!courseId) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {

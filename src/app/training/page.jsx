@@ -22,43 +22,6 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 
-// Mock data for courses (will be replaced with real data)
-const mockCourses = [
-  {
-    id: "1",
-    title: "Strategic Leadership",
-    description: "Learn to lead cross-functional teams and drive organizational change through effective communication strategies.",
-    imageUrl: "/placeholder-course.jpg",
-    duration: "4h 30m",
-    moduleCount: 12,
-    progress: 65,
-    status: "in-progress",
-    category: "Leadership"
-  },
-  {
-    id: "2",
-    title: "Data Analytics v2.0",
-    description: "Master the fundamentals of data visualization and interpretation using modern BI tools.",
-    imageUrl: "/placeholder-course.jpg",
-    duration: "6h 15m",
-    moduleCount: 8,
-    progress: 0,
-    status: "not-started",
-    category: "Data Science"
-  },
-  {
-    id: "3",
-    title: "Product Management Fundamentals",
-    description: "Essential skills for product managers including roadmap planning, stakeholder management, and agile methodologies.",
-    imageUrl: "/placeholder-course.jpg",
-    duration: "3h 45m",
-    moduleCount: 10,
-    progress: 100,
-    status: "completed",
-    category: "Product"
-  },
-]
-
 export default function TrainingPage() {
 
   const router = useRouter()
@@ -75,9 +38,58 @@ export default function TrainingPage() {
   const [activeTab, setActiveTab] = useState("all") // "all", "quizzes", "courses", "favorites"
   const [allQuizzes, setAllQuizzes] = useState([])
   const [quizzesLoading, setQuizzesLoading] = useState(true)
+  const [allCourses, setAllCourses] = useState([])
+  const [coursesLoading, setCoursesLoading] = useState(true)
 
   useEffect(() => {
     fetchCategories()
+  }, [fetchCategories])
+
+  // Fetch all courses from the database
+  useEffect(() => {
+    const fetchCourses = async () => {
+      setCoursesLoading(true)
+      try {
+        const response = await fetch("/api/courses")
+        if (!response.ok) {
+          throw new Error("Failed to fetch courses")
+        }
+        const result = await response.json()
+        // successResponse wraps data in { success: true, data: {...} }
+        const courses = result?.data?.courses || []
+
+        // Transform course data to match CourseCard format
+        const transformedCourses = courses.map(course => {
+          // Format duration from minutes to "Xh Ym" format
+          const hours = Math.floor(course.duration / 60)
+          const minutes = course.duration % 60
+          const durationStr = hours > 0
+            ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
+            : `${minutes}m`
+
+          return {
+            id: course.id,
+            title: course.title,
+            description: course.description || course.excerptDescription || "",
+            imageUrl: course.imageUrl || "/placeholder-course.jpg",
+            duration: durationStr,
+            moduleCount: 0, // TODO: Add module count when modules are implemented
+            progress: 0, // TODO: Calculate from user progress when implemented
+            status: "not-started", // TODO: Map from user progress (not-started, in-progress, completed)
+            category: course.category?.name || "Uncategorized"
+          }
+        })
+
+        setAllCourses(transformedCourses)
+      } catch (error) {
+        console.error("Error fetching courses:", error)
+        setAllCourses([])
+      } finally {
+        setCoursesLoading(false)
+      }
+    }
+
+    fetchCourses()
   }, [])
 
   // Fetch all quizzes from all categories
@@ -115,7 +127,7 @@ export default function TrainingPage() {
 
   // Filter and search logic
   const filteredCourses = useMemo(() => {
-    let filtered = mockCourses
+    let filtered = allCourses
 
     // Search
     if (searchQuery) {
@@ -140,7 +152,7 @@ export default function TrainingPage() {
     }
 
     return filtered
-  }, [searchQuery, selectedCategories, statusFilter])
+  }, [searchQuery, selectedCategories, statusFilter, allCourses])
 
   const filteredQuizzes = useMemo(() => {
     let filtered = allQuizzes
@@ -188,13 +200,13 @@ export default function TrainingPage() {
 
   // Stats
   const stats = {
-    totalCourses: mockCourses.length,
-    activeCourses: mockCourses.filter(c => c.status === "in-progress").length,
+    totalCourses: allCourses.length,
+    activeCourses: allCourses.filter(c => c.status === "in-progress").length,
     totalQuizzes: allQuizzes.length,
     completedQuizzes: 0, // Will be calculated from user attempts
   }
 
-  const isLoading = categoriesLoading || quizzesLoading
+  const isLoading = categoriesLoading || quizzesLoading || coursesLoading
 
   // Get unique category names from both quizzes and courses
   const availableCategories = useMemo(() => {
@@ -202,11 +214,11 @@ export default function TrainingPage() {
     allQuizzes.forEach(quiz => {
       if (quiz.categoryName) categorySet.add(quiz.categoryName)
     })
-    mockCourses.forEach(course => {
+    allCourses.forEach(course => {
       if (course.category) categorySet.add(course.category)
     })
     return Array.from(categorySet).sort()
-  }, [allQuizzes])
+  }, [allQuizzes, allCourses])
 
   return (
     <div className="flex min-h-screen">
@@ -450,7 +462,12 @@ export default function TrainingPage() {
                 </h2>
               </div>
 
-              {filteredCourses.length > 0 ? (
+              {coursesLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader />
+                  <p className="mt-4 text-muted-foreground">Loading courses...</p>
+                </div>
+              ) : filteredCourses.length > 0 ? (
                 <div className={cn(
                   viewMode === "grid"
                     ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"

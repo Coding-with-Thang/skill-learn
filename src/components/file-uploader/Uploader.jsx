@@ -15,6 +15,7 @@ export function Uploader({ value, onChange, onUploadComplete }) {
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [currentFile, setCurrentFile] = useState(null)
 
   useEffect(() => {
     if (typeof value === 'string' && value !== url) {
@@ -25,6 +26,7 @@ export function Uploader({ value, onChange, onUploadComplete }) {
   const uploadFile = async (file) => {
     setUploading(true)
     setProgress(0)
+    setCurrentFile(file)
     const form = new FormData()
     form.append('file', file, file.name)
     try {
@@ -35,13 +37,16 @@ export function Uploader({ value, onChange, onUploadComplete }) {
         }
       })
       const data = res?.data
-      if (data?.url) {
-        setUrl(data.url)
-        onChange?.(data.url)
-        onUploadComplete?.(data)
+      // API returns { success: true, data: { url, path } }
+      const uploadData = data?.data || data
+      if (uploadData?.url) {
+        setUrl(uploadData.url)
+        onChange?.(uploadData.url)
+        onUploadComplete?.(uploadData)
         toast.success('Upload successful')
       } else {
-        toast.error('Upload failed')
+        console.error('[Uploader] Invalid response format:', data)
+        toast.error('Upload failed: Invalid response format')
       }
     } catch (err) {
       console.error('[Uploader] upload error', err)
@@ -49,6 +54,7 @@ export function Uploader({ value, onChange, onUploadComplete }) {
     } finally {
       setUploading(false)
       setProgress(0)
+      setCurrentFile(null)
     }
   }
 
@@ -82,7 +88,7 @@ export function Uploader({ value, onChange, onUploadComplete }) {
       <CardContent className="flex items-center justify-center h-full w-full p-4">
         <input {...getInputProps()} />
         {uploading ? (
-          <RenderUploadingState progress={progress} />
+          <RenderUploadingState progress={progress} file={currentFile} />
         ) : url ? (
           <RenderUploadedState previewUrl={url} onDelete={handleRemoveFile} isDeleting={isDeleting} />
         ) : (

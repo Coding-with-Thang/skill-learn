@@ -79,11 +79,16 @@ export default function CreateCoursePage() {
         startTransition(async () => {
 
             try {
-                const data = await axios.post('/api/admin/courses/create', values);
-                if (data?.data?.status === 'success') {
+                const response = await axios.post('/api/admin/courses/create', values);
+                const data = response?.data;
+                // API returns { success: true, data: { status: 'success', ... } }
+                const isSuccess = data?.success === true || data?.data?.status === 'success';
+                
+                if (isSuccess) {
                     toast.success('Course created successfully');
                     form.reset();
                     router.push('/dashboard/courses');
+                    return;
                 } else if (data?.data?.status === 'error') {
                     // If server returned validation details, show them
                     const payload = data.data || {};

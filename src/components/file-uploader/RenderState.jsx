@@ -63,7 +63,9 @@ export function RenderUploadingState({ progress, file }) {
     <div className="text-center flex flex-col justify-center items-center">
       <p>{progress}</p>
       <p className="mt-2 text-sm font-medium text-foreground">Uploading...</p>
-      <p className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
+      {file?.name && (
+        <p className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
+      )}
     </div>
   )
 }
