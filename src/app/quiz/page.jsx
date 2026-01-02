@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/app/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
-import { ArrowBigRightDash, CircleCheckBig, Clock, X, ChevronLeft, ChevronRight, BarChart2, GraduationCap, Check } from 'lucide-react'
+import { Clock, X, ChevronLeft, ChevronRight, GraduationCap, Check } from 'lucide-react'
 import { Loader } from "@/components/ui/loader"
 import Image from "next/image"
 import { toast } from "sonner"
