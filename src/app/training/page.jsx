@@ -1,278 +1,524 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { Filter, Grid3x3, List, BookOpen, GraduationCap, Heart, LayoutGrid, X } from 'lucide-react'
 import { useCategoryStore } from "../store/categoryStore"
-import { useProgressStore } from "../store/progressStore"
-import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader } from "@/components/ui/interactive-card"
+import { useQuizStartStore } from "../store/quizStore"
+import { SearchBar } from "@/components/ui/search-bar"
+import { CourseCard } from "@/components/ui/course-card"
+import { QuizCard } from "@/components/ui/quiz-card"
 import { EnhancedButton } from "@/components/ui/enhanced-button"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { StatBadge } from "@/components/ui/stat-badge"
-import { ProgressCard } from "@/components/ui/progress-card"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { Loader } from "@/components/ui/loader"
-import { BookOpen, Play, Trophy, CheckCircle2, Clock, Settings, Package, Users } from 'lucide-react'
+import { cn } from "@/lib/utils"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 
-// Category icon mapping
-const categoryIcons = {
-  "Internal Systems & Tools": Settings,
-  "Product Knowledge": Package,
-  "Soft Skills Training": Users,
-}
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
-}
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut"
-    }
-  }
-}
+// Mock data for courses (will be replaced with real data)
+const mockCourses = [
+  {
+    id: "1",
+    title: "Strategic Leadership",
+    description: "Learn to lead cross-functional teams and drive organizational change through effective communication strategies.",
+    imageUrl: "/placeholder-course.jpg",
+    duration: "4h 30m",
+    moduleCount: 12,
+    progress: 65,
+    status: "in-progress",
+    category: "Leadership"
+  },
+  {
+    id: "2",
+    title: "Data Analytics v2.0",
+    description: "Master the fundamentals of data visualization and interpretation using modern BI tools.",
+    imageUrl: "/placeholder-course.jpg",
+    duration: "6h 15m",
+    moduleCount: 8,
+    progress: 0,
+    status: "not-started",
+    category: "Data Science"
+  },
+  {
+    id: "3",
+    title: "Product Management Fundamentals",
+    description: "Essential skills for product managers including roadmap planning, stakeholder management, and agile methodologies.",
+    imageUrl: "/placeholder-course.jpg",
+    duration: "3h 45m",
+    moduleCount: 10,
+    progress: 100,
+    status: "completed",
+    category: "Product"
+  },
+]
 
 export default function TrainingPage() {
-  const { categories, isLoading, error, fetchCategories } = useCategoryStore()
-  const { stats, currentModule, fetchProgress } = useProgressStore()
+
   const router = useRouter()
-  const [loadingCard, setLoadingCard] = useState(null)
+  const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoryStore()
+  const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
+
+  // State
+  const [searchQuery, setSearchQuery] = useState("")
+  const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
+  const [contentType, setContentType] = useState("all") // "all", "courses", "quizzes"
+  const [selectedCategories, setSelectedCategories] = useState([])
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [showFilters, setShowFilters] = useState(false)
+  const [activeTab, setActiveTab] = useState("all") // "all", "quizzes", "courses", "favorites"
+  const [allQuizzes, setAllQuizzes] = useState([])
+  const [quizzesLoading, setQuizzesLoading] = useState(true)
 
   useEffect(() => {
     fetchCategories()
-    fetchProgress()
   }, [])
 
+  // Fetch all quizzes from all categories
+  useEffect(() => {
+    const fetchAllQuizzes = async () => {
+      if (categories.length === 0) return
 
+      setQuizzesLoading(true)
+      try {
+        // Fetch quizzes for each category
+        const quizPromises = categories.map(async (category) => {
+          const response = await fetch(`/api/categories/${category.id}`)
+          if (!response.ok) return []
+          const data = await response.json()
+          // Add category info to each quiz
+          return (data.quizzes || []).map(quiz => ({
+            ...quiz,
+            categoryName: category.name,
+            categoryId: category.id
+          }))
+        })
 
-  // Get category icon
-  const getCategoryIcon = (categoryName) => {
-    return categoryIcons[categoryName] || BookOpen
-  }
-
-  const handleResumeTraining = () => {
-    if (currentModule?.categoryId) {
-      router.push(`/categories/${currentModule.categoryId}`)
+        const quizArrays = await Promise.all(quizPromises)
+        const flatQuizzes = quizArrays.flat()
+        setAllQuizzes(flatQuizzes)
+      } catch (error) {
+        console.error("Error fetching quizzes:", error)
+      } finally {
+        setQuizzesLoading(false)
+      }
     }
+
+    fetchAllQuizzes()
+  }, [categories])
+
+  // Filter and search logic
+  const filteredCourses = useMemo(() => {
+    let filtered = mockCourses
+
+    // Search
+    if (searchQuery) {
+      filtered = filtered.filter(course =>
+        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        course.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(course =>
+        selectedCategories.includes(course.category)
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(course =>
+        course.status === statusFilter
+      )
+    }
+
+    return filtered
+  }, [searchQuery, selectedCategories, statusFilter])
+
+  const filteredQuizzes = useMemo(() => {
+    let filtered = allQuizzes
+
+    // Search
+    if (searchQuery) {
+      filtered = filtered.filter(quiz =>
+        quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        quiz.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(quiz =>
+        selectedCategories.includes(quiz.categoryName)
+      )
+    }
+
+    return filtered
+  }, [searchQuery, selectedCategories, allQuizzes])
+
+  // Handle quiz click - integrate with existing quiz system
+  const handleQuizClick = (quiz) => {
+    setSelectedQuiz(quiz)
+    router.push(`/quiz/start/${quiz.id}`)
   }
 
-  if (error) {
-    return (
-      <section className="flex flex-col items-center w-full px-4 sm:px-8 md:px-12 py-8">
-        <div className="text-error mb-4">Error loading categories: {error}</div>
-        <EnhancedButton
-          onClick={() => fetchCategories()}
-          variant="outline"
-          loading={isLoading}
-        >
-          Retry
-        </EnhancedButton>
-      </section>
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
     )
   }
 
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategories([])
+    setStatusFilter("all")
+  }
+
+  const hasActiveFilters = searchQuery || selectedCategories.length > 0 ||
+    statusFilter !== "all"
+
+  // Stats
+  const stats = {
+    totalCourses: mockCourses.length,
+    activeCourses: mockCourses.filter(c => c.status === "in-progress").length,
+    totalQuizzes: allQuizzes.length,
+    completedQuizzes: 0, // Will be calculated from user attempts
+  }
+
+  const isLoading = categoriesLoading || quizzesLoading
+
+  // Get unique category names from both quizzes and courses
+  const availableCategories = useMemo(() => {
+    const categorySet = new Set()
+    allQuizzes.forEach(quiz => {
+      if (quiz.categoryName) categorySet.add(quiz.categoryName)
+    })
+    mockCourses.forEach(course => {
+      if (course.category) categorySet.add(course.category)
+    })
+    return Array.from(categorySet).sort()
+  }, [allQuizzes])
+
   return (
-    <section className="w-full max-w-6xl mx-auto px-4 sm:px-8 md:px-12 py-8" aria-label="Training Categories">
-      {/* Breadcrumb - unchanged */}
-      <BreadCrumbCom endtrail="My Training" />
+    <div className="flex min-h-screen">
+      {/* Sidebar */}
+      <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-6 sticky top-0 h-screen overflow-y-auto">
+        <h2 className="text-lg font-bold text-foreground mb-6">Training Categories</h2>
 
-      {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mt-6 mb-8"
-      >
-        <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-          My Training
-        </h1>
-        <p className="text-muted-foreground text-base sm:text-lg max-w-3xl">
-          Unlock your potential. Select a category below to continue your professional growth journey.
-        </p>
-      </motion.div>
-
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-        <StatBadge
-          icon={CheckCircle2}
-          label="Completed"
-          value={stats.completed}
-          variant="completed"
-        />
-        <StatBadge
-          icon={Clock}
-          label="In Progress"
-          value={stats.inProgress}
-          variant="in-progress"
-        />
-      </div>
-
-      {/* Categories Section */}
-      <div className="mb-12">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand-teal/10 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-brand-teal" />
-            </div>
-            <h2 className="font-semibold text-2xl text-foreground">Categories</h2>
-          </div>
-          <motion.button
-            whileHover={{ x: 5 }}
-            className="ml-auto text-sm text-brand-teal hover:text-brand-teal-dark font-medium flex items-center gap-1"
+        {/* Category Tabs */}
+        <div className="space-y-2 mb-6">
+          <button
+            onClick={() => {
+              setActiveTab("all")
+              setContentType("all")
+            }}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
+              activeTab === "all"
+                ? "bg-brand-teal text-white"
+                : "hover:bg-muted text-muted-foreground"
+            )}
           >
-            View All
-            <span>→</span>
-          </motion.button>
+            <LayoutGrid className="h-5 w-5" />
+            <span className="font-medium">All Content</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("courses")
+              setContentType("courses")
+            }}
+            className={cn(
+              "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all",
+              activeTab === "courses"
+                ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                : "hover:bg-muted text-muted-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <BookOpen className="h-5 w-5" />
+              <span className="font-medium">Courses</span>
+            </div>
+            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
+              {stats.activeCourses}
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab("quizzes")
+              setContentType("quizzes")
+            }}
+            className={cn(
+              "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all",
+              activeTab === "quizzes"
+                ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                : "hover:bg-muted text-muted-foreground"
+            )}
+          >
+            <div className="flex items-center gap-3">
+              <GraduationCap className="h-5 w-5" />
+              <span className="font-medium">Quizzes</span>
+            </div>
+            <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">
+              {stats.totalQuizzes}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("favorites")}
+            disabled={true}
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:cursor-not-allowed",
+              activeTab === "favorites"
+                ? "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400"
+                : "hover:bg-muted text-muted-foreground hover:cursor-not-allowed"
+            )}
+          >
+            <Heart className="h-5 w-5" />
+            <span className="font-medium">My Favorites</span>
+          </button>
         </div>
 
-        {!isLoading ? (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-          >
-            {categories.map((category, index) => {
-              const CategoryIcon = getCategoryIcon(category.name)
-
-              return (
-                <motion.div key={category.id} variants={cardVariants}>
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <div
-                        className="cursor-pointer"
-                        onClick={async () => {
-                          setLoadingCard(category.id)
-                          await router.push(`/categories/${category.id}`)
-                          setLoadingCard(null)
-                        }}
-                      >
-                        <InteractiveCard
-                          className={`relative min-h-[280px] flex flex-col overflow-hidden ${loadingCard === category.id ? 'opacity-50' : ''
-                            }`}
-                        >
-                          {/* Image Header */}
-                          <InteractiveCardHeader className="w-full p-0">
-                            <Image
-                              src={category?.imageUrl || '/placeholder-image.jpg'}
-                              width={700}
-                              height={200}
-                              alt={category?.name || 'Category Image'}
-                              className="h-40 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                              onError={(e) => {
-                                e.target.src = '/placeholder-image.jpg'
-                              }}
-                            />
-                          </InteractiveCardHeader>
-
-                          {/* Content */}
-                          <InteractiveCardContent className="flex-1 flex flex-col p-6">
-                            {/* Category Icon */}
-                            <div className="mb-4">
-                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                                <CategoryIcon className="w-7 h-7 text-white" />
-                              </div>
-                            </div>
-
-                            {/* Title */}
-                            <h4 className="text-lg font-bold text-foreground mb-2 group-hover:text-brand-teal transition-colors duration-200">
-                              {category.name}
-                            </h4>
-
-                            {/* Description */}
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
-                              Master our core internal platforms. Learn workflows, troubleshooting, and best practices.
-                            </p>
-
-                            {/* Footer */}
-                            <div className="flex items-center justify-between pt-4 border-t border-border">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <BookOpen className="h-4 w-4" />
-                                <span className="text-sm font-medium">
-                                  {category._count?.quizzes || 0} Modules
-                                </span>
-                              </div>
-                              <EnhancedButton
-                                size="sm"
-                                className="bg-brand-teal hover:bg-brand-teal-dark text-white"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  router.push(`/categories/${category.id}`)
-                                }}
-                              >
-                                Start Learning
-                              </EnhancedButton>
-                            </div>
-                          </InteractiveCardContent>
-                        </InteractiveCard>
-                      </div>
-                    </HoverCardTrigger>
-
-                    {/* Hover Card Tooltip */}
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-foreground">{category.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Master {category.name.toLowerCase()} skills through interactive quizzes and challenges.
-                        </p>
-                        <div className="flex items-center gap-4 pt-2">
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Play className="h-4 w-4" />
-                            <span>{category._count?.quizzes || 0} quizzes</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Trophy className="h-4 w-4" />
-                            <span>Earn points</span>
-                          </div>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                </motion.div>
-              )
-            })}
-          </motion.div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader />
-            <p className="mt-4 text-muted-foreground">Loading categories...</p>
-          </div>
-        )}
-      </div>
-
-      {/* Continue Where You Left Off Section */}
-      {currentModule && !isLoading && (
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-              <Play className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+        {/* Category Filters */}
+        <div className="border-t border-border pt-6">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Filter by Category</h3>
+          {isLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-8 bg-muted animate-pulse rounded" />
+              ))}
             </div>
-            <h2 className="font-semibold text-2xl text-foreground">Continue Where You Left Off</h2>
+          ) : availableCategories.length > 0 ? (
+            <div className="space-y-2">
+              {availableCategories.map((category) => (
+                <label
+                  key={category}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-muted px-2 py-1.5 rounded transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedCategories.includes(category)}
+                    onCheckedChange={() => toggleCategory(category)}
+                  />
+                  <span className="text-sm text-foreground">{category}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No categories available</p>
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 px-4 sm:px-8 md:px-12 py-8">
+        <BreadCrumbCom endtrail="Training" />
+
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-6 mb-8"
+        >
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+            My Training Hub
+          </h1>
+          <p className="text-muted-foreground text-base sm:text-lg">
+            Explore courses and quizzes to enhance your skills and knowledge
+          </p>
+        </motion.div>
+
+        {/* Search and Filters Bar */}
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <SearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery("")}
+              placeholder="Search courses and quizzes..."
+              className="flex-1"
+            />
+
+            <div className="flex gap-2">
+              <EnhancedButton
+                variant="outline"
+                onClick={() => setShowFilters(!showFilters)}
+                className={cn(
+                  "gap-2",
+                  hasActiveFilters && "border-brand-teal text-brand-teal"
+                )}
+              >
+                <Filter className="h-4 w-4" />
+                Filters
+                {hasActiveFilters && (
+                  <span className="bg-brand-teal text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {selectedCategories.length +
+                      (statusFilter !== "all" ? 1 : 0)}
+                  </span>
+                )}
+              </EnhancedButton>
+
+              <div className="flex border border-border rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={cn(
+                    "p-2 transition-colors",
+                    viewMode === "grid"
+                      ? "bg-brand-teal text-white"
+                      : "bg-background hover:bg-muted"
+                  )}
+                  aria-label="Grid view"
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={cn(
+                    "p-2 transition-colors",
+                    viewMode === "list"
+                      ? "bg-brand-teal text-white"
+                      : "bg-background hover:bg-muted"
+                  )}
+                  aria-label="List view"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <ProgressCard
-            title={currentModule.title || "Sales Enablement: Handling Objections"}
-            category={currentModule.category || "Product Knowledge"}
-            progress={currentModule.progress || 65}
-            timeRemaining={currentModule.timeRemaining || "15 mins"}
-            onResume={handleResumeTraining}
-          />
+          {/* Advanced Filters */}
+          <AnimatePresence>
+            {showFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-4 p-4 bg-muted/50 rounded-lg">
+
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="not-started">Not Started</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  {hasActiveFilters && (
+                    <EnhancedButton
+                      variant="ghost"
+                      onClick={clearFilters}
+                      className="gap-2"
+                    >
+                      <X className="h-4 w-4" />
+                      Clear Filters
+                    </EnhancedButton>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
-    </section>
+
+        {/* Content Sections */}
+        <div className="space-y-12">
+          {/* Courses Section */}
+          {(contentType === "all" || contentType === "courses") && (
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <BookOpen className="h-6 w-6 text-brand-teal" />
+                  Courses
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({filteredCourses.length})
+                  </span>
+                </h2>
+              </div>
+
+              {filteredCourses.length > 0 ? (
+                <div className={cn(
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                )}>
+                  {filteredCourses.map((course) => (
+                    <CourseCard
+                      key={course.id}
+                      course={course}
+                      variant={viewMode}
+                      onClick={() => router.push(`/courses/${course.id}`)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  No courses found matching your filters
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* Quizzes Section */}
+          {(contentType === "all" || contentType === "quizzes") && (
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <GraduationCap className="h-6 w-6 text-brand-teal" />
+                  Quizzes
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({filteredQuizzes.length})
+                  </span>
+                </h2>
+              </div>
+
+              {quizzesLoading ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader />
+                  <p className="mt-4 text-muted-foreground">Loading quizzes...</p>
+                </div>
+              ) : filteredQuizzes.length > 0 ? (
+                <div className={cn(
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                    : "space-y-4"
+                )}>
+                  {filteredQuizzes.map((quiz) => (
+                    <QuizCard
+                      key={quiz.id}
+                      quiz={{
+                        ...quiz,
+                        questionCount: quiz.questions?.length || 0,
+                        status: "not-started", // Will be updated when we integrate user attempts
+                      }}
+                      variant={viewMode}
+                      onClick={() => handleQuizClick(quiz)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-muted-foreground">
+                  No quizzes found matching your filters
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
