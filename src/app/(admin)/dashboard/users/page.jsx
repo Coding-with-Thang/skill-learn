@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from "@/components/ui/button"
 import { Table } from "@/components/ui/table"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { useUsersStore } from "../../store/usersStore"
+import { useUsersStore } from "@/lib/store/usersStore"
 import UserDetails from "@/components/features/user/UserDetails"
 import UserForm from "@/components/features/user/UserForm"
 import { UserFilters } from "@/components/features/user/UserFilters"
