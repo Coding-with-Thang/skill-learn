@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation";
 import Image from "next/image"
-import { useCategoryStore } from "../store/categoryStore";
+import { useCategoryStore } from "@/lib/store/categoryStore";
 import { InteractiveCard, InteractiveCardContent, InteractiveCardHeader } from "@/components/ui/interactive-card";
 import { EnhancedButton } from "@/components/ui/enhanced-button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";

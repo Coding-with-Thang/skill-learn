@@ -8,11 +8,9 @@ import {
   Circle,
   Smile,
   Gamepad2,
-  Brain,
   HelpCircle,
   Scissors,
   Hand,
-  FileText,
   MoveRight,
   Plus,
   Globe
@@ -26,6 +24,7 @@ const games = [
     description: "Classic strategy. Get three in a row to win against the AI.",
     genre: "Strategy",
     route: "/games/tic-tac-toe",
+    gameName: "tic-tac-toe",
     genreColor: "bg-blue-100 text-blue-600",
     renderIcon: () => (
       <div className="relative w-24 h-24 grid grid-cols-2 gap-2 opacity-80">
@@ -51,6 +50,7 @@ const games = [
     description: "Test your recall. Match the pairs of emojis before time runs out.",
     genre: "Brain Teaser",
     route: "/games/memory-game",
+    gameName: "memory-game",
     genreColor: "bg-yellow-100 text-yellow-700",
     renderIcon: () => (
       <div className="grid grid-cols-2 gap-3">
@@ -71,6 +71,7 @@ const games = [
     description: "Can you guess the hidden number? Sharpen your intuition.",
     genre: "Logic",
     route: "/games/guessing-game",
+    gameName: "guessing-game",
     genreColor: "bg-green-100 text-green-700",
     renderIcon: () => (
       <div className="relative">
@@ -88,6 +89,7 @@ const games = [
     description: "The timeless hand game. Luck or psychology? You decide.",
     genre: "Casual",
     route: "/games/rock-paper-scissors",
+    gameName: "rock-paper-scissors",
     genreColor: "bg-pink-100 text-pink-700",
     renderIcon: () => (
       <div className="flex gap-4 items-center opacity-70">
