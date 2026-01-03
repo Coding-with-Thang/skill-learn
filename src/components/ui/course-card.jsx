@@ -55,7 +55,7 @@ export function CourseCard({
                   {course.title}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                  {course.description}
+                  {course.excerptDescription || course.description}
                 </p>
               </div>
               <div className="flex-shrink-0">
@@ -168,7 +168,7 @@ export function CourseCard({
             {course.title}
           </h3>
           <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-            {course.description}
+            {course.excerptDescription || course.description}
           </p>
 
           {/* Meta Info */}
