@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Star, StarOff } from "lucide-react"
-import { useRewardStore } from "@/app/store/rewardStore"
+import { useRewardStore } from "@/lib/store/rewardStore"
 import { RewardForm } from "@/components/features/admin/rewards/RewardForm"
 import { toast } from "sonner"
 import {

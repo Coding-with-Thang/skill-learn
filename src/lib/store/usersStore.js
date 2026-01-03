@@ -2,6 +2,7 @@ import { create } from "zustand";
 import api from "@/utils/axios";
 import { handleErrorWithNotification } from "@/utils/notifications";
 import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 
 // Request deduplication
@@ -19,9 +20,8 @@ export const useUsersStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get("/users");
-          // API returns { success: true, data: { users: [...] } }
-          const responseData = response.data?.data || response.data;
-          const users = responseData?.users || responseData || [];
+          // API returns standardized format: { success: true, data: { users: [...] } }
+          const users = parseApiResponse(response, "users") || [];
           set({
             users,
             isLoading: false,
@@ -44,9 +44,8 @@ export const useUsersStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.post("/users", userData);
-      // API returns { success: true, data: { user: {...} } }
-      const responseData = response.data?.data || response.data;
-      const newUser = responseData?.user || responseData;
+      // API returns standardized format: { success: true, data: { user: {...} } }
+      const newUser = parseApiResponse(response, "user") || parseApiResponse(response);
       set((state) => ({
         users: [newUser, ...state.users],
         isLoading: false,
@@ -66,9 +65,8 @@ export const useUsersStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await api.put(`/users/${userId}`, userData);
-      // API returns { success: true, data: { user: {...} } }
-      const responseData = response.data?.data || response.data;
-      const updatedUser = responseData?.user || responseData;
+      // API returns standardized format: { success: true, data: { user: {...} } }
+      const updatedUser = parseApiResponse(response, "user") || parseApiResponse(response);
       set((state) => ({
         users: state.users.map((user) =>
           user.id === userId ? updatedUser : user
@@ -104,3 +102,4 @@ export const useUsersStore = create((set, get) => ({
     }
   },
 }));
+

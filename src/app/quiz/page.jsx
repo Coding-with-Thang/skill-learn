@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from "next/navigation"
-import { useQuizStartStore } from "@/app/store/quizStore"
+import { useQuizStartStore } from "@/lib/store/quizStore"
 import api from "@/utils/axios";
 import { Button } from "@/components/ui/button"
 import { ArrowBigRightDash, CircleCheckBig, Clock, X, ChevronLeft, ChevronRight, BarChart2, GraduationCap, Check } from 'lucide-react'

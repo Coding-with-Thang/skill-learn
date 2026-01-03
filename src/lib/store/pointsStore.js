@@ -3,6 +3,7 @@ import api from "@/utils/axios";
 import { STORE } from "@/constants";
 import { handleErrorWithNotification } from "@/utils/notifications";
 import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
@@ -49,7 +50,8 @@ export const usePointsStore = create((set, get) => ({
         try {
           // Use new consolidated dashboard endpoint (combines points + streak)
           const response = await api.get("/user/dashboard");
-          const responseData = response.data?.data || response.data;
+          // API returns standardized format: { success: true, data: {...} }
+          const responseData = parseApiResponse(response);
 
           const data = {
             dailyStatus: responseData.dailyStatus,
@@ -136,3 +138,4 @@ export const usePointsStore = create((set, get) => ({
     }
   },
 }));
+

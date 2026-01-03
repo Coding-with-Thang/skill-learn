@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { LoadingSpinner } from '@/components/ui/loading'
-import { useCoursesStore } from '@/app/store/coursesStore'
+import { useCoursesStore } from '@/lib/store/coursesStore'
 
 export default function CourseFilters({ categories = [], initialCategory = '', initialPageSize = 5 }) {
     const router = useRouter()

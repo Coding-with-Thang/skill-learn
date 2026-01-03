@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import api from "@/utils/axios";
-import { useQuizStartStore } from '@/app/store/quizStore'
+import { useQuizStartStore } from '@/lib/store/quizStore'
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Play, Trophy, Clock, Target, BarChart2 } from 'lucide-react'

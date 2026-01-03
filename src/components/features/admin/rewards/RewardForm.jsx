@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { useRewardStore } from "@/app/store/rewardStore"
+import { useRewardStore } from "@/lib/store/rewardStore"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()

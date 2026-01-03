@@ -1,7 +1,7 @@
 "use client"
 
 import Image from "next/image"
-import { useQuizStartStore } from '@/app/store/quizStore'
+import { useQuizStartStore } from '@/lib/store/quizStore'
 import {
   Card,
   CardContent,

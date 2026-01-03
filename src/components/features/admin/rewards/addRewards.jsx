@@ -8,7 +8,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { useRewardStore } from "@/app/store/rewardStore"
+import { useRewardStore } from "@/lib/store/rewardStore"
 import { toast } from "sonner"
 
 export default function AddRewards({ reward, onClose }) {

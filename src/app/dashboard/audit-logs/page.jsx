@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { format } from "date-fns"
 import { Download } from "lucide-react"
-import { useAuditLogStore } from "@/app/store/auditLogStore"
+import { useAuditLogStore } from "@/lib/store/auditLogStore"
 import { Button } from "@/components/ui/button"
 import { Select } from "@/components/ui/select"
 import {

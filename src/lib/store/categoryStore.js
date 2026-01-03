@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import api from "@/utils/axios";
 import { handleErrorWithNotification } from "@/utils/notifications";
 import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 
 // Request deduplication
@@ -26,9 +27,8 @@ export const useCategoryStore = create(
               if (!response.data) {
                 throw new Error("No data received from server");
               }
-              // API returns { success: true, data: { categories: [...] } }
-              const responseData = response.data?.data || response.data;
-              const categories = responseData?.categories || responseData || [];
+              // API returns standardized format: { success: true, data: { categories: [...] } }
+              const categories = parseApiResponse(response, "categories") || [];
               set({
                 categories,
                 isLoading: false,
@@ -69,3 +69,4 @@ export const useCategoryStore = create(
     }
   )
 );
+

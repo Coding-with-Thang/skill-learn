@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuizStore } from '@/app/store/quizStore'
+import { useQuizStore } from '@/lib/store/quizStore'
 
 export default function Button() {
   const changeStatus = useQuizStore(state => state.changeStatus)

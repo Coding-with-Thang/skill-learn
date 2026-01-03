@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { usePointsStore } from "@/app/store/pointsStore";
+import { usePointsStore } from "@/lib/store/pointsStore";
 import api from "@/utils/axios";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/constants/utils";
 import { ANIMATION, UI } from "@/constants";
@@ -32,8 +33,8 @@ export default function PointsRewardsWidget() {
         await fetchUserData();
         const response = await api.get("/user/stats");
 
-        // API returns { success: true, data: {...} }
-        const statsData = response.data?.data || response.data;
+        // API returns standardized format: { success: true, data: {...} }
+        const statsData = parseApiResponse(response);
         if (statsData?.categoryStats) {
           const completed = statsData.categoryStats.filter(
             stat => stat.completed > 0

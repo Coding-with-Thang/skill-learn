@@ -6,7 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
-import { usePointsStore } from "@/app/store/pointsStore"
+import { usePointsStore } from "@/lib/store/pointsStore"
 import formatNumber from "@/utils/formatNumbers";
 import { LoadingUserBadge } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"

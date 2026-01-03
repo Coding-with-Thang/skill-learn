@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useWelcomeContext } from "@/lib/hooks/useWelcomeContext";
-import { generateGreeting } from "@/lib/utils/greetingGenerator";
+import { generateGreeting } from "@/utils/greetingGenerator";
 import { Sparkles, TrendingUp, Award, Flame } from "lucide-react";
 
 export default function WelcomeBanner() {
@@ -15,16 +15,7 @@ export default function WelcomeBanner() {
       return { text: "", subtext: "" };
     }
     return generateGreeting(context);
-  }, [
-    context.isLoading,
-    context.isFirstTime,
-    context.streak,
-    context.streakAtRisk,
-    context.points,
-    context.leaderboardPosition,
-    context.lastQuizScore,
-    context.visitCount,
-  ]);
+  }, [context]);
 
   // Trigger animation when greeting changes
   useEffect(() => {
@@ -82,7 +73,7 @@ export default function WelcomeBanner() {
   // Loading state
   if (context.isLoading) {
     return (
-      <div className="w-full relative overflow-hidden rounded-3xl bg-gradient-to-r from-gray-300 to-gray-200 p-8 md:p-12 text-white shadow-lg mb-8 animate-pulse">
+      <div className="w-full relative overflow-hidden rounded-3xl bg-linear-to-r from-gray-300 to-gray-200 p-8 md:p-12 text-white shadow-lg mb-8 animate-pulse">
         <div className="relative z-10 max-w-2xl">
           <div className="h-10 bg-white/20 rounded-lg mb-4 w-3/4"></div>
           <div className="h-6 bg-white/20 rounded-lg w-1/2"></div>
@@ -92,7 +83,7 @@ export default function WelcomeBanner() {
   }
 
   return (
-    <div className={`w-full relative overflow-hidden rounded-3xl bg-gradient-to-r ${theme.gradient} p-8 md:p-12 text-white shadow-lg mb-8 transition-all duration-500`}>
+    <div className={`w-full relative overflow-hidden rounded-3xl bg-linear-to-r ${theme.gradient} p-8 md:p-12 text-white shadow-lg mb-8 transition-all duration-500`}>
       {/* Background Decorative Shapes */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
       <div className={`absolute bottom-0 right-20 w-48 h-48 ${theme.accentColor} rounded-full blur-xl`}></div>

@@ -72,7 +72,6 @@
     "@types/react": "^19.2.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.2.8",
-    "prisma": "^6.16.2",
-    "typescript": "^5.9.3"
+    "prisma": "^6.16.2"
   }
 }

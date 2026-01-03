@@ -427,3 +427,4 @@ export function generateGreeting(context = {}) {
 }
 
 export default generateGreeting;
+

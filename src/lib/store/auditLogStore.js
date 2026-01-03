@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import api from "@/utils/axios";
 import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 
 // Request deduplication
@@ -43,8 +44,8 @@ export const useAuditLogStore = create((set, get) => ({
 
           const response = await api.get(`/admin/audit-logs?${queryParams}`);
 
-          // API returns { success: true, data: { logs, pagination } }
-          const responseData = response.data?.data || response.data;
+          // API returns standardized format: { success: true, data: { logs, pagination } }
+          const responseData = parseApiResponse(response);
 
           set({
             logs: responseData?.logs || [],
@@ -71,3 +72,4 @@ export const useAuditLogStore = create((set, get) => ({
     get().fetchLogs(1); // Reset to first page with new filters
   },
 }));
+

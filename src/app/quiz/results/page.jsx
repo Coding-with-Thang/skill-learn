@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useQuizStartStore } from "@/app/store/quizStore"
+import { useQuizStartStore } from "@/lib/store/quizStore"
 import { Button } from "@/components/ui/button"
 import { RotateCcw, LayoutDashboard, Eye, Trophy, Timer, CheckCircle, XCircle, ListChecks, Calendar, Coins, Sparkles } from 'lucide-react'
 import { useEffect, useState } from "react"

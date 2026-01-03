@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
 import { handleErrorWithNotification } from "@/utils/notifications";
 import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 
 // Request deduplication
@@ -21,9 +22,8 @@ export const useRewardStore = create((set, get) => ({
         set({ isLoading: true });
         try {
           const response = await api.get("/user/rewards");
-          // API returns { success: true, data: { rewards: [...] } }
-          const responseData = response.data?.data || response.data;
-          const rewards = responseData?.rewards || responseData || [];
+          // API returns standardized format: { success: true, data: { rewards: [...] } }
+          const rewards = parseApiResponse(response, "rewards") || [];
           set({
             rewards,
             isLoading: false,
@@ -47,10 +47,10 @@ export const useRewardStore = create((set, get) => ({
         set({ isLoading: true });
         try {
           const response = await api.get("/user/rewards/complete");
-          // API returns { success: true, data: { rewards: [...], history: [...] } }
-          const responseData = response.data?.data || response.data;
-          const rewards = responseData?.rewards || [];
-          const history = responseData?.history || [];
+          // API returns standardized format: { success: true, data: { rewards: [...], history: [...] } }
+          const data = parseApiResponse(response);
+          const rewards = data?.rewards || [];
+          const history = data?.history || [];
           set({
             rewards,
             rewardHistory: history,
@@ -109,9 +109,8 @@ export const useRewardStore = create((set, get) => ({
         set({ isLoading: true });
         try {
           const response = await api.get("/user/rewards/history");
-          // API returns { success: true, data: { history: [...] } }
-          const responseData = response.data?.data || response.data;
-          const history = responseData?.history || responseData || [];
+          // API returns standardized format: { success: true, data: { history: [...] } }
+          const history = parseApiResponse(response, "history") || [];
           set({
             rewardHistory: history,
             isLoading: false,
@@ -156,3 +155,4 @@ export const useRewardStore = create((set, get) => ({
     }
   },
 }));
+
