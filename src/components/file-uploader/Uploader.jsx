@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Card, CardContent } from "@/components/ui/card"
 import { RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState } from "./RenderState"
-import { cn } from "@/lib/utils";
+import { cn } from "@/constants/utils";
 import { toast } from "sonner"
 import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';

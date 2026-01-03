@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/constants/utils";
 import Image from "next/image";
 import { Button } from "@/components/ui/button"
 import { CloudUpload, FileImage, X, Loader2 } from 'lucide-react';

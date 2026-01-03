@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/constants/utils"
 
 const AnimatedProgress = React.forwardRef(({
   className,

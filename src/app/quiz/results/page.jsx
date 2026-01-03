@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { useAuditLog } from '@/lib/hooks/useAuditLog';
 import { PieChart, Pie, Cell, ResponsiveContainer, Label } from 'recharts';
-import { cn } from "@/lib/utils"
+import { cn } from "@/constants/utils"
 import { toast } from "sonner"
 
 // Utility function to format time

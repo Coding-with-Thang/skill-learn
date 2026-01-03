@@ -9,7 +9,7 @@ import { ArrowBigRightDash, CircleCheckBig, Clock, X, ChevronLeft, ChevronRight,
 import { Loader } from "@/components/ui/loader"
 import Image from "next/image"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
+import { cn } from "@/constants/utils"
 import { Progress } from "@/components/ui/progress"
 import { UI, QUIZ_CONFIG } from "@/constants"
 import { handleErrorWithNotification } from "@/utils/notifications"

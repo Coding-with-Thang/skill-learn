@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePointsStore } from "@/app/store/pointsStore";
 import api from "@/utils/axios";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/constants/utils";
 import { ANIMATION, UI } from "@/constants";
 import { handleErrorWithNotification } from "@/utils/notifications";
 

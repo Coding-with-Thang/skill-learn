@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,44 +11,226 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.pnp.js
 
-# testing
-/coverage
+# ============================================
+# Testing
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+.jest/
+test-results/
+playwright-report/
+playwright/.cache/
 
-# next.js
+# ============================================
+# Next.js
+# ============================================
 /.next/
 /out/
+.next/
+out/
+.swc/
 
-# production
+# ============================================
+# Production / Build
+# ============================================
 /build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+/dist
 *.tsbuildinfo
 next-env.d.ts
 
-notes.md
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-.clerk
+# ============================================
+# Debug & Logs
+# ============================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+logs/
+*.log.*
 
+# ============================================
+# IDE & Editors
+# ============================================
+# VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+
+# Cursor
+.cursor/
+.cursorrules
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+
+# ============================================
+# OS Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+.directory
+.Trash-*
+.nfs*
+
+# ============================================
+# Database & Prisma
+# ============================================
+# Prisma migrations are typically committed
+# Only ignore SQLite database files if used
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-shm
+*.db-wal
+
+# ============================================
+# Authentication & Services
+# ============================================
+# Clerk
+.clerk/
+
+# Vercel
+.vercel
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc.local
+firebase-export-*.json
+
+# ============================================
+# Security & Keys
+# ============================================
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.p8
+*.pem
+secrets/
+*.secret
+*.private
+
+# ============================================
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.cache
+.cache/
+.parcel-cache/
+.turbo/
 .agent
+*.swp
+*.swo
+*~
 
+# ============================================
+# Package Managers
+# ============================================
+# npm
+.npm
+.npmrc.local
+
+# pnpm
+.pnpm-store/
+.pnpm-debug.log*
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# ============================================
+# TypeScript
+# ============================================
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# ============================================
+# Storybook
+# ============================================
+storybook-static/
+.out/
+
+# ============================================
+# Misc
+# ============================================
+notes.md
 /archive
+/docs/audits
+/scripts
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.swo
+*.swp
 
-/.cursor
-.cursor
+# ============================================
+# Project Specific
+# ============================================
+# Add any project-specific ignores below

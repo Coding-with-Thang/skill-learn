@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   User
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/constants/utils";
 import { Logo } from "@/components/shared/Logo";
 
 export default function Sidebar({ isOperations }) {

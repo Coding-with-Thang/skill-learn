@@ -6,7 +6,7 @@ import api from "@/utils/axios";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn } from "@/constants/utils";
 import { Trophy } from "lucide-react";
 
 const PodiumPosition = ({ user, position, metric }) => {
