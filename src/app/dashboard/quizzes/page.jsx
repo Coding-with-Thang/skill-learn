@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select"
 import { Plus, MoreHorizontal, Pencil, Trash2, Eye, ArrowUpDown, Search, Filter } from "lucide-react"
 import { LoadingSpinner } from "@/components/ui/loading"
-import api from "@/utils/axios"
+import api from "@/lib/utils/axios"
 import {
   Pagination,
   PaginationContent,

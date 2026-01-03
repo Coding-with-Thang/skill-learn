@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePointsStore } from "@/lib/store/pointsStore";
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@/constants/utils";
 import { ANIMATION, UI } from "@/constants";
-import { handleErrorWithNotification } from "@/utils/notifications";
+import { handleErrorWithNotification } from "@/lib/utils/notifications";
 
 export default function PointsRewardsWidget() {
   const { points, lifetimePoints, dailyStatus, fetchUserData, isLoading } = usePointsStore();

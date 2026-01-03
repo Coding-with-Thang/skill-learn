@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { useQuizStartStore } from '@/lib/store/quizStore'
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"

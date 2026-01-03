@@ -32,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { LoadingSpinner } from "@/components/ui/loading"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import api from "@/utils/axios"
+import api from "@/lib/utils/axios"
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState([])

@@ -24,8 +24,8 @@ import { Label } from "@/components/ui/label"
 import { LoadingSpinner } from "@/components/ui/loading"
 import { Plus, Minus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
-import api from "@/utils/axios"
-import { handleErrorWithNotification } from "@/utils/notifications"
+import api from "@/lib/utils/axios"
+import { handleErrorWithNotification } from "@/lib/utils/notifications"
 import { QUIZ_CONFIG } from "@/constants"
 
 export default function QuizBuilder({ quizId = null }) {

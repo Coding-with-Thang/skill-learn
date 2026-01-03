@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
+import prisma from "@/lib/utils/connect";
 import { courseSchema, objectIdSchema } from "@/lib/zodSchemas";
-import { getSignedUrl } from "@/utils/adminStorage";
-import { requireAdmin } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody, validateRequestParams } from "@/utils/validateRequest";
+import { getSignedUrl } from "@/lib/utils/adminStorage";
+import { requireAdmin } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody, validateRequestParams } from "@/lib/utils/validateRequest";
 import { z } from "zod";
 
 // Get a specific course

@@ -3,10 +3,10 @@ import {
   getAllSystemSettings,
   updateSystemSetting,
 } from "@/lib/actions/settings";
-import { requireAdmin } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import { requireAdmin } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { settingUpdateSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 

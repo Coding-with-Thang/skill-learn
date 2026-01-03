@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createCourse } from '../actions';
-import { requireAdmin } from '@/utils/auth';
-import { handleApiError, AppError, ErrorType } from '@/utils/errorHandler';
-import { successResponse } from '@/utils/apiWrapper';
+import { requireAdmin } from '@/lib/utils/auth';
+import { handleApiError, AppError, ErrorType } from '@/lib/utils/errorHandler';
+import { successResponse } from '@/lib/utils/apiWrapper';
 
 export async function POST(req) {
     try {

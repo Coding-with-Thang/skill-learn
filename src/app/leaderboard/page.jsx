@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";

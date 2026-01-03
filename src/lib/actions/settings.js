@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/utils/connect";
-import { requireAdminForAction } from "@/utils/auth";
+import prisma from "@/lib/utils/connect";
+import { requireAdminForAction } from "@/lib/utils/auth";
 
 const DEFAULT_SETTINGS = {
   // Points System

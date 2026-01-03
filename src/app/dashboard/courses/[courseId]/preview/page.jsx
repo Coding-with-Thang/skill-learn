@@ -1,5 +1,5 @@
-import prisma from "@/utils/connect";
-import { getSignedUrl } from '@/utils/adminStorage'
+import prisma from "@/lib/utils/connect";
+import { getSignedUrl } from '@/lib/utils/adminStorage'
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 
 export default function LifetimePointsLeaderboard({
   limit,

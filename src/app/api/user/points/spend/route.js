@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import prisma from "@/lib/utils/connect";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { spendPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {

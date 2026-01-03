@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@/lib/store/quizStore"
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { Button } from "@/components/ui/button"
 import { ArrowBigRightDash, CircleCheckBig, Clock, X, ChevronLeft, ChevronRight, BarChart2, GraduationCap, Check } from 'lucide-react'
 import { Loader } from "@/components/ui/loader"
@@ -12,7 +12,7 @@ import { toast } from "sonner"
 import { cn } from "@/constants/utils"
 import { Progress } from "@/components/ui/progress"
 import { UI, QUIZ_CONFIG } from "@/constants"
-import { handleErrorWithNotification } from "@/utils/notifications"
+import { handleErrorWithNotification } from "@/lib/utils/notifications"
 
 // Utility functions
 const formatTime = (seconds) => {

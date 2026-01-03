@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import prisma from "@/lib/utils/connect";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 
 export async function POST(request, { params }) {
   try {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useWelcomeContext } from "@/lib/hooks/useWelcomeContext";
-import { generateGreeting } from "@/utils/greetingGenerator";
+import { generateGreeting } from "@/lib/utils/greetingGenerator";
 import { Sparkles, TrendingUp, Award, Flame } from "lucide-react";
 
 export default function WelcomeBanner() {

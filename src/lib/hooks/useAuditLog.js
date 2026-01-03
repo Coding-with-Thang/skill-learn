@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/nextjs";
 // Do not import server-only code here; keep this hook client-safe
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 
 export function useAuditLog() {
   const { user } = useUser();

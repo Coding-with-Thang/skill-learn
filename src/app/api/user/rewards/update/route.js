@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { logAuditEvent } from "@/utils/auditLogger";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequest } from "@/utils/validateRequest";
+import prisma from "@/lib/utils/connect";
+import { logAuditEvent } from "@/lib/utils/auditLogger";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequest } from "@/lib/utils/validateRequest";
 import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 

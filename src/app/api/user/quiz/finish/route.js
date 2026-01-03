@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import prisma from "@/lib/utils/connect";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 import { awardPoints, getDailyPointStatus } from "@/lib/actions/points";
 import { getSystemSetting } from "@/lib/actions/settings";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { quizFinishSchema } from "@/lib/zodSchemas";
 
 export async function POST(req) {

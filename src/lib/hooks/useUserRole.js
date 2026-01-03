@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { RETRY_CONFIG } from "@/constants";
-import { handleErrorWithNotification } from "@/utils/notifications";
+import { handleErrorWithNotification } from "@/lib/utils/notifications";
 
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();

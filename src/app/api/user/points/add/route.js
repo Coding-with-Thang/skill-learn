@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { pointsAwarded } from "@/utils/auditLogger";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError } from "@/utils/errorHandler";
+import prisma from "@/lib/utils/connect";
+import { pointsAwarded } from "@/lib/utils/auditLogger";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError } from "@/lib/utils/errorHandler";
 import { awardPoints } from "@/lib/actions/points";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { addPointsSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {

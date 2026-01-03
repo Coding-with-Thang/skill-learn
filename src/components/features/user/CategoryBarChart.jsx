@@ -17,7 +17,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { formatTime } from "@/utils/formatTime";
+import { formatTime } from "@/lib/utils/formatTime";
 export default function CategoryBarChart({ categoryData }) {
   const chartData = [
     {

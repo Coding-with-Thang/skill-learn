@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { rewardRedeemed } from "@/utils/auditLogger";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import prisma from "@/lib/utils/connect";
+import { rewardRedeemed } from "@/lib/utils/auditLogger";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { rewardRedeemSchema } from "@/lib/zodSchemas";
 
 export async function POST(request) {

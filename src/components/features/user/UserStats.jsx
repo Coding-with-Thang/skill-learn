@@ -7,9 +7,9 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import { SCORE_THRESHOLDS, UI } from "@/constants"
 import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { formatTime } from '@/utils/formatTime'
-import api from '@/utils/axios'
-import { handleErrorWithNotification } from '@/utils/notifications'
+import { formatTime } from '@/lib/utils/formatTime'
+import api from '@/lib/utils/axios'
+import { handleErrorWithNotification } from '@/lib/utils/notifications'
 
 export default function UserStats({ user }) {
   const [stats, setStats] = useState(null)

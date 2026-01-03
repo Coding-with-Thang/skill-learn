@@ -1,5 +1,5 @@
 import QuizCard from '@/components/features/quiz/QuizCard';
-import prisma from "@/utils/connect"
+import prisma from "@/lib/utils/connect"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { notFound } from 'next/navigation'
 

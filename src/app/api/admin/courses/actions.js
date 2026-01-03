@@ -1,7 +1,7 @@
 "use server";
 
 import { courseSchema } from "@/lib/zodSchemas";
-import prisma from "@/utils/connect";
+import prisma from "@/lib/utils/connect";
 
 /**
  * Create a new course

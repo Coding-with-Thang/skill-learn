@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 
 const StatItem = ({ title, value, subValue, icon: Icon, trend }) => (
   <div className="p-4 bg-white rounded-lg border border-gray-100 shadow-sm">

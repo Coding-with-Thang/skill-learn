@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getDailyPointStatus } from "@/lib/actions/points";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 
 export async function GET(request) {
   try {

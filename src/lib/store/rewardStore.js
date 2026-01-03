@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
-import { handleErrorWithNotification } from "@/utils/notifications";
-import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { handleErrorWithNotification } from "@/lib/utils/notifications";
+import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 

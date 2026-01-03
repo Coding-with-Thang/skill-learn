@@ -1,6 +1,6 @@
-import prisma from "@/utils/connect";
-import { handleApiError } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import prisma from "@/lib/utils/connect";
+import { handleApiError } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 
 export async function GET(request) {
   try {

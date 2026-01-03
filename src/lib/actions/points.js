@@ -1,4 +1,4 @@
-import prisma from "@/utils/connect";
+import prisma from "@/lib/utils/connect";
 import { getAuth } from "@clerk/nextjs/server"; // Change import
 import { updateStreak } from "./streak";
 import { getSystemSetting } from "./settings";

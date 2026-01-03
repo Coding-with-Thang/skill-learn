@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import api from "@/utils/axios";
-import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import api from "@/lib/utils/axios";
+import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { STORE } from "@/constants";
 

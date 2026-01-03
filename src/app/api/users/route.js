@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
+import prisma from "@/lib/utils/connect";
 import { clerkClient } from '@clerk/nextjs/server';
-import { requireAdmin } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import { requireAdmin } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { userCreateSchema } from "@/lib/zodSchemas";
 
 export async function GET(request) {

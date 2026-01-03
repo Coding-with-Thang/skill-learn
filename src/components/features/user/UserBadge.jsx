@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { usePointsStore } from "@/lib/store/pointsStore"
-import formatNumber from "@/utils/formatNumbers";
+import formatNumber from "@/lib/utils/formatNumbers";
 import { LoadingUserBadge } from "@/components/ui/loading"
 import { ErrorCard } from "@/components/ui/error-boundary"
 

@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 import { getDailyPointStatus } from "@/lib/actions/points";
 import { updateStreak, getStreakInfo } from "@/lib/actions/streak";
-import prisma from "@/utils/connect";
-import { AppError, ErrorType } from "@/utils/errorHandler";
+import prisma from "@/lib/utils/connect";
+import { AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 /**
  * Batch endpoint for initial page load data

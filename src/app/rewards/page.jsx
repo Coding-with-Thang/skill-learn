@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/constants/utils"
-import api from "@/utils/axios";
+import api from "@/lib/utils/axios";
 
 // Components
 import { Loader } from "@/components/ui/loader"

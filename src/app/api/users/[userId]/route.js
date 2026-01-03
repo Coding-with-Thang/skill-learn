@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { updateClerkUser, deleteClerkUser } from "@/utils/clerk";
-import { requireAdmin } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody, validateRequestParams } from "@/utils/validateRequest";
+import prisma from "@/lib/utils/connect";
+import { updateClerkUser, deleteClerkUser } from "@/lib/utils/clerk";
+import { requireAdmin } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody, validateRequestParams } from "@/lib/utils/validateRequest";
 import { userUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 

@@ -1,5 +1,5 @@
-import { handleApiError } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import { handleApiError } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 import { getSystemSetting } from "@/lib/actions/settings";
 
 export async function GET() {

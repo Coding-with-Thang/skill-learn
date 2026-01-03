@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import prisma from "@/utils/connect";
-import { requireAdmin } from "@/utils/auth";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
-import { validateRequestBody } from "@/utils/validateRequest";
+import prisma from "@/lib/utils/connect";
+import { requireAdmin } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { categoryCreateSchema } from "@/lib/zodSchemas";
 
 // Get all categories

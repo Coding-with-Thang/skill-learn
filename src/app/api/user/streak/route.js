@@ -1,8 +1,8 @@
 import { updateStreak } from "@/lib/actions/streak";
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/utils/auth";
-import { handleApiError } from "@/utils/errorHandler";
-import { successResponse } from "@/utils/apiWrapper";
+import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError } from "@/lib/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
 
 export async function GET(request) {
   try {

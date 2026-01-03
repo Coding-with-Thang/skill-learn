@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { successResponse } from "@/utils/apiWrapper";
-import { requireAdmin } from "@/utils/auth";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { requireAdmin } from "@/lib/utils/auth";
 import admin from "firebase-admin";
 import { z } from "zod";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 export const fileUploadSchema = z.object({
   fileName: z.string().min(1, { message: "Filename is required" }),
