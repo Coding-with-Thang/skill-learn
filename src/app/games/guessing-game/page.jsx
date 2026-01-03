@@ -1,6 +1,6 @@
-import GuessingGame from "@/app/games/guessing-game/GuessingGame";
+import GuessingGame from "@/components/features/games/GuessingGame";
 
-export default function TicTacToePage() {
+export default function GuessingGamePage() {
   return (
     <>
       <GuessingGame />

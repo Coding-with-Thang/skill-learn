@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import useLocalStorage from "../../../lib/hooks/useLocalStorage";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { usePathname } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -324,4 +324,6 @@ const TicTacToe = () => {
     </div>
   )
 }
+
 export default TicTacToe;
+

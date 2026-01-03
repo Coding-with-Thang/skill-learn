@@ -1,6 +1,6 @@
-import MemoryGame from "@/app/games/memory-game/MemoryGame";
+import MemoryGame from "@/components/features/games/MemoryGame";
 
-export default function TicTacToePage() {
+export default function MemoryGamePage() {
   return (
     <>
       <MemoryGame />

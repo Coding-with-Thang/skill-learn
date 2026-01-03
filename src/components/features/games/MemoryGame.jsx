@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import useLocalStorage from "../../../lib/hooks/useLocalStorage";
+import useLocalStorage from "@/lib/hooks/useLocalStorage";
 import { usePathname } from 'next/navigation';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import QuizModal from "@/components/features/quiz/QuizModal"
+
 const MemoryGame = () => {
 
   //Local Storage
@@ -197,3 +198,4 @@ const MemoryGame = () => {
 };
 
 export default MemoryGame;
+

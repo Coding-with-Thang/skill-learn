@@ -1,4 +1,4 @@
-import RockPaperScissors from "@/app/games/rock-paper-scissors/RockPaperScissors";
+import RockPaperScissors from "@/components/features/games/RockPaperScissors";
 
 export default function RockPaperScissorsPage() {
   return (

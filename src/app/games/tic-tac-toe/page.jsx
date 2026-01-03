@@ -1,4 +1,4 @@
-import TicTacToe from "@/app/games/tic-tac-toe/TicTacToe";
+import TicTacToe from "@/components/features/games/TicTacToe";
 
 export default function TicTacToePage() {
   return (
