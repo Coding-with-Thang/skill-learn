@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { InteractiveCard, InteractiveCardContent } from "@/components/ui/interactive-card"
 import { AnimatedProgress } from "@/components/ui/animated-progress"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { SCORE_THRESHOLDS, UI } from "@/constants"
+import { SCORE_THRESHOLDS, UI } from "@/config/constants"
 import { PencilLine, Crosshair, ListChecks, Trophy, TrendingUp, Clock, Target } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatTime } from '@/lib/utils/formatTime'

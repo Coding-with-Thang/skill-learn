@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import api from "@/lib/utils/axios";
-import { STORE } from "@/constants";
+import { STORE } from "@/config/constants";
 import { handleErrorWithNotification } from "@/lib/utils/notifications";
 import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
@@ -138,4 +138,3 @@ export const usePointsStore = create((set, get) => ({
     }
   },
 }));
-

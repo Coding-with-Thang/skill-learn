@@ -1,4 +1,4 @@
-import { cn } from "@/constants/utils";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Button } from "@/components/ui/button"
 import { CloudUpload, FileImage, X, Loader2 } from 'lucide-react';
@@ -63,7 +63,9 @@ export function RenderUploadingState({ progress, file }) {
     <div className="text-center flex flex-col justify-center items-center">
       <p>{progress}</p>
       <p className="mt-2 text-sm font-medium text-foreground">Uploading...</p>
-      <p className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
+      {file?.name && (
+        <p className="mt-1 text-xs text-muted-foreground truncate max-w-xs">{file.name}</p>
+      )}
     </div>
   )
 }

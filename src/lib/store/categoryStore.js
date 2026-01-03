@@ -4,7 +4,7 @@ import api from "@/lib/utils/axios";
 import { handleErrorWithNotification } from "@/lib/utils/notifications";
 import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
-import { STORE } from "@/constants";
+import { STORE } from "@/config/constants";
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
@@ -69,4 +69,3 @@ export const useCategoryStore = create(
     }
   )
 );
-

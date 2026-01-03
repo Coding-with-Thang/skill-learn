@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import logo from '../../../public/logo.svg';
-import { cn } from "@/constants/utils";
+import { cn } from "@/lib/utils";
 
 export function Logo({ className, textClassName, imageClassName }) {
   return (

@@ -8,7 +8,7 @@ import { Circle, Gift, Check, Coins, Filter, } from "lucide-react"
 import { useRewardStore } from "@/lib/store/rewardStore"
 import { usePointsStore } from "@/lib/store/pointsStore"
 import { toast } from "sonner"
-import { UI } from "@/constants"
+import { UI } from "@/config/constants"
 import { format } from "date-fns"
 import {
   Dialog,
@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { cn } from "@/constants/utils"
+import { cn } from "@/lib/utils"
 import api from "@/lib/utils/axios";
 
 // Components

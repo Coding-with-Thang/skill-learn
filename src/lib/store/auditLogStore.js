@@ -2,7 +2,7 @@ import { create } from "zustand";
 import api from "@/lib/utils/axios";
 import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
-import { STORE } from "@/constants";
+import { STORE } from "@/config/constants";
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
@@ -20,7 +20,7 @@ export const useAuditLogStore = create((set, get) => ({
 
   fetchLogs: async (page = 1, force = false) => {
     const filters = get().filters;
-    
+
     // Create unique key based on page and filters to deduplicate properly
     const cacheKey = `fetchLogs-${page}-${JSON.stringify(filters)}`;
 
@@ -38,7 +38,9 @@ export const useAuditLogStore = create((set, get) => ({
           if (filters.action)
             queryParams += `&action=${encodeURIComponent(filters.action)}`;
           if (filters.startDate)
-            queryParams += `&startDate=${encodeURIComponent(filters.startDate)}`;
+            queryParams += `&startDate=${encodeURIComponent(
+              filters.startDate
+            )}`;
           if (filters.endDate)
             queryParams += `&endDate=${encodeURIComponent(filters.endDate)}`;
 
@@ -72,4 +74,3 @@ export const useAuditLogStore = create((set, get) => ({
     get().fetchLogs(1); // Reset to first page with new filters
   },
 }));
-

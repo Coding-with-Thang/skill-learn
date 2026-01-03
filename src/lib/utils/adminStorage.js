@@ -22,14 +22,19 @@ if (!admin.apps.length) {
         }
 
         // Only initialize if we have the required service account values
-        if (serviceAccount.project_id && serviceAccount.client_email && serviceAccount.private_key) {
+        if (serviceAccount.project_id && serviceAccount.client_email && serviceAccount.private_key && storageBucket) {
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccount),
                 storageBucket,
             })
             storage = admin.storage()
         } else {
-            console.warn('Firebase Admin init skipped: missing service account env vars')
+            const missingVars = []
+            if (!projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID')
+            if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL')
+            if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY')
+            if (!storageBucket) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET')
+            console.warn(`Firebase Admin init skipped: missing environment variables: ${missingVars.join(', ')}`)
         }
     } catch (e) {
         // If initialization fails, admin may already be initialized or config invalid
@@ -46,7 +51,15 @@ if (!admin.apps.length) {
 export async function getSignedUrl(path, expiresDays = 7) {
     if (!path) return null
     if (!storage || !storage.bucket) {
-        console.warn('Firebase storage not configured; cannot generate signed URL')
+        const missingVars = []
+        if (!projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID')
+        if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL')
+        if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY')
+        if (!storageBucket) missingVars.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET')
+        const message = missingVars.length > 0
+            ? `Firebase storage not configured; cannot generate signed URL. Missing environment variables: ${missingVars.join(', ')}`
+            : 'Firebase storage not configured; cannot generate signed URL'
+        console.warn(message)
         return null
     }
 

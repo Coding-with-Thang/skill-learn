@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cn } from "@/constants/utils"
+import { cn } from "@/lib/utils"
 
 const InteractiveCard = React.forwardRef(({
   className,

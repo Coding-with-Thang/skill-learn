@@ -1,4 +1,4 @@
-import { cn } from "@/constants/utils";
+import { cn } from "@/lib/utils";
 import { TooltipTrigger, TooltipProvider, TooltipContent, Tooltip } from "@radix-ui/react-tooltip";
 import { Toggle } from "@/components/ui/toggle"
 import { Button } from "@/components/ui/button"

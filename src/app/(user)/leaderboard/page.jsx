@@ -6,7 +6,7 @@ import api from "@/lib/utils/axios";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
-import { cn } from "@/constants/utils";
+import { cn } from "@/lib/utils";
 import { Trophy, Award } from "lucide-react";
 
 const PodiumPosition = ({ user, position, metric }) => {

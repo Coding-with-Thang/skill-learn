@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react"
 import { format } from "date-fns"
 import { Clock, Trophy, Target } from "lucide-react"
-import { SCORE_THRESHOLDS } from "@/constants"
+import { SCORE_THRESHOLDS } from "@/config/constants"
 import {
   Table,
   TableBody,

@@ -229,6 +229,7 @@ notes.md
 *.save
 *.swo
 *.swp
+CODE_QUALITY_AUDIT.md
 
 # ============================================
 # Project Specific

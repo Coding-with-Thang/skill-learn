@@ -3,48 +3,67 @@ import prisma from "@/lib/utils/connect";
 import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 import { successResponse } from "@/lib/utils/apiWrapper";
 
+/**
+ * GET /api/categories/:categoryId
+ * Fetches a category with its quizzes
+ */
 export async function GET(request, { params }) {
   try {
-    const { categoryId } = params;
+    const { categoryId } = await params
 
     if (!categoryId) {
-      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
-        status: 400,
-      });
+      return NextResponse.json(
+        { error: "Category ID is required" },
+        { status: 400 }
+      )
     }
 
-    let category;
-    try {
-      // Use findUnique for unique identifier lookup
-      category = await prisma.category.findUnique({
-        where: { id: categoryId },
-        include: {
-          _count: {
-            select: { quizzes: true },
+    // Fetch category with quizzes
+    const category = await prisma.category.findUnique({
+      where: {
+        id: categoryId,
+        isActive: true
+      },
+      include: {
+        quizzes: {
+          where: {
+            isActive: true
           },
-        },
-      });
-    } catch (prismaError) {
-      throw new AppError("Invalid category ID format", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            imageUrl: true,
+            timeLimit: true,
+            passingScore: true,
+            categoryId: true,
+            questions: {
+              select: {
+                id: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
+        }
+      }
+    })
 
     if (!category) {
-      throw new AppError("Category not found", ErrorType.NOT_FOUND, {
-        status: 404,
-      });
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      )
     }
 
-    // Validate business rule after fetching
-    if (!category.isActive) {
-      throw new AppError("Category is not active", ErrorType.VALIDATION, {
-        status: 403,
-      });
-    }
+    return NextResponse.json({
+      success: true,
+      ...category
+    })
 
-    return successResponse({ category });
   } catch (error) {
-    return handleApiError(error);
+    console.error("Error fetching category:", error)
+    return handleApiError(error)
   }
 }

@@ -3,7 +3,7 @@ import api from "@/lib/utils/axios";
 import { handleErrorWithNotification } from "@/lib/utils/notifications";
 import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
-import { STORE } from "@/constants";
+import { STORE } from "@/config/constants";
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
@@ -31,7 +31,7 @@ export const useUsersStore = create((set, get) => ({
           handleErrorWithNotification(error, "Failed to load users");
           set({
             error: error.response?.data?.error || "Failed to fetch users",
-            isLoading: false
+            isLoading: false,
           });
           throw error;
         }
@@ -45,7 +45,8 @@ export const useUsersStore = create((set, get) => ({
     try {
       const response = await api.post("/users", userData);
       // API returns standardized format: { success: true, data: { user: {...} } }
-      const newUser = parseApiResponse(response, "user") || parseApiResponse(response);
+      const newUser =
+        parseApiResponse(response, "user") || parseApiResponse(response);
       set((state) => ({
         users: [newUser, ...state.users],
         isLoading: false,
@@ -55,7 +56,7 @@ export const useUsersStore = create((set, get) => ({
       handleErrorWithNotification(error, "Failed to create user");
       set({
         error: error.response?.data?.error || "Failed to create user",
-        isLoading: false
+        isLoading: false,
       });
       throw error;
     }
@@ -66,7 +67,8 @@ export const useUsersStore = create((set, get) => ({
     try {
       const response = await api.put(`/users/${userId}`, userData);
       // API returns standardized format: { success: true, data: { user: {...} } }
-      const updatedUser = parseApiResponse(response, "user") || parseApiResponse(response);
+      const updatedUser =
+        parseApiResponse(response, "user") || parseApiResponse(response);
       set((state) => ({
         users: state.users.map((user) =>
           user.id === userId ? updatedUser : user
@@ -78,7 +80,7 @@ export const useUsersStore = create((set, get) => ({
       handleErrorWithNotification(error, "Failed to update user");
       set({
         error: error.response?.data?.error || "Failed to update user",
-        isLoading: false
+        isLoading: false,
       });
       throw error;
     }
@@ -96,10 +98,9 @@ export const useUsersStore = create((set, get) => ({
       handleErrorWithNotification(error, "Failed to delete user");
       set({
         error: error.response?.data?.error || "Failed to delete user",
-        isLoading: false
+        isLoading: false,
       });
       throw error;
     }
   },
 }));
-

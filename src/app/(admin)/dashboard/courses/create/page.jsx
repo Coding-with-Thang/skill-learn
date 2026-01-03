@@ -59,8 +59,10 @@ export default function CreateCoursePage() {
             try {
                 const response = await fetch('/api/categories');
                 const data = await response.json();
-                if (data.categories) {
-                    setCategories(data.categories);
+                // API returns { success: true, data: { categories: [...] } }
+                const categories = data.data?.categories || data.categories || [];
+                if (categories.length > 0) {
+                    setCategories(categories);
                 }
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -77,11 +79,16 @@ export default function CreateCoursePage() {
         startTransition(async () => {
 
             try {
-                const data = await axios.post('/api/admin/courses/create', values);
-                if (data?.data?.status === 'success') {
+                const response = await axios.post('/api/admin/courses/create', values);
+                const data = response?.data;
+                // API returns { success: true, data: { status: 'success', ... } }
+                const isSuccess = data?.success === true || data?.data?.status === 'success';
+                
+                if (isSuccess) {
                     toast.success('Course created successfully');
                     form.reset();
                     router.push('/dashboard/courses');
+                    return;
                 } else if (data?.data?.status === 'error') {
                     // If server returned validation details, show them
                     const payload = data.data || {};

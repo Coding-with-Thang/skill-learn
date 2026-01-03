@@ -1,5 +1,5 @@
 import axios from "axios";
-import { CACHE_DURATIONS, RETRY_CONFIG } from "@/constants";
+import { CACHE_DURATIONS, RETRY_CONFIG } from "@/config/constants";
 
 // Create an axios instance with defaults
 const api = axios.create({
@@ -65,7 +65,8 @@ api.interceptors.request.use(
     if (config.method === "get") {
       const key = `${config.url}${JSON.stringify(config.params || {})}`;
       const cachedResponse = cache.get(key);
-      const cacheDuration = cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
+      const cacheDuration =
+        cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
 
       if (
         cachedResponse &&
@@ -122,7 +123,8 @@ api.interceptors.response.use(
 
     // Handle rate limiting
     if (response?.status === 429) {
-      const retryAfter = response.data.retryAfter || RETRY_CONFIG.DEFAULT_RETRY_AFTER;
+      const retryAfter =
+        response.data.retryAfter || RETRY_CONFIG.DEFAULT_RETRY_AFTER;
       const retryKey = config.url;
       const retryTime = Date.now() + retryAfter * 1000;
       retryDelays.set(retryKey, retryTime);

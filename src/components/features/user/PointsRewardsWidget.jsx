@@ -7,8 +7,8 @@ import { usePointsStore } from "@/lib/store/pointsStore";
 import api from "@/lib/utils/axios";
 import { parseApiResponse } from "@/lib/utils/apiResponseParser";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
-import { cn } from "@/constants/utils";
-import { ANIMATION, UI } from "@/constants";
+import { cn } from "@/lib/utils";
+import { ANIMATION, UI } from "@/config/constants";
 import { handleErrorWithNotification } from "@/lib/utils/notifications";
 
 export default function PointsRewardsWidget() {

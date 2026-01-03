@@ -67,8 +67,10 @@ export default function EditCoursePage() {
             try {
                 const response = await fetch('/api/categories');
                 const data = await response.json();
-                if (data.categories) {
-                    setCategories(data.categories);
+                // API returns { success: true, data: { categories: [...] } }
+                const categories = data.data?.categories || data.categories || [];
+                if (categories.length > 0) {
+                    setCategories(categories);
                 }
             } catch (error) {
                 console.error('Error fetching categories:', error);
@@ -86,7 +88,9 @@ export default function EditCoursePage() {
 
             try {
                 const response = await axios.get(`/api/admin/courses/${courseId}`);
-                const course = response.data;
+                // API returns { success: true, data: { course: {...} } }
+                const responseData = response.data;
+                const course = responseData?.data?.course || responseData?.course || responseData;
 
                 if (course) {
                     form.reset({
@@ -142,8 +146,12 @@ export default function EditCoursePage() {
     const onSubmit = (values) => {
         startTransition(async () => {
             try {
-                const data = await axios.put(`/api/admin/courses/${courseId}`, values);
-                if (data?.data?.status === 'success') {
+                const response = await axios.put(`/api/admin/courses/${courseId}`, values);
+                const data = response?.data;
+                // API returns { success: true, data: { ... } }
+                const isSuccess = data?.success === true || data?.data?.status === 'success';
+
+                if (isSuccess) {
                     // clear any client-side preview/selection before navigating away
                     try {
                         setPreviewImageUrl(null)
@@ -153,6 +161,7 @@ export default function EditCoursePage() {
                     }
                     toast.success('Course updated successfully');
                     router.push('/dashboard/courses');
+                    return;
                 } else if (data?.data?.status === 'error') {
                     const payload = data.data || {};
                     if (payload.details) {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import api from "@/lib/utils/axios";
-import { RETRY_CONFIG } from "@/constants";
+import { RETRY_CONFIG } from "@/config/constants";
 import { handleErrorWithNotification } from "@/lib/utils/notifications";
 
 export function useUserRole() {

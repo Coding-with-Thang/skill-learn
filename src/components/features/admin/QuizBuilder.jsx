@@ -26,7 +26,7 @@ import { Plus, Minus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/utils/axios"
 import { handleErrorWithNotification } from "@/lib/utils/notifications"
-import { QUIZ_CONFIG } from "@/constants"
+import { QUIZ_CONFIG } from "@/config/constants"
 
 export default function QuizBuilder({ quizId = null }) {
     const router = useRouter()

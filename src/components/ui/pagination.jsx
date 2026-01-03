@@ -6,7 +6,7 @@ import {
 } from "lucide-react"
 import { Slot } from "@radix-ui/react-slot"
 
-import { cn } from "@/constants/utils"
+import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button";
 
 function Pagination({

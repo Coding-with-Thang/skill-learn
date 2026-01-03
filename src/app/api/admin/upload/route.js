@@ -26,8 +26,15 @@ if (privateKey && privateKey.includes("\\n")) {
 if (!admin.apps.length) {
   if (!projectId || !clientEmail || !privateKey || !storageBucket) {
     // Do not throw here; we will surface an error at runtime if missing. But log for clarity.
+    const missingVars = [];
+    if (!projectId) missingVars.push("NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+    if (!clientEmail) missingVars.push("FIREBASE_CLIENT_EMAIL");
+    if (!privateKey) missingVars.push("FIREBASE_PRIVATE_KEY");
+    if (!storageBucket) missingVars.push("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
     console.warn(
-      "Firebase Admin SDK not fully configured. Make sure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY, and FIREBASE_STORAGE_BUCKET are set."
+      `Firebase Admin SDK not fully configured. Missing environment variables: ${missingVars.join(
+        ", "
+      )}`
     );
   } else {
     try {
@@ -107,8 +114,19 @@ export async function POST(req) {
     const storage = getStorage();
     // Ensure bucket is available
     if (!storage || !storage.bucket) {
+      const missingVars = [];
+      if (!projectId) missingVars.push("NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+      if (!clientEmail) missingVars.push("FIREBASE_CLIENT_EMAIL");
+      if (!privateKey) missingVars.push("FIREBASE_PRIVATE_KEY");
+      if (!storageBucket)
+        missingVars.push("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+
       throw new AppError(
-        "Firebase Storage is not configured on the server",
+        missingVars.length > 0
+          ? `Firebase Storage is not configured. Please set the following environment variables: ${missingVars.join(
+              ", "
+            )}`
+          : "Firebase Storage is not configured on the server. Please check your Firebase configuration.",
         ErrorType.API,
         {
           status: 500,
@@ -130,7 +148,7 @@ export async function POST(req) {
 
     // Make the file publicly readable (optional). Alternatively, create a signed URL.
     // Here we'll create a signed URL valid for the configured number of days.
-    const { FILE_UPLOAD } = await import("@/constants");
+    const { FILE_UPLOAD } = await import("@/config/constants");
     const expiresAt =
       Date.now() + FILE_UPLOAD.URL_EXPIRY_DAYS * 24 * 60 * 60 * 1000;
     const [signedUrl] = await fileRef.getSignedUrl({
@@ -166,8 +184,19 @@ export async function DELETE(req) {
 
     const storage = getStorage();
     if (!storage || !storage.bucket) {
+      const missingVars = [];
+      if (!projectId) missingVars.push("NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+      if (!clientEmail) missingVars.push("FIREBASE_CLIENT_EMAIL");
+      if (!privateKey) missingVars.push("FIREBASE_PRIVATE_KEY");
+      if (!storageBucket)
+        missingVars.push("NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET");
+
       throw new AppError(
-        "Firebase Storage is not configured on the server",
+        missingVars.length > 0
+          ? `Firebase Storage is not configured. Please set the following environment variables: ${missingVars.join(
+              ", "
+            )}`
+          : "Firebase Storage is not configured on the server. Please check your Firebase configuration.",
         ErrorType.API,
         {
           status: 500,

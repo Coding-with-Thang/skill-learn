@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Loader2 } from "lucide-react"
 import Image from "next/image"
-import { cn } from "@/constants/utils"
+import { cn } from "@/lib/utils"
 import { Card } from "@/components/ui/card"
 
 const loaderVariants = {
