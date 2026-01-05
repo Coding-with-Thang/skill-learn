@@ -16,9 +16,10 @@ export async function GET(request, { params }) {
             return adminResult;
         }
 
+        const resolvedParams = await params;
         const { userId } = await validateRequestParams(
             z.object({ userId: objectIdSchema }),
-            params
+            resolvedParams
         );
 
         const user = await prisma.user.findUnique({
@@ -57,11 +58,13 @@ export async function PUT(request, { params }) {
             return adminResult;
         }
 
+        const { user: currentUser } = adminResult;
         const { username, firstName, lastName, role, manager } = await validateRequestBody(request, userUpdateSchema);
 
+        const resolvedParams = await params;
         const { userId } = await validateRequestParams(
             z.object({ userId: objectIdSchema }),
-            params
+            resolvedParams
         );
 
         // Check if username exists for another user
@@ -80,32 +83,88 @@ export async function PUT(request, { params }) {
             });
         }
 
-        // Get user to update
-        const user = await prisma.user.findUnique({
+        // Get user to update with current role
+        const userToUpdate = await prisma.user.findUnique({
             where: { id: userId },
-            select: { clerkId: true }
+            select: { 
+                clerkId: true,
+                role: true 
+            }
         });
 
-        if (!user) {
+        if (!userToUpdate) {
             throw new AppError("User not found", ErrorType.NOT_FOUND, {
                 status: 404,
             });
         }
 
-        // Update both Clerk and database in parallel
-        const [updatedUser] = await Promise.all([
-            prisma.user.update({
-                where: { id: userId },
-                data: {
-                    username,
-                    firstName,
-                    lastName,
-                    role,
-                    manager,
-                },
-            }),
-            updateClerkUser(user.clerkId, { firstName, lastName })
-        ]);
+        // Enforce role change restrictions
+        // Managers cannot change agent roles
+        if (currentUser.role === "MANAGER" && userToUpdate.role === "AGENT" && role && role !== userToUpdate.role) {
+            throw new AppError("Managers cannot change agent roles", ErrorType.FORBIDDEN, {
+                status: 403,
+            });
+        }
+
+        // Validate manager assignment
+        // Manager field should only be set for AGENT role
+        const targetRole = role || userToUpdate.role;
+        if (manager && manager !== "" && targetRole !== "AGENT") {
+            throw new AppError("Manager can only be assigned to agents", ErrorType.VALIDATION, {
+                status: 400,
+            });
+        }
+
+        // Validate manager exists if provided
+        if (manager && manager !== "") {
+            const managerUser = await prisma.user.findUnique({
+                where: { username: manager },
+                select: { id: true, role: true }
+            });
+
+            if (!managerUser) {
+                throw new AppError("Manager not found", ErrorType.NOT_FOUND, {
+                    status: 404,
+                });
+            }
+
+            if (managerUser.role !== "MANAGER") {
+                throw new AppError("Assigned manager must have MANAGER role", ErrorType.VALIDATION, {
+                    status: 400,
+                });
+            }
+        }
+
+        // Prepare update data
+        const updateData = {
+            username,
+            firstName,
+            lastName,
+        };
+
+        // Only include role if it's being changed and user has permission
+        if (role !== undefined) {
+            updateData.role = role;
+        }
+
+        // Only include manager if target role is AGENT
+        if (targetRole === "AGENT") {
+            updateData.manager = manager === "none" || manager === "" ? "" : manager;
+        } else {
+            // Clear manager if role is not AGENT
+            updateData.manager = "";
+        }
+
+        // Update database first, then update Clerk (non-blocking)
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+        });
+
+        // Update Clerk user (non-blocking - won't fail the request if Clerk fails)
+        updateClerkUser(userToUpdate.clerkId, { firstName, lastName, username }).catch(err => {
+            console.error("Failed to update Clerk user, but database update succeeded:", err);
+        });
 
         return successResponse({ user: updatedUser });
     } catch (error) {
@@ -121,9 +180,19 @@ export async function DELETE(request, { params }) {
             return adminResult;
         }
 
+        const { user: currentUser } = adminResult;
+
+        // Only OPERATIONS can delete users
+        if (currentUser.role !== "OPERATIONS") {
+            throw new AppError("Only Operations can delete users", ErrorType.FORBIDDEN, {
+                status: 403,
+            });
+        }
+
+        const resolvedParams = await params;
         const { userId } = await validateRequestParams(
             z.object({ userId: objectIdSchema }),
-            params
+            resolvedParams
         );
 
         // Get user to delete

@@ -24,7 +24,7 @@ import { useUserRole } from "@/lib/hooks/useUserRole";
 export default function MobileSidebar() {
   const pathname = usePathname();
   const { role } = useUserRole();
-  const isOperations = role === 'OPERATIONS';
+  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
 
   // Admin Navigation Items
   const adminNavItems = [

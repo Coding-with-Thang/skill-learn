@@ -5,12 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Table } from "@/components/ui/table"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useUsersStore } from "@/lib/store/usersStore"
+import { useUserRole } from "@/lib/hooks/useUserRole"
 import UserDetails from "@/components/features/user/UserDetails"
 import UserForm from "@/components/features/user/UserForm"
 import { UserFilters } from "@/components/features/user/UserFilters"
 
 export default function UsersPage() {
   const { users, isLoading, error, fetchUsers } = useUsersStore();
+  const { role: currentUserRole } = useUserRole();
+  
+  // Only OPERATIONS can delete users
+  const canDeleteUsers = currentUserRole === "OPERATIONS";
 
   useEffect(() => {
     fetchUsers();
@@ -178,9 +183,11 @@ export default function UsersPage() {
                   <Button onClick={() => handleEdit(user)} variant="secondary">
                     Edit
                   </Button>
-                  <Button onClick={() => handleDelete(user.id)} variant="destructive">
-                    Delete
-                  </Button>
+                  {canDeleteUsers && (
+                    <Button onClick={() => handleDelete(user.id)} variant="destructive">
+                      Delete
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}

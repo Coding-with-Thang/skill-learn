@@ -18,7 +18,7 @@ export default function Header() {
   const [error, setError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isOperations = role === 'OPERATIONS';
+  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
 
   if (!clerkLoaded || roleLoading) {
     return <LoadingHeader />

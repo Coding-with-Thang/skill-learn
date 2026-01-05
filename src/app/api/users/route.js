@@ -47,8 +47,49 @@ export async function POST(request) {
     }
     const { userId } = adminResult;
 
+    const { user: currentUser } = adminResult;
     const { username, firstName, lastName, password, manager, role } =
       await validateRequestBody(request, userCreateSchema);
+
+    const targetRole = role || "AGENT";
+
+    // Validate role assignment permissions
+    // Only OPERATIONS can create MANAGER or OPERATIONS roles
+    if (currentUser.role === "MANAGER" && targetRole !== "AGENT") {
+      throw new AppError(
+        "Managers can only create users with AGENT role",
+        ErrorType.FORBIDDEN,
+        { status: 403 }
+      );
+    }
+
+    // Validate manager assignment
+    // Manager field should only be set for AGENT role
+    if (manager && manager !== "" && manager !== "none" && targetRole !== "AGENT") {
+      throw new AppError("Manager can only be assigned to agents", ErrorType.VALIDATION, {
+        status: 400,
+      });
+    }
+
+    // Validate manager exists if provided
+    if (manager && manager !== "" && manager !== "none") {
+      const managerUser = await prisma.user.findUnique({
+        where: { username: manager },
+        select: { id: true, role: true }
+      });
+
+      if (!managerUser) {
+        throw new AppError("Manager not found", ErrorType.NOT_FOUND, {
+          status: 404,
+        });
+      }
+
+      if (managerUser.role !== "MANAGER") {
+        throw new AppError("Assigned manager must have MANAGER role", ErrorType.VALIDATION, {
+          status: 400,
+        });
+      }
+    }
 
     // Check if username exists
     const existingUser = await prisma.user.findUnique({
@@ -87,8 +128,8 @@ export async function POST(request) {
         username,
         firstName,
         lastName,
-        role: role || "AGENT",
-        manager: manager === "none" ? "" : manager,
+        role: targetRole,
+        manager: (manager === "none" || manager === "" || targetRole !== "AGENT") ? "" : manager,
         imageUrl: clerkUser.imageUrl,
       },
     });

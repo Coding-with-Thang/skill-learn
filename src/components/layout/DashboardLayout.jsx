@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }) {
     return <LoadingPage />;
   }
 
-  const isOperations = role === 'OPERATIONS';
+  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
   const isAdminRoute = isOperations && pathname?.startsWith('/dashboard');
 
   if (isAdminRoute) {
