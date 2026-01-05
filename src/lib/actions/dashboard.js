@@ -243,6 +243,7 @@ export async function getDashboardStats() {
           select: {
             username: true,
             role: true,
+            imageUrl: true,
           },
         },
       },
@@ -301,6 +302,7 @@ export async function getDashboardStats() {
       recentActivity: recentActivity.map((item) => ({
         id: item.id,
         user: item.user.username,
+        userImage: item.user.imageUrl,
         role: item.user.role,
         action: item.action,
         timestamp: item.timestamp,

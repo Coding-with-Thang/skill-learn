@@ -31,17 +31,42 @@ export default function UserForm({ user = null, onSuccess }) {
         }
     }, [users.length]);
 
+    // Validate and update manager when role changes
+    useEffect(() => {
+        if (formData.role === "AGENT" || formData.role === "MANAGER") {
+            // Only validate if manager is set
+            if (formData.manager) {
+                const currentManager = users.find(u => u.username === formData.manager);
+                const isValidManager = managerOptions.some(opt => opt.value === formData.manager);
+                
+                // If current manager is not in the valid options, clear it
+                if (!isValidManager && currentManager) {
+                    setFormData(prev => ({ ...prev, manager: "" }));
+                }
+            }
+        }
+    }, [formData.role, managerOptions, users, formData.manager]);
+
     // Get list of managers for the dropdown
+    // - AGENT role: can be assigned MANAGER or OPERATIONS
+    // - MANAGER role: can only be assigned OPERATIONS
     const managerOptions = useMemo(() => {
-        const managers = users.filter(u => u.role === "MANAGER");
+        let managers;
+        if (formData.role === "MANAGER") {
+            // Managers can only be assigned OPERATIONS as their manager
+            managers = users.filter(u => u.role === "OPERATIONS");
+        } else {
+            // Agents can be assigned MANAGER or OPERATIONS
+            managers = users.filter(u => u.role === "MANAGER" || u.role === "OPERATIONS");
+        }
         return [
             { value: "none", label: "No Manager" },
             ...managers.map(m => ({
                 value: m.username,
-                label: `${m.firstName} ${m.lastName} (${m.username})`
+                label: `${m.firstName} ${m.lastName} (${m.username}) - ${m.role}`
             }))
         ];
-    }, [users]);
+    }, [users, formData.role]);
 
     // Determine if current user can change roles
     const canChangeRole = currentUserRole === "OPERATIONS";
@@ -53,9 +78,9 @@ export default function UserForm({ user = null, onSuccess }) {
         e.preventDefault();
         setError("");
 
-        // Prepare submit data - clear manager if role is not AGENT
+        // Prepare submit data - clear manager if role is not AGENT or MANAGER
         const submitData = { ...formData };
-        if (submitData.role !== "AGENT") {
+        if (submitData.role !== "AGENT" && submitData.role !== "MANAGER") {
             submitData.manager = "";
         }
 
@@ -77,10 +102,24 @@ export default function UserForm({ user = null, onSuccess }) {
     const handleChange = (field, value) => {
         setFormData(prev => {
             const updated = { ...prev, [field]: value };
-            // Clear manager if role is changed to non-AGENT
-            if (field === "role" && value !== "AGENT") {
-                updated.manager = "";
+            
+            // Handle role changes
+            if (field === "role") {
+                // Clear manager if role is changed to non-AGENT and non-MANAGER
+                if (value !== "AGENT" && value !== "MANAGER") {
+                    updated.manager = "";
+                } else if (value === "MANAGER" && prev.manager) {
+                    // If changing to MANAGER role, validate current manager
+                    // MANAGER role can only have OPERATIONS as manager
+                    const currentManager = users.find(u => u.username === prev.manager);
+                    if (currentManager && currentManager.role !== "OPERATIONS") {
+                        // Current manager is not valid for MANAGER role, clear it
+                        updated.manager = "";
+                    }
+                }
+                // If changing to AGENT, no need to clear - both MANAGER and OPERATIONS are valid
             }
+            
             return updated;
         });
     };
@@ -162,11 +201,12 @@ export default function UserForm({ user = null, onSuccess }) {
                         )}
                     </div>
 
-                    {/* Manager selection - only show for AGENT role */}
-                    {formData.role === "AGENT" && (
+                    {/* Manager selection - show for AGENT and MANAGER roles */}
+                    {(formData.role === "AGENT" || formData.role === "MANAGER") && (
                         <div>
                             <Label htmlFor="manager">Manager</Label>
                             <Select 
+                                key={`manager-select-${formData.role}`}
                                 value={formData.manager || "none"} 
                                 onValueChange={(value) => handleChange("manager", value === "none" ? "" : value)}
                             >
@@ -181,6 +221,11 @@ export default function UserForm({ user = null, onSuccess }) {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {formData.role === "MANAGER" && (
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Managers can only be assigned an OPERATIONS user as their manager
+                                </p>
+                            )}
                         </div>
                     )}
 

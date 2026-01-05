@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import prisma from "@/lib/utils/connect";
 import { requireAdmin } from "@/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 import { successResponse } from "@/lib/utils/apiWrapper";
 import { getSystemSetting } from "@/lib/actions/settings";
-import { validateRequestBody } from "@/lib/utils/validateRequest";
-import { quizUpdateSchema } from "@/lib/zodSchemas";
+import { validateRequestBody, validateRequestParams } from "@/lib/utils/validateRequest";
+import { quizUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -78,6 +79,8 @@ export async function PUT(request, { params }) {
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
+        showQuestionReview: data.showQuestionReview,
+        showCorrectAnswers: data.showCorrectAnswers,
       },
     });
 

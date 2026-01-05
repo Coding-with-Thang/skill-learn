@@ -19,7 +19,7 @@ export default function DropdownOptions() {
   const listOfCategories = ["General Knowledge", "History", "Team", "Trivia", "Game Day"]
 
   useEffect(() => {
-    setCategories(...categories, listOfCategories)
+    setCategories(listOfCategories)
   }, [])
 
   return (

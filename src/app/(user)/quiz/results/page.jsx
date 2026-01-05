@@ -23,7 +23,7 @@ const formatDate = (date) => {
 };
 
 // Collapsible Question Component
-const QuestionItem = ({ question, index, userResponse }) => {
+const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   // If no response found, treat as incorrect/skipped
@@ -88,6 +88,11 @@ const QuestionItem = ({ question, index, userResponse }) => {
                 containerClass = "border-red-200 bg-red-50 ring-1 ring-red-200";
                 labelColor = "text-red-800 font-medium";
                 icon = <XCircle className="w-5 h-5 text-red-600" />;
+              } else if (!isSelected && isAnswerCorrect && showCorrectAnswers) {
+                // Correct & Not Selected (Missed CA) - Green Outline
+                containerClass = "border-green-200 bg-white ring-1 ring-green-100";
+                labelColor = "text-green-700 font-medium";
+                icon = <CheckCircle className="w-5 h-5 text-green-500 opacity-50" />;
               }
 
               return (
@@ -138,8 +143,9 @@ export default function ResultsPage() {
   const [error, setError] = useState(null);
   const { logUserAction } = useAuditLog();
 
-  // Admin/Operations Setting (Mocked)
-  const showQuestionReview = true;
+  // Admin/Operations Settings
+  const showQuestionReview = selectedQuiz?.showQuestionReview ?? true;
+  const showCorrectAnswers = selectedQuiz?.showCorrectAnswers ?? false;
 
   useEffect(() => {
     async function loadResults() {
@@ -388,6 +394,7 @@ export default function ResultsPage() {
                   question={question}
                   index={index}
                   userResponse={results.detailedResponses?.find(r => r.questionId === question.id)}
+                  showCorrectAnswers={showCorrectAnswers}
                 />
               ))}
             </div>

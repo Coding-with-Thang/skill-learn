@@ -1,8 +1,8 @@
 "use client";
 
 import {
-  LineChart as RechartsLineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,14 +21,21 @@ export function LineChart({ data }) {
   return (
     <div className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RechartsLineChart data={formattedData}>
-          <CartesianGrid strokeDasharray="3 3" />
+        <AreaChart data={formattedData}>
+          <defs>
+            <linearGradient id="colorActiveUsers" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
           <XAxis
             dataKey="date"
             stroke="#888888"
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tickMargin={10}
           />
           <YAxis
             stroke="#888888"
@@ -37,15 +44,19 @@ export function LineChart({ data }) {
             axisLine={false}
             tickFormatter={(value) => `${value}`}
           />
-          <Tooltip />
-          <Line
+          <Tooltip
+            contentStyle={{ backgroundColor: 'var(--background)', borderRadius: '8px', border: '1px solid var(--border)' }}
+            cursor={{ stroke: '#0ea5e9', strokeWidth: 1 }}
+          />
+          <Area
             type="monotone"
             dataKey="activeUsers"
-            stroke="#8884d8"
-            strokeWidth={2}
-            dot={false}
+            stroke="#0ea5e9"
+            strokeWidth={3}
+            fillOpacity={1}
+            fill="url(#colorActiveUsers)"
           />
-        </RechartsLineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

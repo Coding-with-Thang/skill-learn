@@ -72,6 +72,8 @@ export async function POST(request) {
     }
 
     // Validate manager exists if provided
+    // - AGENT role: manager can be MANAGER or OPERATIONS
+    // - MANAGER role: manager must be OPERATIONS only
     if (manager && manager !== "" && manager !== "none") {
       const managerUser = await prisma.user.findUnique({
         where: { username: manager },
@@ -84,10 +86,20 @@ export async function POST(request) {
         });
       }
 
-      if (managerUser.role !== "MANAGER") {
-        throw new AppError("Assigned manager must have MANAGER role", ErrorType.VALIDATION, {
-          status: 400,
-        });
+      // If target role is MANAGER, manager must be OPERATIONS
+      if (targetRole === "MANAGER") {
+        if (managerUser.role !== "OPERATIONS") {
+          throw new AppError("Users with MANAGER role can only be assigned a manager with OPERATIONS role", ErrorType.VALIDATION, {
+            status: 400,
+          });
+        }
+      } else if (targetRole === "AGENT") {
+        // Agents can have MANAGER or OPERATIONS as manager
+        if (managerUser.role !== "MANAGER" && managerUser.role !== "OPERATIONS") {
+          throw new AppError("Assigned manager must have MANAGER or OPERATIONS role", ErrorType.VALIDATION, {
+            status: 400,
+          });
+        }
       }
     }
 
@@ -129,7 +141,7 @@ export async function POST(request) {
         firstName,
         lastName,
         role: targetRole,
-        manager: (manager === "none" || manager === "" || targetRole !== "AGENT") ? "" : manager,
+        manager: (manager === "none" || manager === "" || (targetRole !== "AGENT" && targetRole !== "MANAGER")) ? "" : manager,
         imageUrl: clerkUser.imageUrl,
       },
     });

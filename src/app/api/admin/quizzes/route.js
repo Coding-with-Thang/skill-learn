@@ -66,6 +66,8 @@ export async function POST(request) {
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
+        showQuestionReview: data.showQuestionReview ?? true,
+        showCorrectAnswers: data.showCorrectAnswers ?? false,
         questions: {
           create:
             data.questions ||

@@ -80,6 +80,8 @@ model Quiz {
   user           User?      @relation(fields: [userId], references: [id])
   score          Int?
   totalQuestions Int?
+  showQuestionReview Boolean    @default(true)
+  showCorrectAnswers Boolean    @default(false)
 
   // CRITICAL FOREIGN KEY AND QUERY INDEXES
   @@index([categoryId])

@@ -2,10 +2,13 @@
 
 import {
   BookOpen,
-  Bot,
-  Settings2,
-  SquareTerminal,
+  FileQuestion,
+  FileText,
+  Gift,
+  Layout,
   LayoutGrid,
+  Settings,
+  Users,
 } from "lucide-react";
 
 import { NavMain } from "./nav-main";
@@ -21,94 +24,85 @@ import {
 } from "@/components/ui/sidebar";
 import { Logo } from "@/components/shared/Logo";
 import Link from "next/link";
-
 const data = {
-  navMain: [
+  navGroups: [
     {
-      title: "Courses",
-      url: "/dashboard/courses",
-      icon: SquareTerminal,
-      isActive: true,
+      label: "ADMIN DASHBOARD",
       items: [
         {
-          title: "Manage Courses",
-          url: "/dashboard/courses",
-        },
-        {
-          title: "Course Creator",
-          url: "/dashboard/courses/create",
-        },
-      ],
-    },
-    {
-      title: "Quiz Management",
-      url: "/dashboard/quizzes",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "Categories",
-          url: "/dashboard/categories",
-        },
-        {
-          title: "Manage Quizzes",
-          url: "/dashboard/quizzes",
-        },
-        {
-          title: "Quiz Creator",
-          url: "/dashboard/quizzes/quiz-manager",
-        },
-      ],
-    },
-    {
-      title: "Rewards",
-      url: "/dashboard",
-      icon: Bot,
-      items: [
-        {
-          title: "Manage Rewards",
-          url: "/dashboard/rewards",
-        },
-        {
-          title: "Reward Redeem Logs",
+          title: "Overview",
           url: "/dashboard",
+          icon: Layout,
+          isActive: true,
+        },
+        {
+          title: "Courses",
+          url: "/dashboard/courses",
+          icon: BookOpen,
+          items: [
+            {
+              title: "Manage Courses",
+              url: "/dashboard/courses",
+            },
+            {
+              title: "Course Creator",
+              url: "/dashboard/courses/create",
+            },
+          ],
+        },
+        {
+          title: "Quiz Management",
+          url: "/dashboard/quizzes",
+          icon: FileQuestion,
+          items: [
+            {
+              title: "Categories",
+              url: "/dashboard/categories",
+            },
+            {
+              title: "Manage Quizzes",
+              url: "/dashboard/quizzes",
+            },
+            {
+              title: "Quiz Creator",
+              url: "/dashboard/quizzes/quiz-manager",
+            },
+          ],
         },
       ],
     },
     {
-      title: "Users",
-      url: "/dashboard",
-      icon: BookOpen,
+      label: "PLATFORM",
       items: [
         {
-          title: "User Management",
+          title: "Rewards",
+          url: "/dashboard/rewards",
+          icon: Gift,
+        },
+        {
+          title: "Users",
           url: "/dashboard/users",
+          icon: Users,
         },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "/dashboard",
-      icon: BookOpen,
-      items: [
         {
-          title: "Changelog",
-          url: "/dashboard/changelog",
+          title: "Documentation",
+          url: "/dashboard/documentation",
+          icon: FileText,
         },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "/dashboard",
-      icon: Settings2,
-      items: [
         {
-          title: "Config",
+          title: "Settings",
           url: "/dashboard/settings",
-        },
-        {
-          title: "Audit Logs",
-          url: "/dashboard/audit-logs",
+          icon: Settings,
+          items: [
+            {
+              title: "Default Values",
+              url: "/dashboard/settings",
+            },
+            {
+              title: "Audit Logs",
+              url: "/dashboard/audit-logs",
+            },
+          ],
         },
       ],
     },
@@ -128,7 +122,9 @@ export function AppSidebar({ ...props }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        {data.navGroups.map((group) => (
+          <NavMain key={group.label} label={group.label} items={group.items} />
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

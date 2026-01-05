@@ -81,16 +81,21 @@ export default function QuizzesAdminPage() {
   const fetchCategories = async () => {
     try {
       const response = await api.get('/admin/categories')
-      setCategories(response.data)
+      // Safely extract categories array
+      const cats = response.data?.categories || response.data?.data || response.data || []
+      setCategories(Array.isArray(cats) ? cats : [])
     } catch (error) {
       console.error('Failed to fetch categories:', error)
+      setCategories([])
     }
   }
 
   const fetchQuizzes = async () => {
     try {
       const response = await api.get('/admin/quizzes')
-      setQuizzes(response.data)
+      // Extract quizzes from response structure (handling potential wrappers)
+      const parts = response.data?.quizzes || response.data?.data?.quizzes || []
+      setQuizzes(parts)
       setError(null)
     } catch (error) {
       console.error('Failed to fetch quizzes:', error)
@@ -165,7 +170,7 @@ export default function QuizzesAdminPage() {
   }
 
   // Apply filters, sorting, and pagination
-  const filteredQuizzes = quizzes
+  const filteredQuizzes = (Array.isArray(quizzes) ? quizzes : [])
     .filter(quiz => {
       const matchesSearch = quiz.title.toLowerCase().includes(filters.search.toLowerCase()) ||
         quiz.description?.toLowerCase().includes(filters.search.toLowerCase())
@@ -185,7 +190,9 @@ export default function QuizzesAdminPage() {
         return direction * a.category.name.localeCompare(b.category.name)
       }
       if (sortConfig.key === 'questions') {
-        return direction * (a.questions.length - b.questions.length)
+        const aLength = a.questions?.length || 0
+        const bLength = b.questions?.length || 0
+        return direction * (aLength - bLength)
       }
       return direction * (new Date(a[sortConfig.key]) - new Date(b[sortConfig.key]))
     })
@@ -319,7 +326,8 @@ export default function QuizzesAdminPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map(category => (
+                  {/* Use optional chaining or array check */}
+                  {(Array.isArray(categories) ? categories : []).map(category => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -430,7 +438,7 @@ export default function QuizzesAdminPage() {
                     </TableCell>
                     <TableCell className="font-medium">{quiz.title}</TableCell>
                     <TableCell>{quiz.category.name}</TableCell>
-                    <TableCell>{quiz.questions.length}</TableCell>
+                    <TableCell>{quiz.questions?.length || 0}</TableCell>
                     <TableCell>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</TableCell>
                     <TableCell>{quiz.passingScore}%</TableCell>
                     <TableCell>

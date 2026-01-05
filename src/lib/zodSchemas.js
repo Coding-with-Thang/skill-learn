@@ -118,6 +118,8 @@ export const quizCreateSchema = z.object({
     .max(100, "Passing score cannot exceed 100")
     .optional(),
   isActive: z.boolean().optional().default(true),
+  showQuestionReview: z.boolean().optional().default(true),
+  showCorrectAnswers: z.boolean().optional().default(false),
   questions: z.array(questionSchema).optional(),
 });
 

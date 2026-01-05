@@ -107,15 +107,17 @@ export async function PUT(request, { params }) {
         }
 
         // Validate manager assignment
-        // Manager field should only be set for AGENT role
+        // Manager field can be set for AGENT or MANAGER roles
         const targetRole = role || userToUpdate.role;
-        if (manager && manager !== "" && targetRole !== "AGENT") {
-            throw new AppError("Manager can only be assigned to agents", ErrorType.VALIDATION, {
+        if (manager && manager !== "" && targetRole !== "AGENT" && targetRole !== "MANAGER") {
+            throw new AppError("Manager can only be assigned to agents or managers", ErrorType.VALIDATION, {
                 status: 400,
             });
         }
 
         // Validate manager exists if provided
+        // - AGENT role: manager can be MANAGER or OPERATIONS
+        // - MANAGER role: manager must be OPERATIONS only
         if (manager && manager !== "") {
             const managerUser = await prisma.user.findUnique({
                 where: { username: manager },
@@ -128,10 +130,20 @@ export async function PUT(request, { params }) {
                 });
             }
 
-            if (managerUser.role !== "MANAGER") {
-                throw new AppError("Assigned manager must have MANAGER role", ErrorType.VALIDATION, {
-                    status: 400,
-                });
+            // If target role is MANAGER, manager must be OPERATIONS
+            if (targetRole === "MANAGER") {
+                if (managerUser.role !== "OPERATIONS") {
+                    throw new AppError("Users with MANAGER role can only be assigned a manager with OPERATIONS role", ErrorType.VALIDATION, {
+                        status: 400,
+                    });
+                }
+            } else if (targetRole === "AGENT") {
+                // Agents can have MANAGER or OPERATIONS as manager
+                if (managerUser.role !== "MANAGER" && managerUser.role !== "OPERATIONS") {
+                    throw new AppError("Assigned manager must have MANAGER or OPERATIONS role", ErrorType.VALIDATION, {
+                        status: 400,
+                    });
+                }
             }
         }
 
@@ -147,11 +159,16 @@ export async function PUT(request, { params }) {
             updateData.role = role;
         }
 
-        // Only include manager if target role is AGENT
-        if (targetRole === "AGENT") {
-            updateData.manager = manager === "none" || manager === "" ? "" : manager;
+        // Only include manager if target role is AGENT or MANAGER
+        if (targetRole === "AGENT" || targetRole === "MANAGER") {
+            // Handle manager assignment: undefined/null -> empty string, "none" -> empty string, otherwise use the value
+            if (manager === undefined || manager === null || manager === "none" || manager === "") {
+                updateData.manager = "";
+            } else {
+                updateData.manager = manager;
+            }
         } else {
-            // Clear manager if role is not AGENT
+            // Clear manager if role is not AGENT or MANAGER
             updateData.manager = "";
         }
 

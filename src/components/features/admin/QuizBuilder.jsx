@@ -41,6 +41,8 @@ export default function QuizBuilder({ quizId = null }) {
         timeLimit: 0,
         passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE, // Default, will be updated from settings if available
         isActive: true,
+        showQuestionReview: true,
+        showCorrectAnswers: false,
         questions: Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT).fill(null).map((_, i) => ({
             text: "",
             imageUrl: "",
@@ -66,9 +68,13 @@ export default function QuizBuilder({ quizId = null }) {
     const fetchCategories = async () => {
         try {
             const response = await api.get("/admin/categories")
-            setCategories(response.data)
+            // Safely extract categories array similar to other components
+            const responseData = response.data?.data || response.data
+            const categoriesArray = responseData?.categories || responseData || []
+            setCategories(Array.isArray(categoriesArray) ? categoriesArray : [])
         } catch (error) {
             handleErrorWithNotification(error, "Failed to load categories")
+            setCategories([])
         }
     }
 
@@ -101,7 +107,12 @@ export default function QuizBuilder({ quizId = null }) {
     const fetchQuiz = async () => {
         try {
             const response = await api.get(`/admin/quizzes/${quizId}`)
-            setQuiz(response.data)
+            const quizData = response.data
+            // Ensure questions is always an array
+            if (!quizData.questions || !Array.isArray(quizData.questions)) {
+                quizData.questions = []
+            }
+            setQuiz(quizData)
         } catch (error) {
             handleErrorWithNotification(error, "Failed to load quiz")
         } finally {
@@ -135,7 +146,7 @@ export default function QuizBuilder({ quizId = null }) {
                 return
             }
 
-            if (quiz.questions.length < 1) {
+            if (!quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length < 1) {
                 toast.error("Quiz must have at least one question")
                 return
             }
@@ -199,7 +210,8 @@ export default function QuizBuilder({ quizId = null }) {
     }
 
     const handleAddQuestion = () => {
-        if (quiz.questions.length >= 10) {
+        const currentQuestions = quiz.questions || []
+        if (currentQuestions.length >= 10) {
             toast.error("Maximum 10 questions allowed per quiz")
             return
         }
@@ -207,7 +219,7 @@ export default function QuizBuilder({ quizId = null }) {
         setQuiz(prev => ({
             ...prev,
             questions: [
-                ...prev.questions,
+                ...(prev.questions || []),
                 {
                     text: "",
                     imageUrl: "",
@@ -223,13 +235,14 @@ export default function QuizBuilder({ quizId = null }) {
     }
 
     const handleRemoveQuestion = (index) => {
-        if (quiz.questions.length <= 1) {
+        const currentQuestions = quiz.questions || []
+        if (currentQuestions.length <= 1) {
             toast.error("Quiz must have at least one question")
             return
         }
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.filter((_, i) => i !== index)
+            questions: (prev.questions || []).filter((_, i) => i !== index)
         }))
         toast.info(`Question ${index + 1} removed`)
     }
@@ -237,7 +250,7 @@ export default function QuizBuilder({ quizId = null }) {
     const handleQuestionChange = (index, field, value) => {
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) => {
+            questions: (prev.questions || []).map((q, i) => {
                 if (i !== index) return q;
 
                 // If setting imageUrl, clear videoUrl
@@ -255,15 +268,18 @@ export default function QuizBuilder({ quizId = null }) {
     }
 
     const handleAddOption = (questionIndex) => {
-        const question = quiz.questions[questionIndex]
-        if (question.options.length >= 6) {
-            toast.error("Maximum 6 options allowed per question")
+        const questions = quiz.questions || []
+        const question = questions[questionIndex]
+        if (!question || !question.options || question.options.length >= 6) {
+            if (question && question.options && question.options.length >= 6) {
+                toast.error("Maximum 6 options allowed per question")
+            }
             return
         }
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) =>
+            questions: (prev.questions || []).map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: [
@@ -279,7 +295,12 @@ export default function QuizBuilder({ quizId = null }) {
     }
 
     const handleRemoveOption = (questionIndex, optionIndex) => {
-        const question = quiz.questions[questionIndex]
+        const questions = quiz.questions || []
+        const question = questions[questionIndex]
+        if (!question || !question.options) {
+            return
+        }
+        
         if (question.options.length <= 2) {
             toast.error("Each question must have at least 2 options")
             return
@@ -295,7 +316,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) =>
+            questions: (prev.questions || []).map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: q.options.filter((_, j) => j !== optionIndex)
@@ -307,7 +328,11 @@ export default function QuizBuilder({ quizId = null }) {
     const handleOptionChange = (questionIndex, optionIndex, field, value) => {
         if (field === "isCorrect" && !value) {
             // Check if this is the last correct option
-            const question = quiz.questions[questionIndex]
+            const questions = quiz.questions || []
+            const question = questions[questionIndex]
+            if (!question || !question.options) {
+                return
+            }
             const correctOptions = question.options.filter(o => o.isCorrect)
             if (correctOptions.length === 1 && correctOptions[0] === question.options[optionIndex]) {
                 toast.error("Each question must have at least one correct answer")
@@ -317,7 +342,7 @@ export default function QuizBuilder({ quizId = null }) {
 
         setQuiz(prev => ({
             ...prev,
-            questions: prev.questions.map((q, i) =>
+            questions: (prev.questions || []).map((q, i) =>
                 i === questionIndex ? {
                     ...q,
                     options: q.options.map((opt, j) =>
@@ -433,6 +458,37 @@ export default function QuizBuilder({ quizId = null }) {
                             />
                             <Label htmlFor="isActive">Active</Label>
                         </div>
+
+                        {/* Review Settings */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                <Switch
+                                    id="showQuestionReview"
+                                    checked={quiz.showQuestionReview}
+                                    onCheckedChange={checked => setQuiz(prev => ({ ...prev, showQuestionReview: checked }))}
+                                />
+                                <div className="space-y-1">
+                                    <Label htmlFor="showQuestionReview">Show Question Review</Label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Allow users to review questions after quiz
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-2 border p-4 rounded-lg">
+                                <Switch
+                                    id="showCorrectAnswers"
+                                    checked={quiz.showCorrectAnswers}
+                                    disabled={!quiz.showQuestionReview}
+                                    onCheckedChange={checked => setQuiz(prev => ({ ...prev, showCorrectAnswers: checked }))}
+                                />
+                                <div className="space-y-1">
+                                    <Label htmlFor="showCorrectAnswers">Show Correct Answers</Label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Display correct answers for incorrect attempts
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
 
@@ -440,7 +496,7 @@ export default function QuizBuilder({ quizId = null }) {
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h3 className="text-lg font-semibold">Questions ({quiz.questions.length})</h3>
+                            <h3 className="text-lg font-semibold">Questions ({quiz.questions?.length || 0})</h3>
                             <p className="text-sm text-muted-foreground">Add at least one question to your quiz</p>
                         </div>
                         <Button
@@ -453,7 +509,7 @@ export default function QuizBuilder({ quizId = null }) {
                         </Button>
                     </div>
 
-                    {quiz.questions.map((question, qIndex) => (
+                    {(quiz.questions || []).map((question, qIndex) => (
                         <Card key={qIndex} className="relative border-2">
                             {/* Delete Question Button */}
                             <Button
