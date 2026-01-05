@@ -70,12 +70,19 @@ export async function GET(request) {
           )
         : null;
 
-    // Get user points (if available)
-    const userWithPoints = await prisma.user.findUnique({
+    // Get user streak data and points
+    const userWithStreak = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { points: true },
+      select: { 
+        currentStreak: true,
+        longestStreak: true,
+        points: true 
+      },
     });
-    const totalPoints = userWithPoints?.points || 0;
+    const totalPoints = userWithStreak?.points || 0;
+    const currentStreak = userWithStreak?.currentStreak || 0;
+    const longestStreak = userWithStreak?.longestStreak || 0;
+
 
     // Transform category stats to match component expectations
     const categoryStats = categoryStatsRaw.map((stat) => ({
@@ -88,25 +95,33 @@ export async function GET(request) {
       categoryId: stat.categoryId,
     }));
 
-    // Get quiz stats based on category stats
-    const quizStats = categoryStatsRaw
-      .map((stat) => ({
-        attempts: stat.attempts,
-        completed: stat.completed,
-        averageScore: stat.averageScore,
-        bestScore: stat.bestScore,
-        lastAttempt: stat.lastAttempt,
-        createdAt: stat.createdAt,
-        category: {
-          id: stat.category.id,
-          name: stat.category.name,
-        },
-      }))
-      .sort((a, b) => {
-        if (!a.lastAttempt) return 1;
-        if (!b.lastAttempt) return -1;
-        return new Date(b.lastAttempt) - new Date(a.lastAttempt);
+    // Fetch recent quiz completions from PointLog
+    const recentLogs = await prisma.pointLog.findMany({
+      where: {
+        userId: user.id,
+        reason: { startsWith: "quiz_completed_" }
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
+    // Enrich logs with quiz titles
+    const recentActivity = await Promise.all(recentLogs.map(async (log) => {
+      const quizId = log.reason.replace("quiz_completed_", "");
+      const quiz = await prisma.quiz.findUnique({
+        where: { id: quizId },
+        select: { title: true, category: { select: { name: true } } }
       });
+      return {
+        id: log.id,
+        quizTitle: quiz?.title || "Unknown Quiz",
+        categoryName: quiz?.category?.name || "Unknown Category",
+        date: log.createdAt,
+        type: "Quiz Completion",
+        points: log.amount
+      };
+    }));
+
 
     // Get all categories for filtering
     const categories = await prisma.category.findMany({
@@ -125,11 +140,13 @@ export async function GET(request) {
       averageScore: Math.round(averageScore * 10) / 10, // Round to 1 decimal
       bestScore,
       totalPoints,
+      currentStreak,
+      longestStreak,
       recentAttemptDate: recentAttemptDate
         ? recentAttemptDate.toISOString()
         : null,
       categoryStats,
-      quizStats,
+      recentActivity,
       categories,
     });
   } catch (error) {

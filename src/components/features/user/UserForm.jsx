@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUsersStore } from "@/lib/store/usersStore";
 import { toast } from "sonner";
@@ -107,14 +107,7 @@ export default function UserForm({ user = null, onSuccess }) {
                         </Select>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="manager"
-                            checked={formData.role === "MANAGER"}
-                            onCheckedChange={(checked) => handleChange("role", checked ? "MANAGER" : "USER")}
-                        />
-                        <Label htmlFor="manager">Manager</Label>
-                    </div>
+
 
                     {error && (
                         <div className="text-error text-sm">{error}</div>
