@@ -1,7 +1,9 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { useDebounce } from '@/lib/hooks/useDebounce'
+import { useState, useEffect } from "react"
+import { useDebounce } from "@/lib/hooks/useDebounce"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 import {
     Table,
     TableBody,
@@ -26,28 +28,39 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
 import { LoadingSpinner } from "@/components/ui/loading"
 import { Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import api from "@/lib/utils/axios"
+import { Form } from "@/components/ui/form"
+import { FormInput } from "@/components/ui/form-input"
+import { FormTextarea } from "@/components/ui/form-textarea"
+import { FormSwitch } from "@/components/ui/form-switch"
+import {
+    categoryCreateSchema,
+    categoryUpdateSchema,
+} from "@/lib/zodSchemas"
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [showForm, setShowForm] = useState(false)
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        imageUrl: '',
-        isActive: true
-    })
     const [editingId, setEditingId] = useState(null)
-    const [searchInput, setSearchInput] = useState('')
+    const [searchInput, setSearchInput] = useState("")
     const searchTerm = useDebounce(searchInput, 300)
+
+    const form = useForm({
+        resolver: zodResolver(
+            editingId ? categoryUpdateSchema : categoryCreateSchema
+        ),
+        defaultValues: {
+            name: "",
+            description: "",
+            imageUrl: "",
+            isActive: true,
+        },
+    })
 
     useEffect(() => {
         fetchCategories()
@@ -55,75 +68,80 @@ export default function CategoriesPage() {
 
     const fetchCategories = async () => {
         try {
-            const response = await api.get('/admin/categories')
+            const response = await api.get("/admin/categories")
             // API returns { success: true, data: { categories: [...] } }
             const responseData = response.data?.data || response.data
             const categoriesArray = responseData?.categories || []
             setCategories(categoriesArray)
         } catch (error) {
-            console.error('Failed to fetch categories:', error)
+            console.error("Failed to fetch categories:", error)
             setError(error.message)
         } finally {
             setLoading(false)
         }
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    const onSubmit = async (data) => {
         try {
             if (editingId) {
-                await api.put(`/admin/categories/${editingId}`, formData)
-                toast.success('Category updated successfully')
+                await api.put(`/admin/categories/${editingId}`, data)
+                toast.success("Category updated successfully")
             } else {
-                await api.post('/admin/categories', formData)
-                toast.success('Category created successfully')
+                await api.post("/admin/categories", data)
+                toast.success("Category created successfully")
             }
             await fetchCategories()
             handleCloseForm()
         } catch (error) {
-            console.error('Failed to save category:', error)
-            toast.error(error.response?.data?.error || 'Failed to save category')
+            console.error("Failed to save category:", error)
+            toast.error(
+                error.response?.data?.error || "Failed to save category"
+            )
         }
     }
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this category?')) return
+        if (!window.confirm("Are you sure you want to delete this category?"))
+            return
 
         try {
             await api.delete(`/admin/categories/${id}`)
-            toast.success('Category deleted successfully')
+            toast.success("Category deleted successfully")
             await fetchCategories()
         } catch (error) {
-            console.error('Failed to delete category:', error)
-            toast.error(error.response?.data?.error || 'Failed to delete category')
+            console.error("Failed to delete category:", error)
+            toast.error(
+                error.response?.data?.error || "Failed to delete category"
+            )
         }
     }
 
     const handleEdit = (category) => {
-        setFormData({
+        form.reset({
             name: category.name,
-            description: category.description || '',
-            imageUrl: category.imageUrl || '',
-            isActive: category.isActive
+            description: category.description || "",
+            imageUrl: category.imageUrl || "",
+            isActive: category.isActive,
         })
         setEditingId(category.id)
         setShowForm(true)
     }
 
     const handleCloseForm = () => {
-        setFormData({
-            name: '',
-            description: '',
-            imageUrl: '',
-            isActive: true
+        form.reset({
+            name: "",
+            description: "",
+            imageUrl: "",
+            isActive: true,
         })
         setEditingId(null)
         setShowForm(false)
     }
 
-    const filteredCategories = categories.filter(category =>
-        category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        category.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredCategories = categories.filter(
+        (category) =>
+            category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            category.description?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
     if (loading) {
@@ -183,15 +201,19 @@ export default function CategoriesPage() {
                             <TableBody>
                                 {filteredCategories.map((category) => (
                                     <TableRow key={category.id}>
-                                        <TableCell className="font-medium">{category.name}</TableCell>
-                                        <TableCell>{category.description || '-'}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {category.name}
+                                        </TableCell>
+                                        <TableCell>{category.description || "-"}</TableCell>
                                         <TableCell>{category._count.quizzes}</TableCell>
                                         <TableCell>
-                                            <span className={`px-2 py-1 rounded-full text-xs ${category.isActive
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {category.isActive ? 'Active' : 'Inactive'}
+                                            <span
+                                                className={`px-2 py-1 rounded-full text-xs ${category.isActive
+                                                        ? "bg-green-100 text-green-800"
+                                                        : "bg-red-100 text-red-800"
+                                                    }`}
+                                            >
+                                                {category.isActive ? "Active" : "Inactive"}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -232,69 +254,56 @@ export default function CategoriesPage() {
                 <DialogContent className="max-w-lg w-full">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingId ? 'Edit Category' : 'Create Category'}
+                            {editingId ? "Edit Category" : "Create Category"}
                         </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    required
-                                    value={formData.name}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({ ...prev, name: e.target.value }))
-                                    }
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={formData.description}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            description: e.target.value,
-                                        }))
-                                    }
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="imageUrl">Image URL</Label>
-                                <Input
-                                    id="imageUrl"
-                                    type="url"
-                                    value={formData.imageUrl}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({ ...prev, imageUrl: e.target.value }))
-                                    }
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Switch
-                                    id="isActive"
-                                    checked={formData.isActive}
-                                    onCheckedChange={(checked) => {
-                                        setFormData((prev) => ({ ...prev, isActive: checked }));
-                                    }}
-                                />
-                                <Label htmlFor="isActive">Active</Label>
-                            </div>
-                        </div>
-                        <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
-                            <Button type="button" variant="outline" onClick={handleCloseForm} className="w-full sm:w-auto">
-                                Cancel
-                            </Button>
-                            <Button type="submit" className="w-full sm:w-auto">
-                                {editingId ? 'Update' : 'Create'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                            <FormInput
+                                name="name"
+                                label="Name"
+                                placeholder="Enter category name"
+                                required
+                            />
+
+                            <FormTextarea
+                                name="description"
+                                label="Description"
+                                placeholder="Enter category description"
+                            />
+
+                            <FormInput
+                                name="imageUrl"
+                                label="Image URL"
+                                type="url"
+                                placeholder="https://example.com/image.jpg"
+                            />
+
+                            <FormSwitch
+                                name="isActive"
+                                label="Active"
+                                description="Make this category available for use"
+                            />
+
+                            <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleCloseForm}
+                                    className="w-full sm:w-auto"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={form.formState.isSubmitting}
+                                    className="w-full sm:w-auto"
+                                >
+                                    {editingId ? "Update" : "Create"}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
                 </DialogContent>
             </Dialog>
         </div>

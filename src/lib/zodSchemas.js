@@ -88,19 +88,20 @@ const questionOptionSchema = z.object({
   isCorrect: z.boolean(),
 });
 
-const questionSchema = z.object({
-  text: z.string().min(1, "Question text is required"),
-  imageUrl: z.string().optional(),
-  videoUrl: z.string().optional(),
-  points: z.number().int().positive().default(1),
-  options: z.array(questionOptionSchema).min(2, "Question must have at least 2 options"),
-}).refine(
-  (data) => !(data.imageUrl && data.videoUrl),
-  {
+const questionSchema = z
+  .object({
+    text: z.string().min(1, "Question text is required"),
+    imageUrl: z.string().optional(),
+    videoUrl: z.string().optional(),
+    points: z.number().int().positive().default(1),
+    options: z
+      .array(questionOptionSchema)
+      .min(2, "Question must have at least 2 options"),
+  })
+  .refine((data) => !(data.imageUrl && data.videoUrl), {
     message: "Question cannot have both imageUrl and videoUrl",
     path: ["imageUrl"],
-  }
-);
+  });
 
 export const quizCreateSchema = z.object({
   title: z
@@ -163,7 +164,10 @@ export const userCreateSchema = z.object({
     .string()
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must be less than 20 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores"),
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores"
+    ),
   firstName: z
     .string()
     .min(1, "First name is required")
@@ -180,52 +184,97 @@ export const userCreateSchema = z.object({
   manager: z.string().optional(),
 });
 
-export const userUpdateSchema = z.object({
-  username: z
-    .string()
-    .min(3, "Username must be at least 3 characters")
-    .max(20, "Username must be less than 20 characters")
-    .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores")
-    .optional(),
-  firstName: z
-    .string()
-    .min(1, "First name is required")
-    .max(50, "First name must be less than 50 characters")
-    .optional(),
-  lastName: z
-    .string()
-    .min(1, "Last name is required")
-    .max(50, "Last name must be less than 50 characters")
-    .optional(),
-  role: userRoleSchema.optional(),
-  manager: z.string().optional(),
-});
+export const userUpdateSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .max(20, "Username must be less than 20 characters")
+      .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores"
+      )
+      .optional(),
+    firstName: z
+      .string()
+      .min(1, "First name is required")
+      .max(50, "First name must be less than 50 characters")
+      .optional(),
+    lastName: z
+      .string()
+      .min(1, "Last name is required")
+      .max(50, "Last name must be less than 50 characters")
+      .optional(),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(100, "Password must be less than 100 characters")
+      .optional(),
+    role: userRoleSchema.optional(),
+    manager: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // Manager can only be set for AGENT or MANAGER roles
+      if (data.manager && data.manager !== "" && data.role) {
+        return data.role === "AGENT" || data.role === "MANAGER";
+      }
+      return true;
+    },
+    {
+      message: "Manager can only be assigned to AGENT or MANAGER roles",
+      path: ["manager"],
+    }
+  );
 
 // Reward schemas
 export const rewardRedeemSchema = z.object({
   rewardId: objectIdSchema,
 });
 
-export const rewardCreateSchema = z.object({
-  prize: z
-    .string()
-    .min(1, "Prize name is required")
-    .max(200, "Prize name must be less than 200 characters"),
-  cost: z
-    .number()
-    .int("Cost must be an integer")
-    .positive("Cost must be positive"),
-  enabled: z.boolean().default(true),
-  allowMultiple: z.boolean().default(false),
-  maxRedemptions: z
-    .number()
-    .int()
-    .positive()
-    .nullable()
-    .optional(),
-  description: z.string().optional(),
-  imageUrl: z.string().optional(),
-});
+export const rewardCreateSchema = z
+  .object({
+    prize: z
+      .string()
+      .min(1, "Prize name is required")
+      .max(200, "Prize name must be less than 200 characters"),
+    cost: z
+      .number()
+      .int("Cost must be an integer")
+      .positive("Cost must be positive"),
+    enabled: z.boolean().default(true),
+    allowMultiple: z.boolean().default(false),
+    maxRedemptions: z.number().int().positive().nullable().optional(),
+    description: z.string().optional(),
+    imageUrl: z
+      .string()
+      .url("Must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+    claimUrl: z
+      .string()
+      .url("Must be a valid URL")
+      .optional()
+      .or(z.literal("")),
+  })
+  .refine(
+    (data) => {
+      // If allowMultiple is true and maxRedemptions is provided, it must be positive
+      if (
+        data.allowMultiple &&
+        data.maxRedemptions !== null &&
+        data.maxRedemptions !== undefined
+      ) {
+        return data.maxRedemptions > 0;
+      }
+      return true;
+    },
+    {
+      message:
+        "Max redemptions must be positive when allow multiple is enabled",
+      path: ["maxRedemptions"],
+    }
+  );
 
 export const rewardUpdateSchema = rewardCreateSchema.partial();
 
@@ -253,3 +302,9 @@ export const settingUpdateSchema = z.object({
   key: z.string().min(1, "Setting key is required"),
   value: z.string().min(1, "Setting value is required"),
 });
+
+// Settings form schema - for individual setting updates
+export const settingsFormSchema = z.record(
+  z.string(),
+  z.union([z.string(), z.number(), z.boolean()])
+);

@@ -1,246 +1,198 @@
-import { useState, useEffect } from "react"
+"use client"
+
+import { useEffect } from "react"
 import Image from "next/image"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 import { Button } from "@/components/ui/button"
+import { Form } from "@/components/ui/form"
+import { FormInput } from "@/components/ui/form-input"
+import { FormTextarea } from "@/components/ui/form-textarea"
+import { FormSwitch } from "@/components/ui/form-switch"
 import { toast } from "sonner"
 import { useRewardStore } from "@/lib/store/rewardStore"
+import { rewardCreateSchema, rewardUpdateSchema } from "@/lib/zodSchemas"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    prize: '',
-    description: '',
-    imageUrl: '',
-    cost: '',
-    claimUrl: '',
-    enabled: true,
-    allowMultiple: false,
-    maxRedemptions: 1
+
+  const schema = reward ? rewardUpdateSchema : rewardCreateSchema
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      prize: reward?.prize || "",
+      description: reward?.description || "",
+      imageUrl: reward?.imageUrl || "",
+      cost: reward?.cost || "",
+      claimUrl: reward?.claimUrl || "",
+      enabled: reward?.enabled ?? true,
+      allowMultiple: reward?.allowMultiple ?? false,
+      maxRedemptions: reward?.maxRedemptions || 1,
+    },
   })
+
+  const watchedAllowMultiple = form.watch("allowMultiple")
+  const watchedImageUrl = form.watch("imageUrl")
 
   useEffect(() => {
     if (reward) {
-      setFormData({
+      form.reset({
         prize: reward.prize,
         description: reward.description,
         imageUrl: reward.imageUrl,
         cost: reward.cost,
-        claimUrl: reward.claimUrl || '',
+        claimUrl: reward.claimUrl || "",
         enabled: reward.enabled,
         allowMultiple: reward.allowMultiple,
-        maxRedemptions: reward.maxRedemptions
+        maxRedemptions: reward.maxRedemptions,
       })
     }
-  }, [reward])
+  }, [reward, form])
 
-  const handleChange = (field) => (e) => {
-    let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value
-
-    // Handle number fields
-    if (field === 'cost' || field === 'maxRedemptions') {
-      value = value === '' ? '' : parseInt(value, 10)
+  // Clear maxRedemptions when allowMultiple is disabled
+  useEffect(() => {
+    if (!watchedAllowMultiple) {
+      form.setValue("maxRedemptions", 1)
     }
+  }, [watchedAllowMultiple, form])
 
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const onSubmit = async (data) => {
     try {
-      if (!formData.prize || !formData.description || !formData.cost) {
-        throw new Error('Please fill in all required fields')
-      }
-
       // Format the data before sending
       const submitData = {
-        ...formData,
-        cost: parseInt(formData.cost, 10),
-        maxRedemptions: formData.allowMultiple && formData.maxRedemptions
-          ? parseInt(formData.maxRedemptions, 10)
-          : null
-      };
-
-      if (reward) {
-        await updateReward(reward.id, submitData);
-      } else {
-        await addReward(submitData);
+        ...data,
+        cost: typeof data.cost === "string" ? parseInt(data.cost, 10) : data.cost,
+        maxRedemptions:
+          data.allowMultiple && data.maxRedemptions
+            ? typeof data.maxRedemptions === "string"
+              ? parseInt(data.maxRedemptions, 10)
+              : data.maxRedemptions
+            : null,
       }
 
-      toast.success(reward ? 'Reward updated successfully' : 'Reward added successfully')
+      if (reward) {
+        await updateReward(reward.id, submitData)
+        toast.success("Reward updated successfully")
+      } else {
+        await addReward(submitData)
+        toast.success("Reward added successfully")
+      }
       onClose()
     } catch (error) {
-      toast.error(error.message || 'Something went wrong')
-    } finally {
-      setIsSubmitting(false)
+      toast.error(error.message || "Something went wrong")
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="prize" className="text-sm font-medium text-gray-700">
-            Reward Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="prize"
-            value={formData.prize}
-            onChange={handleChange('prize')}
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <FormInput
+            name="prize"
+            label="Reward Name"
             placeholder="Enter reward name"
-            className="transition-colors focus:border-blue-500"
             required
           />
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="cost" className="text-sm font-medium text-gray-700">
-            Points Required <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="cost"
+          <FormInput
+            name="cost"
+            label="Points Required"
             type="number"
             min="0"
-            value={formData.cost}
-            onChange={handleChange('cost')}
             placeholder="10000"
-            className="transition-colors focus:border-blue-500"
             required
           />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-          Description <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="description"
-          value={formData.description}
-          onChange={handleChange('description')}
+        <FormTextarea
+          name="description"
+          label="Description"
           placeholder="Enter description"
-          className="transition-colors focus:border-blue-500"
           required
         />
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-          Image URL <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="imageUrl"
-          type="url"
-          value={formData.imageUrl}
-          onChange={handleChange('imageUrl')}
-          placeholder="https://example.com/image.jpg"
-          className="transition-colors focus:border-blue-500"
-          required
-        />
-        {formData.imageUrl && (
-          <div className="mt-2 p-2 border rounded-md">
-            <div className="relative h-32 w-full rounded-md overflow-hidden">
-              <Image
-                src={formData.imageUrl}
-                alt="Preview"
-                fill
-                className="object-cover"
-                sizes="(max-width: 600px) 100vw, 600px"
-                onError={(e) => e.currentTarget.style.display = 'none'}
-              />
+        <div className="space-y-2">
+          <FormInput
+            name="imageUrl"
+            label="Image URL"
+            type="url"
+            placeholder="https://example.com/image.jpg"
+            required
+          />
+          {watchedImageUrl && (
+            <div className="mt-2 p-2 border rounded-md">
+              <div className="relative h-32 w-full rounded-md overflow-hidden">
+                <Image
+                  src={watchedImageUrl}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 600px) 100vw, 600px"
+                  onError={(e) => (e.currentTarget.style.display = "none")}
+                />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="claimUrl" className="text-sm font-medium text-gray-700">
-          Claim URL
-          <span className="ml-1 text-gray-400 text-sm">(Optional)</span>
-        </Label>
-        <Input
-          id="claimUrl"
+        <FormInput
+          name="claimUrl"
+          label="Claim URL"
           type="url"
-          value={formData.claimUrl}
-          onChange={handleChange('claimUrl')}
           placeholder="https://example.com/claim"
-          className="transition-colors focus:border-blue-500"
+          description="Optional"
         />
-      </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="enabled" className="text-sm font-medium text-gray-700">
-            Enable Reward
-          </Label>
-          <Switch
-            id="enabled"
-            checked={formData.enabled}
-            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, enabled: checked }))}
+        <div className="space-y-4">
+          <FormSwitch
+            name="enabled"
+            label="Enable Reward"
+            description="Make this reward available for redemption"
           />
-        </div>
 
-        <div className="flex items-center justify-between">
-          <Label htmlFor="allowMultiple" className="text-sm font-medium text-gray-700">
-            Allow Multiple Redemptions
-          </Label>
-          <Switch
-            id="allowMultiple"
-            checked={formData.allowMultiple}
-            onCheckedChange={(checked) => setFormData(prev => ({
-              ...prev,
-              allowMultiple: checked,
-              maxRedemptions: checked ? prev.maxRedemptions : 1
-            }))}
+          <FormSwitch
+            name="allowMultiple"
+            label="Allow Multiple Redemptions"
+            description="Allow users to redeem this reward multiple times"
           />
-        </div>
 
-        {formData.allowMultiple && (
-          <div className="space-y-2">
-            <Label htmlFor="maxRedemptions" className="text-sm font-medium text-gray-700">
-              Maximum Redemptions
-              <span className="ml-1 text-gray-400 text-sm">(Leave empty for unlimited)</span>
-            </Label>
-            <Input
-              id="maxRedemptions"
+          {watchedAllowMultiple && (
+            <FormInput
+              name="maxRedemptions"
+              label="Maximum Redemptions"
               type="number"
               min="1"
-              value={formData.maxRedemptions || ''}
-              onChange={handleChange('maxRedemptions')}
               placeholder="Enter max redemptions"
-              className="w-32 transition-colors focus:border-blue-500"
+              description="Leave empty for unlimited"
+              className="w-32"
             />
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-end gap-3 pt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="min-w-[100px]"
-        >
-          {isSubmitting ? (
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              {reward ? 'Saving...' : 'Adding...'}
-            </div>
-          ) : (
-            reward ? 'Save Changes' : 'Add Reward'
           )}
-        </Button>
-      </div>
-    </form>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={form.formState.isSubmitting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="min-w-[100px]"
+          >
+            {form.formState.isSubmitting
+              ? reward
+                ? "Saving..."
+                : "Adding..."
+              : reward
+                ? "Save Changes"
+                : "Add Reward"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
-} 
+}
