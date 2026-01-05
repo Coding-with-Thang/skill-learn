@@ -18,16 +18,25 @@ import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
 export default async function DashboardPage() {
+  let stats;
+  try {
+    stats = await getDashboardStats();
+  } catch (error) {
+    console.error("Error loading dashboard stats:", error);
+    stats = null;
+  }
+
+  // Ensure all array fields are arrays (defensive programming)
   const {
-    totalUsers,
-    activeRewards,
-    totalPointsAwarded,
-    rewardsClaimed,
-    userActivity,
-    pointsDistribution,
-    categoryPerformance,
-    recentActivity
-  } = await getDashboardStats();
+    totalUsers = { value: 0, trend: 0 },
+    activeRewards = { value: 0, trend: 0 },
+    totalPointsAwarded = { value: 0, trend: 0 },
+    rewardsClaimed = { value: 0, trend: 0 },
+    userActivity = [],
+    pointsDistribution = [],
+    categoryPerformance = [],
+    recentActivity = []
+  } = stats || {};
 
   return (
     <div className="space-y-6">
@@ -139,7 +148,7 @@ export default async function DashboardPage() {
           <CardContent>
             <PieChart data={pointsDistribution} />
             <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-              {pointsDistribution.slice(0, 4).map((item, index) => (
+              {Array.isArray(pointsDistribution) && pointsDistribution.slice(0, 4).map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"][index % 4] }}></div>
                   <span className="truncate text-muted-foreground">{item.category}</span>
@@ -159,7 +168,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {categoryPerformance.map((category) => (
+            {Array.isArray(categoryPerformance) && categoryPerformance.map((category) => (
               <Card key={category.category} className="shadow-sm border-none">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-4">
@@ -204,7 +213,7 @@ export default async function DashboardPage() {
               <Link href="/dashboard/audit-logs" className="text-sm text-blue-600 hover:underline">View All</Link>
             </CardHeader>
             <CardContent className="space-y-6">
-              {recentActivity.map((activity, index) => (
+              {Array.isArray(recentActivity) && recentActivity.map((activity, index) => (
                 <div key={activity.id} className="flex gap-3 sm:gap-4 overflow-hidden">
                   <Avatar className="h-9 w-9 shrink-0">
                     {activity.userImage && <AvatarImage src={activity.userImage} alt={activity.user} />}

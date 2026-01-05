@@ -31,22 +31,6 @@ export default function UserForm({ user = null, onSuccess }) {
         }
     }, [users.length]);
 
-    // Validate and update manager when role changes
-    useEffect(() => {
-        if (formData.role === "AGENT" || formData.role === "MANAGER") {
-            // Only validate if manager is set
-            if (formData.manager) {
-                const currentManager = users.find(u => u.username === formData.manager);
-                const isValidManager = managerOptions.some(opt => opt.value === formData.manager);
-                
-                // If current manager is not in the valid options, clear it
-                if (!isValidManager && currentManager) {
-                    setFormData(prev => ({ ...prev, manager: "" }));
-                }
-            }
-        }
-    }, [formData.role, managerOptions, users, formData.manager]);
-
     // Get list of managers for the dropdown
     // - AGENT role: can be assigned MANAGER or OPERATIONS
     // - MANAGER role: can only be assigned OPERATIONS
@@ -67,6 +51,22 @@ export default function UserForm({ user = null, onSuccess }) {
             }))
         ];
     }, [users, formData.role]);
+
+    // Validate and update manager when role changes
+    useEffect(() => {
+        if (formData.role === "AGENT" || formData.role === "MANAGER") {
+            // Only validate if manager is set
+            if (formData.manager) {
+                const currentManager = users.find(u => u.username === formData.manager);
+                const isValidManager = managerOptions.some(opt => opt.value === formData.manager);
+                
+                // If current manager is not in the valid options, clear it
+                if (!isValidManager && currentManager) {
+                    setFormData(prev => ({ ...prev, manager: "" }));
+                }
+            }
+        }
+    }, [formData.role, managerOptions, users, formData.manager]);
 
     // Determine if current user can change roles
     const canChangeRole = currentUserRole === "OPERATIONS";

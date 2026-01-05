@@ -177,12 +177,17 @@ export async function getDashboardStats() {
     const quizIdPattern = /^(quiz_completed_|perfect_score_bonus_)(.+)$/;
     const quizIds = new Set();
 
-    pointsDistribution.forEach((item) => {
-      const match = item.reason.match(quizIdPattern);
-      if (match && match[2]) {
-        quizIds.add(match[2]);
-      }
-    });
+    // Ensure pointsDistribution is an array before iterating
+    if (Array.isArray(pointsDistribution)) {
+      pointsDistribution.forEach((item) => {
+        if (item?.reason) {
+          const match = item.reason.match(quizIdPattern);
+          if (match && match[2]) {
+            quizIds.add(match[2]);
+          }
+        }
+      });
+    }
 
     // Fetch quiz names for all unique quiz IDs
     const quizzes = await prisma.quiz.findMany({
@@ -205,20 +210,25 @@ export async function getDashboardStats() {
     const quizPointsMap = new Map();
     const nonQuizReasons = [];
 
-    pointsDistribution.forEach((item) => {
-      const match = item.reason.match(quizIdPattern);
-      if (match && match[2]) {
-        const quizId = match[2];
-        const currentPoints = quizPointsMap.get(quizId) || 0;
-        quizPointsMap.set(quizId, currentPoints + item._sum.amount);
-      } else {
-        // Non-quiz reasons (like points_spent_reward, etc.)
-        nonQuizReasons.push({
-          category: item.reason,
-          points: item._sum.amount,
-        });
-      }
-    });
+    // Ensure pointsDistribution is an array before iterating
+    if (Array.isArray(pointsDistribution)) {
+      pointsDistribution.forEach((item) => {
+        if (item?.reason) {
+          const match = item.reason.match(quizIdPattern);
+          if (match && match[2]) {
+            const quizId = match[2];
+            const currentPoints = quizPointsMap.get(quizId) || 0;
+            quizPointsMap.set(quizId, currentPoints + (item._sum?.amount || 0));
+          } else {
+            // Non-quiz reasons (like points_spent_reward, etc.)
+            nonQuizReasons.push({
+              category: item.reason,
+              points: item._sum?.amount || 0,
+            });
+          }
+        }
+      });
+    }
 
     // Get category engagement trends
     const categoryStats = await prisma.categoryStat.groupBy({
@@ -250,20 +260,22 @@ export async function getDashboardStats() {
     });
 
     // Calculate completion rates for categories
-    const categoryCompletionRates = await Promise.all(
-      categoryStats.map(async (stat) => {
-        const category = await prisma.category.findUnique({
-          where: { id: stat.categoryId },
-          select: { name: true },
-        });
-        return {
-          category: category?.name || "Unknown",
-          completionRate:
-            (stat._sum.completed / (stat._sum.attempts || 1)) * 100,
-          averageScore: stat._avg.averageScore || 0,
-        };
-      })
-    );
+    const categoryCompletionRates = Array.isArray(categoryStats) 
+      ? await Promise.all(
+          categoryStats.map(async (stat) => {
+            const category = await prisma.category.findUnique({
+              where: { id: stat.categoryId },
+              select: { name: true },
+            });
+            return {
+              category: category?.name || "Unknown",
+              completionRate:
+                (stat._sum.completed / (stat._sum.attempts || 1)) * 100,
+              averageScore: stat._avg.averageScore || 0,
+            };
+          })
+        )
+      : [];
 
     return {
       totalUsers: {
@@ -282,10 +294,10 @@ export async function getDashboardStats() {
         value: rewardsClaimed,
         trend: claimedTrend,
       },
-      userActivity: userActivity.map((item) => ({
+      userActivity: Array.isArray(userActivity) ? userActivity.map((item) => ({
         date: item.createdAt,
         activeUsers: item._count.userId,
-      })),
+      })) : [],
       pointsDistribution: [
         // Convert aggregated quiz points to distribution entries
         ...Array.from(quizPointsMap.entries()).map(([quizId, points]) => {
@@ -296,20 +308,30 @@ export async function getDashboardStats() {
           };
         }),
         // Add non-quiz reasons
-        ...nonQuizReasons,
+        ...(Array.isArray(nonQuizReasons) ? nonQuizReasons : []),
       ],
-      categoryPerformance: categoryCompletionRates,
-      recentActivity: recentActivity.map((item) => ({
+      categoryPerformance: Array.isArray(categoryCompletionRates) ? categoryCompletionRates : [],
+      recentActivity: Array.isArray(recentActivity) ? recentActivity.map((item) => ({
         id: item.id,
-        user: item.user.username,
-        userImage: item.user.imageUrl,
-        role: item.user.role,
-        action: item.action,
+        user: item.user?.username || "Unknown",
+        userImage: item.user?.imageUrl || null,
+        role: item.user?.role || "UNKNOWN",
+        action: item.action || "",
         timestamp: item.timestamp,
-      })),
+      })) : [],
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
-    throw error;
+    // Return safe defaults instead of throwing to prevent page crashes
+    return {
+      totalUsers: { value: 0, trend: 0 },
+      activeRewards: { value: 0, trend: 0 },
+      totalPointsAwarded: { value: 0, trend: 0 },
+      rewardsClaimed: { value: 0, trend: 0 },
+      userActivity: [],
+      pointsDistribution: [],
+      categoryPerformance: [],
+      recentActivity: [],
+    };
   }
 }
