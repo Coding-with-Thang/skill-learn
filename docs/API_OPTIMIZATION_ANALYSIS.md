@@ -337,7 +337,7 @@ const dailyStatusResponse = await api.get("/user/points/daily-status");
 
 **Implementation:**
 
-- All routes should use `successResponse(data)` from `@/utils/apiWrapper`
+- All routes should use `successResponse(data)` from `@/lib/utils/apiWrapper`
 - Update client code to expect `response.data.data`
 - Create adapter utility for migration period
 

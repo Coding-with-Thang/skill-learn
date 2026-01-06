@@ -63,7 +63,11 @@ export async function GET(request) {
       })
       .filter(Boolean) // Remove null entries
       .sort((a, b) => b.averageScore - a.averageScore)
-      .slice(0, 100); // Get top 100
+      .slice(0, 100) // Get top 100
+      .map((entry, index) => ({
+        ...entry,
+        rank: index + 1,
+      }));
 
     return successResponse({ leaderboard });
   } catch (error) {
