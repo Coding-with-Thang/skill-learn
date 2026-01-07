@@ -27,6 +27,7 @@ import { toast } from "sonner"
 import api from "@/lib/utils/axios"
 import { handleErrorWithNotification } from "@/lib/utils/notifications"
 import { QUIZ_CONFIG } from "@/config/constants"
+import { Uploader } from "@/components/file-uploader/Uploader"
 
 export default function QuizBuilder({ quizId = null }) {
     const router = useRouter()
@@ -37,6 +38,7 @@ export default function QuizBuilder({ quizId = null }) {
         title: "",
         description: "",
         imageUrl: "",
+        fileKey: "",
         categoryId: "",
         timeLimit: 0,
         passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE, // Default, will be updated from settings if available
@@ -46,6 +48,7 @@ export default function QuizBuilder({ quizId = null }) {
         questions: Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT).fill(null).map((_, i) => ({
             text: "",
             imageUrl: "",
+            fileKey: "",
             videoUrl: "",
             points: 1,
             options: Array(4).fill(null).map((_, j) => ({
@@ -107,12 +110,23 @@ export default function QuizBuilder({ quizId = null }) {
     const fetchQuiz = async () => {
         try {
             const response = await api.get(`/admin/quizzes/${quizId}`)
-            const quizData = response.data
+            const quizData = response.data?.data || response.data
             // Ensure questions is always an array
             if (!quizData.questions || !Array.isArray(quizData.questions)) {
                 quizData.questions = []
             }
-            setQuiz(quizData)
+            // Ensure fileKey is set for quiz and questions if they exist
+            const questionsWithFileKey = quizData.questions.map(q => ({
+                ...q,
+                fileKey: q.fileKey || "",
+                imageUrl: q.imageUrl || "",
+            }))
+            setQuiz({
+                ...quizData,
+                fileKey: quizData.fileKey || "",
+                imageUrl: quizData.imageUrl || "",
+                questions: questionsWithFileKey,
+            })
         } catch (error) {
             handleErrorWithNotification(error, "Failed to load quiz")
         } finally {
@@ -223,6 +237,7 @@ export default function QuizBuilder({ quizId = null }) {
                 {
                     text: "",
                     imageUrl: "",
+                    fileKey: "",
                     videoUrl: "",
                     points: 1,
                     options: Array(4).fill(null).map(() => ({
@@ -253,13 +268,17 @@ export default function QuizBuilder({ quizId = null }) {
             questions: (prev.questions || []).map((q, i) => {
                 if (i !== index) return q;
 
-                // If setting imageUrl, clear videoUrl
+                // If setting imageUrl, clear videoUrl and fileKey
                 if (field === "imageUrl" && value) {
-                    return { ...q, imageUrl: value, videoUrl: "" };
+                    return { ...q, imageUrl: value, videoUrl: "", fileKey: "" };
                 }
-                // If setting videoUrl, clear imageUrl
+                // If setting videoUrl, clear imageUrl and fileKey
                 if (field === "videoUrl" && value) {
-                    return { ...q, videoUrl: value, imageUrl: "" };
+                    return { ...q, videoUrl: value, imageUrl: "", fileKey: "" };
+                }
+                // If setting fileKey, ensure imageUrl is set (from upload)
+                if (field === "fileKey") {
+                    return { ...q, fileKey: value };
                 }
                 // Otherwise, just update the field
                 return { ...q, [field]: value };
@@ -423,6 +442,23 @@ export default function QuizBuilder({ quizId = null }) {
                             />
                         </div>
 
+                        {/* Quiz Image */}
+                        <div className="space-y-2">
+                            <Label>Quiz Image</Label>
+                            <Uploader
+                                uploadEndpoint="/api/admin/quizzes/upload"
+                                value={quiz.imageUrl || ""}
+                                onChange={(url) => setQuiz(prev => ({ ...prev, imageUrl: url || "" }))}
+                                onUploadComplete={(upload) => {
+                                    // upload: { url, path }
+                                    // store storage path as fileKey for database
+                                    if (upload?.path) {
+                                        setQuiz(prev => ({ ...prev, fileKey: upload.path }))
+                                    }
+                                }}
+                            />
+                        </div>
+
                         {/* Quiz Settings */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -549,16 +585,25 @@ export default function QuizBuilder({ quizId = null }) {
 
                                 {/* Question Settings */}
                                 <div className="grid grid-cols-3 gap-4">
-                                    <div className="space-y-2">
-                                        <Label>Image URL</Label>
-                                        <Input
-                                            value={question.imageUrl || ""}
-                                            onChange={e => handleQuestionChange(qIndex, "imageUrl", e.target.value)}
-                                            placeholder="https://example.com/image.jpg"
-                                            disabled={!!question.videoUrl}
-                                        />
-                                        {question.videoUrl && (
-                                            <p className="text-xs text-muted-foreground">Clear video URL to add image</p>
+                                    <div className="space-y-2 col-span-2">
+                                        <Label>Question Image</Label>
+                                        {question.videoUrl ? (
+                                            <div className="text-xs text-muted-foreground p-2 border rounded">
+                                                Clear video URL to add image
+                                            </div>
+                                        ) : (
+                                            <Uploader
+                                                uploadEndpoint="/api/admin/questions/upload"
+                                                value={question.imageUrl || ""}
+                                                onChange={(url) => handleQuestionChange(qIndex, "imageUrl", url || "")}
+                                                onUploadComplete={(upload) => {
+                                                    // upload: { url, path }
+                                                    // store storage path as fileKey for database
+                                                    if (upload?.path) {
+                                                        handleQuestionChange(qIndex, "fileKey", upload.path);
+                                                    }
+                                                }}
+                                            />
                                         )}
                                     </div>
                                     <div className="space-y-2">

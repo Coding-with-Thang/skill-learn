@@ -7,6 +7,7 @@ import { successResponse } from "@/lib/utils/apiWrapper";
 import { validateRequest } from "@/lib/utils/validateRequest";
 import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
+import { getSignedUrl } from "@/lib/utils/adminStorage";
 
 export async function PUT(request) {
   try {
@@ -25,6 +26,25 @@ export async function PUT(request) {
     // Validate update data if provided
     if (Object.keys(updateData).length > 0) {
       await validateRequest(rewardUpdateSchema, updateData);
+    }
+
+    // Generate signed URL if fileKey exists
+    let imageUrl = updateData.imageUrl;
+    if (updateData.fileKey) {
+      try {
+        const signedUrl = await getSignedUrl(updateData.fileKey, 7);
+        if (signedUrl) imageUrl = signedUrl;
+      } catch (err) {
+        console.warn(
+          "Failed to generate signed URL for reward image:",
+          err?.message || err
+        );
+      }
+    }
+
+    // Update updateData with the signed URL if fileKey was provided
+    if (updateData.fileKey && imageUrl) {
+      updateData.imageUrl = imageUrl;
     }
 
     // If setting a reward as featured, we need to handle it in a transaction

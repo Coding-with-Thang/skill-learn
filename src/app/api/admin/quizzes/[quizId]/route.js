@@ -7,6 +7,7 @@ import { successResponse } from "@/lib/utils/apiWrapper";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody, validateRequestParams } from "@/lib/utils/validateRequest";
 import { quizUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
+import { getSignedUrl } from "@/lib/utils/adminStorage";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -44,7 +45,45 @@ export async function GET(request, { params }) {
       });
     }
 
-    return successResponse({ quiz });
+    // If the quiz has a fileKey (uploaded image), generate a signed URL for client preview
+    let imageUrl = quiz.imageUrl || null;
+    try {
+      if (quiz.fileKey) {
+        const signedUrl = await getSignedUrl(quiz.fileKey, 7);
+        if (signedUrl) imageUrl = signedUrl;
+      }
+    } catch (err) {
+      console.warn(
+        "Failed to generate signed URL for quiz image:",
+        err?.message || err
+      );
+    }
+
+    // Generate signed URLs for question images if fileKey exists
+    if (quiz.questions && Array.isArray(quiz.questions)) {
+      for (const question of quiz.questions) {
+        if (question.fileKey) {
+          try {
+            const signedUrl = await getSignedUrl(question.fileKey, 7);
+            if (signedUrl) question.imageUrl = signedUrl;
+          } catch (err) {
+            console.warn(
+              "Failed to generate signed URL for question image:",
+              question.id,
+              err?.message || err
+            );
+          }
+        }
+      }
+    }
+
+    // Return quiz with imageUrl (either from fileKey signed URL or existing imageUrl)
+    return successResponse({ 
+      quiz: { 
+        ...quiz, 
+        imageUrl 
+      } 
+    });
   } catch (error) {
     return handleApiError(error);
   }
@@ -75,6 +114,7 @@ export async function PUT(request, { params }) {
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
+        fileKey: data.fileKey,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
@@ -93,10 +133,25 @@ export async function PUT(request, { params }) {
 
       // Create new questions with options
       for (const question of data.questions) {
+        // Generate signed URL if fileKey exists
+        let imageUrl = question.imageUrl || null;
+        try {
+          if (question.fileKey) {
+            const signedUrl = await getSignedUrl(question.fileKey, 7);
+            if (signedUrl) imageUrl = signedUrl;
+          }
+        } catch (err) {
+          console.warn(
+            "Failed to generate signed URL for question image:",
+            err?.message || err
+          );
+        }
+
         const createdQuestion = await prisma.question.create({
           data: {
             text: question.text,
-            imageUrl: question.imageUrl,
+            imageUrl: imageUrl,
+            fileKey: question.fileKey,
             videoUrl: question.videoUrl,
             points: question.points || 1,
             quizId: quizId,
@@ -129,7 +184,44 @@ export async function PUT(request, { params }) {
       },
     });
 
-    return successResponse({ quiz });
+    // Generate signed URL if fileKey exists
+    let imageUrl = quiz.imageUrl || null;
+    try {
+      if (quiz.fileKey) {
+        const signedUrl = await getSignedUrl(quiz.fileKey, 7);
+        if (signedUrl) imageUrl = signedUrl;
+      }
+    } catch (err) {
+      console.warn(
+        "Failed to generate signed URL for quiz image:",
+        err?.message || err
+      );
+    }
+
+    // Generate signed URLs for question images if fileKey exists
+    if (quiz.questions && Array.isArray(quiz.questions)) {
+      for (const question of quiz.questions) {
+        if (question.fileKey) {
+          try {
+            const signedUrl = await getSignedUrl(question.fileKey, 7);
+            if (signedUrl) question.imageUrl = signedUrl;
+          } catch (err) {
+            console.warn(
+              "Failed to generate signed URL for question image:",
+              question.id,
+              err?.message || err
+            );
+          }
+        }
+      }
+    }
+
+    return successResponse({ 
+      quiz: { 
+        ...quiz, 
+        imageUrl 
+      } 
+    });
   } catch (error) {
     return handleApiError(error);
   }

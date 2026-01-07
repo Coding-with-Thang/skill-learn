@@ -6,8 +6,6 @@ import { Progress } from "@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { NotebookPen } from "lucide-react";
 import Image from "next/image";
-import empathy from "/public/empathy.png";
-
 export default function MoreTraining() {
   return (
     <section className="flex flex-col gap-5 mb-9 w-full mx-auto justify-center items-center px-2">
@@ -17,10 +15,10 @@ export default function MoreTraining() {
           <CardHeader className="relative overflow-hidden rounded-xl">
             <Image
               className="object-cover w-full h-[150px] rounded"
-              src={empathy}
+              src="/empathy.png"
               width={340}
               height={150}
-              alt="Icon"
+              alt="Empathy training icon"
             />
             <p className="p-2 right-4 top-4 absolute bg-gray-50 rounded-full text-xs md:text-sm transition-all duration-200 ease-in-out hover:-translate-y-1 hover:opacity-95">RECOMMENDATION</p>
           </CardHeader>

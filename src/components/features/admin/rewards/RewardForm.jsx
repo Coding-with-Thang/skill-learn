@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { useRewardStore } from "@/lib/store/rewardStore"
+import { Uploader } from "@/components/file-uploader/Uploader"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()
@@ -14,6 +15,7 @@ export function RewardForm({ reward, onClose }) {
     prize: '',
     description: '',
     imageUrl: '',
+    fileKey: '',
     cost: '',
     claimUrl: '',
     enabled: true,
@@ -26,7 +28,8 @@ export function RewardForm({ reward, onClose }) {
       setFormData({
         prize: reward.prize,
         description: reward.description,
-        imageUrl: reward.imageUrl,
+        imageUrl: reward.imageUrl || '',
+        fileKey: reward.fileKey || '',
         cost: reward.cost,
         claimUrl: reward.claimUrl || '',
         enabled: reward.enabled,
@@ -129,31 +132,20 @@ export function RewardForm({ reward, onClose }) {
 
       <div className="space-y-2">
         <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-          Image URL <span className="text-red-500">*</span>
+          Reward Image <span className="text-red-500">*</span>
         </Label>
-        <Input
-          id="imageUrl"
-          type="url"
-          value={formData.imageUrl}
-          onChange={handleChange('imageUrl')}
-          placeholder="https://example.com/image.jpg"
-          className="transition-colors focus:border-blue-500"
-          required
+        <Uploader
+          uploadEndpoint="/api/admin/rewards/upload"
+          value={formData.imageUrl || ""}
+          onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || "" }))}
+          onUploadComplete={(upload) => {
+            // upload: { url, path }
+            // store storage path as fileKey for database
+            if (upload?.path) {
+              setFormData(prev => ({ ...prev, fileKey: upload.path }))
+            }
+          }}
         />
-        {formData.imageUrl && (
-          <div className="mt-2 p-2 border rounded-md">
-            <div className="relative h-32 w-full rounded-md overflow-hidden">
-              <Image
-                src={formData.imageUrl}
-                alt="Preview"
-                fill
-                className="object-cover"
-                sizes="(max-width: 600px) 100vw, 600px"
-                onError={(e) => e.currentTarget.style.display = 'none'}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="space-y-2">

@@ -90,7 +90,21 @@ const questionOptionSchema = z.object({
 
 const questionSchema = z.object({
   text: z.string().min(1, "Question text is required"),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().optional().refine(
+    (url) => {
+      // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+      // If empty/undefined, it's valid (optional field)
+      if (!url) return true;
+      // Allow Firebase Storage URLs
+      return url.includes('firebasestorage.googleapis.com') || 
+             url.includes('storage.googleapis.com') ||
+             url.startsWith('/'); // Allow local/public paths as fallback
+    },
+    {
+      message: "Image URL must be from Firebase Storage or a local path",
+    }
+  ),
+  fileKey: z.string().optional(), // Firebase Storage path for question image
   videoUrl: z.string().optional(),
   points: z.number().int().positive().default(1),
   options: z.array(questionOptionSchema).min(2, "Question must have at least 2 options"),
@@ -108,7 +122,21 @@ export const quizCreateSchema = z.object({
     .min(1, "Title is required")
     .max(200, "Title must be less than 200 characters"),
   description: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().optional().refine(
+    (url) => {
+      // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+      // If empty/undefined, it's valid (optional field)
+      if (!url) return true;
+      // Allow Firebase Storage URLs
+      return url.includes('firebasestorage.googleapis.com') || 
+             url.includes('storage.googleapis.com') ||
+             url.startsWith('/'); // Allow local/public paths as fallback
+    },
+    {
+      message: "Image URL must be from Firebase Storage or a local path",
+    }
+  ),
+  fileKey: z.string().optional(), // Firebase Storage path for quiz image
   categoryId: objectIdSchema,
   timeLimit: z.number().int().nonnegative().optional(),
   passingScore: z
@@ -224,7 +252,21 @@ export const rewardCreateSchema = z.object({
     .nullable()
     .optional(),
   description: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().optional().refine(
+    (url) => {
+      // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+      // If empty/undefined, it's valid (optional field)
+      if (!url) return true;
+      // Allow Firebase Storage URLs
+      return url.includes('firebasestorage.googleapis.com') || 
+             url.includes('storage.googleapis.com') ||
+             url.startsWith('/'); // Allow local/public paths as fallback
+    },
+    {
+      message: "Image URL must be from Firebase Storage or a local path",
+    }
+  ),
+  fileKey: z.string().optional(), // Firebase Storage path for reward image
 });
 
 export const rewardUpdateSchema = rewardCreateSchema.partial();
