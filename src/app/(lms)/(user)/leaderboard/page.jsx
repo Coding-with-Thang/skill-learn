@@ -182,8 +182,12 @@ export default function LeaderboardPage() {
           api.get("/leaderboard/quiz-score"),
         ]);
 
-        setPointsData(pointsResponse.data.leaderboard || []);
-        setQuizData(quizResponse.data.leaderboard || []);
+        // API returns { success: true, data: { leaderboard: [...] } }
+        const pointsData = pointsResponse.data?.data || pointsResponse.data;
+        const quizData = quizResponse.data?.data || quizResponse.data;
+
+        setPointsData(pointsData?.leaderboard || pointsData || []);
+        setQuizData(quizData?.leaderboard || quizData || []);
       } catch (err) {
         console.error("Error fetching leaderboards:", err);
         setError("Failed to load leaderboards");

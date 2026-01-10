@@ -23,6 +23,14 @@ import api from "@/lib/utils/axios"
 import { handleErrorWithNotification } from "@/lib/utils/notifications"
 import { QUIZ_CONFIG } from "@/config/constants"
 import { Uploader } from "@/components/file-uploader/Uploader"
+import { quizCreateSchema, quizUpdateSchema } from "@/lib/zodSchemas"
+import {
+  Form,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+  FormSwitch,
+} from "@/components/ui/form-components"
 
 export default function QuizBuilder({ quizId = null }) {
   const router = useRouter()
@@ -116,139 +124,93 @@ export default function QuizBuilder({ quizId = null }) {
     }
   }
 
+  const fetchQuizSettings = async () => {
+    try {
+      const response = await api.get("/quiz/settings")
+      const settings = response.data?.data?.quizSettings || response.data?.quizSettings
+      if (settings?.passingScoreDefault) {
+        setQuiz(prev => ({
+          ...prev,
+          passingScore: settings.passingScoreDefault
+        }))
+        form.setValue("passingScore", settings.passingScoreDefault)
+      }
+    } catch (error) {
+      // Silently fail - use defaults
+      console.warn("Failed to load quiz settings:", error)
+    }
+  }
+
   const fetchQuiz = async () => {
-                ...quizData,
-    fileKey: quizData.fileKey || "",
-      imageUrl: quizData.imageUrl || "",
-        questions: questionsWithFileKey,
-            })
-        } catch (error) {
-  handleErrorWithNotification(error, "Failed to load quiz")
-} finally {
-  setLoading(false)
-}
-    }
-  }
-
-const fetchQuiz = async () => {
-  try {
-    const response = await api.get(`/admin/quizzes/${quizId}`)
-    const quizData = response.data
-    if (!quizData.questions || !Array.isArray(quizData.questions)) {
-      quizData.questions = []
-    }
-    form.reset({
-      title: quizData.title || "",
-      description: quizData.description || "",
-      imageUrl: quizData.imageUrl || "",
-      timeLimit: quizData.timeLimit || 0,
-      passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
-      isActive: quizData.isActive ?? true,
-      showQuestionReview: quizData.showQuestionReview ?? true,
-      showCorrectAnswers: quizData.showCorrectAnswers ?? false,
-      questions: quizData.questions.map((q) => ({
-        text: q.text || "",
-        imageUrl: q.imageUrl || "",
-        videoUrl: q.videoUrl || "",
-        points: q.points || 1,
-        options: (q.options || []).map((opt) => ({
-          text: opt.text || "",
-          isCorrect: opt.isCorrect || false,
+    try {
+      const response = await api.get(`/admin/quizzes/${quizId}`)
+      const quizData = response.data?.data || response.data
+      if (!quizData.questions || !Array.isArray(quizData.questions)) {
+        quizData.questions = []
+      }
+      form.reset({
+        title: quizData.title || "",
+        description: quizData.description || "",
+        imageUrl: quizData.imageUrl || "",
+        categoryId: quizData.categoryId || "",
+        timeLimit: quizData.timeLimit || 0,
+        passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
+        isActive: quizData.isActive ?? true,
+        showQuestionReview: quizData.showQuestionReview ?? true,
+        showCorrectAnswers: quizData.showCorrectAnswers ?? false,
+        questions: quizData.questions.map((q) => ({
+          text: q.text || "",
+          imageUrl: q.imageUrl || "",
+          videoUrl: q.videoUrl || "",
+          points: q.points || 1,
+          options: (q.options || []).map((opt) => ({
+            text: opt.text || "",
+            isCorrect: opt.isCorrect || false,
+          })),
         })),
-      })),
-    })
-  } catch (error) {
-    handleErrorWithNotification(error, "Failed to load quiz")
-  } finally {
-    setLoading(false)
-  }
-}
-
-const onSubmit = async (data) => {
-  try {
-    // Validate questions
-    if (!data.questions || data.questions.length < 1) {
-      toast.error("Quiz must have at least one question")
-      return
+      })
+      // Also update the state for backwards compatibility
+      setQuiz(prev => ({
+        ...prev,
+        title: quizData.title || "",
+        description: quizData.description || "",
+        imageUrl: quizData.imageUrl || "",
+        fileKey: quizData.fileKey || "",
+        categoryId: quizData.categoryId || "",
+        timeLimit: quizData.timeLimit || 0,
+        passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
+        isActive: quizData.isActive ?? true,
+        showQuestionReview: quizData.showQuestionReview ?? true,
+        showCorrectAnswers: quizData.showCorrectAnswers ?? false,
+      }))
+    } catch (error) {
+      handleErrorWithNotification(error, "Failed to load quiz")
+    } finally {
+      setLoading(false)
     }
+  }
 
-    // Validate each question
-    for (const [qIndex, question] of data.questions.entries()) {
-      if (!question.text.trim()) {
-        toast.error(`Question ${qIndex + 1} must have text`)
+  const onSubmit = async (data) => {
+    setSaving(true)
+    try {
+      // Validate questions
+      if (!data.questions || data.questions.length < 1) {
+        toast.error("Quiz must have at least one question")
+        setSaving(false)
         return
       }
 
-      setQuiz(prev => ({
-        ...prev,
-        questions: [
-          ...(prev.questions || []),
-          {
-            text: "",
-            imageUrl: "",
-            fileKey: "",
-            videoUrl: "",
-            points: 1,
-            options: Array(4).fill(null).map(() => ({
-              text: "",
-              isCorrect: false
-            }))
-          }
-        ]
-      }))
-    }
-
-    const handleRemoveQuestion = (index) => {
-      const currentQuestions = quiz.questions || []
-      if (currentQuestions.length <= 1) {
-        toast.error("Quiz must have at least one question")
-      }
-
-      const handleQuestionChange = (index, field, value) => {
-        setQuiz(prev => ({
-          ...prev,
-          questions: (prev.questions || []).map((q, i) => {
-            if (i !== index) return q;
-
-            // If setting imageUrl, clear videoUrl and fileKey
-            if (field === "imageUrl" && value) {
-              return { ...q, imageUrl: value, videoUrl: "", fileKey: "" };
-            }
-            // If setting videoUrl, clear imageUrl and fileKey
-            if (field === "videoUrl" && value) {
-              return { ...q, videoUrl: value, imageUrl: "", fileKey: "" };
-            }
-            // If setting fileKey, ensure imageUrl is set (from upload)
-            if (field === "fileKey") {
-              return { ...q, fileKey: value };
-            }
-            // Otherwise, just update the field
-            return { ...q, [field]: value };
-          })
-        }))
-      }
-
-      const handleAddOption = (questionIndex) => {
-        const questions = quiz.questions || []
-        const question = questions[questionIndex]
-        if (!question || !question.options || question.options.length >= 6) {
-          if (question && question.options && question.options.length >= 6) {
-            toast.error("Maximum 6 options allowed per question")
-          }
+      // Validate each question
+      for (const [qIndex, question] of data.questions.entries()) {
+        if (!question.text.trim()) {
+          toast.error(`Question ${qIndex + 1} must have text`)
+          setSaving(false)
           return
         }
 
-        if (question.options.length < 2) {
+        if (!question.options || question.options.length < 2) {
           toast.error(`Question ${qIndex + 1} must have at least 2 options`)
-          return
-        }
-
-        const optionTexts = question.options.map((opt) =>
-          opt.text.trim().toLowerCase()
-        )
-        const uniqueOptions = new Set(optionTexts)
-        if (uniqueOptions.size !== optionTexts.length) {
-          toast.error(`Question ${qIndex + 1} has duplicate options`)
+          setSaving(false)
           return
         }
 
@@ -257,6 +219,7 @@ const onSubmit = async (data) => {
           toast.error(
             `Question ${qIndex + 1} must have at least one correct answer`
           )
+          setSaving(false)
           return
         }
 
@@ -265,6 +228,8 @@ const onSubmit = async (data) => {
             toast.error(
               `Option ${oIndex + 1} in Question ${qIndex + 1} must have text`
             )
+            setSaving(false)
+            return
           }
         }
       }
@@ -281,6 +246,8 @@ const onSubmit = async (data) => {
       router.push("/dashboard/quizzes")
     } catch (error) {
       handleErrorWithNotification(error, "Failed to save quiz")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -310,6 +277,88 @@ const onSubmit = async (data) => {
     }
     removeQuestion(index)
     toast.info(`Question ${index + 1} removed`)
+  }
+
+  const handleQuestionChange = (index, field, value) => {
+    setQuiz(prev => ({
+      ...prev,
+      questions: (prev.questions || []).map((q, i) => {
+        if (i !== index) return q;
+
+        // If setting imageUrl, clear videoUrl and fileKey
+        if (field === "imageUrl" && value) {
+          return { ...q, imageUrl: value, videoUrl: "", fileKey: "" };
+        }
+        // If setting videoUrl, clear imageUrl and fileKey
+        if (field === "videoUrl" && value) {
+          return { ...q, videoUrl: value, imageUrl: "", fileKey: "" };
+        }
+        // If setting fileKey, ensure imageUrl is set (from upload)
+        if (field === "fileKey") {
+          return { ...q, fileKey: value };
+        }
+        // Otherwise, just update the field
+        return { ...q, [field]: value };
+      })
+    }))
+  }
+
+  const handleAddOption = (questionIndex) => {
+    const questions = quiz.questions || []
+    const question = questions[questionIndex]
+    if (!question) return
+
+    if (!question.options || question.options.length >= 6) {
+      toast.error("Maximum 6 options allowed per question")
+      return
+    }
+
+    setQuiz(prev => ({
+      ...prev,
+      questions: (prev.questions || []).map((q, i) => {
+        if (i !== questionIndex) return q
+        return {
+          ...q,
+          options: [...(q.options || []), { text: "", isCorrect: false }]
+        }
+      })
+    }))
+  }
+
+  const handleRemoveOption = (questionIndex, optionIndex) => {
+    const questions = quiz.questions || []
+    const question = questions[questionIndex]
+    if (!question || !question.options || question.options.length <= 2) {
+      toast.error("Questions must have at least 2 options")
+      return
+    }
+
+    setQuiz(prev => ({
+      ...prev,
+      questions: (prev.questions || []).map((q, i) => {
+        if (i !== questionIndex) return q
+        return {
+          ...q,
+          options: q.options.filter((_, oi) => oi !== optionIndex)
+        }
+      })
+    }))
+  }
+
+  const handleOptionChange = (questionIndex, optionIndex, field, value) => {
+    setQuiz(prev => ({
+      ...prev,
+      questions: (prev.questions || []).map((q, i) => {
+        if (i !== questionIndex) return q
+        return {
+          ...q,
+          options: (q.options || []).map((opt, oi) => {
+            if (oi !== optionIndex) return opt
+            return { ...opt, [field]: value }
+          })
+        }
+      })
+    }))
   }
 
   if (loading) {
@@ -427,12 +476,29 @@ const onSubmit = async (data) => {
             </div>
 
             {questionFields.map((question, qIndex) => (
-              <QuestionCard
-                key={question.id}
-                questionIndex={qIndex}
-                form={form}
-                onRemove={() => handleRemoveQuestion(qIndex)}
-              />
+              <Card key={question.id} className="relative border-2 mb-4">
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-base">
+                      Question {qIndex + 1}
+                    </CardTitle>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveQuestion(qIndex)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Question editing will be implemented here. Currently using state-based implementation below.
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
 
