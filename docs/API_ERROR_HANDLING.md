@@ -8,10 +8,10 @@ All API routes should use the standardized error handling utilities to ensure co
 
 ## Standardized Error Handler
 
-The `handleApiError` function from `@/utils/errorHandler` provides consistent error handling:
+The `handleApiError` function from `@/lib/utils/errorHandler` provides consistent error handling:
 
 ```javascript
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -28,7 +28,7 @@ export async function GET(request) {
 Use `AppError` for structured errors:
 
 ```javascript
-import { AppError, ErrorType } from "@/utils/errorHandler";
+import { AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 // Validation error
 throw new AppError("Invalid input", ErrorType.VALIDATION, { status: 400 });
@@ -83,7 +83,7 @@ catch (error) {
 ### After (Standardized Pattern)
 
 ```javascript
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 export async function GET(request) {
   try {
@@ -131,8 +131,8 @@ export async function GET(request) {
 
 ```javascript
 import { NextResponse } from "next/server";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
-import { requireAuth } from "@/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { requireAuth } from "@/lib/utils/auth";
 
 export async function GET(request) {
   try {
@@ -153,7 +153,7 @@ export async function GET(request) {
 
 ```javascript
 import { NextResponse } from "next/server";
-import { handleApiError, AppError, ErrorType } from "@/utils/errorHandler";
+import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
 
 export async function POST(request) {
   try {

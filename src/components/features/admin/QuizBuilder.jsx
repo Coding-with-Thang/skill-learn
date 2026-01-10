@@ -22,18 +22,36 @@ import { toast } from "sonner"
 import api from "@/lib/utils/axios"
 import { handleErrorWithNotification } from "@/lib/utils/notifications"
 import { QUIZ_CONFIG } from "@/config/constants"
-import { Form } from "@/components/ui/form"
-import { FormInput } from "@/components/ui/form-input"
-import { FormTextarea } from "@/components/ui/form-textarea"
-import { FormSelect } from "@/components/ui/form-select"
-import { FormSwitch } from "@/components/ui/form-switch"
-import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form"
-import { quizCreateSchema, quizUpdateSchema } from "@/lib/zodSchemas"
+import { Uploader } from "@/components/file-uploader/Uploader"
 
 export default function QuizBuilder({ quizId = null }) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [categories, setCategories] = useState([])
+  const [quiz, setQuiz] = useState({
+    title: "",
+    description: "",
+    imageUrl: "",
+    fileKey: "",
+    categoryId: "",
+    timeLimit: 0,
+    passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE, // Default, will be updated from settings if available
+    isActive: true,
+    showQuestionReview: true,
+    showCorrectAnswers: false,
+    questions: Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT).fill(null).map((_, i) => ({
+      text: "",
+      imageUrl: "",
+      fileKey: "",
+      videoUrl: "",
+      points: 1,
+      options: Array(4).fill(null).map((_, j) => ({
+        text: "",
+        isCorrect: j === 0 // First option is default correct
+      }))
+    }))
+  })
 
   const schema = quizId ? quizUpdateSchema : quizCreateSchema
   const form = useForm({
@@ -98,75 +116,125 @@ export default function QuizBuilder({ quizId = null }) {
     }
   }
 
-  const fetchQuizSettings = async () => {
-    try {
-      const response = await api.get("/quiz/settings")
-      const settings =
-        response.data?.data?.quizSettings || response.data?.quizSettings
-      if (settings?.passingScoreDefault && !quizId) {
-        form.setValue("passingScore", settings.passingScoreDefault)
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === "development") {
-        console.error("Failed to fetch quiz settings:", error)
-      }
-    }
-  }
-
   const fetchQuiz = async () => {
-    try {
-      const response = await api.get(`/admin/quizzes/${quizId}`)
-      const quizData = response.data
-      if (!quizData.questions || !Array.isArray(quizData.questions)) {
-        quizData.questions = []
-      }
-      form.reset({
-        title: quizData.title || "",
-        description: quizData.description || "",
-        imageUrl: quizData.imageUrl || "",
-        categoryId: quizData.categoryId || "",
-        timeLimit: quizData.timeLimit || 0,
-        passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
-        isActive: quizData.isActive ?? true,
-        showQuestionReview: quizData.showQuestionReview ?? true,
-        showCorrectAnswers: quizData.showCorrectAnswers ?? false,
-        questions: quizData.questions.map((q) => ({
-          text: q.text || "",
-          imageUrl: q.imageUrl || "",
-          videoUrl: q.videoUrl || "",
-          points: q.points || 1,
-          options: (q.options || []).map((opt) => ({
-            text: opt.text || "",
-            isCorrect: opt.isCorrect || false,
-          })),
-        })),
-      })
-    } catch (error) {
-      handleErrorWithNotification(error, "Failed to load quiz")
-    } finally {
-      setLoading(false)
+                ...quizData,
+    fileKey: quizData.fileKey || "",
+      imageUrl: quizData.imageUrl || "",
+        questions: questionsWithFileKey,
+            })
+        } catch (error) {
+  handleErrorWithNotification(error, "Failed to load quiz")
+} finally {
+  setLoading(false)
+}
     }
   }
 
-  const onSubmit = async (data) => {
-    try {
-      // Validate questions
-      if (!data.questions || data.questions.length < 1) {
-        toast.error("Quiz must have at least one question")
+const fetchQuiz = async () => {
+  try {
+    const response = await api.get(`/admin/quizzes/${quizId}`)
+    const quizData = response.data
+    if (!quizData.questions || !Array.isArray(quizData.questions)) {
+      quizData.questions = []
+    }
+    form.reset({
+      title: quizData.title || "",
+      description: quizData.description || "",
+      imageUrl: quizData.imageUrl || "",
+      timeLimit: quizData.timeLimit || 0,
+      passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
+      isActive: quizData.isActive ?? true,
+      showQuestionReview: quizData.showQuestionReview ?? true,
+      showCorrectAnswers: quizData.showCorrectAnswers ?? false,
+      questions: quizData.questions.map((q) => ({
+        text: q.text || "",
+        imageUrl: q.imageUrl || "",
+        videoUrl: q.videoUrl || "",
+        points: q.points || 1,
+        options: (q.options || []).map((opt) => ({
+          text: opt.text || "",
+          isCorrect: opt.isCorrect || false,
+        })),
+      })),
+    })
+  } catch (error) {
+    handleErrorWithNotification(error, "Failed to load quiz")
+  } finally {
+    setLoading(false)
+  }
+}
+
+const onSubmit = async (data) => {
+  try {
+    // Validate questions
+    if (!data.questions || data.questions.length < 1) {
+      toast.error("Quiz must have at least one question")
+      return
+    }
+
+    // Validate each question
+    for (const [qIndex, question] of data.questions.entries()) {
+      if (!question.text.trim()) {
+        toast.error(`Question ${qIndex + 1} must have text`)
         return
       }
 
-      // Validate each question
-      for (const [qIndex, question] of data.questions.entries()) {
-        if (!question.text.trim()) {
-          toast.error(`Question ${qIndex + 1} must have text`)
-          return
-        }
+      setQuiz(prev => ({
+        ...prev,
+        questions: [
+          ...(prev.questions || []),
+          {
+            text: "",
+            imageUrl: "",
+            fileKey: "",
+            videoUrl: "",
+            points: 1,
+            options: Array(4).fill(null).map(() => ({
+              text: "",
+              isCorrect: false
+            }))
+          }
+        ]
+      }))
+    }
 
-        if (question.imageUrl && question.videoUrl) {
-          toast.error(
-            `Question ${qIndex + 1} cannot have both image and video. Please use only one.`
-          )
+    const handleRemoveQuestion = (index) => {
+      const currentQuestions = quiz.questions || []
+      if (currentQuestions.length <= 1) {
+        toast.error("Quiz must have at least one question")
+      }
+
+      const handleQuestionChange = (index, field, value) => {
+        setQuiz(prev => ({
+          ...prev,
+          questions: (prev.questions || []).map((q, i) => {
+            if (i !== index) return q;
+
+            // If setting imageUrl, clear videoUrl and fileKey
+            if (field === "imageUrl" && value) {
+              return { ...q, imageUrl: value, videoUrl: "", fileKey: "" };
+            }
+            // If setting videoUrl, clear imageUrl and fileKey
+            if (field === "videoUrl" && value) {
+              return { ...q, videoUrl: value, imageUrl: "", fileKey: "" };
+            }
+            // If setting fileKey, ensure imageUrl is set (from upload)
+            if (field === "fileKey") {
+              return { ...q, fileKey: value };
+            }
+            // Otherwise, just update the field
+            return { ...q, [field]: value };
+          })
+        }))
+      }
+
+      const handleAddOption = (questionIndex) => {
+        const questions = quiz.questions || []
+        const question = questions[questionIndex]
+        if (!question || !question.options || question.options.length >= 6) {
+          if (question && question.options && question.options.length >= 6) {
+            toast.error("Maximum 6 options allowed per question")
+          }
           return
         }
 
@@ -197,7 +265,6 @@ export default function QuizBuilder({ quizId = null }) {
             toast.error(
               `Option ${oIndex + 1} in Question ${qIndex + 1} must have text`
             )
-            return
           }
         }
       }
@@ -369,305 +436,299 @@ export default function QuizBuilder({ quizId = null }) {
             ))}
           </div>
 
-          {/* Form Actions */}
-          <div className="mt-6 flex justify-end gap-4">
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={quiz.description || ""}
+              onChange={e => setQuiz(prev => ({ ...prev, description: e.target.value }))}
+              rows={3}
+            />
+          </div>
+
+          {/* Quiz Image */}
+          <div className="space-y-2">
+            <Label>Quiz Image</Label>
+            <Uploader
+              uploadEndpoint="/api/admin/quizzes/upload"
+              value={quiz.imageUrl || ""}
+              onChange={(url) => setQuiz(prev => ({ ...prev, imageUrl: url || "" }))}
+              onUploadComplete={(upload) => {
+                // upload: { url, path }
+                // store storage path as fileKey for database
+                if (upload?.path) {
+                  setQuiz(prev => ({ ...prev, fileKey: upload.path }))
+                }
+              }}
+            />
+          </div>
+
+          {/* Quiz Settings */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
+              <Input
+                id="timeLimit"
+                type="number"
+                min="0"
+                value={quiz.timeLimit || ""}
+                onChange={e => setQuiz(prev => ({ ...prev, timeLimit: parseInt(e.target.value) || null }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="passingScore">Passing Score (%)</Label>
+              <Input
+                id="passingScore"
+                type="number"
+                min="0"
+                max="100"
+                value={quiz.passingScore}
+                onChange={e => setQuiz(prev => ({ ...prev, passingScore: parseInt(e.target.value) }))
+                }
+              />
+            </div>
+          </div>
+
+          {/* Active Status */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isActive"
+              checked={quiz.isActive}
+              onCheckedChange={checked => setQuiz(prev => ({ ...prev, isActive: checked }))}
+            />
+            <Label htmlFor="isActive">Active</Label>
+          </div>
+
+          {/* Review Settings */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-center space-x-2 border p-4 rounded-lg">
+              <Switch
+                id="showQuestionReview"
+                checked={quiz.showQuestionReview}
+                onCheckedChange={checked => setQuiz(prev => ({ ...prev, showQuestionReview: checked }))}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="showQuestionReview">Show Question Review</Label>
+                <p className="text-xs text-muted-foreground">
+                  Allow users to review questions after quiz
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 border p-4 rounded-lg">
+              <Switch
+                id="showCorrectAnswers"
+                checked={quiz.showCorrectAnswers}
+                disabled={!quiz.showQuestionReview}
+                onCheckedChange={checked => setQuiz(prev => ({ ...prev, showCorrectAnswers: checked }))}
+              />
+              <div className="space-y-1">
+                <Label htmlFor="showCorrectAnswers">Show Correct Answers</Label>
+                <p className="text-xs text-muted-foreground">
+                  Display correct answers for incorrect attempts
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Questions Section */}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">Questions ({quiz.questions?.length || 0})</h3>
+            <p className="text-sm text-muted-foreground">Add at least one question to your quiz</p>
+          </div>
+          <Button
+            type="button"
+            onClick={handleAddQuestion}
+            className="space-x-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Question</span>
+          </Button>
+        </div>
+
+        {(quiz.questions || []).map((question, qIndex) => (
+          <Card key={qIndex} className="relative border-2">
+            {/* Delete Question Button */}
             <Button
               type="button"
-              variant="outline"
-              onClick={() => router.push("/dashboard/quizzes")}
-              disabled={form.formState.isSubmitting}
+              variant="ghost"
+              size="icon"
+              className="absolute -top-2 -right-2 bg-white rounded-full hover:bg-red-50 text-red-500 border-2"
+              onClick={() => handleRemoveQuestion(qIndex)}
             >
-              Cancel
+              <X className="w-4 h-4" />
             </Button>
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? (
-                <>
-                  <LoadingSpinner className="w-4 h-4 mr-2" />
-                  {quizId ? "Updating..." : "Creating..."}
-                </>
-              ) : (
-                quizId ? "Update Quiz" : "Create Quiz"
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </div>
-  )
-}
 
-// Separate component for question card to manage nested options
-function QuestionCard({ questionIndex, form, onRemove }) {
-  const {
-    fields: optionFields,
-    append: appendOption,
-    remove: removeOption,
-  } = useFieldArray({
-    control: form.control,
-    name: `questions.${questionIndex}.options`,
-  })
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                  Question {qIndex + 1}
+                </span>
+                {!question.text.trim() && (
+                  <span className="text-red-500 text-sm font-normal">
+                    Question text required
+                  </span>
+                )}
+              </CardTitle>
+            </CardHeader>
 
-  const watchedImageUrl = form.watch(
-    `questions.${questionIndex}.imageUrl`
-  )
-  const watchedVideoUrl = form.watch(
-    `questions.${questionIndex}.videoUrl`
-  )
-  const watchedOptions = form.watch(
-    `questions.${questionIndex}.options`
-  )
-
-  const handleAddOption = () => {
-    if (optionFields.length >= 6) {
-      toast.error("Maximum 6 options allowed per question")
-      return
-    }
-    appendOption({
-      text: "",
-      isCorrect: false,
-    })
-  }
-
-  const handleRemoveOption = (optionIndex) => {
-    if (optionFields.length <= 2) {
-      toast.error("Each question must have at least 2 options")
-      return
-    }
-
-    const option = watchedOptions[optionIndex]
-    const correctOptions = watchedOptions.filter((o) => o.isCorrect)
-    if (option.isCorrect && correctOptions.length === 1) {
-      toast.error("Each question must have at least one correct answer")
-      return
-    }
-
-    removeOption(optionIndex)
-  }
-
-  const handleImageUrlChange = (value) => {
-    form.setValue(`questions.${questionIndex}.imageUrl`, value)
-    if (value && watchedVideoUrl) {
-      form.setValue(`questions.${questionIndex}.videoUrl`, "")
-    }
-  }
-
-  const handleVideoUrlChange = (value) => {
-    form.setValue(`questions.${questionIndex}.videoUrl`, value)
-    if (value && watchedImageUrl) {
-      form.setValue(`questions.${questionIndex}.imageUrl`, "")
-    }
-  }
-
-  const handleOptionCorrectChange = (optionIndex, checked) => {
-    if (!checked) {
-      const correctOptions = watchedOptions.filter((o) => o.isCorrect)
-      if (correctOptions.length === 1 && watchedOptions[optionIndex].isCorrect) {
-        toast.error("Each question must have at least one correct answer")
-        return
-      }
-    }
-    form.setValue(
-      `questions.${questionIndex}.options.${optionIndex}.isCorrect`,
-      checked
-    )
-  }
-
-  return (
-    <Card className="relative border-2">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="absolute -top-2 -right-2 bg-white rounded-full hover:bg-red-50 text-red-500 border-2"
-        onClick={onRemove}
-      >
-        <X className="w-4 h-4" />
-      </Button>
-
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-            Question {questionIndex + 1}
-          </span>
-        </CardTitle>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {/* Question Text */}
-        <FormField
-          control={form.control}
-          name={`questions.${questionIndex}.text`}
-          render={({ field }) => (
-            <FormItem>
-              <Label>Question Text *</Label>
-              <FormControl>
+            <CardContent className="space-y-4">
+              {/* Question Text */}
+              <div className="space-y-2">
+                <Label>Question Text *</Label>
                 <Textarea
-                  {...field}
+                  value={question.text}
+                  onChange={e => handleQuestionChange(qIndex, "text", e.target.value)}
                   rows={2}
                   placeholder="Enter your question here..."
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              </div>
 
-        {/* Question Settings */}
-        <div className="grid grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name={`questions.${questionIndex}.imageUrl`}
-            render={({ field }) => (
-              <FormItem>
-                <Label>Image URL</Label>
-                <FormControl>
+              {/* Question Settings */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2 col-span-2">
+                  <Label>Question Image</Label>
+                  {question.videoUrl ? (
+                    <div className="text-xs text-muted-foreground p-2 border rounded">
+                      Clear video URL to add image
+                    </div>
+                  ) : (
+                    <Uploader
+                      uploadEndpoint="/api/admin/questions/upload"
+                      value={question.imageUrl || ""}
+                      onChange={(url) => handleQuestionChange(qIndex, "imageUrl", url || "")}
+                      onUploadComplete={(upload) => {
+                        // upload: { url, path }
+                        // store storage path as fileKey for database
+                        if (upload?.path) {
+                          handleQuestionChange(qIndex, "fileKey", upload.path);
+                        }
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Video URL</Label>
                   <Input
-                    {...field}
-                    placeholder="https://example.com/image.jpg"
-                    disabled={!!watchedVideoUrl}
-                    onChange={(e) => handleImageUrlChange(e.target.value)}
-                  />
-                </FormControl>
-                {watchedVideoUrl && (
-                  <p className="text-xs text-muted-foreground">
-                    Clear video URL to add image
-                  </p>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name={`questions.${questionIndex}.videoUrl`}
-            render={({ field }) => (
-              <FormItem>
-                <Label>Video URL</Label>
-                <FormControl>
-                  <Input
-                    {...field}
+                    value={question.videoUrl || ""}
+                    onChange={e => handleQuestionChange(qIndex, "videoUrl", e.target.value)}
                     placeholder="https://example.com/video.mp4"
-                    disabled={!!watchedImageUrl}
-                    onChange={(e) => handleVideoUrlChange(e.target.value)}
+                    disabled={!!question.imageUrl}
                   />
-                </FormControl>
-                {watchedImageUrl && (
-                  <p className="text-xs text-muted-foreground">
-                    Clear image URL to add video
-                  </p>
-                )}
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name={`questions.${questionIndex}.points`}
-            render={({ field }) => (
-              <FormItem>
-                <Label>Points</Label>
-                <FormControl>
+                  {question.imageUrl && (
+                    <p className="text-xs text-muted-foreground">Clear image URL to add video</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Points</Label>
                   <Input
                     type="number"
                     min="1"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                    value={question.points}
+                    onChange={e => handleQuestionChange(qIndex, "points", parseInt(e.target.value) || 1)}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Options */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <Label className="block">Options ({optionFields.length})</Label>
-              <p className="text-sm text-muted-foreground">
-                Mark at least one option as correct
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddOption}
-              className="space-x-1"
-            >
-              <Plus className="w-3 h-3" />
-              <span>Add Option</span>
-            </Button>
-          </div>
-
-          <div className="space-y-3">
-            {optionFields.map((option, oIndex) => (
-              <div
-                key={option.id}
-                className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                  watchedOptions[oIndex]?.isCorrect ? "bg-green-50" : ""
-                }`}
-              >
-                <FormField
-                  control={form.control}
-                  name={`questions.${questionIndex}.options.${oIndex}.text`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          placeholder={`Enter option ${oIndex + 1}...`}
-                          className={
-                            !field.value?.trim() ? "border-red-500" : ""
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex items-center gap-2 min-w-[140px]">
-                  <Switch
-                    checked={watchedOptions[oIndex]?.isCorrect || false}
-                    onCheckedChange={(checked) =>
-                      handleOptionCorrectChange(oIndex, checked)
-                    }
-                  />
-                  <Label
-                    className={`text-sm ${
-                      watchedOptions[oIndex]?.isCorrect
-                        ? "text-green-600"
-                        : ""
-                    }`}
-                  >
-                    Correct
-                  </Label>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveOption(oIndex)}
-                  className="hover:text-red-500"
-                >
-                  <Minus className="w-4 h-4" />
-                </Button>
               </div>
-            ))}
-          </div>
 
-          {optionFields.length < 2 && (
-            <p className="text-red-500 text-sm">Add at least two options</p>
-          )}
+              {/* Options */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Label className="block">Options ({question.options.length})</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Mark at least one option as correct
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleAddOption(qIndex)}
+                    className="space-x-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Add Option</span>
+                  </Button>
+                </div>
 
-          {!watchedOptions.some((opt) => opt.isCorrect) && (
-            <p className="text-red-500 text-sm">
-              Mark at least one option as correct
-            </p>
+                <div className="space-y-3">
+                  {question.options.map((option, oIndex) => (
+                    <div
+                      key={oIndex}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${option.isCorrect ? 'bg-green-50' : ''
+                        }`}
+                    >
+                      <Input
+                        value={option.text}
+                        onChange={e => handleOptionChange(qIndex, oIndex, "text", e.target.value)}
+                        placeholder={`Enter option ${oIndex + 1}...`}
+                        className={`flex-1 ${!option.text.trim() ? 'border-red-500' : ''}`}
+                      />
+                      <div className="flex items-center gap-2 min-w-[140px]">
+                        <Switch
+                          checked={option.isCorrect}
+                          onCheckedChange={checked => handleOptionChange(qIndex, oIndex, "isCorrect", checked)}
+                        />
+                        <Label className={`text-sm ${option.isCorrect ? 'text-green-600' : ''}`}>
+                          Correct
+                        </Label>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveOption(qIndex, oIndex)}
+                        className="hover:text-red-500"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {question.options.length < 2 && (
+                  <p className="text-red-500 text-sm">
+                    Add at least two options
+                  </p>
+                )}
+
+                {!question.options.some(opt => opt.isCorrect) && (
+                  <p className="text-red-500 text-sm">
+                    Mark at least one option as correct
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Form Actions */}
+      <div className="mt-6 flex justify-end gap-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push("/dashboard/quizzes")}
+          disabled={saving}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={saving}>
+          {saving ? (
+            <>
+              <LoadingSpinner className="w-4 h-4 mr-2" />
+              {quizId ? "Updating..." : "Creating..."}
+            </>
+          ) : (
+            quizId ? "Update Quiz" : "Create Quiz"
           )}
-        </div>
-      </CardContent>
-    </Card>
-  )
+        </Button>
+      </div>
+    </form>
+        </div >
+    )
 }

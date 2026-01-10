@@ -11,24 +11,21 @@ import { FormTextarea } from "@/components/ui/form-textarea"
 import { FormSwitch } from "@/components/ui/form-switch"
 import { toast } from "sonner"
 import { useRewardStore } from "@/lib/store/rewardStore"
-import { rewardCreateSchema, rewardUpdateSchema } from "@/lib/zodSchemas"
+import { Uploader } from "@/components/file-uploader/Uploader"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()
-
-  const schema = reward ? rewardUpdateSchema : rewardCreateSchema
-  const form = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      prize: reward?.prize || "",
-      description: reward?.description || "",
-      imageUrl: reward?.imageUrl || "",
-      cost: reward?.cost || "",
-      claimUrl: reward?.claimUrl || "",
-      enabled: reward?.enabled ?? true,
-      allowMultiple: reward?.allowMultiple ?? false,
-      maxRedemptions: reward?.maxRedemptions || 1,
-    },
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    prize: '',
+    description: '',
+    imageUrl: '',
+    fileKey: '',
+    cost: '',
+    claimUrl: '',
+    enabled: true,
+    allowMultiple: false,
+    maxRedemptions: 1
   })
 
   const watchedAllowMultiple = form.watch("allowMultiple")
@@ -39,7 +36,8 @@ export function RewardForm({ reward, onClose }) {
       form.reset({
         prize: reward.prize,
         description: reward.description,
-        imageUrl: reward.imageUrl,
+        imageUrl: reward.imageUrl || '',
+        fileKey: reward.fileKey || '',
         cost: reward.cost,
         claimUrl: reward.claimUrl || "",
         enabled: reward.enabled,
@@ -112,27 +110,21 @@ export function RewardForm({ reward, onClose }) {
         />
 
         <div className="space-y-2">
-          <FormInput
-            name="imageUrl"
-            label="Image URL"
-            type="url"
-            placeholder="https://example.com/image.jpg"
-            required
+          <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
+            Reward Image <span className="text-red-500">*</span>
+          </Label>
+          <Uploader
+            uploadEndpoint="/api/admin/rewards/upload"
+            value={formData.imageUrl || ""}
+            onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || "" }))}
+            onUploadComplete={(upload) => {
+              // upload: { url, path }
+              // store storage path as fileKey for database
+              if (upload?.path) {
+                setFormData(prev => ({ ...prev, fileKey: upload.path }))
+              }
+            }}
           />
-          {watchedImageUrl && (
-            <div className="mt-2 p-2 border rounded-md">
-              <div className="relative h-32 w-full rounded-md overflow-hidden">
-                <Image
-                  src={watchedImageUrl}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 600px) 100vw, 600px"
-                  onError={(e) => (e.currentTarget.style.display = "none")}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         <FormInput

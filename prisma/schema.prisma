@@ -67,6 +67,7 @@ model Quiz {
   title          String
   description    String?
   imageUrl       String?
+  fileKey        String?    // Firebase Storage path for quiz image (similar to Course model)
   categoryId     String     @db.ObjectId
   category       Category   @relation(fields: [categoryId], references: [id])
   questions      Question[]
@@ -97,6 +98,7 @@ model Question {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   text     String
   imageUrl String?
+  fileKey  String?  // Firebase Storage path for question image (similar to Quiz/Course)
   videoUrl String?
   quizId   String   @db.ObjectId
   quiz     Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
@@ -173,6 +175,7 @@ model Reward {
   description    String?
   cost           Int
   imageUrl       String?
+  fileKey        String?     // Firebase Storage path for reward image (similar to Quiz/Course)
   featured       Boolean     @default(false)
   enabled        Boolean     @default(true)
   allowMultiple  Boolean     @default(false)

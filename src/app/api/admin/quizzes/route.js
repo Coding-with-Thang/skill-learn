@@ -6,6 +6,7 @@ import { successResponse } from "@/lib/utils/apiWrapper";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody } from "@/lib/utils/validateRequest";
 import { quizCreateSchema } from "@/lib/zodSchemas";
+import { getSignedUrl } from "@/lib/utils/adminStorage";
 
 export async function GET(request) {
   try {
@@ -35,7 +36,31 @@ export async function GET(request) {
       },
     });
 
-    return successResponse({ quizzes });
+    // Resolve signed URLs for quiz images (fileKey). If unavailable, use existing imageUrl
+    const quizzesWithImages = await Promise.all(
+      quizzes.map(async (quiz) => {
+        let imageUrl = quiz.imageUrl || null;
+        try {
+          if (quiz.fileKey) {
+            const signedUrl = await getSignedUrl(quiz.fileKey, 7);
+            if (signedUrl) imageUrl = signedUrl;
+          }
+        } catch (err) {
+          console.warn(
+            "Failed to generate signed URL for quiz image:",
+            quiz.id,
+            err?.message || err
+          );
+        }
+
+        return {
+          ...quiz,
+          imageUrl,
+        };
+      })
+    );
+
+    return successResponse({ quizzes: quizzesWithImages });
   } catch (error) {
     return handleApiError(error);
   }
@@ -62,6 +87,7 @@ export async function POST(request) {
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
+        fileKey: data.fileKey,
         categoryId: data.categoryId,
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
@@ -76,6 +102,7 @@ export async function POST(request) {
               .map((_, i) => ({
                 text: `Question ${i + 1}`,
                 points: 1,
+                fileKey: null,
                 options: {
                   create: Array(4)
                     .fill(null)
@@ -96,7 +123,26 @@ export async function POST(request) {
       },
     });
 
-    return successResponse({ quiz });
+    // Generate signed URL if fileKey exists
+    let imageUrl = quiz.imageUrl || null;
+    try {
+      if (quiz.fileKey) {
+        const signedUrl = await getSignedUrl(quiz.fileKey, 7);
+        if (signedUrl) imageUrl = signedUrl;
+      }
+    } catch (err) {
+      console.warn(
+        "Failed to generate signed URL for quiz image:",
+        err?.message || err
+      );
+    }
+
+    return successResponse({ 
+      quiz: { 
+        ...quiz, 
+        imageUrl 
+      } 
+    });
   } catch (error) {
     return handleApiError(error);
   }

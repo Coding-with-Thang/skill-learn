@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 // Minimal, clean uploader implementation to avoid syntax issues.
-export function Uploader({ value, onChange, onUploadComplete }) {
+export function Uploader({ value, onChange, onUploadComplete, uploadEndpoint = '/api/admin/upload' }) {
   const [url, setUrl] = useState(value || undefined)
   const [uploading, setUploading] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -30,7 +30,7 @@ export function Uploader({ value, onChange, onUploadComplete }) {
     const form = new FormData()
     form.append('file', file, file.name)
     try {
-      const res = await axios.post('/api/admin/upload', form, {
+      const res = await axios.post(uploadEndpoint, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => {
           if (e.total) setProgress(Math.round((e.loaded / e.total) * 100))

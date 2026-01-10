@@ -91,7 +91,26 @@ const questionOptionSchema = z.object({
 const questionSchema = z
   .object({
     text: z.string().min(1, "Question text is required"),
-    imageUrl: z.string().optional(),
+    imageUrl: z
+      .string()
+      .optional()
+      .refine(
+        (url) => {
+          // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+          // If empty/undefined, it's valid (optional field)
+          if (!url) return true;
+          // Allow Firebase Storage URLs
+          return (
+            url.includes("firebasestorage.googleapis.com") ||
+            url.includes("storage.googleapis.com") ||
+            url.startsWith("/")
+          ); // Allow local/public paths as fallback
+        },
+        {
+          message: "Image URL must be from Firebase Storage or a local path",
+        }
+      ),
+    fileKey: z.string().optional(), // Firebase Storage path for question image
     videoUrl: z.string().optional(),
     points: z.number().int().positive().default(1),
     options: z
@@ -109,7 +128,26 @@ export const quizCreateSchema = z.object({
     .min(1, "Title is required")
     .max(200, "Title must be less than 200 characters"),
   description: z.string().optional(),
-  imageUrl: z.string().optional(),
+  imageUrl: z
+    .string()
+    .optional()
+    .refine(
+      (url) => {
+        // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+        // If empty/undefined, it's valid (optional field)
+        if (!url) return true;
+        // Allow Firebase Storage URLs
+        return (
+          url.includes("firebasestorage.googleapis.com") ||
+          url.includes("storage.googleapis.com") ||
+          url.startsWith("/")
+        ); // Allow local/public paths as fallback
+      },
+      {
+        message: "Image URL must be from Firebase Storage or a local path",
+      }
+    ),
+  fileKey: z.string().optional(), // Firebase Storage path for quiz image
   categoryId: objectIdSchema,
   timeLimit: z.number().int().nonnegative().optional(),
   passingScore: z
@@ -232,49 +270,40 @@ export const rewardRedeemSchema = z.object({
   rewardId: objectIdSchema,
 });
 
-export const rewardCreateSchema = z
-  .object({
-    prize: z
-      .string()
-      .min(1, "Prize name is required")
-      .max(200, "Prize name must be less than 200 characters"),
-    cost: z
-      .number()
-      .int("Cost must be an integer")
-      .positive("Cost must be positive"),
-    enabled: z.boolean().default(true),
-    allowMultiple: z.boolean().default(false),
-    maxRedemptions: z.number().int().positive().nullable().optional(),
-    description: z.string().optional(),
-    imageUrl: z
-      .string()
-      .url("Must be a valid URL")
-      .optional()
-      .or(z.literal("")),
-    claimUrl: z
-      .string()
-      .url("Must be a valid URL")
-      .optional()
-      .or(z.literal("")),
-  })
-  .refine(
-    (data) => {
-      // If allowMultiple is true and maxRedemptions is provided, it must be positive
-      if (
-        data.allowMultiple &&
-        data.maxRedemptions !== null &&
-        data.maxRedemptions !== undefined
-      ) {
-        return data.maxRedemptions > 0;
+export const rewardCreateSchema = z.object({
+  prize: z
+    .string()
+    .min(1, "Prize name is required")
+    .max(200, "Prize name must be less than 200 characters"),
+  cost: z
+    .number()
+    .int("Cost must be an integer")
+    .positive("Cost must be positive"),
+  enabled: z.boolean().default(true),
+  allowMultiple: z.boolean().default(false),
+  maxRedemptions: z.number().int().positive().nullable().optional(),
+  description: z.string().optional(),
+  imageUrl: z
+    .string()
+    .optional()
+    .refine(
+      (url) => {
+        // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+        // If empty/undefined, it's valid (optional field)
+        if (!url) return true;
+        // Allow Firebase Storage URLs
+        return (
+          url.includes("firebasestorage.googleapis.com") ||
+          url.includes("storage.googleapis.com") ||
+          url.startsWith("/")
+        ); // Allow local/public paths as fallback
+      },
+      {
+        message: "Image URL must be from Firebase Storage or a local path",
       }
-      return true;
-    },
-    {
-      message:
-        "Max redemptions must be positive when allow multiple is enabled",
-      path: ["maxRedemptions"],
-    }
-  );
+    ),
+  fileKey: z.string().optional(), // Firebase Storage path for reward image
+});
 
 export const rewardUpdateSchema = rewardCreateSchema.partial();
 

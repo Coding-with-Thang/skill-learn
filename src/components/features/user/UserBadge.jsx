@@ -67,14 +67,25 @@ export default function UserBadge() {
     >
       <div className="absolute inset-0 pointer-events-none z-0 bg-[url('/chalkboard_texture.png')] bg-repeat opacity-15 mix-blend-screen" aria-hidden="true" />
       <div className="relative z-10 flex flex-col items-center w-full">
-        <Image
-          src={user?.imageUrl || "/user.png"}
-          alt={user ? `${user.firstName} ${user.lastName} profile image` : "Default profile image"}
-          width={160}
-          height={160}
-          className="rounded-full border-4 border-white/60 shadow-lg bg-white/10 object-cover mt-6"
-          priority
-        />
+        {user?.imageUrl ? (
+          <Image
+            src={user.imageUrl}
+            alt={user ? `${user.firstName} ${user.lastName} profile image` : "User profile image"}
+            width={160}
+            height={160}
+            className="rounded-full border-4 border-white/60 shadow-lg bg-white/10 object-cover mt-6"
+            priority
+          />
+        ) : (
+          <div
+            className="rounded-full border-4 border-white/60 shadow-lg bg-gradient-to-br from-primary/80 to-secondary/80 flex items-center justify-center mt-6"
+            style={{ width: 160, height: 160 }}
+          >
+            <span className="text-6xl font-bold text-white drop-shadow-lg">
+              {user?.firstName?.[0]?.toUpperCase() || user?.lastName?.[0]?.toUpperCase() || "?"}
+            </span>
+          </div>
+        )}
         <h2
           className="text-4xl font-bold my-6 drop-shadow-lg text-center text-primary font-marker"
         >

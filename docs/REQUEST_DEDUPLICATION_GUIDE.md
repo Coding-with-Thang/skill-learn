@@ -34,7 +34,7 @@ The request deduplication utility prevents duplicate API calls by tracking ongoi
 Creates a new request deduplicator instance.
 
 ```javascript
-import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 
 const deduplicator = createRequestDeduplicator();
 ```
@@ -73,7 +73,7 @@ async function fetchUsers(force = false) {
 Uses the default singleton instance for simple use cases.
 
 ```javascript
-import { dedupeRequest } from "@/utils/requestDeduplication";
+import { dedupeRequest } from "@/lib/utils/requestDeduplication";
 
 async function fetchData() {
   return dedupeRequest('fetchData', async () => {
@@ -92,7 +92,7 @@ async function fetchData() {
 
 **Implementation:**
 ```javascript
-import { createRequestDeduplicator } from "@/utils/requestDeduplication";
+import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
 import { STORE } from "@/constants";
 
 const requestDeduplicator = createRequestDeduplicator();

@@ -39,11 +39,11 @@ API response standardization has been implemented across the application. All AP
 
 ### 1. **Server-Side (API Routes)**
 
-All API routes use the `successResponse()` utility from `@/utils/apiWrapper`:
+All API routes use the `successResponse()` utility from `@/lib/utils/apiWrapper`:
 
 ```javascript
-import { successResponse } from "@/utils/apiWrapper";
-import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { handleApiError } from "@/lib/utils/errorHandler";
 
 export async function GET() {
   try {
@@ -215,8 +215,8 @@ When testing API endpoints:
 ### Creating New API Routes
 
 ```javascript
-import { successResponse } from "@/utils/apiWrapper";
-import { handleApiError } from "@/utils/errorHandler";
+import { successResponse } from "@/lib/utils/apiWrapper";
+import { handleApiError } from "@/lib/utils/errorHandler";
 
 export async function GET() {
   try {
