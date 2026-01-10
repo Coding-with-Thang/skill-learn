@@ -303,6 +303,7 @@ export const rewardCreateSchema = z.object({
       }
     ),
   fileKey: z.string().optional(), // Firebase Storage path for reward image
+  claimUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
 });
 
 export const rewardUpdateSchema = rewardCreateSchema.partial();

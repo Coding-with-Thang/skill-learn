@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -9,23 +9,28 @@ import { Form } from "@/components/ui/form"
 import { FormInput } from "@/components/ui/form-input"
 import { FormTextarea } from "@/components/ui/form-textarea"
 import { FormSwitch } from "@/components/ui/form-switch"
+import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useRewardStore } from "@/lib/store/rewardStore"
 import { Uploader } from "@/components/file-uploader/Uploader"
+import { rewardCreateSchema, rewardUpdateSchema } from "@/lib/zodSchemas"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    prize: '',
-    description: '',
-    imageUrl: '',
-    fileKey: '',
-    cost: '',
-    claimUrl: '',
-    enabled: true,
-    allowMultiple: false,
-    maxRedemptions: 1
+  const schema = reward ? rewardUpdateSchema : rewardCreateSchema
+  const form = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      prize: '',
+      description: '',
+      imageUrl: '',
+      fileKey: '',
+      cost: 0,
+      claimUrl: '',
+      enabled: true,
+      allowMultiple: false,
+      maxRedemptions: 1
+    }
   })
 
   const watchedAllowMultiple = form.watch("allowMultiple")
@@ -115,13 +120,13 @@ export function RewardForm({ reward, onClose }) {
           </Label>
           <Uploader
             uploadEndpoint="/api/admin/rewards/upload"
-            value={formData.imageUrl || ""}
-            onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || "" }))}
+            value={watchedImageUrl || ""}
+            onChange={(url) => form.setValue("imageUrl", url || "")}
             onUploadComplete={(upload) => {
               // upload: { url, path }
               // store storage path as fileKey for database
               if (upload?.path) {
-                setFormData(prev => ({ ...prev, fileKey: upload.path }))
+                form.setValue("fileKey", upload.path)
               }
             }}
           />
