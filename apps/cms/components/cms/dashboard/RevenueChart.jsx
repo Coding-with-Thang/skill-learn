@@ -6,7 +6,7 @@ import { Button } from '@/components/cms/ui/button'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
-import { useDashboardStore } from '@/lib/store'
+import { useDashboardStore } from '@/lib/cms/store'
 
 const timeRanges = ['7D', '30D', '90D', '1Y']
 

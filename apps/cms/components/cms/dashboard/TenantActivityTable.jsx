@@ -8,7 +8,7 @@ import { Badge } from '@/components/cms/ui/badge'
 import { Search, MoreVertical, Eye, Edit, Ban, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn, getStatusColor, getPlanColor, formatTimeAgo } from '@/lib/cms/utils'
-import { useDashboardStore } from '@/lib/store'
+import { useDashboardStore } from '@/lib/cms/store'
 
 export default function TenantActivityTable({ tenants }) {
   const [currentPage, setCurrentPage] = useState(1)
