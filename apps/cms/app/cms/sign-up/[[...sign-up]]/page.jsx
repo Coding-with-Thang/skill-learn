@@ -3,6 +3,7 @@
 import { SignUp } from '@clerk/nextjs'
 import { dark, light } from '@clerk/themes'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function CMSSignUpPage() {
   const [mounted, setMounted] = useState(false)
@@ -62,9 +63,9 @@ export default function CMSSignUpPage() {
         <div className="text-center text-xs text-muted-foreground">
           <p>
             Already have an account?{' '}
-            <a href="/cms/sign-in" className="text-primary hover:underline">
+            <Link href="/cms/sign-in" className="text-primary hover:underline">
               Sign in
-            </a>
+            </Link>
           </p>
         </div>
       </div>

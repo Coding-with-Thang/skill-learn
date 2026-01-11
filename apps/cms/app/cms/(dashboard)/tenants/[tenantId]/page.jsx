@@ -91,6 +91,7 @@ export default function TenantDetailPage() {
       Promise.all([fetchTenant(), fetchUsers(), fetchAllTenants()])
         .finally(() => setLoading(false))
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId])
 
   // Debug: Log when dialog opens
@@ -389,6 +390,7 @@ export default function TenantDetailPage() {
                   />
                   <div className="flex-1 flex items-center gap-3">
                     {user.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={user.imageUrl}
                         alt={user.username}

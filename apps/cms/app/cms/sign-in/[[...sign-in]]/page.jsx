@@ -75,7 +75,7 @@ export default function CMSSignInPage() {
         {/* Footer Note */}
         <div className="text-center text-xs text-muted-foreground">
           <p>
-            Don't have access? Contact your system administrator to request super admin privileges.
+            Don&apos;t have access? Contact your system administrator to request super admin privileges.
           </p>
         </div>
       </div>
