@@ -5,6 +5,7 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
+    "build": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js",
     "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
