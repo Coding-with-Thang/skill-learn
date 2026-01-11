@@ -1,7 +1,7 @@
 "use server";
 // This module is server-only because it uses Prisma
 import { prisma } from '@skill-learn/database';
-import { AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { AppError, ErrorType } from "../../utils/errorHandler";
 
 export async function logAuditEvent(
   userId,

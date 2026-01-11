@@ -2,7 +2,7 @@
 // Note: This runs in Edge runtime (middleware), so we cannot use setInterval
 // Cleanup happens automatically when checking requests (lazy cleanup)
 // For production, consider using a shared cache like Redis or Upstash
-import { RATE_LIMIT } from "@/config/constants";
+
 
 const requests = new Map();
 

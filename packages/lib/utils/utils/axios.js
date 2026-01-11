@@ -1,5 +1,20 @@
 import axios from "axios";
-import { CACHE_DURATIONS, RETRY_CONFIG } from "@/config/constants";
+
+// Cache durations (in milliseconds)
+const CACHE_DURATIONS = {
+  CATEGORIES: 60 * 60 * 1000, // 1 hour
+  REWARDS: 5 * 60 * 1000, // 5 minutes
+  POINTS: 1 * 60 * 1000, // 1 minute
+  DEFAULT: 5 * 60 * 1000, // 5 minutes
+};
+
+// Retry configuration
+const RETRY_CONFIG = {
+  MAX_RETRIES: 3,
+  DEFAULT_RETRY_AFTER: 60, // seconds
+  BACKOFF_BASE: 1000, // milliseconds
+  BACKOFF_MAX: 30000, // milliseconds
+};
 
 // Create an axios instance with defaults
 const api = axios.create({

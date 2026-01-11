@@ -1,4 +1,4 @@
-import { logAuditEvent } from "@/lib/utils/auditLogger";
+import { logAuditEvent } from "../../utils/auditLogger";
 
 /**
  * Higher-order function to wrap API route handlers with audit logging

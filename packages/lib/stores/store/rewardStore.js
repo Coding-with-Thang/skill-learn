@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import api from "@/lib/utils/axios";
+import api from "../../utils/utils/axios.js";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore";
-import { handleErrorWithNotification } from "@/lib/utils/notifications";
-import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
-import { parseApiResponse } from "@/lib/utils/apiResponseParser";
-import { STORE } from "@/config/constants";
+import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
+
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();

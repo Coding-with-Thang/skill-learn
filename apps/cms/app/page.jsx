@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import DashboardLayout from '@/components/cms/layout/DashboardLayout'
 import HeroStatsCard from '@/components/cms/dashboard/HeroStatsCard'
 import RevenueChart from '@/components/cms/dashboard/RevenueChart'
@@ -31,7 +33,7 @@ export default function Home() {
         >
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
-            Welcome back! Here's what's happening with your platform.
+            Welcome back! Here&apos;s what&apos;s happening with your platform.
           </p>
         </motion.div>
 

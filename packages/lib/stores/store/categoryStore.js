@@ -1,10 +1,14 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import api from "@/lib/utils/axios";
-import { handleErrorWithNotification } from "@/lib/utils/notifications";
-import { createRequestDeduplicator } from "@/lib/utils/requestDeduplication";
-import { parseApiResponse } from "@/lib/utils/apiResponseParser";
-import { STORE } from "@/config/constants";
+import api from "../../utils/utils/axios.js";
+import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
+
+// STORE constants
+const STORE = {
+  FETCH_COOLDOWN: 5000, // 5 seconds
+};
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
