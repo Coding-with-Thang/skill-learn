@@ -3,10 +3,10 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@skill-learn/ui/components/button';
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
-import GuessingGame from "@/components/features/games/GuessingGame";
-import MemoryGame from "@/components/features/games/MemoryGame";
-import RockPaperScissors from "@/components/features/games/RockPaperScissors";
-import TicTacToe from "@/components/features/games/TicTacToe";
+import GuessingGame from "@/components/games/GuessingGame";
+import MemoryGame from "@/components/games/MemoryGame";
+import RockPaperScissors from "@/components/games/RockPaperScissors";
+import TicTacToe from "@/components/games/TicTacToe";
 
 // Game registry: maps URL-friendly game names to their components
 const GAME_REGISTRY = {

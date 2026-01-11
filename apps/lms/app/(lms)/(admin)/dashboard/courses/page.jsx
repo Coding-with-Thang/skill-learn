@@ -5,9 +5,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skil
 import Link from "next/link";
 import Image from "next/image";
 import { Clock, ArrowRight } from 'lucide-react';
-import CourseEditLink from '@/components/features/courses/CourseEditLink';
-import CourseFilters from '@/components/features/courses/CourseFilters';
-import CourseActions from '@/components/features/courses/CourseActions';
+import CourseEditLink from '@/components/courses/CourseEditLink';
+import CourseFilters from '@/components/courses/CourseFilters';
+import CourseActions from '@/components/courses/CourseActions';
 import Pagination from '@/components/shared/Pagination';
 
 async function getCourses({ page = 1, pageSize = 5, category } = {}) {

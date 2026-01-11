@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@skill-learn/ui/components/select";
 import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
-import QuizModal from "@/components/features/quiz/QuizModal"
+import QuizModal from "@/components/quiz/QuizModal"
 
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));

@@ -6,9 +6,9 @@ import { Table } from "@skill-learn/ui/components/table"
 import { Dialog, DialogContent } from "@skill-learn/ui/components/dialog"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js"
-import UserDetails from "@/components/features/user/UserDetails"
-import UserForm from "@/components/features/user/UserForm"
-import { UserFilters } from "@/components/features/user/UserFilters"
+import UserDetails from "@/components/user/UserDetails"
+import UserForm from "@/components/user/UserForm"
+import { UserFilters } from "@/components/user/UserFilters"
 
 export default function UsersPage() {
   const { users, isLoading, error, fetchUsers } = useUsersStore();

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@skill-learn/ui/components/button";
-import { UserButtonWrapper } from "@/components/features/auth/UserButtonWrapper";
+import { UserButtonWrapper } from "@/components/auth/UserButtonWrapper";
 import { Menu, X } from "lucide-react";
 
 export default function LandingHeader() {

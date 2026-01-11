@@ -3,12 +3,12 @@
 import { useUser } from '@clerk/nextjs'
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import HeroSection from "@/components/features/landing/HeroSection";
-import BuiltForEveryone from '@/components/features/landing/BuiltForEveryone';
-import VersatilePlatform from '@/components/features/landing/VersatilePlatform';
-import SkillLearnHere from '@/components/features/landing/SkillLearnHere';
-import FAQ from '@/components/features/landing/FAQ';
-import Testimonials from '@/components/features/landing/Testimonials';
+import HeroSection from "@/components/landing/HeroSection";
+import BuiltForEveryone from '@/components/landing/BuiltForEveryone';
+import VersatilePlatform from '@/components/landing/VersatilePlatform';
+import SkillLearnHere from '@/components/landing/SkillLearnHere';
+import FAQ from '@/components/landing/FAQ';
+import Testimonials from '@/components/landing/Testimonials';
 import { LoadingPage } from "@skill-learn/ui/components/loading"
 import { ErrorCard } from "@skill-learn/ui/components/error-boundary"
 import { ErrorBoundary } from "@skill-learn/ui/components/error-boundary"

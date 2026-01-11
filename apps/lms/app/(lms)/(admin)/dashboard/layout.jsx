@@ -1,7 +1,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { AppSidebar } from "@/components/features/admin/app-sidebar"
+import { AppSidebar } from "@/components/admin/app-sidebar"
 import {
     SidebarInset,
     SidebarProvider,

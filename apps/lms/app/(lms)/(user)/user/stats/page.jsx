@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
-import UserStats from "@/components/features/user/UserStats";
+import UserStats from "@/components/user/UserStats";
 
 export default async function StatsPage() {
   const { userId } = await auth()

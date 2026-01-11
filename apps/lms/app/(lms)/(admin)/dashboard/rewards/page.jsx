@@ -21,7 +21,7 @@ import {
 } from "@skill-learn/ui/components/table"
 import { Star, StarOff } from "lucide-react"
 import { useRewardStore } from "@skill-learn/lib/stores/rewardStore.js"
-import { RewardForm } from "@/components/features/admin/rewards/RewardForm"
+import { RewardForm } from "@/components/admin/rewards/RewardForm"
 import { toast } from "sonner"
 import {
   Card,

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import TopBanner from "@/components/layout/TopBanner";
-import LandingHeader from "@/components/features/landing/LandingHeader";
-import LandingFooter from "@/components/features/landing/LandingFooter";
+import LandingHeader from "@/components/landing/LandingHeader";
+import LandingFooter from "@/components/landing/LandingFooter";
 
 export default function PublicLayout({ children }) {
   const [loaded, setLoaded] = useState(false);

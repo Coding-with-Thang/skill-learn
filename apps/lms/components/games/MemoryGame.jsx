@@ -5,7 +5,7 @@ import useLocalStorage from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
-import QuizModal from "@/components/features/quiz/QuizModal"
+import QuizModal from "@/components/quiz/QuizModal"
 
 const MemoryGame = () => {
 

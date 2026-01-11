@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 import { LoadingPage } from "@skill-learn/ui/components/loading"
 
 // New Widgets
-import WelcomeBanner from "@/components/features/user/WelcomeBanner";
-import LeaderboardWidget from "@/components/features/user/LeaderboardWidget";
-import AchievementsWidget from "@/components/features/user/AchievementsWidget";
-import DailyActivitiesWidget from "@/components/features/user/DailyActivitiesWidget";
-import TopicProgressWidget from "@/components/features/user/TopicProgressWidget";
-import PointsRewardsWidget from "@/components/features/user/PointsRewardsWidget";
+import WelcomeBanner from "@/components/user/WelcomeBanner";
+import LeaderboardWidget from "@/components/user/LeaderboardWidget";
+import AchievementsWidget from "@/components/user/AchievementsWidget";
+import DailyActivitiesWidget from "@/components/user/DailyActivitiesWidget";
+import TopicProgressWidget from "@/components/user/TopicProgressWidget";
+import PointsRewardsWidget from "@/components/user/PointsRewardsWidget";
 
 
 export default function HomePage() {

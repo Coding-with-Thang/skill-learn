@@ -3,7 +3,7 @@
 import MobileSidebar from "@/components/layout/MobileSidebar";
 import { Search, Bell } from "lucide-react";
 import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
-import { UserButtonWrapper } from '@/components/features/auth/UserButtonWrapper';
+import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import { useUser } from "@clerk/nextjs";
 import { SidebarTrigger } from "@skill-learn/ui/components/sidebar";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";

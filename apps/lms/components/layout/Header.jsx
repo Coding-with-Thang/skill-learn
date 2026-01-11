@@ -9,7 +9,7 @@ import { ErrorCard } from "@skill-learn/ui/components/error-boundary";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
 import { Navigation } from './Navigation/Navigation';
 import { Logo } from '../shared/Logo';
-import { UserButtonWrapper } from '@/components/features/auth/UserButtonWrapper';
+import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
 
 export default function Header() {

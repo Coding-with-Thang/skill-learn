@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
 import { LoadingPage } from "@skill-learn/ui/components/loading";
-import { AppSidebar } from "@/components/features/admin/app-sidebar";
+import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SidebarProvider } from "@skill-learn/ui/components/sidebar";
 import { usePathname } from "next/navigation";
 

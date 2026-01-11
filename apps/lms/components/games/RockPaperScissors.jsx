@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import useLocalStorage from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Button } from "@skill-learn/ui/components/button";
-import QuizModal from "@/components/features/quiz/QuizModal"
+import QuizModal from "@/components/quiz/QuizModal"
 
 const choices = ['Rock', 'Paper', 'Scissors'];
 export default function RockPaperScissors() {
