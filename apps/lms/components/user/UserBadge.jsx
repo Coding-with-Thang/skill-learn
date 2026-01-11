@@ -60,6 +60,7 @@ export default function UserBadge() {
     );
   }
 
+  // eslint-disable-next-line @next/next/no-page-custom-font
   return (
     <div
       className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn bg-gradient-to-br from-primary to-secondary border-8 border-border rounded-[32px] shadow-xl outline-dashed outline-2 outline-ring outline-offset-8"
@@ -92,7 +93,6 @@ export default function UserBadge() {
           {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
         </h2>
         {!isLoading ? (
-          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
             style={{
               boxShadow: "0 2px 16px 0 var(--card-shadow), 0 0 0 2px var(--ring)",
