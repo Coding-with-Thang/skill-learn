@@ -17,10 +17,11 @@ export default function TenantActivityTable({ tenants }) {
 
   const itemsPerPage = 10
 
-  // Filter tenants
+  // Filter tenants - handle both old mock format and new real format
   const filteredTenants = tenants.filter(tenant => {
-    const matchesSearch = tenant.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesFilter = tenantFilter === 'all' || tenant.status.toLowerCase() === tenantFilter.toLowerCase()
+    const matchesSearch = tenant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
+    const status = tenant.status || (tenant.users > 0 ? 'Active' : 'Inactive')
+    const matchesFilter = tenantFilter === 'all' || status.toLowerCase() === tenantFilter.toLowerCase()
     return matchesSearch && matchesFilter
   })
 
@@ -88,31 +89,31 @@ export default function TenantActivityTable({ tenants }) {
                   >
                     <td className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-xl">
-                          {tenant.logo}
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-xl font-semibold">
+                          {tenant.logo || tenant.name?.charAt(0).toUpperCase() || '?'}
                         </div>
                         <div>
-                          <p className="font-medium">{tenant.name}</p>
-                          <p className="text-xs text-muted-foreground">ID: {tenant.id}</p>
+                          <p className="font-medium">{tenant.name || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground">{tenant.slug || tenant.id}</p>
                         </div>
                       </div>
                     </td>
                     <td className="py-4">
-                      <Badge className={cn("font-medium", getPlanColor(tenant.plan))}>
-                        {tenant.plan}
+                      <Badge className={cn("font-medium", getPlanColor(tenant.plan || tenant.subscriptionTier || 'trial'))}>
+                        {tenant.plan || tenant.subscriptionTier || 'Trial'}
                       </Badge>
                     </td>
                     <td className="py-4">
-                      <span className="font-medium">{tenant.users.toLocaleString()}</span>
+                      <span className="font-medium">{(tenant.users || 0).toLocaleString()}</span>
                     </td>
                     <td className="py-4">
-                      <Badge className={cn("font-medium", getStatusColor(tenant.status))}>
-                        {tenant.status}
+                      <Badge className={cn("font-medium", getStatusColor(tenant.status || (tenant.users > 0 ? 'Active' : 'Inactive')))}>
+                        {tenant.status || (tenant.users > 0 ? 'Active' : 'Inactive')}
                       </Badge>
                     </td>
                     <td className="py-4">
                       <span className="text-sm text-muted-foreground">
-                        {formatTimeAgo(tenant.lastActive)}
+                        {tenant.lastActive ? formatTimeAgo(new Date(tenant.lastActive)) : 'Never'}
                       </span>
                     </td>
                     <td className="py-4">

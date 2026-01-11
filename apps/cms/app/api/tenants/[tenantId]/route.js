@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
     if (adminResult instanceof NextResponse) {
       return adminResult;
     }
-    const { tenantId } = params;
+    const { tenantId } = await params;
 
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
@@ -70,7 +70,7 @@ export async function PUT(request, { params }) {
       return adminResult;
     }
 
-    const { tenantId } = params;
+    const { tenantId } = await params;
     const body = await request.json();
     const { name, slug, subscriptionTier, maxRoleSlots } = body;
 
@@ -151,7 +151,7 @@ export async function DELETE(request, { params }) {
       return adminResult;
     }
 
-    const { tenantId } = params;
+    const { tenantId } = await params;
 
     // Check if tenant exists
     const tenant = await prisma.tenant.findUnique({

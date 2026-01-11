@@ -1,13 +1,15 @@
 "use client"
 
-import { SignIn } from '@clerk/nextjs'
+import { SignIn, SignedIn, SignOutButton, useUser } from '@clerk/nextjs'
 import { dark, light } from '@clerk/themes'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { Button } from '@/components/cms/ui/button'
 
 export default function CMSSignInPage() {
   const [mounted, setMounted] = useState(false)
   const [theme, setTheme] = useState('light')
+  const { isSignedIn } = useUser()
 
   useEffect(() => {
     setMounted(true)
@@ -40,22 +42,35 @@ export default function CMSSignInPage() {
           </p>
         </div>
 
+        {/* Sign Out Button (if signed in) */}
+        <SignedIn>
+          <div className="flex justify-center">
+            <SignOutButton>
+              <Button variant="outline" className="w-full">
+                Sign Out
+              </Button>
+            </SignOutButton>
+          </div>
+        </SignedIn>
+
         {/* Clerk Sign In Component */}
-        <div className="flex justify-center">
-          <SignIn
-            routing="path"
-            path="/cms/sign-in"
-            signUpUrl="/cms/sign-up"
-            afterSignInUrl="/cms/tenants"
-            appearance={{
-              baseTheme: theme === 'dark' ? dark : light,
-              elements: {
-                rootBox: "mx-auto",
-                card: "shadow-lg",
-              },
-            }}
-          />
-        </div>
+        {!isSignedIn && (
+          <div className="flex justify-center">
+            <SignIn
+              routing="path"
+              path="/cms/sign-in"
+              signUpUrl="/cms/sign-up"
+              afterSignInUrl="/cms/tenants"
+              appearance={{
+                baseTheme: theme === 'dark' ? dark : light,
+                elements: {
+                  rootBox: "mx-auto",
+                  card: "shadow-lg",
+                },
+              }}
+            />
+          </div>
+        )}
 
         {/* Footer Note */}
         <div className="text-center text-xs text-muted-foreground">

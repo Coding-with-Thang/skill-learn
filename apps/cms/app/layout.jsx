@@ -1,5 +1,4 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import DashboardLayout from '@/components/cms/layout/DashboardLayout'
 import './globals.css'
 
 export const dynamic = 'force-dynamic'
@@ -11,8 +10,12 @@ export const metadata = {
 
 export default function CMSLayout({ children }) {
   return (
-    <ClerkProvider>
-      {children}
-    </ClerkProvider>
+    <html lang="en">
+      <body>
+        <ClerkProvider>
+          {children}
+        </ClerkProvider>
+      </body>
+    </html>
   )
 }

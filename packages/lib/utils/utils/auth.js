@@ -87,7 +87,16 @@ export async function requireSuperAdmin() {
   }
 
   // Check super admin role from Clerk metadata
-  const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
+  // Note: If custom session token claims are configured in Clerk Dashboard,
+  // the role will be available directly in sessionClaims.role or sessionClaims.appRole
+  // Otherwise, it might be in sessionClaims.publicMetadata.role
+  const userRole = 
+    sessionClaims?.role ||                    // Custom session token claim (recommended)
+    sessionClaims?.appRole ||                 // Custom session token claim (recommended)
+    sessionClaims?.publicMetadata?.role ||    // Fallback: if publicMetadata is included
+    sessionClaims?.publicMetadata?.appRole || // Fallback: if publicMetadata is included
+    sessionClaims?.metadata?.role;            // Legacy fallback
+
   const isSuperAdmin = userRole === 'super_admin';
 
   if (!isSuperAdmin) {

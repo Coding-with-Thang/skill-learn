@@ -5,30 +5,60 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
   const { pathname } = req.nextUrl;
 
-  // Protect all /cms/* routes (except sign-in and sign-up)
-  if (pathname.startsWith('/cms') && !pathname.startsWith('/cms/sign-in') && !pathname.startsWith('/cms/sign-up') && !pathname.startsWith('/cms/pending-approval')) {
+  // Protect all /cms/* routes (except sign-in, sign-up, and pending-approval)
+  // Note: setup-guide is now locked and only accessible to super admins
+  if (
+    pathname.startsWith("/cms") &&
+    !pathname.startsWith("/cms/sign-in") &&
+    !pathname.startsWith("/cms/sign-up") &&
+    !pathname.startsWith("/cms/pending-approval")
+  ) {
     if (!userId) {
-      const signInUrl = new URL('/cms/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', pathname);
+      const signInUrl = new URL("/cms/sign-in", req.url);
+      signInUrl.searchParams.set("redirect_url", pathname);
       return NextResponse.redirect(signInUrl);
     }
 
     // Check super admin role from Clerk metadata
-    const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
-    const isSuperAdmin = userRole === 'super_admin';
+    // Note: If custom session token claims are configured in Clerk Dashboard,
+    // the role will be available directly in sessionClaims.role or sessionClaims.appRole
+    const userRole = 
+      sessionClaims?.role ||                    // Custom session token claim (recommended)
+      sessionClaims?.appRole ||                 // Custom session token claim (recommended)
+      sessionClaims?.publicMetadata?.role ||    // Fallback: if publicMetadata is included
+      sessionClaims?.publicMetadata?.appRole || // Fallback: if publicMetadata is included
+      sessionClaims?.metadata?.role;            // Legacy fallback
+
+    const isSuperAdmin = userRole === "super_admin";
+
+    // Debug logging (remove in production)
+    if (process.env.NODE_ENV === "development") {
+      console.log("[CMS Middleware] User check:", {
+        userId,
+        hasSessionClaims: !!sessionClaims,
+        sessionClaimsPublicMetadata: sessionClaims?.publicMetadata,
+        userRole,
+        isSuperAdmin,
+      });
+    }
 
     if (!isSuperAdmin) {
-      // Optional: Check database as fallback
-      // const { prisma } = await import('@skill-learn/database');
-      // const user = await prisma.user.findUnique({ where: { clerkId: userId } });
-      // if (user?.role !== 'SUPER_ADMIN') {
-      //   return NextResponse.redirect(new URL('/', req.url), { status: 403 });
-      // }
-      
-      // For now, just redirect non-admins
-      return NextResponse.redirect(new URL('/', req.url), {
-        status: 403
-      });
+      // For API routes, return JSON error
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          {
+            error: "Forbidden",
+            message: "Super admin access required",
+            help: "Contact an existing super administrator to request access.",
+          },
+          { status: 403 }
+        );
+      }
+
+      // For page routes, redirect to sign-in with error message
+      const signInUrl = new URL("/cms/sign-in", req.url);
+      signInUrl.searchParams.set("error", "access_denied");
+      return NextResponse.redirect(signInUrl);
     }
   }
 
@@ -36,8 +66,5 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: [
-    "/((?!_next|_static|favicon.ico).*)",
-    "/",
-  ],
+  matcher: ["/((?!_next|_static|favicon.ico).*)", "/"],
 };
