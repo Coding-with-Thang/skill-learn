@@ -7,6 +7,15 @@ import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import QuizModal from "@/components/quiz/QuizModal"
 
+// Constants moved outside component to avoid recreation on every render
+const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
+
+const difficulties = {
+  easy: { pairs: 6, cols: 3 },
+  medium: { pairs: 10, cols: 5 },
+  hard: { pairs: 12, cols: 6 }
+};
+
 const MemoryGame = () => {
 
   //Local Storage
@@ -22,15 +31,6 @@ const MemoryGame = () => {
       setSelectedCategory(""); // Reset category selection
     }
   }, [round, pathname, setIsOpen, setSelectedCategory]);
-
-  //Emoji Match Game
-  const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🎨', '🎭', '🎪', '🎯', '🎩', '🎬', '🎸', '🎲', '🎮', '🌟', '🎪', '🎯', '🎩', '🎬'];
-
-  const difficulties = {
-    easy: { pairs: 6, cols: 3 },
-    medium: { pairs: 10, cols: 5 },
-    hard: { pairs: 12, cols: 6 }
-  };
 
   const [difficulty, setDifficulty] = useState('easy');
   const [cards, setCards] = useState([]);

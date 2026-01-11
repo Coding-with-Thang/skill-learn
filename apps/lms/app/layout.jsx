@@ -24,6 +24,8 @@ const poppins = Poppins({
   display: "swap",
 });
 
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: "Skill-Learn",
   description: "Gamify your knowledge - have a blast learning",

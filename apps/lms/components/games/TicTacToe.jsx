@@ -15,6 +15,64 @@ import {
 import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
 import QuizModal from "@/components/quiz/QuizModal"
 
+// Pure functions moved outside component
+const calculateWinner = (squares) => {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+
+  for (const line of lines) {
+    const [a, b, c] = line;
+    if (
+      squares[a] &&
+      squares[a] === squares[b] &&
+      squares[a] === squares[c]
+    ) {
+      return { winner: squares[a], line };
+    }
+  }
+  return { winner: null, line: [] };
+};
+
+const minimax = (squares, depth, isMaximizing) => {
+  const { winner } = calculateWinner(squares);
+
+  if (winner === "O") return 10 - depth;
+  if (winner === "X") return depth - 10;
+  if (!squares.includes(null)) return 0;
+
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < squares.length; i++) {
+      if (!squares[i]) {
+        squares[i] = "O";
+        const score = minimax(squares, depth + 1, false);
+        squares[i] = null;
+        bestScore = Math.max(score, bestScore);
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < squares.length; i++) {
+      if (!squares[i]) {
+        squares[i] = "X";
+        const score = minimax(squares, depth + 1, true);
+        squares[i] = null;
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  }
+};
+
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
@@ -80,63 +138,6 @@ const TicTacToe = () => {
     setTimeout(() => setShowScoreAnimation(false), 1500);
   }, []);
 
-  const calculateWinner = (squares) => {
-    const lines = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (const line of lines) {
-      const [a, b, c] = line;
-      if (
-        squares[a] &&
-        squares[a] === squares[b] &&
-        squares[a] === squares[c]
-      ) {
-        return { winner: squares[a], line };
-      }
-    }
-    return { winner: null, line: [] };
-  };
-
-  const minimax = (squares, depth, isMaximizing) => {
-    const { winner } = calculateWinner(squares);
-
-    if (winner === "O") return 10 - depth;
-    if (winner === "X") return depth - 10;
-    if (!squares.includes(null)) return 0;
-
-    if (isMaximizing) {
-      let bestScore = -Infinity;
-      for (let i = 0; i < squares.length; i++) {
-        if (!squares[i]) {
-          squares[i] = "O";
-          const score = minimax(squares, depth + 1, false);
-          squares[i] = null;
-          bestScore = Math.max(score, bestScore);
-        }
-      }
-      return bestScore;
-    } else {
-      let bestScore = Infinity;
-      for (let i = 0; i < squares.length; i++) {
-        if (!squares[i]) {
-          squares[i] = "X";
-          const score = minimax(squares, depth + 1, true);
-          squares[i] = null;
-          bestScore = Math.min(score, bestScore);
-        }
-      }
-      return bestScore;
-    }
-  };
-
   const getEmptySquares = (squares) => {
     return squares
       .map((square, index) => (square === null ? index : null))
@@ -191,6 +192,8 @@ const TicTacToe = () => {
     if (moveIndex !== -1) {
       handleMove(moveIndex);
     }
+    // minimax is a pure function defined outside component, stable reference
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board, difficulty, handleMove]);
 
   const resetBoard = useCallback(() => {
