@@ -128,7 +128,8 @@ export default function EditCoursePage() {
             // prefer the client-side preview over server-supplied imageUrl so preview shows instantly
             form.setValue('imageUrl', previewImageUrl, { shouldValidate: true })
         }
-    }, [previewImageUrl, form])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [previewImageUrl])
 
     // Clear preview/selection on unmount to avoid stale preview on next edit
     useEffect(() => {

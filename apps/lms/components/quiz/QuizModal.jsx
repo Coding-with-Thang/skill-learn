@@ -443,6 +443,8 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selec
             setSelectedCategory("");
             setRandomQuestion(null);
         }
+        // setSelectedCategory is a prop setter function, stable reference
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     function confirmCategory(category) {

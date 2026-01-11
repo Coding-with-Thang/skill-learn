@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
@@ -12,17 +12,12 @@ import {
   CardTitle,
 } from "@skill-learn/ui/components/card"
 import { Button } from "@skill-learn/ui/components/button"
-import { Input } from "@skill-learn/ui/components/input"
-import { Textarea } from "@skill-learn/ui/components/textarea"
-import { Switch } from "@skill-learn/ui/components/switch"
-import { Label } from "@skill-learn/ui/components/label"
 import { LoadingSpinner } from "@skill-learn/ui/components/loading"
-import { Plus, Minus, X, ArrowLeft } from "lucide-react"
+import { Plus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@skill-learn/lib/utils/axios.js"
 import { handleErrorWithNotification } from "@/lib/utils/notifications"
 import { QUIZ_CONFIG } from "@/config/constants"
-import { Uploader } from "@/components/file-uploader/Uploader"
 import { quizCreateSchema, quizUpdateSchema } from "@/lib/zodSchemas"
 import {
   Form,
@@ -102,17 +97,7 @@ export default function QuizBuilder({ quizId = null }) {
 
   const watchedShowQuestionReview = form.watch("showQuestionReview")
 
-  useEffect(() => {
-    fetchCategories()
-    fetchQuizSettings()
-    if (quizId) {
-      fetchQuiz()
-    } else {
-      setLoading(false)
-    }
-  }, [quizId])
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get("/admin/categories")
       const responseData = response.data?.data || response.data
@@ -122,9 +107,9 @@ export default function QuizBuilder({ quizId = null }) {
       handleErrorWithNotification(error, "Failed to load categories")
       setCategories([])
     }
-  }
+  }, [])
 
-  const fetchQuizSettings = async () => {
+  const fetchQuizSettings = useCallback(async () => {
     try {
       const response = await api.get("/quiz/settings")
       const settings = response.data?.data?.quizSettings || response.data?.quizSettings
@@ -139,9 +124,9 @@ export default function QuizBuilder({ quizId = null }) {
       // Silently fail - use defaults
       console.warn("Failed to load quiz settings:", error)
     }
-  }
+  }, [form])
 
-  const fetchQuiz = async () => {
+  const fetchQuiz = useCallback(async () => {
     try {
       const response = await api.get(`/admin/quizzes/${quizId}`)
       const quizData = response.data?.data || response.data
@@ -188,7 +173,17 @@ export default function QuizBuilder({ quizId = null }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [quizId, form])
+
+  useEffect(() => {
+    fetchCategories()
+    fetchQuizSettings()
+    if (quizId) {
+      fetchQuiz()
+    } else {
+      setLoading(false)
+    }
+  }, [quizId, fetchCategories, fetchQuizSettings, fetchQuiz])
 
   const onSubmit = async (data) => {
     setSaving(true)
@@ -503,28 +498,28 @@ export default function QuizBuilder({ quizId = null }) {
           </div>
 
           {/* Form Actions */}
-      <div className="mt-6 flex justify-end gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/dashboard/quizzes")}
-          disabled={saving}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving ? (
-            <>
-              <LoadingSpinner className="w-4 h-4 mr-2" />
-              {quizId ? "Updating..." : "Creating..."}
-            </>
-          ) : (
-            quizId ? "Update Quiz" : "Create Quiz"
-          )}
-        </Button>
-      </div>
-    </form>
+          <div className="mt-6 flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/dashboard/quizzes")}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <>
+                  <LoadingSpinner className="w-4 h-4 mr-2" />
+                  {quizId ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                quizId ? "Update Quiz" : "Create Quiz"
+              )}
+            </Button>
+          </div>
+        </form>
       </Form>
     </div>
-    )
+  )
 }

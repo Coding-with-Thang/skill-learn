@@ -92,6 +92,7 @@ export default function UserBadge() {
           {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
         </h2>
         {!isLoading ? (
+          {/* eslint-disable-next-line @next/next/no-page-custom-font */}
           <div className="mt-10 px-4 sm:px-10 bg-white/5 backdrop-blur-md grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-xl shadow-xl ring-1 ring-white/10 w-full max-w-3xl transition-all border-2 border-white/30"
             style={{
               boxShadow: "0 2px 16px 0 var(--card-shadow), 0 0 0 2px var(--ring)",
@@ -126,7 +127,6 @@ export default function UserBadge() {
         <div className="w-8 h-3 bg-card rounded ml-2 shadow" />
         <div className="w-4 h-2 bg-muted rounded ml-1.5 shadow" />
       </div>
-      <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Schoolbell&display=swap" rel="stylesheet" />
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(30px);}

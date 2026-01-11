@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Card, CardContent } from "@skill-learn/ui/components/card";
@@ -45,7 +45,7 @@ const MemoryGame = () => {
 
   useEffect(() => {
     setupInitialBoard(difficulty);
-  }, [difficulty]);
+  }, [difficulty, setupInitialBoard]);
 
   useEffect(() => {
     let timer;
@@ -61,7 +61,7 @@ const MemoryGame = () => {
     return () => clearInterval(timer);
   }, [timeLeft, isPlaying]);
 
-  const setupInitialBoard = (diff) => {
+  const setupInitialBoard = useCallback((diff) => {
     const pairCount = difficulties[diff].pairs;
     const selectedEmojis = allEmojis.slice(0, pairCount);
     const gameEmojis = [...selectedEmojis, ...selectedEmojis];
@@ -75,7 +75,7 @@ const MemoryGame = () => {
     setIsPlaying(false);
     setGameStarted(false);
     setGameResult('');
-  };
+  }, []);
 
   const initializeGame = (diff) => {
     setupInitialBoard(diff);

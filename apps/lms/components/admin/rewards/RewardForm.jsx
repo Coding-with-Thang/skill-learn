@@ -46,14 +46,16 @@ export function RewardForm({ reward, onClose }) {
         maxRedemptions: reward.maxRedemptions,
       })
     }
-  }, [reward, form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reward])
 
   // Clear maxRedemptions when allowMultiple is disabled
   useEffect(() => {
     if (!watchedAllowMultiple) {
       form.setValue("maxRedemptions", 1)
     }
-  }, [watchedAllowMultiple, form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedAllowMultiple])
 
   const onSubmit = async (data) => {
     try {

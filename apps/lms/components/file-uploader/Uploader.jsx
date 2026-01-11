@@ -17,13 +17,7 @@ export function Uploader({ value, onChange, onUploadComplete, uploadEndpoint = '
   const [isDeleting, setIsDeleting] = useState(false)
   const [currentFile, setCurrentFile] = useState(null)
 
-  useEffect(() => {
-    if (typeof value === 'string' && value !== url) {
-      setUrl(value)
-    }
-  }, [value])
-
-  const uploadFile = async (file) => {
+  const uploadFile = useCallback(async (file) => {
     setUploading(true)
     setProgress(0)
     setCurrentFile(file)
@@ -56,12 +50,20 @@ export function Uploader({ value, onChange, onUploadComplete, uploadEndpoint = '
       setProgress(0)
       setCurrentFile(null)
     }
-  }
+    // url is set, not read, so it's not a dependency
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadEndpoint, onChange, onUploadComplete])
+
+  useEffect(() => {
+    if (typeof value === 'string' && value !== url) {
+      setUrl(value)
+    }
+  }, [value, url])
 
   const onDrop = useCallback((acceptedFiles) => {
     const f = acceptedFiles?.[0]
     if (f) uploadFile(f)
-  }, [])
+  }, [uploadFile])
 
   const handleRemoveFile = async () => {
     if (!url || isDeleting) return

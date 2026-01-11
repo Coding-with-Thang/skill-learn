@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Button } from "@skill-learn/ui/components/button";
@@ -57,7 +57,7 @@ const TicTacToe = () => {
     if (winner === 'O' || winner === 'draw') {
       resetBoard()
     }
-  }, [winner]);
+  }, [winner, difficulty, resetBoard, updatePlayerScore]);
 
   useEffect(() => {
     if (!winner && !isXNext) {
@@ -67,9 +67,9 @@ const TicTacToe = () => {
         setIsAIThinking(false);
       }, 500);
     }
-  }, [board, isXNext, winner]);
+  }, [board, isXNext, winner, makeAIMove]);
 
-  const updatePlayerScore = (points) => {
+  const updatePlayerScore = useCallback((points) => {
     setPlayerScore(prevScore => {
       const newScore = prevScore + points;
       localStorage.setItem('ticTacToeScore', newScore.toString());
@@ -78,7 +78,7 @@ const TicTacToe = () => {
     setLastScoreChange(points);
     setShowScoreAnimation(true);
     setTimeout(() => setShowScoreAnimation(false), 1500);
-  };
+  }, []);
 
   const calculateWinner = (squares) => {
     const lines = [
@@ -143,7 +143,26 @@ const TicTacToe = () => {
       .filter((index) => index !== null);
   };
 
-  const makeAIMove = () => {
+  const handleMove = useCallback((index) => {
+    if (board[index] || winner || isAIThinking) return;
+
+    const newBoard = [...board];
+    newBoard[index] = isXNext ? "X" : "O";
+    setBoard(newBoard);
+
+    const { winner: gameWinner, line } = calculateWinner(newBoard);
+    if (gameWinner) {
+      setWinner(gameWinner);
+      setWinningLine(line);
+    } else if (!newBoard.includes(null)) {
+      setWinner("draw");
+      setWinningLine([]);
+    } else {
+      setIsXNext(!isXNext);
+    }
+  }, [board, winner, isAIThinking, isXNext]);
+
+  const makeAIMove = useCallback(() => {
     const newBoard = [...board];
     let moveIndex;
 
@@ -172,34 +191,15 @@ const TicTacToe = () => {
     if (moveIndex !== -1) {
       handleMove(moveIndex);
     }
-  };
+  }, [board, difficulty, handleMove]);
 
-  const handleMove = (index) => {
-    if (board[index] || winner || isAIThinking) return;
-
-    const newBoard = [...board];
-    newBoard[index] = isXNext ? "X" : "O";
-    setBoard(newBoard);
-
-    const { winner: gameWinner, line } = calculateWinner(newBoard);
-    if (gameWinner) {
-      setWinner(gameWinner);
-      setWinningLine(line);
-    } else if (!newBoard.includes(null)) {
-      setWinner("draw");
-      setWinningLine([]);
-    } else {
-      setIsXNext(!isXNext);
-    }
-  };
-
-  const resetBoard = () => {
+  const resetBoard = useCallback(() => {
     setBoard(Array(9).fill(null));
     setIsXNext(true);
     setWinner(null);
     setWinningLine([]);
     setRound((prev) => (prev >= 3 ? 3 : prev + 1))
-  };
+  }, [setRound]);
 
   const handleDifficultyChange = (value) => {
     setDifficulty(value);

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { format } from "date-fns"
 import { Download } from "lucide-react"
 import { useAuditLogStore } from "@skill-learn/lib/stores/auditLogStore.js"
@@ -29,7 +29,7 @@ export default function AuditLogsPage() {
 
   useEffect(() => {
     fetchLogs()
-  }, [])
+  }, [fetchLogs])
 
   // Debounced filter update function
   const debouncedSetFilters = (newFilters) => {

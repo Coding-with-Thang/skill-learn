@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useDebounce } from '@skill-learn/lib/hooks/useDebounce.js'
 import { useRouter } from 'next/navigation'
 import {
@@ -74,11 +74,7 @@ export default function QuizzesAdminPage() {
     itemsPerPage: 10,
   })
 
-  useEffect(() => {
-    fetchQuizzes()
-    fetchCategories()
-  }, [])
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await api.get('/admin/categories')
       // Safely extract categories array
@@ -88,9 +84,9 @@ export default function QuizzesAdminPage() {
       console.error('Failed to fetch categories:', error)
       setCategories([])
     }
-  }
+  }, [])
 
-  const fetchQuizzes = async () => {
+  const fetchQuizzes = useCallback(async () => {
     try {
       const response = await api.get('/admin/quizzes')
       // Extract quizzes from response structure (handling potential wrappers)
@@ -112,7 +108,12 @@ export default function QuizzesAdminPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [router])
+
+  useEffect(() => {
+    fetchQuizzes()
+    fetchCategories()
+  }, [fetchQuizzes, fetchCategories])
 
   const handleSort = (key) => {
     setSortConfig({

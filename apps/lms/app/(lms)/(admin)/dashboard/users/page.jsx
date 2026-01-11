@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
 import { Dialog, DialogContent } from "@skill-learn/ui/components/dialog"
@@ -13,13 +13,13 @@ import { UserFilters } from "@/components/user/UserFilters"
 export default function UsersPage() {
   const { users, isLoading, error, fetchUsers } = useUsersStore();
   const { role: currentUserRole } = useUserRole();
-  
+
   // Only OPERATIONS can delete users
   const canDeleteUsers = currentUserRole === "OPERATIONS";
 
   useEffect(() => {
     fetchUsers();
-  }, [])
+  }, [fetchUsers])
 
   const [showForm, setShowForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
