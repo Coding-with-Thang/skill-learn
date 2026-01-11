@@ -14,6 +14,7 @@
     "@skill-learn/database": "*",
     "@skill-learn/ui": "*",
     "@skill-learn/lib": "*",
+    "@tailwindcss/typography": "^0.5.19",
     "next": "^15.5.9",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
@@ -21,13 +22,13 @@
     "recharts": "^3.6.0",
     "lucide-react": "^0.544.0",
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.0.17",
+    "tw-animate-css": "^1.2.4"
   },
   "devDependencies": {
-    "@tailwindcss/typography": "^0.5.19",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.2.8",
-    "postcss": "^8.5.4",
-    "tailwindcss": "^4.0.17"
+    "postcss": "^8.5.4"
   }
 }

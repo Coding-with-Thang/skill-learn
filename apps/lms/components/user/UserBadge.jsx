@@ -63,7 +63,7 @@ export default function UserBadge() {
   // eslint-disable-next-line @next/next/no-page-custom-font
   return (
     <div
-      className="relative min-h-200 h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn bg-linear-to-br from-primary to-secondary border-8 border-border rounded-[32px] shadow-xl outline-dashed outline-2 outline-ring outline-offset-8"
+      className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn bg-gradient-to-br from-primary to-secondary border-8 border-border rounded-[32px] shadow-xl outline-dashed outline-2 outline-ring outline-offset-8"
       aria-label="User Badge Section"
     >
       <div className="absolute inset-0 pointer-events-none z-0 bg-[url('/chalkboard_texture.png')] bg-repeat opacity-15 mix-blend-screen" aria-hidden="true" />
@@ -79,7 +79,7 @@ export default function UserBadge() {
           />
         ) : (
           <div
-            className="rounded-full border-4 border-white/60 shadow-lg bg-linear-to-br from-primary/80 to-secondary/80 flex items-center justify-center mt-6"
+            className="rounded-full border-4 border-white/60 shadow-lg bg-gradient-to-br from-primary/80 to-secondary/80 flex items-center justify-center mt-6"
             style={{ width: 160, height: 160 }}
           >
             <span className="text-6xl font-bold text-white drop-shadow-lg">
@@ -121,7 +121,7 @@ export default function UserBadge() {
         )}
       </div>
       <div
-        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-4/5 h-9 bg-linear-to-r from-yellow-600 to-yellow-300 rounded-b-[18px] shadow-lg border-t-4 border-border flex items-center justify-end pr-8"
+        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-4/5 h-9 bg-gradient-to-r from-yellow-600 to-yellow-300 rounded-b-[18px] shadow-lg border-t-4 border-border flex items-center justify-end pr-8"
         aria-hidden="true"
       >
         <div className="w-8 h-3 bg-card rounded ml-2 shadow" />
