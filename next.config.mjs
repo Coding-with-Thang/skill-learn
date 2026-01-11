@@ -1,5 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    // Only ignore ESLint during builds if needed - warnings won't block deployment
+    // But we should fix all errors
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
   images: {
     remotePatterns: [
       {
@@ -79,7 +87,7 @@ const nextConfig = {
     if (config.cache) {
       config.cache = {
         ...config.cache,
-        compression: 'gzip',
+        compression: "gzip",
         maxMemoryGenerations: 1,
       };
     }

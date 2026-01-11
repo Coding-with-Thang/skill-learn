@@ -475,326 +475,198 @@ export default function QuizBuilder({ quizId = null }) {
               </Button>
             </div>
 
-            {questionFields.map((question, qIndex) => (
-              <Card key={question.id} className="relative border-2 mb-4">
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-base">
-                      Question {qIndex + 1}
-                    </CardTitle>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleRemoveQuestion(qIndex)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Question editing will be implemented here. Currently using state-based implementation below.
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={quiz.description || ""}
-              onChange={e => setQuiz(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
-            />
-          </div>
-
-          {/* Quiz Image */}
-          <div className="space-y-2">
-            <Label>Quiz Image</Label>
-            <Uploader
-              uploadEndpoint="/api/admin/quizzes/upload"
-              value={quiz.imageUrl || ""}
-              onChange={(url) => setQuiz(prev => ({ ...prev, imageUrl: url || "" }))}
-              onUploadComplete={(upload) => {
-                // upload: { url, path }
-                // store storage path as fileKey for database
-                if (upload?.path) {
-                  setQuiz(prev => ({ ...prev, fileKey: upload.path }))
-                }
-              }}
-            />
-          </div>
-
-          {/* Quiz Settings */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="timeLimit">Time Limit (minutes)</Label>
-              <Input
-                id="timeLimit"
-                type="number"
-                min="0"
-                value={quiz.timeLimit || ""}
-                onChange={e => setQuiz(prev => ({ ...prev, timeLimit: parseInt(e.target.value) || null }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="passingScore">Passing Score (%)</Label>
-              <Input
-                id="passingScore"
-                type="number"
-                min="0"
-                max="100"
-                value={quiz.passingScore}
-                onChange={e => setQuiz(prev => ({ ...prev, passingScore: parseInt(e.target.value) }))
-                }
-              />
-            </div>
-          </div>
-
-          {/* Active Status */}
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="isActive"
-              checked={quiz.isActive}
-              onCheckedChange={checked => setQuiz(prev => ({ ...prev, isActive: checked }))}
-            />
-            <Label htmlFor="isActive">Active</Label>
-          </div>
-
-          {/* Review Settings */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center space-x-2 border p-4 rounded-lg">
-              <Switch
-                id="showQuestionReview"
-                checked={quiz.showQuestionReview}
-                onCheckedChange={checked => setQuiz(prev => ({ ...prev, showQuestionReview: checked }))}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="showQuestionReview">Show Question Review</Label>
-                <p className="text-xs text-muted-foreground">
-                  Allow users to review questions after quiz
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 border p-4 rounded-lg">
-              <Switch
-                id="showCorrectAnswers"
-                checked={quiz.showCorrectAnswers}
-                disabled={!quiz.showQuestionReview}
-                onCheckedChange={checked => setQuiz(prev => ({ ...prev, showCorrectAnswers: checked }))}
-              />
-              <div className="space-y-1">
-                <Label htmlFor="showCorrectAnswers">Show Correct Answers</Label>
-                <p className="text-xs text-muted-foreground">
-                  Display correct answers for incorrect attempts
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Questions Section */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="text-lg font-semibold">Questions ({quiz.questions?.length || 0})</h3>
-            <p className="text-sm text-muted-foreground">Add at least one question to your quiz</p>
-          </div>
-          <Button
-            type="button"
-            onClick={handleAddQuestion}
-            className="space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Question</span>
-          </Button>
-        </div>
-
-        {(quiz.questions || []).map((question, qIndex) => (
-          <Card key={qIndex} className="relative border-2">
-            {/* Delete Question Button */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="absolute -top-2 -right-2 bg-white rounded-full hover:bg-red-50 text-red-500 border-2"
-              onClick={() => handleRemoveQuestion(qIndex)}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
-                  Question {qIndex + 1}
-                </span>
-                {!question.text.trim() && (
-                  <span className="text-red-500 text-sm font-normal">
-                    Question text required
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              {/* Question Text */}
-              <div className="space-y-2">
-                <Label>Question Text *</Label>
-                <Textarea
-                  value={question.text}
-                  onChange={e => handleQuestionChange(qIndex, "text", e.target.value)}
-                  rows={2}
-                  placeholder="Enter your question here..."
-                />
-              </div>
-
-              {/* Question Settings */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2 col-span-2">
-                  <Label>Question Image</Label>
-                  {question.videoUrl ? (
-                    <div className="text-xs text-muted-foreground p-2 border rounded">
-                      Clear video URL to add image
-                    </div>
-                  ) : (
-                    <Uploader
-                      uploadEndpoint="/api/admin/questions/upload"
-                      value={question.imageUrl || ""}
-                      onChange={(url) => handleQuestionChange(qIndex, "imageUrl", url || "")}
-                      onUploadComplete={(upload) => {
-                        // upload: { url, path }
-                        // store storage path as fileKey for database
-                        if (upload?.path) {
-                          handleQuestionChange(qIndex, "fileKey", upload.path);
-                        }
-                      }}
-                    />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>Video URL</Label>
-                  <Input
-                    value={question.videoUrl || ""}
-                    onChange={e => handleQuestionChange(qIndex, "videoUrl", e.target.value)}
-                    placeholder="https://example.com/video.mp4"
-                    disabled={!!question.imageUrl}
-                  />
-                  {question.imageUrl && (
-                    <p className="text-xs text-muted-foreground">Clear image URL to add video</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label>Points</Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    value={question.points}
-                    onChange={e => handleQuestionChange(qIndex, "points", parseInt(e.target.value) || 1)}
-                  />
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <Label className="block">Options ({question.options.length})</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Mark at least one option as correct
-                    </p>
-                  </div>
+            {questionFields.map((questionField, qIndex) => {
+              const questionValue = form.watch(`questions.${qIndex}`)
+              return (
+                <Card key={questionField.id} className="relative border-2 mb-4">
+                  {/* Delete Question Button */}
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleAddOption(qIndex)}
-                    className="space-x-1"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute -top-2 -right-2 bg-white rounded-full hover:bg-red-50 text-red-500 border-2"
+                    onClick={() => handleRemoveQuestion(qIndex)}
                   >
-                    <Plus className="w-3 h-3" />
-                    <span>Add Option</span>
+                    <X className="w-4 h-4" />
                   </Button>
-                </div>
 
-                <div className="space-y-3">
-                  {question.options.map((option, oIndex) => (
-                    <div
-                      key={oIndex}
-                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${option.isCorrect ? 'bg-green-50' : ''
-                        }`}
-                    >
-                      <Input
-                        value={option.text}
-                        onChange={e => handleOptionChange(qIndex, oIndex, "text", e.target.value)}
-                        placeholder={`Enter option ${oIndex + 1}...`}
-                        className={`flex-1 ${!option.text.trim() ? 'border-red-500' : ''}`}
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <span className="bg-primary/10 text-primary px-2 py-1 rounded-md">
+                        Question {qIndex + 1}
+                      </span>
+                      {(!questionValue?.text || !questionValue.text.trim()) && (
+                        <span className="text-red-500 text-sm font-normal">
+                          Question text required
+                        </span>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Question Text */}
+                    <div className="space-y-2">
+                      <Label>Question Text *</Label>
+                      <Textarea
+                        {...form.register(`questions.${qIndex}.text`)}
+                        rows={2}
+                        placeholder="Enter your question here..."
                       />
-                      <div className="flex items-center gap-2 min-w-[140px]">
-                        <Switch
-                          checked={option.isCorrect}
-                          onCheckedChange={checked => handleOptionChange(qIndex, oIndex, "isCorrect", checked)}
-                        />
-                        <Label className={`text-sm ${option.isCorrect ? 'text-green-600' : ''}`}>
-                          Correct
-                        </Label>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveOption(qIndex, oIndex)}
-                        className="hover:text-red-500"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
                     </div>
-                  ))}
-                </div>
 
-                {question.options.length < 2 && (
-                  <p className="text-red-500 text-sm">
-                    Add at least two options
-                  </p>
-                )}
+                    {/* Question Settings */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="space-y-2 col-span-2">
+                        <Label>Question Image</Label>
+                        {questionValue?.videoUrl ? (
+                          <div className="text-xs text-muted-foreground p-2 border rounded">
+                            Clear video URL to add image
+                          </div>
+                        ) : (
+                          <Uploader
+                            uploadEndpoint="/api/admin/questions/upload"
+                            value={questionValue?.imageUrl || ""}
+                            onChange={(url) => form.setValue(`questions.${qIndex}.imageUrl`, url || "")}
+                            onUploadComplete={(upload) => {
+                              if (upload?.path) {
+                                form.setValue(`questions.${qIndex}.fileKey`, upload.path);
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Video URL</Label>
+                        <Input
+                          {...form.register(`questions.${qIndex}.videoUrl`)}
+                          placeholder="https://example.com/video.mp4"
+                          disabled={!!questionValue?.imageUrl}
+                        />
+                        {questionValue?.imageUrl && (
+                          <p className="text-xs text-muted-foreground">Clear image URL to add video</p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Points</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          {...form.register(`questions.${qIndex}.points`, { valueAsNumber: true })}
+                        />
+                      </div>
+                    </div>
 
-                {!question.options.some(opt => opt.isCorrect) && (
-                  <p className="text-red-500 text-sm">
-                    Mark at least one option as correct
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                    {/* Options */}
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <Label className="block">Options ({questionValue?.options?.length || 0})</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Mark at least one option as correct
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentOptions = form.getValues(`questions.${qIndex}.options`) || []
+                            if (currentOptions.length >= 6) {
+                              toast.error("Maximum 6 options allowed per question")
+                              return
+                            }
+                            const newOptions = [...currentOptions, { text: "", isCorrect: false }]
+                            form.setValue(`questions.${qIndex}.options`, newOptions)
+                          }}
+                          className="space-x-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Add Option</span>
+                        </Button>
+                      </div>
 
-      {/* Form Actions */}
-      <div className="mt-6 flex justify-end gap-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/dashboard/quizzes")}
-          disabled={saving}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving ? (
-            <>
-              <LoadingSpinner className="w-4 h-4 mr-2" />
-              {quizId ? "Updating..." : "Creating..."}
-            </>
-          ) : (
-            quizId ? "Update Quiz" : "Create Quiz"
-          )}
-        </Button>
-      </div>
-    </form>
-        </div >
-    )
+                      <div className="space-y-3">
+                        {(questionValue?.options || []).map((option, oIndex) => (
+                          <div
+                            key={oIndex}
+                            className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${option.isCorrect ? 'bg-green-50' : ''}`}
+                          >
+                            <Input
+                              {...form.register(`questions.${qIndex}.options.${oIndex}.text`)}
+                              placeholder={`Enter option ${oIndex + 1}...`}
+                              className={`flex-1 ${!option.text?.trim() ? 'border-red-500' : ''}`}
+                            />
+                            <div className="flex items-center gap-2 min-w-[140px]">
+                              <Switch
+                                checked={option.isCorrect || false}
+                                onCheckedChange={(checked) => form.setValue(`questions.${qIndex}.options.${oIndex}.isCorrect`, checked)}
+                              />
+                              <Label className={`text-sm ${option.isCorrect ? 'text-green-600' : ''}`}>
+                                Correct
+                              </Label>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                const currentOptions = form.getValues(`questions.${qIndex}.options`) || []
+                                if (currentOptions.length > 2) {
+                                  const newOptions = currentOptions.filter((_, i) => i !== oIndex)
+                                  form.setValue(`questions.${qIndex}.options`, newOptions)
+                                } else {
+                                  toast.error("Questions must have at least 2 options")
+                                }
+                              }}
+                              className="hover:text-red-500"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+
+                      {(!questionValue?.options || questionValue.options.length < 2) && (
+                        <p className="text-red-500 text-sm">
+                          Add at least two options
+                        </p>
+                      )}
+
+                      {questionValue?.options && !questionValue.options.some(opt => opt.isCorrect) && (
+                        <p className="text-red-500 text-sm">
+                          Mark at least one option as correct
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* Form Actions */}
+          <div className="mt-6 flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/dashboard/quizzes")}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? (
+                <>
+                  <LoadingSpinner className="w-4 h-4 mr-2" />
+                  {quizId ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                quizId ? "Update Quiz" : "Create Quiz"
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  )
 }
