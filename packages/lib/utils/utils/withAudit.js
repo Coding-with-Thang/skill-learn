@@ -1,4 +1,4 @@
-import { logAuditEvent } from "../../utils/auditLogger";
+import { logAuditEvent } from "./auditLogger.js";
 
 /**
  * Higher-order function to wrap API route handlers with audit logging

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { courseSchema, objectIdSchema } from "@/lib/zodSchemas";
-import { getSignedUrl } from "@/lib/utils/adminStorage";
-import { requireAdmin } from "@/lib/utils/auth";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
-import { requireAuth } from "@/lib/utils/auth";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import {
   handleApiError,
   AppError,

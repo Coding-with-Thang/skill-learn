@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { requireAdmin } from "@/lib/utils/auth";
+import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { quizCreateSchema } from "@/lib/zodSchemas";
-import { getSignedUrl } from "@/lib/utils/adminStorage";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 export async function GET(request) {
   try {

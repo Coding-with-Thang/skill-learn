@@ -1,8 +1,8 @@
 "use client"
 
-import { Loader } from "@/components/ui/loader"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Loader } from "./loader.jsx"
+import { Card, CardContent, CardHeader, CardTitle } from "./card.jsx"
+import { Skeleton } from "./skeleton.jsx"
 
 export function LoadingSpinner({ className, size = "default" }) {
   // Map old size names to new size names

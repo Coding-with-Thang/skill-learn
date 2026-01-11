@@ -3,8 +3,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import api from "../../utils/utils/axios.js";
-
 import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
+
+// Retry configuration
+const RETRY_CONFIG = {
+  MAX_RETRIES: 3,
+  DEFAULT_RETRY_AFTER: 60, // seconds
+  BACKOFF_BASE: 1000, // milliseconds
+  BACKOFF_MAX: 30000, // milliseconds
+  ROLE_FETCH_MAX_RETRIES: 3,
+  ROLE_FETCH_BACKOFF_BASE: 1000,
+};
 
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();

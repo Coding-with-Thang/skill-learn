@@ -4,7 +4,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+} from "./dropdown-menu.jsx";
 import { Palette } from "lucide-react";
 
 const THEMES = [

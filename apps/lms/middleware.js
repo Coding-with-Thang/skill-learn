@@ -1,6 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { rateLimiter } from "@skill-learn/lib/utils/rateLimit";
+import { rateLimiter } from "@skill-learn/lib/utils/rateLimit.js";
 import { publicRoutes, rateLimits } from "@/config/routes";
 
 const isPublicRoute = createRouteMatcher(publicRoutes);

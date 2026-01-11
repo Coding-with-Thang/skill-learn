@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { logAuditEvent } from "@/lib/utils/auditLogger";
-import { requireAdmin } from "@/lib/utils/auth";
+import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger.js";
+import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 

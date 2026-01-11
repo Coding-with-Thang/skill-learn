@@ -13,7 +13,7 @@ import { PieChart } from "@skill-learn/ui/components/pie-chart";
 import { Progress } from "@skill-learn/ui/components/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@skill-learn/ui/components/avatar";
 import { Button } from "@skill-learn/ui/components/button";
-import { getDashboardStats } from "@/lib/actions/dashboard";
+import { getDashboardStats } from "@/lib/dashboard";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva } from "class-variance-authority"
-import { Loader } from "@/components/ui/loader"
+import { Loader } from "./loader.jsx"
 import { cn } from "@skill-learn/lib/utils.js"
 
 const enhancedButtonVariants = cva(

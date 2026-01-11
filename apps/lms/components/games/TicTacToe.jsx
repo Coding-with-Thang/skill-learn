@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import useLocalStorage from "@skill-learn/lib/hooks/useLocalStorage.js";
+import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Button } from "@skill-learn/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";

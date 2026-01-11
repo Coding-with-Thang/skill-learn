@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/utils/auth";
+import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import admin from "firebase-admin";
 import { z } from "zod";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";

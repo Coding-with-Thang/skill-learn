@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDailyPointStatus } from "@/lib/actions/points";
-import { requireAuth } from "@/lib/utils/auth";
+import { getDailyPointStatus } from "@/lib/points";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 

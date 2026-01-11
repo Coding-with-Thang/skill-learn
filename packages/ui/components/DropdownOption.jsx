@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "./dropdown-menu.jsx"
 import { ChevronDown } from 'lucide-react'
 
 export default function DropdownOptions() {

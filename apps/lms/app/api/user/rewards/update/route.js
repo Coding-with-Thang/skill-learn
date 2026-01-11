@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { logAuditEvent } from "@/lib/utils/auditLogger";
-import { requireAuth } from "@/lib/utils/auth";
+import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger.js";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequest } from "@skill-learn/lib/utils/validateRequest.js";
 import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
-import { getSignedUrl } from "@/lib/utils/adminStorage";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 export async function PUT(request) {
   try {

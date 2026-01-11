@@ -4,7 +4,7 @@ import * as React from "react"
 import { Loader2 } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@skill-learn/lib/utils.js"
-import { Card } from "@/components/ui/card"
+import { Card } from "./card.jsx"
 
 const loaderVariants = {
   spinner: "spinner",

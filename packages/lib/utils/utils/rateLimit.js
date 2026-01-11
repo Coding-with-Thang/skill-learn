@@ -3,6 +3,12 @@
 // Cleanup happens automatically when checking requests (lazy cleanup)
 // For production, consider using a shared cache like Redis or Upstash
 
+// Rate limiting configuration
+const RATE_LIMIT = {
+  CLEANUP_INTERVAL: 15 * 60 * 1000, // 15 minutes
+  WINDOW_MS: 15 * 60 * 1000, // 15 minutes
+  MAX_REQUESTS: 100,
+};
 
 const requests = new Map();
 

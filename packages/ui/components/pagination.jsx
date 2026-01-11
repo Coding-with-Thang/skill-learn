@@ -7,7 +7,7 @@ import {
 import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@skill-learn/lib/utils.js"
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "./button.jsx";
 
 function Pagination({
   className,

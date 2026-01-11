@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useUserRole } from "../../hooks/useUserRole";
-import { usePointsStore } from "../../store/pointsStore";
-import api from "../../utils/axios";
+import { useUserRole } from "./useUserRole.js";
+import { usePointsStore } from "../../stores/store/pointsStore.js";
+import api from "../../utils/utils/axios.js";
 
 /**
  * Custom hook to aggregate all user context data for welcome banner

@@ -1,7 +1,7 @@
 "use client"
 
 import { Component } from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from "./button.jsx"
 import { AlertCircle } from "lucide-react"
 
 export class ErrorBoundary extends Component {

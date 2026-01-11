@@ -1,5 +1,5 @@
 import { prisma } from '@skill-learn/database';
-import { getSignedUrl } from '@/lib/utils/adminStorage'
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js"
 import { buttonVariants } from "@skill-learn/ui/components/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button"

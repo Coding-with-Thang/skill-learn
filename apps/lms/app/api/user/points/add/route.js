@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { pointsAwarded } from "@/lib/utils/auditLogger";
-import { requireAuth } from "@/lib/utils/auth";
+import { pointsAwarded } from "@skill-learn/lib/utils/auditLogger.js";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
-import { awardPoints } from "@/lib/actions/points";
+import { awardPoints } from "@/lib/points";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { addPointsSchema } from "@/lib/zodSchemas";

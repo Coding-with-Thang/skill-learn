@@ -11,7 +11,8 @@ export * from "./utils/utils/apiWrapper.js";
 export { useAppTheme } from "./hooks/hooks/useAppTheme.js";
 export { useDebounce } from "./hooks/hooks/useDebounce.js";
 export { useLocalStorage } from "./hooks/hooks/useLocalStorage.js";
-export { useMobile } from "./hooks/hooks/useMobile.js";
+export { useIsMobile as useMobile } from "./hooks/hooks/useMobile.js";
+export { useIsMobile } from "./hooks/hooks/useMobile.js";
 export { usePageTracking } from "./hooks/hooks/usePageTracking.js";
 export { useUserRole } from "./hooks/hooks/useUserRole.js";
 

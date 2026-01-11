@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { updateClerkUser, deleteClerkUser } from "@/lib/utils/clerk";
-import { requireAdmin } from "@/lib/utils/auth";
+import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk.js";
+import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";

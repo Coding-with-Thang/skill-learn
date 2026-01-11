@@ -22,7 +22,14 @@
     "./utils.js": "./utils.js",
     "./utils/axios.js": "./utils/utils/axios.js",
     "./utils/errorHandler.js": "./utils/utils/errorHandler.js",
-    "./utils/apiWrapper.js": "./utils/utils/apiWrapper.js"
+    "./utils/apiWrapper.js": "./utils/utils/apiWrapper.js",
+    "./utils/adminStorage.js": "./utils/utils/adminStorage.js",
+    "./utils/auditLogger.js": "./utils/utils/auditLogger.js",
+    "./utils/validateRequest.js": "./utils/utils/validateRequest.js",
+    "./utils/auth.js": "./utils/utils/auth.js",
+    "./utils/connect.js": "./utils/utils/connect.js",
+    "./utils/rateLimit.js": "./utils/utils/rateLimit.js",
+    "./utils/clerk.js": "./utils/utils/clerk.js"
   },
   "scripts": {},
   "dependencies": {

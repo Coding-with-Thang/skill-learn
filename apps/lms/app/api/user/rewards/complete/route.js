@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { requireAuth } from "@/lib/utils/auth";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { getSignedUrl } from "@/lib/utils/adminStorage";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 /**
  * Combined rewards endpoint that returns both available rewards and user's reward history

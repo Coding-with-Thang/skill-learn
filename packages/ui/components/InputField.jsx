@@ -1,5 +1,5 @@
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Input } from "./input.jsx"
+import { Label } from "./label.jsx"
 
 export default function InputField({ props }) {
   const InputField = ({ label, labelName, onChange, value }) => {

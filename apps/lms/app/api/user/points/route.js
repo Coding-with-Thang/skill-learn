@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
-import { requireAuth } from "@/lib/utils/auth";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 
 export async function GET(request) {

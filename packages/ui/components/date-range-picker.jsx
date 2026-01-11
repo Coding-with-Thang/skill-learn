@@ -4,13 +4,13 @@ import * as React from "react"
 import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@skill-learn/lib/utils.js"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Button } from "./button.jsx"
+import { Calendar } from "./calendar.jsx"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "./popover.jsx"
 
 export function DatePickerWithRange({
   className,

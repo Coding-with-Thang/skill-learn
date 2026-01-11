@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from '@skill-learn/database';
-import { requireAdminForAction } from "@/lib/utils/auth";
+import { requireAdminForAction } from "@skill-learn/lib/utils/auth.js";
 
 const DEFAULT_SETTINGS = {
   // Points System

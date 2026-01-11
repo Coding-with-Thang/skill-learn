@@ -1,11 +1,15 @@
 import { create } from "zustand";
 import api from "../../utils/utils/axios.js";
 import { toast } from "sonner";
-import { usePointsStore } from "./pointsStore";
+import { usePointsStore } from "./pointsStore.js";
 import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
 import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
 import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
 
+// STORE constants
+const STORE = {
+  FETCH_COOLDOWN: 5000, // 5 seconds
+};
 
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();

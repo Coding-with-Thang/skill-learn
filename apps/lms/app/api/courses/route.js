@@ -1,7 +1,7 @@
 import { prisma } from '@skill-learn/database';
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { getSignedUrl } from "@/lib/utils/adminStorage";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 export async function GET() {
   try {
