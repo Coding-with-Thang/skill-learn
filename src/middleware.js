@@ -23,6 +23,21 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(landingUrl);
     }
 
+    // Protect CMS routes - require authentication
+    // TODO: Add super admin role check here when role system is implemented
+    if (pathname.startsWith('/cms')) {
+      if (!userId) {
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', pathname);
+        return NextResponse.redirect(signInUrl);
+      }
+      // Future: Check for super admin role
+      // const { orgRole } = await auth();
+      // if (orgRole !== 'super_admin') {
+      //   return NextResponse.redirect(new URL('/home', req.url));
+      // }
+    }
+
     // Get IP address from headers (Edge runtime compatible)
     // req.ip is not available in Next.js middleware Edge runtime
     const forwardedFor = req.headers.get("x-forwarded-for");
