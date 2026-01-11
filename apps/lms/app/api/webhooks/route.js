@@ -70,9 +70,13 @@ export async function POST(req) {
     }
 
     const eventType = evt.type;
-    const { id, ...attributes } = evt.data;
+    const { id, public_metadata, private_metadata, ...attributes } = evt.data;
 
     if (eventType === "user.created" || eventType === "user.updated") {
+      // Check if user has super_admin role in Clerk metadata
+      const clerkRole = public_metadata?.role || public_metadata?.appRole;
+      const isSuperAdmin = clerkRole === 'super_admin';
+
       // Build update object only with provided fields (skip null/undefined)
       const updateData = {};
       if (attributes.username !== null && attributes.username !== undefined) {
@@ -91,25 +95,85 @@ export async function POST(req) {
         updateData.imageUrl = attributes.image_url;
       }
 
-      await prisma.user.upsert({
+      // Check if user already exists in database
+      const existingUser = await prisma.user.findUnique({
         where: { clerkId: id },
-        update: updateData,
-        create: {
-          clerkId: id,
-          username: attributes.username || id,
-          firstName: attributes.first_name || "",
-          lastName: attributes.last_name || "",
-          imageUrl: attributes.image_url || null,
-          points: 0,
-          lifetimePoints: 0,
-        },
+        select: { id: true, role: true },
       });
 
-      console.log(
-        `[Webhook] Successfully ${
-          eventType === "user.created" ? "created" : "updated"
-        } user: ${id}`
-      );
+      // For user.created: Always create user in database (for LMS access)
+      // Super admin status is checked separately via Clerk metadata
+      // IMPORTANT: Users cannot self-register as super_admin - only existing super admins can promote them
+      if (eventType === "user.created") {
+        // Check if email exists in attributes
+        const email = attributes.email_addresses?.[0]?.email_address || null;
+
+        await prisma.user.upsert({
+          where: { clerkId: id },
+          update: updateData,
+          create: {
+            clerkId: id,
+            username: attributes.username || id,
+            firstName: attributes.first_name || "",
+            lastName: attributes.last_name || "",
+            email: email,
+            imageUrl: attributes.image_url || null,
+            points: 0,
+            lifetimePoints: 0,
+            // Note: Role is not set to SUPER_ADMIN here - only Clerk metadata determines super admin status
+            // This prevents self-registration as super admin
+          },
+        });
+
+        if (isSuperAdmin) {
+          console.log(
+            `[Webhook] Created user ${id} with super_admin role in Clerk metadata (promoted by existing super admin)`
+          );
+        } else {
+          console.log(
+            `[Webhook] Created user ${id} (regular user - no super admin access)`
+          );
+        }
+      }
+
+      // For user.updated: Update user data
+      if (eventType === "user.updated") {
+        // Get email from attributes if available
+        const email = attributes.email_addresses?.[0]?.email_address || null;
+        if (email) {
+          updateData.email = email;
+        }
+
+        await prisma.user.upsert({
+          where: { clerkId: id },
+          update: updateData,
+          create: {
+            clerkId: id,
+            username: attributes.username || id,
+            firstName: attributes.first_name || "",
+            lastName: attributes.last_name || "",
+            email: email,
+            imageUrl: attributes.image_url || null,
+            points: 0,
+            lifetimePoints: 0,
+          },
+        });
+
+        // Log super admin status changes
+        if (isSuperAdmin && (!existingUser || existingUser.role !== 'SUPER_ADMIN')) {
+          console.log(
+            `[Webhook] User ${id} was promoted to super_admin (metadata updated by existing super admin)`
+          );
+        } else if (!isSuperAdmin && existingUser?.role === 'SUPER_ADMIN') {
+          console.log(
+            `[Webhook] User ${id} was demoted from super_admin`
+          );
+        }
+
+        console.log(
+          `[Webhook] Successfully updated user: ${id}`
+        );
+      }
     }
 
     if (eventType === "user.deleted") {

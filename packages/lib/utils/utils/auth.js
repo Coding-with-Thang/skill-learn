@@ -73,3 +73,43 @@ export async function requireAdminForAction() {
   return { userId, user };
 }
 
+/**
+ * Require super admin role for CMS API routes
+ * Checks Clerk metadata for 'super_admin' role
+ * @returns {Promise<{userId: string}|null>} The authenticated user's Clerk ID, or null if not authorized
+ * @returns {NextResponse|null} Returns 401 Unauthorized or 403 Forbidden response if not authorized, null if authorized
+ */
+export async function requireSuperAdmin() {
+  const { userId, sessionClaims } = await auth();
+
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Check super admin role from Clerk metadata
+  const userRole = sessionClaims?.metadata?.role || sessionClaims?.publicMetadata?.role;
+  const isSuperAdmin = userRole === 'super_admin';
+
+  if (!isSuperAdmin) {
+    // Optional: Check database as fallback (if you store super_admin in User model)
+    // const user = await prisma.user.findUnique({
+    //   where: { clerkId: userId },
+    //   select: { id: true, role: true },
+    // });
+    // 
+    // if (!user || user.role !== 'SUPER_ADMIN') {
+    //   return NextResponse.json(
+    //     { error: "Unauthorized - Requires super admin access" },
+    //     { status: 403 }
+    //   );
+    // }
+
+    return NextResponse.json(
+      { error: "Unauthorized - Requires super admin access" },
+      { status: 403 }
+    );
+  }
+
+  return { userId };
+}
+

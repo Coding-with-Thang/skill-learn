@@ -5,10 +5,10 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId, sessionClaims } = await auth();
   const { pathname } = req.nextUrl;
 
-  // Protect all /cms/* routes
-  if (pathname.startsWith('/cms')) {
+  // Protect all /cms/* routes (except sign-in and sign-up)
+  if (pathname.startsWith('/cms') && !pathname.startsWith('/cms/sign-in') && !pathname.startsWith('/cms/sign-up') && !pathname.startsWith('/cms/pending-approval')) {
     if (!userId) {
-      const signInUrl = new URL('/sign-in', req.url);
+      const signInUrl = new URL('/cms/sign-in', req.url);
       signInUrl.searchParams.set('redirect_url', pathname);
       return NextResponse.redirect(signInUrl);
     }

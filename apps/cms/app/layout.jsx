@@ -12,7 +12,7 @@ export const metadata = {
 export default function CMSLayout({ children }) {
   return (
     <ClerkProvider>
-      <DashboardLayout>{children}</DashboardLayout>
+      {children}
     </ClerkProvider>
   )
 }
