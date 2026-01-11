@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId         String          @unique
+  username        String          @unique
+  firstName       String
+  lastName        String
+  imageUrl        String?
+  manager         String?         @default("")
+  role            Role            @default(AGENT)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  points          Int             @default(0)
+  lifetimePoints  Int             @default(0)
+  pointLogs       PointLog[]
+  rewardsRedeemed RewardLog[]
+  categoryStats   CategoryStat[]
+  AuditLog        AuditLog[]
+  currentStreak   Int             @default(0)
+  longestStreak   Int             @default(0)
+  lastStreakDate  DateTime?
+  streakUpdatedAt DateTime?       @default(now())
+  systemSettings  SystemSetting[]
+  quizzes         Quiz[]
+  courses         Course[]
+
+  // CRITICAL INDEXES FOR COMMON QUERIES
+  @@index([role]) // Filter by role: "Get all managers"
+  @@index([points(sort: Desc)]) // Leaderboards: "Top users by points"
+  @@index([lifetimePoints(sort: Desc)]) // Lifetime leaderboards
+  @@index([createdAt]) // Date-based queries: "Users joined this month"
+  @@index([role, points(sort: Desc)]) // Compound: "Top agents by points"
+  // TEXT SEARCH INDEXES (if you need name-based search)
+  @@index([firstName, lastName]) // Full name search
+  @@index([username, firstName, lastName]) // Comprehensive user search
+  @@map("users")
+}
+
+model Category {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String         @unique
+  description   String?
+  imageUrl      String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  quizzes       Quiz[]
+  categoryStats CategoryStat[]
+  courses        Course[]
+
+  // INDEXES FOR CATEGORY QUERIES
+  @@index([isActive]) // Filter active categories
+  @@index([isActive, name]) // Active categories sorted by name
+  @@map("categories")
+}
+
+model Quiz {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String?
+  imageUrl       String?
+  fileKey        String?    // Firebase Storage path for quiz image (similar to Course model)
+  categoryId     String     @db.ObjectId
+  category       Category   @relation(fields: [categoryId], references: [id])
+  questions      Question[]
+  isActive       Boolean    @default(true)
+  timeLimit      Int?
+  passingScore   Int        @default(70)
+  lastAttempt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  userId         String?    @db.ObjectId
+  user           User?      @relation(fields: [userId], references: [id])
+  score          Int?
+  totalQuestions Int?
+  showQuestionReview Boolean    @default(true)
+  showCorrectAnswers Boolean    @default(false)
+
+  // CRITICAL FOREIGN KEY AND QUERY INDEXES
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([categoryId, isActive])
+  @@index([lastAttempt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([title])
+  @@map("quizzes")
+}
+
+model Question {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  text     String
+  imageUrl String?
+  fileKey  String?  // Firebase Storage path for question image (similar to Quiz/Course)
+  videoUrl String?
+  quizId   String   @db.ObjectId
+  quiz     Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options  Option[]
+  points   Int      @default(1)
+
+  // FOREIGN KEY INDEXES
+  @@index([quizId]) // CRITICAL: "Questions for quiz X"
+  @@map("questions")
+}
+
+//Answers
+model Option {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  isCorrect  Boolean
+  questionId String   @db.ObjectId
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // FOREIGN KEY INDEXES
+  @@index([questionId]) // CRITICAL: "Options for question X"
+  @@index([questionId, isCorrect]) // Find correct answers
+  @@map("options")
+}
+
+model CategoryStat {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String    @db.ObjectId
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId     String    @db.ObjectId
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attempts       Int       @default(0)
+  completed      Int       @default(0)
+  averageScore   Float?
+  bestScore      Float?
+  totalTimeSpent Int       @default(0)
+  lastAttempt    DateTime? // Last attempt in this category
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, categoryId]) // Already exists - prevents duplicates
+  // PERFORMANCE INDEXES FOR ANALYTICS
+  @@index([userId]) // User's stats across categories
+  @@index([categoryId]) // All users' stats for a category
+  @@index([userId, lastAttempt(sort: Desc)]) // Recent activity per user
+  @@index([categoryId, averageScore(sort: Desc)]) // Category leaderboards
+  @@index([categoryId, bestScore(sort: Desc)]) // Best scores per category
+  @@index([lastAttempt(sort: Desc)]) // Global recent activity
+  @@index([averageScore(sort: Desc)]) // Global leaderboards
+  @@map("category_stats")
+}
+
+model PointLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  // CRITICAL INDEXES FOR POINT HISTORY
+  @@index([userId]) // User's point history
+  @@index([userId, createdAt(sort: Desc)]) // Recent points for user
+  @@index([createdAt(sort: Desc)]) // Global recent point activity
+  @@index([reason]) // Filter by reason
+  @@index([reason, createdAt(sort: Desc)]) // Recent activity by reason
+  @@index([userId, reason]) // User's points by reason
+  @@map("point_logs")
+}
+
+model Reward {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  prize          String
+  description    String?
+  cost           Int
+  imageUrl       String?
+  fileKey        String?     // Firebase Storage path for reward image (similar to Quiz/Course)
+  featured       Boolean     @default(false)
+  enabled        Boolean     @default(true)
+  allowMultiple  Boolean     @default(false)
+  maxRedemptions Int         @default(1)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  rewardLogs     RewardLog[]
+  claimUrl       String? // Optional URL for digital rewards
+
+  @@index([enabled])
+  @@index([featured])
+  @@index([prize])
+}
+
+model RewardLog {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardId    String    @db.ObjectId
+  reward      Reward    @relation(fields: [rewardId], references: [id])
+  redeemed    Boolean   @default(false)
+  pointsSpent Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  claimed     Boolean   @default(false)
+  claimUrl    String?
+  claimedAt   DateTime?
+
+  // REWARD TRACKING INDEXES
+  @@index([userId]) // User's redemption history
+  @@index([rewardId]) // Reward popularity tracking
+  @@index([redeemed]) // Filter by redemption status
+  @@index([userId, redeemed]) // User's redemption status
+  @@index([userId, createdAt(sort: Desc)]) // Recent redemptions per user
+  @@index([createdAt(sort: Desc)]) // Global recent redemptions
+  @@map("reward_logs")
+}
+
+model Game {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
+  slug        String
+  genre       String?
+  rules       Rule[] // One-to-many relationship
+
+  // GAME TRACKING INDEXES
+  @@index([title]) // Search for title
+  @@index([genre(sort: Desc)]) // Sort by genre
+}
+
+model Rule {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  text   String
+  gameId String @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String
+  details    String?
+  resource   String? // e.g., "reward", "user", "points"
+  resourceId String?  @db.ObjectId
+  timestamp  DateTime @default(now())
+
+  // AUDIT LOG INDEXES
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp(sort: Desc)])
+  @@index([userId, timestamp(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general")
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  @db.ObjectId
+  user        User?    @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_settings")
+}
+
+model Course {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String
+  fileKey            String
+  duration           Int
+  categoryId         String       @db.ObjectId
+  category           Category     @relation(fields: [categoryId], references: [id])
+  excerptDescription String
+  slug               String       @unique
+  status             CourseStatus @default(Draft)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  userId             String?      @db.ObjectId
+  user               User?        @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  AGENT
+  MANAGER
+  OPERATIONS
+}
+
+enum CourseStatus {
+  Published
+  Draft
+  Achieved
+}
