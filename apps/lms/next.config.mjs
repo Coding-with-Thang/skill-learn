@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@skill-learn/ui', '@skill-learn/lib', '@skill-learn/database'],
   images: {
     remotePatterns: [
       {

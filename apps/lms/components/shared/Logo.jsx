@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import logo from '../../../public/logo.svg';
+import logo from '../../../../public/logo.svg';
 import { cn } from "@skill-learn/lib/utils.js";
 
 export function Logo({ className, textClassName, imageClassName }) {

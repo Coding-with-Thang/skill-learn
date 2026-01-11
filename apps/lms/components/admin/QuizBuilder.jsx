@@ -550,8 +550,7 @@ export default function QuizBuilder({ quizId = null }) {
                 min="0"
                 max="100"
                 value={quiz.passingScore}
-                onChange={e => setQuiz(prev => ({ ...prev, passingScore: parseInt(e.target.value) }))
-                }
+                onChange={e => setQuiz(prev => ({ ...prev, passingScore: parseInt(e.target.value) }))}
               />
             </div>
           </div>
