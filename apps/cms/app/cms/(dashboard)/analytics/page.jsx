@@ -62,7 +62,7 @@ export default function AnalyticsPage() {
         className="flex flex-col gap-2"
       >
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Analytics</h1>
-        <p className="text-muted-foreground">Deep dive into your platform's performance and growth metrics.</p>
+        <p className="text-muted-foreground">Deep dive into your platform&apos;s performance and growth metrics.</p>
       </motion.div>
 
       {/* Engagement Stats Grid */}

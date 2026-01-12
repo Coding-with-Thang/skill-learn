@@ -124,9 +124,9 @@ export default function AnnouncementsPage() {
               <div className="space-y-2">
                 <p className="font-medium">Targeting:</p>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
-                  <li>Use "All Tenants" for critical maintenance.</li>
+                  <li>Use &quot;All Tenants&quot; for critical maintenance.</li>
                   <li>Target specific plans for upsell features.</li>
-                  <li>Use "Developers" for API changes.</li>
+                  <li>Use &quot;Developers&quot; for API changes.</li>
                 </ul>
               </div>
             </CardContent>
