@@ -6,6 +6,11 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: 'Skill-Learn - Super Admin Dashboard',
   description: 'Multi-tenant Learning Management System Super Admin Dashboard',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/logo.png',
+  },
 }
 
 export default function CMSLayout({ children }) {

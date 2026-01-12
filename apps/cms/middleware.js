@@ -4,6 +4,17 @@ import { NextResponse } from "next/server";
 export default clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
+  // Skip middleware for static assets and API routes that don't need auth
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/_static") ||
+    pathname === "/favicon.ico" ||
+    pathname.startsWith("/api/public") ||
+    pathname.match(/\.(ico|png|jpg|jpeg|svg|gif|webp|woff|woff2|ttf|eot)$/)
+  ) {
+    return NextResponse.next();
+  }
+
   // Allow public routes to pass through without authentication checks
   const isPublicRoute =
     pathname.startsWith("/cms/sign-in") ||
@@ -79,5 +90,14 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next|_static|favicon.ico).*)", "/"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder files (static assets)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)$).*)",
+  ],
 };
