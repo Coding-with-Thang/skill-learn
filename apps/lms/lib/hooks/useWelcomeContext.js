@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useUserRole, usePointsStore } from "@skill-learn/lib";
+import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
+import { usePointsStore } from "@skill-learn/lib/stores/pointsStore.js";
 import api from "@skill-learn/lib/utils/axios.js";
 
 /**
