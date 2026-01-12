@@ -1,7 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-const systemSettings = [
+/**
+ * Default system settings for tenants
+ * These are seeded per tenant when they are created
+ */
+const defaultSystemSettings = [
   {
     key: "DAILY_POINTS_LIMIT",
     value: "100000",
@@ -58,30 +62,75 @@ const systemSettings = [
   },
 ];
 
+/**
+ * Seed system settings for a specific tenant
+ * @param {string} tenantId - The tenant ID to seed settings for
+ */
+async function seedTenantSettings(tenantId) {
+  console.log(`  Seeding settings for tenant: ${tenantId}`);
+  
+  for (const setting of defaultSystemSettings) {
+    await prisma.systemSetting.upsert({
+      where: {
+        tenantId_key: {
+          tenantId: tenantId,
+          key: setting.key,
+        },
+      },
+      update: {
+        value: setting.value,
+        description: setting.description,
+        category: setting.category,
+      },
+      create: {
+        tenantId: tenantId,
+        key: setting.key,
+        value: setting.value,
+        description: setting.description,
+        category: setting.category,
+      },
+    });
+  }
+  
+  console.log(`  ✓ Seeded ${defaultSystemSettings.length} settings for tenant`);
+}
+
 async function main() {
   try {
-    // Seed system settings
-    for (const setting of systemSettings) {
-      await prisma.systemSetting.upsert({
-        where: { key: setting.key },
-        update: {
-          value: setting.value,
-          description: setting.description,
-          category: setting.category,
-        },
-        create: {
-          key: setting.key,
-          value: setting.value,
-          description: setting.description,
-          category: setting.category,
+    console.log("🚀 Starting database seed...\n");
+
+    // Get all existing tenants
+    const tenants = await prisma.tenant.findMany({
+      select: { id: true, name: true },
+    });
+
+    if (tenants.length === 0) {
+      console.log("⚠️  No tenants found. Creating a default tenant...");
+      
+      // Create a default tenant
+      const defaultTenant = await prisma.tenant.create({
+        data: {
+          name: "Default Organization",
+          slug: "default",
+          subscriptionTier: "professional",
+          maxRoleSlots: 5,
+          baseRoleSlots: 5,
         },
       });
-      console.log(`Setting created/updated: ${setting.key}`);
+      
+      console.log(`✓ Created default tenant: ${defaultTenant.name} (${defaultTenant.slug})`);
+      tenants.push(defaultTenant);
     }
 
-    console.log("Seeding completed successfully");
+    // Seed system settings for each tenant
+    console.log("\n📋 Seeding system settings...");
+    for (const tenant of tenants) {
+      await seedTenantSettings(tenant.id);
+    }
+
+    console.log("\n✅ Seeding completed successfully");
   } catch (error) {
-    console.error("Error seeding database:", error);
+    console.error("❌ Error seeding database:", error);
     throw error;
   } finally {
     await prisma.$disconnect();
@@ -92,3 +141,6 @@ main().catch((error) => {
   console.error(error);
   process.exit(1);
 });
+
+// Export for use in other scripts
+export { defaultSystemSettings, seedTenantSettings };

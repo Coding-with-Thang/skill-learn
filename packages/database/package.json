@@ -1,0 +1,21 @@
+{
+  "name": "@skill-learn/database",
+  "version": "0.0.4",
+  "private": true,
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "scripts": {
+    "build": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "prisma:seed": "node prisma/seed.js",
+    "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema=./prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.16.2"
+  }
+}

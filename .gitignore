@@ -222,6 +222,7 @@ notes.md
 /archive
 /docs/audits
 /scripts
+!scripts/should-build-*.sh
 *.bak
 *.backup
 *.old
@@ -235,3 +236,18 @@ CODE_QUALITY_AUDIT.md
 # Project Specific
 # ============================================
 # Add any project-specific ignores below
+
+# ============================================
+# Monorepo (Turborepo)
+# ============================================
+# Turborepo cache (already above, but keeping for clarity)
+# .turbo/
+
+# Apps
+apps/*/.next
+apps/*/node_modules
+
+# Packages
+packages/*/node_modules
+packages/*/dist
+packages/*/.next

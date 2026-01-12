@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./app/*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/config/*": ["./config/*"],
+      "@skill-learn/ui": ["../../packages/ui/components"],
+      "@skill-learn/lib": ["../../packages/lib"],
+      "@skill-learn/database": ["../../packages/database"]
+    }
+  }
+}
