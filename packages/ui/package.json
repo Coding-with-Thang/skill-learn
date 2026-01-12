@@ -29,6 +29,7 @@
     "./components/line-chart": "./components/line-chart.jsx",
     "./components/loader": "./components/loader.jsx",
     "./components/loading": "./components/loading.jsx",
+    "./components/not-found": "./components/not-found.jsx",
     "./components/pagination": "./components/pagination.jsx",
     "./components/pie-chart": "./components/pie-chart.jsx",
     "./components/progress": "./components/progress.jsx",

@@ -57,7 +57,7 @@ export default function Sidebar({ isOperations }) {
   }
 
   return (
-    <aside className="hidden md:flex flex-col w-64 h-screen bg-white border-r border-gray-100 fixed left-0 top-0 z-30">
+    <aside className="hidden md:flex flex-col w-64 h-screen bg-card border-r border-border fixed left-0 top-0 z-30">
       <div className="p-6">
         <Logo />
       </div>
@@ -72,14 +72,14 @@ export default function Sidebar({ isOperations }) {
               className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                 isActive
-                  ? "bg-blue-50 text-blue-600 font-semibold shadow-sm"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <item.icon
                 className={cn(
                   "w-5 h-5 transition-colors",
-                  isActive ? "text-blue-600" : "text-gray-400 group-hover:text-gray-600"
+                  isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               />
               <span className="text-sm">{item.label}</span>

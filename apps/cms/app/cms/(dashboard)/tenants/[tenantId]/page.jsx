@@ -423,7 +423,7 @@ export default function TenantDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 w-full flex items-center justify-center min-h-[400px]">
+      <div className="p-4 lg:p-6 w-full flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
@@ -431,7 +431,7 @@ export default function TenantDetailPage() {
 
   if (error && !tenant) {
     return (
-      <div className="p-6 w-full">
+      <div className="p-4 lg:p-6 w-full">
         <Card>
           <CardContent className="p-12 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -446,7 +446,7 @@ export default function TenantDetailPage() {
   }
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-4 lg:p-6 w-full">
       {/* Breadcrumb */}
       <div className="mb-4 text-sm text-muted-foreground">
         <Link href="/cms/tenants" className="hover:text-foreground">
@@ -465,7 +465,7 @@ export default function TenantDetailPage() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{tenant?.name}</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{tenant?.name}</h1>
             <p className="text-muted-foreground mt-1">
               Manage users, roles, and permissions
             </p>

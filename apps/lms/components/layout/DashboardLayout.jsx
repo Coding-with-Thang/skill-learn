@@ -24,12 +24,12 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50/50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar isOperations={isOperations} />
 
       <div className="flex-1 flex flex-col md:ml-64 transition-all duration-300">
         <TopBar />
-        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 lg:p-6 max-w-7xl mx-auto w-full">
           {children}
         </main>
       </div>

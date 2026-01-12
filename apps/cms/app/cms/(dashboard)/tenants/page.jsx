@@ -228,7 +228,7 @@ export default function TenantsPage() {
   }
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-4 lg:p-6 w-full">
         {/* Breadcrumb */}
         <div className="mb-4 text-sm text-muted-foreground">
           Dashboard / <span className="text-foreground">Tenants</span>
@@ -237,7 +237,7 @@ export default function TenantsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tenant Management</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Tenant Management</h1>
             <p className="text-muted-foreground mt-1">
               Oversee and manage all organization tenants across the platform.
             </p>

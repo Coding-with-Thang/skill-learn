@@ -372,14 +372,14 @@ export default function RolesPermissionsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 w-full flex items-center justify-center min-h-[400px]">
+      <div className="p-4 lg:p-6 w-full flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
 
   return (
-    <div className="p-6 w-full">
+    <div className="p-4 lg:p-6 w-full">
       {/* Breadcrumb */}
       <div className="mb-4 text-sm text-muted-foreground">
         Dashboard / <span className="text-foreground">Roles & Permissions</span>
@@ -388,7 +388,7 @@ export default function RolesPermissionsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Roles & Permissions</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Roles & Permissions</h1>
           <p className="text-muted-foreground mt-1">
             Manage global permissions and role templates for tenant onboarding.
           </p>
