@@ -58,7 +58,8 @@ export default function Sidebar() {
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className={cn(
-        "fixed left-0 top-0 z-40 h-screen border-r bg-card transition-transform duration-300",
+        "fixed left-0 top-0 z-50 h-screen border-r bg-card transition-transform duration-300",
+        "shadow-lg lg:shadow-none",
         isMobileOpen ? "translate-x-0" : "-translate-x-full",
         "lg:translate-x-0"
       )}

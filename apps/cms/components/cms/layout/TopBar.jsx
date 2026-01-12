@@ -30,7 +30,7 @@ export default function TopBar() {
   const unreadCount = notifications.filter(n => !n.read).length
 
   return (
-    <header className="sticky top-0 z-30 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-30 border-b bg-card backdrop-blur-sm">
       <div className="flex h-16 items-center gap-2 px-4 lg:gap-4 lg:px-6">
         {/* Mobile Menu Button */}
         <Button
