@@ -6,6 +6,7 @@ export * from "./zodSchemas.js";
 export * from "./utils/utils/axios.js";
 export * from "./utils/utils/errorHandler.js";
 export * from "./utils/utils/apiWrapper.js";
+export * from "./utils/utils/permissions.js";
 
 // Export hooks (re-export from hooks directory)
 export { useAppTheme } from "./hooks/hooks/useAppTheme.js";
@@ -15,6 +16,7 @@ export { useIsMobile as useMobile } from "./hooks/hooks/useMobile.js";
 export { useIsMobile } from "./hooks/hooks/useMobile.js";
 export { usePageTracking } from "./hooks/hooks/usePageTracking.js";
 export { useUserRole } from "./hooks/hooks/useUserRole.js";
+export { usePermissions, PERMISSIONS } from "./hooks/hooks/usePermissions.js";
 
 // Export stores (re-export from stores directory)
 export * from "./stores/store/auditLogStore.js";

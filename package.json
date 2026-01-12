@@ -13,7 +13,9 @@
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules",
     "prisma:generate": "turbo run prisma:generate",
-    "prisma:seed": "turbo run prisma:seed"
+    "prisma:seed": "turbo run prisma:seed",
+    "seed:permissions": "node --experimental-modules prisma/seeds/permissions.js",
+    "seed:all": "npm run prisma:seed && npm run seed:permissions"
   },
   "devDependencies": {
     "turbo": "^2.0.0"
