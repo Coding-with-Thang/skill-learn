@@ -92,8 +92,6 @@ export async function POST(request) {
       },
     });
 
-    console.log(`[Super Admin] User ${clerkUser.id} (${clerkUser.emailAddresses[0]?.emailAddress}) was promoted to super admin`);
-
     return NextResponse.json({
       success: true,
       message: "User approved for super admin access",

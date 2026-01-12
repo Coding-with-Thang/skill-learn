@@ -31,17 +31,6 @@ export default clerkMiddleware(async (auth, req) => {
 
     const isSuperAdmin = userRole === "super_admin";
 
-    // Debug logging (remove in production)
-    if (process.env.NODE_ENV === "development") {
-      console.log("[CMS Middleware] User check:", {
-        userId,
-        hasSessionClaims: !!sessionClaims,
-        sessionClaimsPublicMetadata: sessionClaims?.publicMetadata,
-        userRole,
-        isSuperAdmin,
-      });
-    }
-
     if (!isSuperAdmin) {
       // For API routes, return JSON error
       if (pathname.startsWith("/api/")) {

@@ -1,6 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { config } from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-const prisma = new PrismaClient();
+// Load environment variables from .env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+config({ path: resolve(__dirname, '../../.env') });
+
+import { prisma } from '@skill-learn/database';
 
 /**
  * Comprehensive permissions catalog for multi-tenant RBAC system

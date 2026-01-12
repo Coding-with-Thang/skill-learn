@@ -27,7 +27,7 @@ export default function QuickActions() {
 
   const handleAction = (action) => {
     setActiveAction(action.id)
-    console.log('Action clicked:', action.label)
+    // TODO: Implement action handlers
     setTimeout(() => setActiveAction(null), 1000)
   }
 

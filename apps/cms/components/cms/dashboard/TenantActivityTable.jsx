@@ -17,7 +17,7 @@ export default function TenantActivityTable({ tenants }) {
 
   const itemsPerPage = 10
 
-  // Filter tenants - handle both old mock format and new real format
+  // Filter tenants
   const filteredTenants = tenants.filter(tenant => {
     const matchesSearch = tenant.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false
     const status = tenant.status || (tenant.users > 0 ? 'Active' : 'Inactive')
@@ -30,9 +30,8 @@ export default function TenantActivityTable({ tenants }) {
   const paginatedTenants = filteredTenants.slice(startIndex, startIndex + itemsPerPage)
 
   const handleAction = (action, tenant) => {
-    console.log(`${action} tenant:`, tenant.name)
     setActiveMenu(null)
-    // Here you would typically show a modal or toast
+    // TODO: Implement action handlers (view, edit, suspend)
   }
 
   return (

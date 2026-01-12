@@ -98,10 +98,6 @@ export async function GET(request, { params }) {
         permissions: role.tenantRolePermissions.map((trp) => trp.permission),
         permissionsByCategory,
         userCount: role._count.userRoles,
-        sampleUsers: role.userRoles.map((ur) => ({
-          userId: ur.userId,
-          assignedAt: ur.assignedAt,
-        })),
         createdAt: role.createdAt,
         updatedAt: role.updatedAt,
       },
