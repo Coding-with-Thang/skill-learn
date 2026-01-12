@@ -2,12 +2,15 @@
 
 import {
   BookOpen,
+  CreditCard,
   FileQuestion,
   FileText,
   Gift,
+  Key,
   Layout,
   LayoutGrid,
   Settings,
+  Shield,
   Users,
 } from "lucide-react";
 
@@ -66,6 +69,31 @@ const data = {
             {
               title: "Quiz Creator",
               url: "/dashboard/quizzes/quiz-manager",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "ORGANIZATION",
+      items: [
+        {
+          title: "Billing",
+          url: "/dashboard/billing",
+          icon: CreditCard,
+        },
+        {
+          title: "Roles",
+          url: "/dashboard/roles",
+          icon: Shield,
+          items: [
+            {
+              title: "Manage Roles",
+              url: "/dashboard/roles",
+            },
+            {
+              title: "User Assignments",
+              url: "/dashboard/user-roles",
             },
           ],
         },

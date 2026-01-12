@@ -29,7 +29,9 @@
     "./utils/auth.js": "./utils/utils/auth.js",
     "./utils/connect.js": "./utils/utils/connect.js",
     "./utils/rateLimit.js": "./utils/utils/rateLimit.js",
-    "./utils/clerk.js": "./utils/utils/clerk.js"
+    "./utils/clerk.js": "./utils/utils/clerk.js",
+    "./utils/clerkSync.js": "./utils/utils/clerkSync.js",
+    "./utils/permissions.js": "./utils/utils/permissions.js"
   },
   "scripts": {},
   "dependencies": {
