@@ -5,6 +5,7 @@
   "main": "./components/index.js",
   "exports": {
     "./components/avatar": "./components/avatar.jsx",
+    "./components/badge": "./components/badge.jsx",
     "./components/breadcrumb": "./components/breadcrumb.jsx",
     "./components/button": "./components/button.jsx",
     "./components/card": "./components/card.jsx",
