@@ -1155,29 +1155,102 @@ export default function TenantDetailPage() {
 
       {/* Initialize Roles Dialog */}
       <Dialog open={initializeRolesDialogOpen} onOpenChange={setInitializeRolesDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Initialize Roles from Template</DialogTitle>
             <DialogDescription>
-              Create default roles for this tenant from a template set.
-              This will create up to {tenant?.maxRoleSlots || 5} roles.
+              Create default roles for this tenant from a predefined template set.
+              This will create up to {tenant?.maxRoleSlots || 5} roles with pre-configured permissions.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Label>Template Set</Label>
-            <select
-              value={templateSetName}
-              onChange={(e) => setTemplateSetName(e.target.value)}
-              className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm mt-2"
-            >
-              {templateSets.map((set) => (
-                <option key={set} value={set}>
-                  {set.charAt(0).toUpperCase() + set.slice(1)}
-                </option>
-              ))}
-            </select>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label>Template Set</Label>
+              <select
+                value={templateSetName}
+                onChange={(e) => setTemplateSetName(e.target.value)}
+                className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+              >
+                <option value="generic">Generic - General-purpose organizations</option>
+                <option value="education">Education - Schools and institutions</option>
+                <option value="business">Business - Corporate training</option>
+                <option value="support">Support - Customer support teams</option>
+                <option value="saas">SaaS - SaaS product teams</option>
+                <option value="healthcare">Healthcare - Healthcare training</option>
+                <option value="retail">Retail - Retail operations</option>
+              </select>
+            </div>
+
+            {/* Template preview */}
+            <div className="rounded-lg border p-3 bg-muted/50">
+              <p className="text-sm font-medium mb-2">Roles to be created:</p>
+              {templateSetName === 'generic' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Administrator - Full system access</li>
+                  <li>2. Manager - Manage content and users</li>
+                  <li>3. Team Lead - Lead teams, assign content</li>
+                  <li>4. Member - Standard user access</li>
+                  <li>5. Guest - Limited read-only access</li>
+                </ul>
+              )}
+              {templateSetName === 'education' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. School Admin - Full administrative access</li>
+                  <li>2. Teacher - Create and manage courses</li>
+                  <li>3. Teaching Assistant - Help with courses</li>
+                  <li>4. Student - Access courses and quizzes</li>
+                  <li>5. Parent - View student progress</li>
+                </ul>
+              )}
+              {templateSetName === 'business' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Owner - Full control including billing</li>
+                  <li>2. HR Manager - Manage employees</li>
+                  <li>3. Department Head - Manage team training</li>
+                  <li>4. Employee - Standard training access</li>
+                  <li>5. Contractor - Limited external access</li>
+                </ul>
+              )}
+              {templateSetName === 'support' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Support Director - Full support access</li>
+                  <li>2. Support Manager - Oversee support team</li>
+                  <li>3. Senior Agent - Handle escalations</li>
+                  <li>4. Support Agent - Standard support</li>
+                  <li>5. Customer - Self-service access</li>
+                </ul>
+              )}
+              {templateSetName === 'saas' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Owner - Full control including billing</li>
+                  <li>2. Admin - Manage users and settings</li>
+                  <li>3. Power User - Advanced features</li>
+                  <li>4. User - Standard platform access</li>
+                  <li>5. Read-Only - View-only access</li>
+                </ul>
+              )}
+              {templateSetName === 'healthcare' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Administrator - Full administrative access</li>
+                  <li>2. Training Director - Manage training</li>
+                  <li>3. Supervisor - Supervise staff training</li>
+                  <li>4. Staff - Complete required training</li>
+                  <li>5. Volunteer - Basic training access</li>
+                </ul>
+              )}
+              {templateSetName === 'retail' && (
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>1. Regional Manager - Full regional access</li>
+                  <li>2. Store Manager - Manage store training</li>
+                  <li>3. Shift Lead - Lead shifts</li>
+                  <li>4. Sales Associate - Standard access</li>
+                  <li>5. New Hire - Onboarding access</li>
+                </ul>
+              )}
+            </div>
+
             {formError && (
-              <div className="mt-4 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+              <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
                 {formError}
               </div>
             )}

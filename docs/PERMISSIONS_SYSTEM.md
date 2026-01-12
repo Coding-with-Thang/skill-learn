@@ -268,30 +268,93 @@ npm run seed:all
 
 ## Role Template Sets
 
+The system includes 7 predefined template sets for easy tenant onboarding:
+
 ### Generic (Default)
-1. **Administrator** - Full access to all features
-2. **Manager** - Manage users and content, view reports
-3. **Content Creator** - Create and manage quizzes/courses
-4. **Team Lead** - Lead team, assign quizzes, manage points
-5. **Learner** - Basic learner access
+Best for general-purpose organizations.
+1. **Administrator** - Full system access and user management
+2. **Manager** - Can manage content, users, and view reports
+3. **Team Lead** - Lead teams, assign content, manage points
+4. **Member** - Standard user with basic access
+5. **Guest** - Limited read-only access for external users
 
 ### Education
-1. **School Admin** - Full institution access
-2. **Teacher** - Create content, grade students
-3. **Teaching Assistant** - Assist teachers
-4. **Student** - Take courses and quizzes
-5. **Parent** - View student progress
+Best for schools, universities, and educational institutions.
+1. **School Admin** - Full administrative access
+2. **Teacher** - Create courses, quizzes, and grade students
+3. **Teaching Assistant** - Help with courses and assist students
+4. **Student** - Access courses, take quizzes, earn rewards
+5. **Parent** - View student progress and reports
+
+### Business
+Best for corporate training and development.
+1. **Owner** - Full control including billing
+2. **HR Manager** - Manage employees and training programs
+3. **Department Head** - Manage team training and performance
+4. **Employee** - Standard employee with training access
+5. **Contractor** - Limited access for external workers
+
+### Support
+Best for customer support and service teams.
+1. **Support Director** - Full access to support operations
+2. **Support Manager** - Oversee support team
+3. **Senior Agent** - Handle escalations and train new agents
+4. **Support Agent** - Handle standard customer support
+5. **Customer** - Self-service access
+
+### SaaS
+Best for SaaS product teams.
+1. **Owner** - Full control including billing
+2. **Admin** - Manage users, settings, and configuration
+3. **Power User** - Advanced features and content creation
+4. **User** - Standard platform access
+5. **Read-Only** - View-only access for stakeholders
+
+### Healthcare
+Best for healthcare training and compliance.
+1. **Administrator** - Full administrative access
+2. **Training Director** - Manage training programs and compliance
+3. **Supervisor** - Supervise staff training and certifications
+4. **Staff** - Complete required training and certifications
+5. **Volunteer** - Basic training access
+
+### Retail
+Best for retail training and operations.
+1. **Regional Manager** - Full access to regional operations
+2. **Store Manager** - Manage store training and performance
+3. **Shift Lead** - Lead shifts and onboard new staff
+4. **Sales Associate** - Complete training and serve customers
+5. **New Hire** - Onboarding access for new employees
+
+## Permission Patterns
+
+Role templates use permission patterns for flexible configuration:
+
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `*.*` | All permissions | Grants full access |
+| `category.*` | All permissions in category | `users.*` grants all user permissions |
+| `category.action` | Specific permission | `users.read` grants only read access |
 
 ## Tenant Onboarding
 
 When creating a new tenant, initialize roles from a template set:
 
 ```javascript
-// POST /api/tenants/[tenantId]/roles
-// Body: { templateSetName: "generic" } // or "education"
+// PUT /api/tenants/[tenantId]/roles
+// Body: { templateSetName: "generic" }
 ```
 
-This creates all 5 default roles with pre-configured permissions.
+Available template sets:
+- `generic` (default) - General-purpose organizations
+- `education` - Schools and educational institutions
+- `business` - Corporate training and development
+- `support` - Customer support teams
+- `saas` - SaaS product teams
+- `healthcare` - Healthcare training and compliance
+- `retail` - Retail training and operations
+
+This creates up to 5 roles with pre-configured permissions based on the selected template.
 
 ## Best Practices
 
