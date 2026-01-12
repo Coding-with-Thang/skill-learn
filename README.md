@@ -225,7 +225,7 @@ skill-learn/
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/your-org/skill-learn.git
+git clone <repository-url>
 cd skill-learn
 ```
 
@@ -535,20 +535,20 @@ Additional documentation is available in the `/docs` directory:
 | [THEME_GUIDE.md](docs/THEME_GUIDE.md) | Theming and styling guide |
 | [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) | Deployment instructions |
 
-## 🤝 Contributing
+## 🔒 Security
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- All API endpoints are protected with Clerk authentication
+- Rate limiting is implemented on sensitive endpoints
+- Webhook signatures are verified using Svix
+- Role-based access control for all admin functions
+- Audit logging for compliance and security monitoring
 
-## 📄 License
+## 📞 Support
 
-This project is proprietary software. All rights reserved.
+For technical support or questions, please contact the development team.
 
 ---
 
 <p align="center">
-  Built with ❤️ by the Skill-Learn Team
+  <strong>Skill-Learn</strong> — Proprietary Software. All Rights Reserved.
 </p>
