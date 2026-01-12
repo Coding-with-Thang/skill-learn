@@ -2,7 +2,6 @@
 
 import { SignIn, SignedIn, SignOutButton, useUser } from '@clerk/nextjs'
 import { dark, light } from '@clerk/themes'
-import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/cms/ui/button'
 
