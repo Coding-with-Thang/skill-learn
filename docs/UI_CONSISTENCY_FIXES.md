@@ -7,10 +7,12 @@ This document summarizes the UI inconsistencies found and fixed across the CMS a
 ### 1. Padding Inconsistencies ✅ FIXED
 
 **Issue:** Inconsistent padding across CMS dashboard pages
+
 - Dashboard page used: `p-4 lg:p-6` (responsive)
 - Other pages used: `p-6` (fixed)
 
 **Fix:** Standardized all CMS dashboard pages to use `p-4 lg:p-6` for responsive padding:
+
 - `/cms/(dashboard)/billing/page.jsx`
 - `/cms/(dashboard)/roles-permissions/page.jsx`
 - `/cms/(dashboard)/tenants/page.jsx`
@@ -21,23 +23,27 @@ This document summarizes the UI inconsistencies found and fixed across the CMS a
 ### 2. Heading Size Inconsistencies ✅ FIXED
 
 **Issue:** Inconsistent heading sizes
+
 - Dashboard page used: `text-2xl lg:text-3xl` (responsive)
 - Other pages used: `text-3xl` (fixed)
 
 **Fix:** Standardized all page headings to use `text-2xl lg:text-3xl` for responsive typography:
+
 - All CMS dashboard pages now use consistent responsive headings
 
 ### 3. Background Color Inconsistencies ✅ FIXED
 
 **Issue:** LMS layout used hardcoded gray colors instead of semantic design tokens
+
 - `bg-gray-50/50` → should be `bg-background`
 - `bg-white` → should be `bg-card`
 - `border-gray-100` → should be `border-border`
 - `text-gray-*` → should use semantic tokens like `text-foreground`, `text-muted-foreground`
 
 **Fix:** Updated LMS components to use semantic design tokens:
+
 - `apps/lms/components/layout/DashboardLayout.jsx`: Changed `bg-gray-50/50` to `bg-background`
-- `apps/lms/components/layout/Sidebar.jsx`: 
+- `apps/lms/components/layout/Sidebar.jsx`:
   - Changed `bg-white border-gray-100` to `bg-card border-border`
   - Changed active state from `bg-blue-50 text-blue-600` to `bg-primary/10 text-primary`
   - Changed inactive state from `text-gray-500 hover:bg-gray-50` to `text-muted-foreground hover:bg-muted`
@@ -52,7 +58,8 @@ This document summarizes the UI inconsistencies found and fixed across the CMS a
 
 **Issue:** Sidebar appeared transparent on mobile devices
 
-**Fix:** 
+**Fix:**
+
 - Removed unnecessary `backdrop-blur-sm` from sidebar
 - Increased z-index from `z-40` to `z-50`
 - Added `shadow-lg` on mobile for better visibility
@@ -74,12 +81,14 @@ This document summarizes the UI inconsistencies found and fixed across the CMS a
 ## Files Modified
 
 ### CMS App
+
 - `apps/cms/app/cms/(dashboard)/billing/page.jsx`
 - `apps/cms/app/cms/(dashboard)/roles-permissions/page.jsx`
 - `apps/cms/app/cms/(dashboard)/tenants/page.jsx`
 - `apps/cms/app/cms/(dashboard)/tenants/[tenantId]/page.jsx`
 
 ### LMS App
+
 - `apps/lms/components/layout/DashboardLayout.jsx`
 - `apps/lms/components/layout/Sidebar.jsx`
 - `apps/lms/components/layout/TopBar.jsx`
