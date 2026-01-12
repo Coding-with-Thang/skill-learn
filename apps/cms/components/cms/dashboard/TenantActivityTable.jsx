@@ -43,22 +43,22 @@ export default function TenantActivityTable({ tenants }) {
     >
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Recent Tenant Activity</CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search tenants..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-64"
+                  className="pl-9 w-full sm:w-64"
                 />
               </div>
               <select
                 value={tenantFilter}
                 onChange={(e) => setTenantFilter(e.target.value)}
-                className="h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring sm:w-auto"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -74,10 +74,10 @@ export default function TenantActivityTable({ tenants }) {
               <thead>
                 <tr className="border-b text-sm text-muted-foreground">
                   <th className="pb-3 text-left font-medium">Tenant Name</th>
-                  <th className="pb-3 text-left font-medium">Plan</th>
-                  <th className="pb-3 text-left font-medium">Users</th>
+                  <th className="pb-3 text-left font-medium hidden md:table-cell">Plan</th>
+                  <th className="pb-3 text-left font-medium hidden sm:table-cell">Users</th>
                   <th className="pb-3 text-left font-medium">Status</th>
-                  <th className="pb-3 text-left font-medium">Last Active</th>
+                  <th className="pb-3 text-left font-medium hidden lg:table-cell">Last Active</th>
                   <th className="pb-3 text-left font-medium">Actions</th>
                 </tr>
               </thead>
@@ -98,12 +98,12 @@ export default function TenantActivityTable({ tenants }) {
                         </div>
                       </div>
                     </td>
-                    <td className="py-4">
+                    <td className="py-4 hidden md:table-cell">
                       <Badge className={cn("font-medium", getPlanColor(tenant.plan || tenant.subscriptionTier || 'trial'))}>
                         {tenant.plan || tenant.subscriptionTier || 'Trial'}
                       </Badge>
                     </td>
-                    <td className="py-4">
+                    <td className="py-4 hidden sm:table-cell">
                       <span className="font-medium">{(tenant.users || 0).toLocaleString()}</span>
                     </td>
                     <td className="py-4">
@@ -111,7 +111,7 @@ export default function TenantActivityTable({ tenants }) {
                         {tenant.status || (tenant.users > 0 ? 'Active' : 'Inactive')}
                       </Badge>
                     </td>
-                    <td className="py-4">
+                    <td className="py-4 hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground">
                         {tenant.lastActive ? formatTimeAgo(new Date(tenant.lastActive)) : 'Never'}
                       </span>
@@ -170,11 +170,11 @@ export default function TenantActivityTable({ tenants }) {
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">
               Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, filteredTenants.length)} of {filteredTenants.length}
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <Button
                 variant="outline"
                 size="sm"

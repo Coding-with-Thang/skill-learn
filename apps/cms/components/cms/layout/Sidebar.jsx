@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import {
   LayoutDashboard,
   Building2,
@@ -14,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/cms/ui/button'
 import { cn } from '@/lib/cms/utils'
@@ -37,19 +39,33 @@ const menuItems = [
 ]
 
 export default function Sidebar() {
-  const { isCollapsed, toggleSidebar } = useSidebarStore()
+  const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebarStore()
   const pathname = usePathname()
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    if (isMobileOpen) {
+      closeMobileSidebar()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
 
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isCollapsed ? 80 : 256 }}
+      animate={{ 
+        width: isCollapsed ? 80 : 256,
+      }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 z-40 h-screen border-r bg-card"
+      className={cn(
+        "fixed left-0 top-0 z-40 h-screen border-r bg-card transition-transform duration-300",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full",
+        "lg:translate-x-0"
+      )}
     >
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center border-b px-6">
+        <div className="flex h-16 items-center justify-between border-b px-6">
           <AnimatePresence mode="wait">
             {!isCollapsed ? (
               <motion.div
@@ -80,6 +96,15 @@ export default function Sidebar() {
               </motion.div>
             )}
           </AnimatePresence>
+          {/* Close button for mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={closeMobileSidebar}
+            className="lg:hidden"
+          >
+            <X className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Navigation */}
@@ -94,7 +119,7 @@ export default function Sidebar() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Link href={item.href}>
+                <Link href={item.href} onClick={closeMobileSidebar}>
                   <Button
                     variant={isActive ? "secondary" : "ghost"}
                     className={cn(
@@ -124,8 +149,8 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Collapse Toggle */}
-        <div className="border-t p-3">
+        {/* Collapse Toggle - Hidden on mobile */}
+        <div className="hidden border-t p-3 lg:block">
           <Button
             variant="ghost"
             onClick={toggleSidebar}

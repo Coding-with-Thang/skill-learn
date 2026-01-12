@@ -14,8 +14,12 @@ export const useThemeStore = create((set) => ({
 
 export const useSidebarStore = create((set) => ({
   isCollapsed: false,
+  isMobileOpen: false,
   toggleSidebar: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
   setSidebarCollapsed: (isCollapsed) => set({ isCollapsed }),
+  toggleMobileSidebar: () => set((state) => ({ isMobileOpen: !state.isMobileOpen })),
+  setMobileSidebarOpen: (isOpen) => set({ isMobileOpen: isOpen }),
+  closeMobileSidebar: () => set({ isMobileOpen: false }),
 }))
 
 export const useDashboardStore = create((set) => ({

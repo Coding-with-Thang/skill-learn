@@ -73,15 +73,15 @@ export default function Home() {
   }
 
   return (
-    <main className="p-6 w-full">
+    <main className="p-4 lg:p-6 w-full">
         {/* Page Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 lg:mb-8"
         >
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm lg:text-base">
             Welcome back! Here&apos;s what&apos;s happening with your platform.
           </p>
         </motion.div>

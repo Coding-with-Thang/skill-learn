@@ -42,7 +42,7 @@ export default function RevenueChart({ data }) {
     >
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Revenue Overview</CardTitle>
             <div className="flex gap-1 rounded-lg bg-muted p-1">
               {timeRanges.map((range) => (
