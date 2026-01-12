@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/cms/ui/card'
 import { Button } from '@/components/cms/ui/button'
@@ -33,6 +33,12 @@ import {
   UserPlus,
   ChevronDown,
   ChevronRight,
+  ArrowRight,
+  Eye,
+  Table,
+  Grid,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -82,6 +88,9 @@ export default function TenantDetailPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState(null)
   const [templateSetName, setTemplateSetName] = useState('generic')
+  const [rolesViewMode, setRolesViewMode] = useState('cards') // 'cards' or 'table'
+  const [roleDetailsDialogOpen, setRoleDetailsDialogOpen] = useState(false)
+  const [roleSearchQuery, setRoleSearchQuery] = useState('')
 
   // Role form
   const [roleForm, setRoleForm] = useState({
@@ -170,6 +179,12 @@ export default function TenantDetailPage() {
       newSelected.add(userId)
     }
     setSelectedUsers(newSelected)
+  }
+
+  // Handle single user move
+  const handleSingleUserMove = (userId) => {
+    setSelectedUsers(new Set([userId]))
+    setMoveDialogOpen(true)
   }
 
   // Handle move users
@@ -370,6 +385,53 @@ export default function TenantDetailPage() {
       console.error('Error updating permissions:', err)
     }
   }
+
+  // Handle toggle role active/inactive
+  const handleToggleRoleActive = async (role) => {
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}/roles/${role.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isActive: !role.isActive,
+        }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to update role')
+
+      await fetchRoles()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Handle view role details
+  const handleViewRoleDetails = async (role) => {
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}/roles/${role.id}`)
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to fetch role details')
+
+      setSelectedRole(data.role)
+      setRoleDetailsDialogOpen(true)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  // Filter roles
+  const filteredRoles = roles.filter(role => {
+    const searchLower = roleSearchQuery.toLowerCase()
+    return (
+      role.roleAlias?.toLowerCase().includes(searchLower) ||
+      role.description?.toLowerCase().includes(searchLower) ||
+      role.permissions?.some(p =>
+        p.displayName?.toLowerCase().includes(searchLower) ||
+        p.name?.toLowerCase().includes(searchLower)
+      )
+    )
+  })
 
   // Reset role form
   const resetRoleForm = () => {
@@ -650,6 +712,16 @@ export default function TenantDetailPage() {
                       <Badge variant="outline" className="capitalize">
                         {user.role}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSingleUserMove(user.id)}
+                        className="gap-2"
+                        title="Move user to another tenant"
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                        Move
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -688,6 +760,35 @@ export default function TenantDetailPage() {
             </div>
           </div>
 
+          {roles.length > 0 && (
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search roles by name, description, or permissions..."
+                  value={roleSearchQuery}
+                  onChange={(e) => setRoleSearchQuery(e.target.value)}
+                  className="max-w-sm"
+                />
+              </div>
+              <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
+                <Button
+                  variant={rolesViewMode === 'cards' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setRolesViewMode('cards')}
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={rolesViewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setRolesViewMode('table')}
+                >
+                  <Table className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {roles.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
@@ -698,9 +799,125 @@ export default function TenantDetailPage() {
                 </Button>
               </CardContent>
             </Card>
+          ) : filteredRoles.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No roles match your search.</p>
+              </CardContent>
+            </Card>
+          ) : rolesViewMode === 'table' ? (
+            <Card>
+              <CardContent className="p-0">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-4 font-medium">Role</th>
+                      <th className="text-left p-4 font-medium">Slot</th>
+                      <th className="text-left p-4 font-medium">Status</th>
+                      <th className="text-left p-4 font-medium">Permissions</th>
+                      <th className="text-left p-4 font-medium">Users</th>
+                      <th className="text-right p-4 font-medium">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRoles.map((role) => (
+                      <tr key={role.id} className="border-b last:border-b-0 hover:bg-muted/50">
+                        <td className="p-4">
+                          <div>
+                            <p className="font-medium">{role.roleAlias}</p>
+                            {role.description && (
+                              <p className="text-sm text-muted-foreground">{role.description}</p>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge variant="secondary">Slot {role.slotPosition}</Badge>
+                        </td>
+                        <td className="p-4">
+                          <Badge variant={role.isActive ? 'default' : 'destructive'}>
+                            {role.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{role.permissionCount}</span>
+                            {role.permissions && role.permissions.length > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                ({role.permissions.slice(0, 3).map(p => p.displayName).join(', ')}
+                                {role.permissions.length > 3 && '...'})
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="font-medium">{role.userCount}</span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewRoleDetails(role)}
+                              title="View details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedRole(role)
+                                setRolePermissionsDialogOpen(true)
+                              }}
+                              title="Manage permissions"
+                            >
+                              <Key className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEditRole(role)}
+                              title="Edit role"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleToggleRoleActive(role)}
+                              title={role.isActive ? 'Deactivate' : 'Activate'}
+                            >
+                              {role.isActive ? (
+                                <ToggleRight className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <ToggleLeft className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => {
+                                setSelectedRole(role)
+                                setDeleteRoleDialogOpen(true)
+                              }}
+                              disabled={role.userCount > 0}
+                              title="Delete role"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {roles.map((role) => (
+              {filteredRoles.map((role) => (
                 <Card key={role.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
@@ -741,7 +958,33 @@ export default function TenantDetailPage() {
                         </div>
                       )}
 
+                      {role.permissions && role.permissions.length > 0 && (
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <p className="font-medium text-foreground">Permissions:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {role.permissions.slice(0, 3).map((perm) => (
+                              <Badge key={perm.id} variant="outline" className="text-xs">
+                                {perm.displayName}
+                              </Badge>
+                            ))}
+                            {role.permissions.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{role.permissions.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewRoleDetails(role)}
+                          title="View details"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -758,8 +1001,21 @@ export default function TenantDetailPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => openEditRole(role)}
+                          title="Edit role"
                         >
                           <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleRoleActive(role)}
+                          title={role.isActive ? 'Deactivate' : 'Activate'}
+                        >
+                          {role.isActive ? (
+                            <ToggleRight className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" />
+                          )}
                         </Button>
                         <Button
                           variant="outline"
@@ -770,6 +1026,7 @@ export default function TenantDetailPage() {
                             setDeleteRoleDialogOpen(true)
                           }}
                           disabled={role.userCount > 0}
+                          title="Delete role"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -878,12 +1135,21 @@ export default function TenantDetailPage() {
       )}
 
       {/* Move Users Dialog */}
-      <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
+      <Dialog open={moveDialogOpen} onOpenChange={(open) => {
+        setMoveDialogOpen(open)
+        if (!open) {
+          // Reset state when dialog closes
+          setTargetTenantId('')
+          setFormError(null)
+          setSuccessMessage(null)
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Move Users to Another Tenant</DialogTitle>
+            <DialogTitle>Move User{selectedUsers.size > 1 ? 's' : ''} to Another Tenant</DialogTitle>
             <DialogDescription>
-              Move {selectedUsers.size} selected user(s) to a different tenant.
+              Move {selectedUsers.size} selected user{selectedUsers.size > 1 ? 's' : ''} to a different tenant.
+              {selectedUsers.size === 1 && ' This feature will be deprecated in the future.'}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -893,21 +1159,32 @@ export default function TenantDetailPage() {
                 {successMessage}
               </div>
             ) : (
-              <div className="space-y-2">
-                <Label>Target Tenant</Label>
-                <select
-                  value={targetTenantId}
-                  onChange={(e) => setTargetTenantId(e.target.value)}
-                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-                  disabled={formLoading}
-                >
-                  <option value="">Select a tenant...</option>
-                  {allTenants.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name} ({t.activeUsers} users)
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-4">
+                <div className="rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 p-3 text-sm flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Deprecation Notice</p>
+                    <p className="text-xs mt-1">
+                      This feature is temporary and will be deprecated in the future. Use only when necessary.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Target Tenant</Label>
+                  <select
+                    value={targetTenantId}
+                    onChange={(e) => setTargetTenantId(e.target.value)}
+                    className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                    disabled={formLoading}
+                  >
+                    <option value="">Select a tenant...</option>
+                    {allTenants.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.activeUsers} users)
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             )}
             {formError && (
@@ -1148,6 +1425,159 @@ export default function TenantDetailPage() {
             <Button variant="destructive" onClick={handleDeleteRole} disabled={formLoading}>
               {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Delete Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Role Details Dialog */}
+      <Dialog open={roleDetailsDialogOpen} onOpenChange={setRoleDetailsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Role Details - {selectedRole?.roleAlias}</DialogTitle>
+            <DialogDescription>
+              View all information and permissions for this role.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRole && (
+            <div className="py-4 space-y-6">
+              {/* Role Information */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Role Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Role Name</Label>
+                    <p className="font-medium">{selectedRole.roleAlias}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Slot Position</Label>
+                    <p className="font-medium">
+                      <Badge variant="secondary">Slot {selectedRole.slotPosition}</Badge>
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Status</Label>
+                    <p>
+                      <Badge variant={selectedRole.isActive ? 'default' : 'destructive'}>
+                        {selectedRole.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Users with Role</Label>
+                    <p className="font-medium">{selectedRole.userCount || 0}</p>
+                  </div>
+                  {selectedRole.description && (
+                    <div className="col-span-2">
+                      <Label className="text-sm text-muted-foreground">Description</Label>
+                      <p className="text-sm">{selectedRole.description}</p>
+                    </div>
+                  )}
+                  {selectedRole.createdFromTemplate && (
+                    <div className="col-span-2">
+                      <Label className="text-sm text-muted-foreground">Based on Template</Label>
+                      <p className="text-sm">
+                        {selectedRole.createdFromTemplate.roleName} ({selectedRole.createdFromTemplate.templateSetName})
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Permissions by Category */}
+              {selectedRole.permissions && selectedRole.permissions.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-lg">
+                      Permissions ({selectedRole.permissions.length})
+                    </h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setRoleDetailsDialogOpen(false)
+                        setRolePermissionsDialogOpen(true)
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Permissions
+                    </Button>
+                  </div>
+
+                  {/* Group permissions by category */}
+                  {(() => {
+                    const permissionsByCategory = selectedRole.permissions.reduce((acc, perm) => {
+                      const category = perm.category || 'other'
+                      if (!acc[category]) {
+                        acc[category] = []
+                      }
+                      acc[category].push(perm)
+                      return acc
+                    }, {})
+
+                    return Object.keys(permissionsByCategory).map((category) => (
+                      <div key={category} className="space-y-2">
+                        <h4 className="font-medium text-sm flex items-center gap-2">
+                          {getCategoryDisplayName(category)}
+                          <Badge variant="secondary" className="text-xs">
+                            {permissionsByCategory[category].length}
+                          </Badge>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pl-4">
+                          {permissionsByCategory[category].map((perm) => (
+                            <div
+                              key={perm.id}
+                              className="flex items-start gap-2 p-2 rounded border bg-muted/30"
+                            >
+                              <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">{perm.displayName}</p>
+                                <code className="text-xs text-muted-foreground">{perm.name}</code>
+                                {perm.description && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {perm.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              ) : (
+                <div className="text-center py-8 border rounded-lg">
+                  <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground mb-4">No permissions assigned to this role.</p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setRoleDetailsDialogOpen(false)
+                      setRolePermissionsDialogOpen(true)
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Permissions
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleDetailsDialogOpen(false)}>
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setRoleDetailsDialogOpen(false)
+                if (selectedRole) {
+                  setRolePermissionsDialogOpen(true)
+                }
+              }}
+            >
+              <Key className="h-4 w-4 mr-2" />
+              Manage Permissions
             </Button>
           </DialogFooter>
         </DialogContent>
