@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
 
 /**
  * GET /api/tenants/[tenantId]/roles/[roleId]/permissions
@@ -164,6 +165,14 @@ export async function POST(request, { params }) {
       })),
     });
 
+    // Sync all users with this role to Clerk
+    try {
+      await syncTenantUsersMetadata(tenantId, roleId);
+    } catch (syncError) {
+      console.error("Failed to sync users metadata to Clerk:", syncError);
+      // Don't fail the request, permissions were added successfully
+    }
+
     // Fetch updated permissions
     const updatedPermissions = await prisma.tenantRolePermission.findMany({
       where: { tenantRoleId: roleId },
@@ -239,6 +248,14 @@ export async function DELETE(request, { params }) {
         permissionId: { in: permissionIds },
       },
     });
+
+    // Sync all users with this role to Clerk
+    try {
+      await syncTenantUsersMetadata(tenantId, roleId);
+    } catch (syncError) {
+      console.error("Failed to sync users metadata to Clerk:", syncError);
+      // Don't fail the request, permissions were removed successfully
+    }
 
     // Fetch remaining permissions
     const remainingPermissions = await prisma.tenantRolePermission.findMany({

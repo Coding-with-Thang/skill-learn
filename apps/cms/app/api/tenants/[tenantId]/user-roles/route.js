@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync.js";
 
 /**
  * GET /api/tenants/[tenantId]/user-roles
@@ -187,6 +188,14 @@ export async function POST(request, { params }) {
       },
     });
 
+    // Sync user metadata to Clerk (includes new role/permissions)
+    try {
+      await syncUserMetadataToClerk(userId, tenantId);
+    } catch (syncError) {
+      console.error("Failed to sync user metadata to Clerk:", syncError);
+      // Don't fail the request, role was assigned successfully
+    }
+
     // Try to get user details
     const userData = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -269,6 +278,8 @@ export async function DELETE(request, { params }) {
     }
 
     // Delete by userRoleId (preferred) or by userId + tenantRoleId
+    let deletedUserRole = null;
+    
     if (userRoleId) {
       const userRole = await prisma.userRole.findFirst({
         where: {
@@ -284,6 +295,7 @@ export async function DELETE(request, { params }) {
         );
       }
 
+      deletedUserRole = userRole;
       await prisma.userRole.delete({
         where: { id: userRoleId },
       });
@@ -303,6 +315,7 @@ export async function DELETE(request, { params }) {
         );
       }
 
+      deletedUserRole = userRole;
       await prisma.userRole.delete({
         where: { id: userRole.id },
       });
@@ -311,6 +324,16 @@ export async function DELETE(request, { params }) {
         { error: "Either userRoleId or both userId and tenantRoleId are required" },
         { status: 400 }
       );
+    }
+
+    // Sync user metadata to Clerk (remove role/permissions)
+    if (deletedUserRole) {
+      try {
+        await syncUserMetadataToClerk(deletedUserRole.userId, tenantId);
+      } catch (syncError) {
+        console.error("Failed to sync user metadata to Clerk:", syncError);
+        // Don't fail the request, role was removed successfully
+      }
     }
 
     return NextResponse.json({

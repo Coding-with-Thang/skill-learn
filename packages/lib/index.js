@@ -7,6 +7,7 @@ export * from "./utils/utils/axios.js";
 export * from "./utils/utils/errorHandler.js";
 export * from "./utils/utils/apiWrapper.js";
 export * from "./utils/utils/permissions.js";
+export * from "./utils/utils/clerkSync.js";
 
 // Export hooks (re-export from hooks directory)
 export { useAppTheme } from "./hooks/hooks/useAppTheme.js";
