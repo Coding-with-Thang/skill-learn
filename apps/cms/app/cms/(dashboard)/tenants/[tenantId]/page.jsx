@@ -1132,7 +1132,7 @@ export default function TenantDetailPage() {
           <DialogHeader>
             <DialogTitle>Delete Role</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete the role "{selectedRole?.roleAlias}"?
+              Are you sure you want to delete the role &quot;{selectedRole?.roleAlias}&quot;?
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>

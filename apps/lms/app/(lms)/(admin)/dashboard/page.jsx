@@ -16,6 +16,7 @@ import { Button } from "@skill-learn/ui/components/button";
 import { getDashboardStats } from "@/lib/dashboard";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import TenantSummary from "@/components/admin/TenantSummary";
 
 export default async function DashboardPage() {
   let stats;
@@ -122,6 +123,9 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Tenant Summary - Organization Overview */}
+      <TenantSummary />
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
