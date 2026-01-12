@@ -12,7 +12,8 @@ import {
   Megaphone,
   Settings,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Shield,
 } from 'lucide-react'
 import { Button } from '@/components/cms/ui/button'
 import { cn } from '@/lib/cms/utils'
@@ -24,6 +25,7 @@ import { usePathname } from 'next/navigation'
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/cms' },
   { icon: Building2, label: 'Tenants', href: '/cms/tenants' },
+  { icon: Shield, label: 'Roles & Permissions', href: '/cms/roles-permissions' },
   { icon: CreditCard, label: 'Billing', href: '/cms/billing' },
   { icon: BarChart3, label: 'Analytics', href: '/cms/analytics' },
   { icon: Activity, label: 'System Health', href: '/cms/system' },
