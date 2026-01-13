@@ -19,6 +19,7 @@
     "./hooks/useMobile.js": "./hooks/hooks/useMobile.js",
     "./hooks/usePageTracking.js": "./hooks/hooks/usePageTracking.js",
     "./hooks/useUserRole.js": "./hooks/hooks/useUserRole.js",
+    "./hooks/useFeatures.js": "./hooks/hooks/useFeatures.js",
     "./utils.js": "./utils.js",
     "./utils/axios.js": "./utils/utils/axios.js",
     "./utils/errorHandler.js": "./utils/utils/errorHandler.js",

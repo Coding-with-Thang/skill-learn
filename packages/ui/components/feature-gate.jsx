@@ -1,6 +1,6 @@
 'use client'
 
-import { useFeatures } from '@skill-learn/lib'
+import { useFeatures } from '@skill-learn/lib/hooks/useFeatures.js'
 import { Lock, AlertCircle, Loader2 } from 'lucide-react'
 import { Card, CardContent } from './card'
 import { Button } from './button'
