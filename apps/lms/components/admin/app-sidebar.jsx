@@ -11,6 +11,7 @@ import {
   LayoutGrid,
   Settings,
   Shield,
+  ToggleLeft,
   Users,
 } from "lucide-react";
 
@@ -81,6 +82,11 @@ const data = {
           title: "Billing",
           url: "/dashboard/billing",
           icon: CreditCard,
+        },
+        {
+          title: "Features",
+          url: "/dashboard/features",
+          icon: ToggleLeft,
         },
         {
           title: "Roles",
