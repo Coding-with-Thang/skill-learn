@@ -20,6 +20,7 @@
     "./hooks/usePageTracking.js": "./hooks/hooks/usePageTracking.js",
     "./hooks/useUserRole.js": "./hooks/hooks/useUserRole.js",
     "./hooks/useFeatures.js": "./hooks/hooks/useFeatures.js",
+    "./hooks/usePermissions.js": "./hooks/hooks/usePermissions.js",
     "./utils.js": "./utils.js",
     "./utils/axios.js": "./utils/utils/axios.js",
     "./utils/errorHandler.js": "./utils/utils/errorHandler.js",
