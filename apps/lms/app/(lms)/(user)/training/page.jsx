@@ -7,6 +7,7 @@ import { LayoutGrid, BookOpen, GraduationCap, Heart, Filter, Grid3x3, List, X } 
 import { useCategoryStore } from "@skill-learn/lib/stores/categoryStore.js";
 import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore.js";
 import { EnhancedButton } from "@skill-learn/ui/components/enhanced-button";
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate"
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { Loader } from "@skill-learn/ui/components/loader"
 import { SearchBar } from "@skill-learn/ui/components/search-bar"
@@ -221,6 +222,11 @@ export default function TrainingPage() {
   }, [allQuizzes, allCourses])
 
   return (
+    <FeatureGate 
+      feature="training_courses" 
+      featureName="Training Courses"
+      fallback={<FeatureDisabledPage featureName="Training Courses" />}
+    >
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-6 sticky top-0 h-screen overflow-y-auto">
@@ -537,5 +543,6 @@ export default function TrainingPage() {
         </div>
       </main>
     </div>
+    </FeatureGate>
   )
 }

@@ -46,7 +46,8 @@
     "./components/table": "./components/table.jsx",
     "./components/textarea": "./components/textarea.jsx",
     "./components/ThemeSwitcher": "./components/ThemeSwitcher.jsx",
-    "./components/toggle": "./components/toggle.jsx"
+    "./components/toggle": "./components/toggle.jsx",
+    "./components/feature-gate": "./components/feature-gate.jsx"
   },
   "scripts": {},
   "dependencies": {

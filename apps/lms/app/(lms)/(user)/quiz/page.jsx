@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore.js"
 import api from "@skill-learn/lib/utils/axios.js";
 import { Button } from "@skill-learn/ui/components/button"
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate"
 import { Clock, X, ChevronLeft, ChevronRight, GraduationCap, Check } from 'lucide-react'
 import { Loader } from "@skill-learn/ui/components/loader"
 import Image from "next/image"
@@ -610,6 +611,11 @@ export default function QuizScreenPage() {
     const progressPercentage = ((currentIndex + 1) / shuffledQuestionsMemo.length) * 100;
 
     return (
+        <FeatureGate 
+            feature="course_quizzes" 
+            featureName="Course Quizzes"
+            fallback={<FeatureDisabledPage featureName="Course Quizzes" />}
+        >
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
             {/* Header */}
             <header className="bg-white border-b sticky top-0 z-10 px-6 py-4 shadow-sm">
@@ -742,5 +748,6 @@ export default function QuizScreenPage() {
                 </div>
             </footer>
         </div>
+        </FeatureGate>
     )
 }

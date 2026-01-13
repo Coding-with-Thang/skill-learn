@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Card } from "@skill-learn/ui/components/card";
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import {
   X,
@@ -103,6 +104,11 @@ const games = [
 
 export default function GameSelectPage() {
   return (
+    <FeatureGate 
+      feature="games" 
+      featureName="Games"
+      fallback={<FeatureDisabledPage featureName="Games" />}
+    >
     <section className="w-full min-h-screen bg-[var(--background)] pb-20">
       <div className="max-w-7xl mx-auto px-6 pt-6">
         <BreadCrumbCom endtrail="Games" />
@@ -160,5 +166,6 @@ export default function GameSelectPage() {
         </div>
       </div>
     </section>
+    </FeatureGate>
   );
 }

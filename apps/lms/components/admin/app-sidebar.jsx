@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   BookOpen,
   CreditCard,
@@ -14,6 +15,7 @@ import {
   ToggleLeft,
   Users,
 } from "lucide-react";
+import { useFeatures } from "@skill-learn/lib";
 
 import { NavMain } from "./nav-main";
 import {
@@ -28,7 +30,9 @@ import {
 } from "@skill-learn/ui/components/sidebar";
 import { Logo } from "@/components/shared/Logo";
 import Link from "next/link";
-const data = {
+
+// Define navigation data with feature requirements
+const getNavData = () => ({
   navGroups: [
     {
       label: "ADMIN DASHBOARD",
@@ -43,6 +47,7 @@ const data = {
           title: "Courses",
           url: "/dashboard/courses",
           icon: BookOpen,
+          feature: "training_courses",
           items: [
             {
               title: "Manage Courses",
@@ -58,6 +63,7 @@ const data = {
           title: "Quiz Management",
           url: "/dashboard/quizzes",
           icon: FileQuestion,
+          feature: "course_quizzes",
           items: [
             {
               title: "Categories",
@@ -92,6 +98,7 @@ const data = {
           title: "Roles",
           url: "/dashboard/roles",
           icon: Shield,
+          feature: "custom_roles",
           items: [
             {
               title: "Manage Roles",
@@ -112,6 +119,7 @@ const data = {
           title: "Rewards",
           url: "/dashboard/rewards",
           icon: Gift,
+          feature: "rewards_store",
         },
         {
           title: "Users",
@@ -135,15 +143,36 @@ const data = {
             {
               title: "Audit Logs",
               url: "/dashboard/audit-logs",
+              feature: "audit_logs",
             },
           ],
         },
       ],
     },
   ],
-};
+});
 
 export function AppSidebar({ ...props }) {
+  const { isEnabled, isLoading } = useFeatures();
+
+  // Filter navigation items based on enabled features
+  const filteredNavGroups = useMemo(() => {
+    if (isLoading) {
+      return getNavData().navGroups;
+    }
+
+    return getNavData().navGroups.map(group => ({
+      ...group,
+      items: group.items
+        .filter(item => !item.feature || isEnabled(item.feature))
+        .map(item => ({
+          ...item,
+          // Also filter sub-items if they have feature requirements
+          items: item.items?.filter(subItem => !subItem.feature || isEnabled(subItem.feature)),
+        })),
+    })).filter(group => group.items.length > 0);
+  }, [isEnabled, isLoading]);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -156,7 +185,7 @@ export function AppSidebar({ ...props }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {data.navGroups.map((group) => (
+        {filteredNavGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
