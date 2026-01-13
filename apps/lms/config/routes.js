@@ -3,10 +3,12 @@ export const publicRoutes = [
   "/", // Landing page
   "/sign-in(.*)", // Sign in page
   "/sign-up(.*)", // Sign up page
-  "/api/webhooks(.*)", // Webhooks (Clerk, Stripe, etc)
+  "/api/webhooks(.*)", // Webhooks (Clerk, etc)
+  "/api/stripe/webhook", // Stripe webhook endpoint
   "/about", // About page
   "/discover(.*)", // Discover page (public access)
   "/legal(.*)", // Legal pages (Privacy, Terms)
+  "/pricing", // Pricing page (public access)
 ];
 
 // Define rate limit configurations for different route types
