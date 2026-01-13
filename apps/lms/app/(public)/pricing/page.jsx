@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import {
   Check,
   X,
@@ -24,9 +26,11 @@ import {
   Award,
   ChevronDown,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 import { cn } from "@skill-learn/lib/utils.js";
+import { toast } from "sonner";
 import Link from "next/link";
 
 // Pricing tiers data
@@ -237,10 +241,20 @@ const faqs = [
 ];
 
 // Pricing card component
-function PricingCard({ tier, isAnnual }) {
+function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
   const Icon = tier.icon;
   const price = isAnnual ? tier.price.annually : tier.price.monthly;
   const isCustom = price === "Custom";
+  const isLoadingThis = isLoading && loadingPlan === tier.id;
+
+  const handleClick = () => {
+    if (tier.id === "enterprise") {
+      // Open contact form or email
+      window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry";
+      return;
+    }
+    onSubscribe(tier.id, isAnnual ? "annually" : "monthly");
+  };
 
   return (
     <motion.div
@@ -318,6 +332,8 @@ function PricingCard({ tier, isAnnual }) {
 
       {/* CTA */}
       <Button
+        onClick={handleClick}
+        disabled={isLoading}
         className={cn(
           "w-full py-6 text-lg font-semibold",
           tier.popular
@@ -328,8 +344,17 @@ function PricingCard({ tier, isAnnual }) {
         )}
         variant={tier.popular ? "default" : tier.ctaVariant}
       >
-        {tier.cta}
-        <ArrowRight className="w-5 h-5 ml-2" />
+        {isLoadingThis ? (
+          <>
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            {tier.cta}
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </>
+        )}
       </Button>
     </motion.div>
   );
@@ -485,6 +510,79 @@ function FAQSection() {
 // Main pricing page
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState(null);
+  const router = useRouter();
+  const { isSignedIn, user } = useUser();
+
+  // Handle subscription checkout
+  const handleSubscribe = async (planId, interval) => {
+    // For free plan, redirect to sign up
+    if (planId === "free") {
+      if (isSignedIn) {
+        toast.success("You're already on a plan. Check your dashboard for details.");
+        router.push("/dashboard");
+      } else {
+        router.push("/sign-up");
+      }
+      return;
+    }
+
+    // For paid plans, user must be signed in
+    if (!isSignedIn) {
+      toast.info("Please sign in to subscribe to a plan");
+      router.push(`/sign-in?redirect_url=/pricing`);
+      return;
+    }
+
+    setIsLoading(true);
+    setLoadingPlan(planId);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId, interval }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.redirectToPortal) {
+          toast.info("You already have an active subscription. Redirecting to billing portal...");
+          // Redirect to billing portal
+          const portalResponse = await fetch("/api/stripe/portal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          });
+          const portalData = await portalResponse.json();
+          if (portalData.url) {
+            window.location.href = portalData.url;
+          }
+          return;
+        }
+
+        if (data.contactSales) {
+          toast.info("Enterprise plan requires a custom quote. Please contact sales.");
+          window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry";
+          return;
+        }
+
+        throw new Error(data.error || "Failed to start checkout");
+      }
+
+      // Redirect to Stripe checkout
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
+      toast.error(error.message || "Failed to start checkout. Please try again.");
+    } finally {
+      setIsLoading(false);
+      setLoadingPlan(null);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-white">
@@ -549,6 +647,9 @@ export default function PricingPage() {
                 key={tier.id}
                 tier={tier}
                 isAnnual={isAnnual}
+                onSubscribe={handleSubscribe}
+                isLoading={isLoading}
+                loadingPlan={loadingPlan}
               />
             ))}
           </div>
@@ -614,14 +715,26 @@ export default function PricingPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
+                onClick={() => handleSubscribe("pro", isAnnual ? "annually" : "monthly")}
+                disabled={isLoading}
                 className="bg-white text-brand-teal hover:bg-gray-100 px-8 py-6 text-lg font-semibold"
               >
-                Start Free Trial
-                <ArrowRight className="w-5 h-5 ml-2" />
+                {isLoading && loadingPlan === "pro" ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Start Free Trial
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </>
+                )}
               </Button>
               <Button
                 size="lg"
                 variant="outline"
+                onClick={() => window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry"}
                 className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />

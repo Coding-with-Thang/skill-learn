@@ -306,12 +306,21 @@ model Tenant {
   id                   String   @id @default(auto()) @map("_id") @db.ObjectId
   name                 String
   slug                 String   @unique
-  subscriptionTier     String   @default("professional")
+  subscriptionTier     String   @default("free") // free, pro, enterprise
+  subscriptionStatus   String   @default("active") // active, trialing, past_due, canceled, etc.
   maxRoleSlots         Int      @default(5)
   baseRoleSlots        Int      @default(5)
   purchasedRoleSlots   Int      @default(0)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
+  
+  // Stripe integration fields
+  stripeCustomerId     String?  @unique
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?  // Current price ID
+  billingInterval      String?  // monthly, annually
+  trialEndsAt          DateTime?
+  subscriptionEndsAt   DateTime? // When current period ends
+  cancelAtPeriodEnd    Boolean  @default(false)
+  
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -324,6 +333,8 @@ model Tenant {
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
   @@index([stripeCustomerId]) // Stripe integration
   @@index([stripeSubscriptionId]) // Stripe integration
+  @@index([subscriptionTier])
+  @@index([subscriptionStatus])
   @@map("tenants")
 }
 
