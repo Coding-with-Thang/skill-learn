@@ -2,7 +2,7 @@
 
 import { Star, BookOpenText, ChartColumnBig, LayoutDashboard, Gamepad2, Trophy } from 'lucide-react';
 import { NavLink } from './NavLink';
-import { useFeatures } from '@skill-learn/lib';
+import { useFeatures } from '@skill-learn/lib/hooks/useFeatures.js';
 
 export function Navigation({ isOperations, mobile }) {
   const { isEnabled, isLoading } = useFeatures();

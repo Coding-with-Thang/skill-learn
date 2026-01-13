@@ -15,7 +15,7 @@ import {
   ToggleLeft,
   Users,
 } from "lucide-react";
-import { useFeatures } from "@skill-learn/lib";
+import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
 
 import { NavMain } from "./nav-main";
 import {

@@ -13,7 +13,7 @@ import {
   User
 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
-import { useFeatures } from "@skill-learn/lib";
+import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
 import { Logo } from "@/components/shared/Logo";
 import {
   Sheet,
