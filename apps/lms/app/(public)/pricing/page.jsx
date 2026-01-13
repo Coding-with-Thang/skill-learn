@@ -516,6 +516,7 @@ export default function PricingPage() {
   const { isSignedIn, user } = useUser();
 
   // Handle subscription checkout
+  // Supports both authenticated users and new signups (payment-first onboarding)
   const handleSubscribe = async (planId, interval) => {
     // For free plan, redirect to sign up
     if (planId === "free") {
@@ -528,21 +529,19 @@ export default function PricingPage() {
       return;
     }
 
-    // For paid plans, user must be signed in
-    if (!isSignedIn) {
-      toast.info("Please sign in to subscribe to a plan");
-      router.push(`/sign-in?redirect_url=/pricing`);
-      return;
-    }
-
     setIsLoading(true);
     setLoadingPlan(planId);
 
     try {
+      // Send checkout request - works for both authenticated and unauthenticated users
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId, interval }),
+        body: JSON.stringify({ 
+          planId, 
+          interval,
+          isOnboarding: !isSignedIn, // New users go through onboarding flow
+        }),
       });
 
       const data = await response.json();
@@ -562,6 +561,11 @@ export default function PricingPage() {
           return;
         }
 
+        if (data.redirectToSignup) {
+          router.push("/sign-up");
+          return;
+        }
+
         if (data.contactSales) {
           toast.info("Enterprise plan requires a custom quote. Please contact sales.");
           window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry";
@@ -571,7 +575,7 @@ export default function PricingPage() {
         throw new Error(data.error || "Failed to start checkout");
       }
 
-      // Redirect to Stripe checkout
+      // Redirect to Stripe checkout (or mock onboarding for development)
       if (data.url) {
         window.location.href = data.url;
       }
