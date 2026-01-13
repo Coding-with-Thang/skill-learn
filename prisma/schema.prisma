@@ -441,8 +441,7 @@ model Tenant {
   tenantFeatures    TenantFeature[]
 
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
-  @@index([stripeCustomerId]) // Stripe integration
-  @@index([stripeSubscriptionId]) // Stripe integration
+  // Note: stripeCustomerId and stripeSubscriptionId have @unique, which creates indexes
   @@index([subscriptionTier])
   @@index([subscriptionStatus])
   @@map("tenants")
