@@ -11,17 +11,21 @@ import {
 /**
  * POST /api/stripe/checkout
  * Create a Stripe checkout session for subscription
+ * 
+ * Supports two flows:
+ * 1. Authenticated user upgrading/subscribing
+ * 2. New user onboarding (payment first, then account creation)
  */
 export async function POST(request) {
   try {
     const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    
-    const user = await currentUser();
-    const { planId, interval = "monthly" } = await request.json();
+    const body = await request.json();
+    const { 
+      planId, 
+      interval = "monthly",
+      isOnboarding = false,
+      email: providedEmail,
+    } = body;
     
     // Validate plan
     const plan = PRICING_PLANS[planId];
@@ -31,7 +35,10 @@ export async function POST(request) {
     
     // Free plan doesn't need checkout
     if (planId === "free") {
-      return NextResponse.json({ error: "Free plan doesn't require payment" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "Free plan doesn't require payment",
+        redirectToSignup: true,
+      }, { status: 400 });
     }
     
     // Enterprise plan needs contact sales
@@ -44,67 +51,96 @@ export async function POST(request) {
     
     // Get price ID for the selected interval
     const priceId = plan.priceId?.[interval];
-    if (!priceId) {
-      return NextResponse.json({ 
-        error: `Price not configured for ${planId} ${interval} plan. Please contact support.` 
-      }, { status: 400 });
+    
+    // Determine URLs based on flow
+    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL;
+    let successUrl, cancelUrl;
+    
+    if (isOnboarding || !userId) {
+      // New user onboarding flow - redirect to onboarding after payment
+      successUrl = `${origin}/onboarding/start?session_id={CHECKOUT_SESSION_ID}`;
+      cancelUrl = `${origin}/pricing?canceled=true`;
+    } else {
+      // Existing user flow - redirect to billing success
+      successUrl = `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`;
+      cancelUrl = `${origin}/pricing?canceled=true`;
     }
     
-    // Get user's tenant (if exists)
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { 
-        id: true,
-        tenantId: true, 
-        tenant: {
-          select: {
-            id: true,
-            stripeCustomerId: true,
-            stripeSubscriptionId: true,
-            subscriptionTier: true,
-          }
-        }
-      },
-    });
-    
-    // Check if user already has an active subscription
-    if (dbUser?.tenant?.stripeSubscriptionId) {
-      // Redirect to billing portal instead
+    // For development without Stripe configured
+    if (!priceId || !process.env.STRIPE_SECRET_KEY) {
+      console.log("⚠️ Stripe not fully configured, returning mock session");
+      const mockSessionId = `mock_cs_${Date.now()}_${planId}`;
       return NextResponse.json({
-        error: "You already have an active subscription. Please manage it from the billing portal.",
-        redirectToPortal: true,
-      }, { status: 400 });
+        sessionId: mockSessionId,
+        url: successUrl.replace("{CHECKOUT_SESSION_ID}", mockSessionId),
+        isMock: true,
+      });
     }
     
-    // Create or get Stripe customer
-    let customerId = dbUser?.tenant?.stripeCustomerId;
-    if (!customerId) {
-      const customer = await getOrCreateCustomer({
-        email: user.emailAddresses[0]?.emailAddress,
-        name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.username,
-        tenantId: dbUser?.tenantId,
-        metadata: {
-          clerkUserId: userId,
+    let customerId = null;
+    let customerEmail = providedEmail;
+    let tenantId = null;
+    
+    // If user is authenticated, get their info
+    if (userId) {
+      const user = await currentUser();
+      customerEmail = user?.emailAddresses[0]?.emailAddress;
+      
+      // Get user's tenant (if exists)
+      const dbUser = await prisma.user.findUnique({
+        where: { clerkId: userId },
+        select: { 
+          id: true,
+          tenantId: true, 
+          tenant: {
+            select: {
+              id: true,
+              stripeCustomerId: true,
+              stripeSubscriptionId: true,
+              subscriptionTier: true,
+            }
+          }
         },
       });
-      customerId = customer.id;
+      
+      // Check if user already has an active subscription
+      if (dbUser?.tenant?.stripeSubscriptionId) {
+        return NextResponse.json({
+          error: "You already have an active subscription. Please manage it from the billing portal.",
+          redirectToPortal: true,
+        }, { status: 400 });
+      }
+      
+      customerId = dbUser?.tenant?.stripeCustomerId;
+      tenantId = dbUser?.tenantId;
+      
+      // Create customer if needed for authenticated users
+      if (!customerId && customerEmail) {
+        const customer = await getOrCreateCustomer({
+          email: customerEmail,
+          name: `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.username,
+          tenantId: tenantId,
+          metadata: {
+            clerkUserId: userId,
+          },
+        });
+        customerId = customer.id;
+      }
     }
-    
-    // Determine URLs
-    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL;
-    const successUrl = `${origin}/billing/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${origin}/pricing?canceled=true`;
     
     // Create checkout session
     const session = await createCheckoutSession({
       customerId,
+      customerEmail,
       priceId,
-      tenantId: dbUser?.tenantId,
+      planId,
+      tenantId,
       userId,
       successUrl,
       cancelUrl,
       trialDays: planId === "pro" ? 14 : 0, // 14-day trial for Pro plan
       allowPromotionCodes: true,
+      isOnboarding: isOnboarding || !userId,
     });
     
     return NextResponse.json({

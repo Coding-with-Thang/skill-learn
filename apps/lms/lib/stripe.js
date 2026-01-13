@@ -112,16 +112,20 @@ export function getAllPlans() {
 
 /**
  * Create a Stripe checkout session for subscription
+ * Supports both authenticated users and new signups (onboarding flow)
  */
 export async function createCheckoutSession({
   customerId,
+  customerEmail,
   priceId,
+  planId,
   tenantId,
   userId,
   successUrl,
   cancelUrl,
   trialDays = 14,
   allowPromotionCodes = true,
+  isOnboarding = false,
 }) {
   const sessionParams = {
     mode: "subscription",
@@ -137,8 +141,10 @@ export async function createCheckoutSession({
     allow_promotion_codes: allowPromotionCodes,
     billing_address_collection: "required",
     metadata: {
-      tenantId,
-      userId,
+      planId: planId || "pro",
+      tenantId: tenantId || "",
+      userId: userId || "",
+      isOnboarding: isOnboarding ? "true" : "false",
     },
   };
 
@@ -148,15 +154,20 @@ export async function createCheckoutSession({
   } else {
     // Allow Stripe to create a new customer
     sessionParams.customer_creation = "always";
+    // Collect email for new customers during onboarding
+    if (customerEmail) {
+      sessionParams.customer_email = customerEmail;
+    }
   }
 
   // Add trial period for new subscriptions
-  if (trialDays > 0 && !customerId) {
+  if (trialDays > 0) {
     sessionParams.subscription_data = {
       trial_period_days: trialDays,
       metadata: {
-        tenantId,
-        userId,
+        planId: planId || "pro",
+        tenantId: tenantId || "",
+        userId: userId || "",
       },
     };
   }
