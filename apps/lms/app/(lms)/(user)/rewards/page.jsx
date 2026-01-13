@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { EnhancedButton } from "@skill-learn/ui/components/enhanced-button"
 import { InteractiveCard, } from "@skill-learn/ui/components/interactive-card"
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate"
 import { Circle, Gift, Check, Coins, Filter, } from "lucide-react"
 import { useRewardStore } from "@skill-learn/lib/stores/rewardStore.js"
 import { usePointsStore } from "@skill-learn/lib/stores/pointsStore.js"
@@ -693,6 +694,11 @@ export default function RewardsPage() {
   }
 
   return (
+    <FeatureGate 
+      feature="rewards_store" 
+      featureName="Rewards Store"
+      fallback={<FeatureDisabledPage featureName="Rewards Store" />}
+    >
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto pb-20">
         <RewardsHero />
@@ -775,5 +781,6 @@ export default function RewardsPage() {
         isLoading={redeemingRewardId === selectedReward?.id}
       />
     </div>
+    </FeatureGate>
   )
 }

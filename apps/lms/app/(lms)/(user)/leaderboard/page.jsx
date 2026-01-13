@@ -5,6 +5,7 @@ import Image from "next/image";
 import api from "@skill-learn/lib/utils/axios.js";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import { cn } from "@skill-learn/lib/utils.js";
 import { Trophy, Award } from "lucide-react";
@@ -236,6 +237,11 @@ export default function LeaderboardPage() {
   }
 
   return (
+    <FeatureGate 
+      feature="leaderboards" 
+      featureName="Leaderboards"
+      fallback={<FeatureDisabledPage featureName="Leaderboards" />}
+    >
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <BreadCrumbCom endtrail="Leaderboard" />
@@ -320,5 +326,6 @@ export default function LeaderboardPage() {
         </div>
       )}
     </div>
+    </FeatureGate>
   );
 }

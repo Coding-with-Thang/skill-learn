@@ -18,6 +18,7 @@ export { useIsMobile } from "./hooks/hooks/useMobile.js";
 export { usePageTracking } from "./hooks/hooks/usePageTracking.js";
 export { useUserRole } from "./hooks/hooks/useUserRole.js";
 export { usePermissions, PERMISSIONS } from "./hooks/hooks/usePermissions.js";
+export { useFeatures, FEATURE_KEYS } from "./hooks/hooks/useFeatures.js";
 
 // Export stores (re-export from stores directory)
 export * from "./stores/store/auditLogStore.js";

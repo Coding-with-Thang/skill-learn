@@ -429,6 +429,7 @@ model Tenant {
   auditLogs         AuditLog[]
   systemSettings    SystemSetting[]
   games             Game[]
+  tenantFeatures    TenantFeature[]
 
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
   @@index([stripeCustomerId]) // Stripe integration
@@ -576,4 +577,56 @@ model RoleSlotPurchase {
   @@index([stripeInvoiceId]) // Stripe integration
   @@index([purchasedAt(sort: Desc)]) // Recent purchases
   @@map("role_slot_purchases")
+}
+
+// ============================================
+// TENANT FEATURE MANAGEMENT
+// ============================================
+// 
+// Feature flags that can be enabled/disabled per tenant.
+// Super admins can set global defaults and override per tenant.
+// Tenant admins can enable/disable features (within what super admin allows).
+
+// Global feature definitions (managed by super admin)
+model Feature {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  key             String          @unique // e.g., "games", "course_quizzes", "leaderboards"
+  name            String // Display name e.g., "Games", "Course Quizzes", "Leaderboards"
+  description     String?
+  category        String          @default("general") // e.g., "gamification", "learning", "social"
+  defaultEnabled  Boolean         @default(true) // Default state for new tenants
+  isActive        Boolean         @default(true) // If false, feature is globally disabled
+  icon            String? // Icon name for UI (e.g., "Gamepad2", "Trophy")
+  sortOrder       Int             @default(0) // For UI ordering
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  tenantFeatures  TenantFeature[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("features")
+}
+
+// Tenant-specific feature settings
+model TenantFeature {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId              String   @db.ObjectId
+  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  featureId             String   @db.ObjectId
+  feature               Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  enabled               Boolean  @default(true) // Tenant admin can toggle (if superAdminEnabled is true)
+  superAdminEnabled     Boolean  @default(true) // Super admin override - if false, tenant admin cannot enable
+  superAdminLockedAt    DateTime? // When super admin locked/unlocked the feature
+  lastToggledAt         DateTime? // When tenant admin last toggled
+  lastToggledBy         String? // Clerk user ID of who last toggled
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([tenantId, featureId])
+  @@index([tenantId])
+  @@index([featureId])
+  @@index([tenantId, enabled])
+  @@index([enabled])
+  @@map("tenant_features")
 }
