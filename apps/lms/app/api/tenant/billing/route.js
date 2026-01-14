@@ -55,55 +55,73 @@ export async function GET() {
 
     // Calculate billing info
     const subscriptionTiers = {
-      trial: {
-        name: "Trial",
+      free: {
+        name: "Free",
         price: 0,
         maxUsers: 10,
         maxRoleSlots: 3,
-        features: ["Basic quizzes", "Limited courses", "Email support"],
+        features: [
+          "Up to 10 users",
+          "5 courses",
+          "Basic quizzes",
+          "Point system",
+          "Basic leaderboard",
+          "Community support",
+        ],
       },
-      professional: {
-        name: "Professional",
-        price: 49,
+      pro: {
+        name: "Pro",
+        price: 29,
         maxUsers: 100,
         maxRoleSlots: 5,
         features: [
-          "Unlimited quizzes",
+          "Up to 100 users",
           "Unlimited courses",
-          "Custom roles",
-          "Reports & Analytics",
-          "Priority support",
+          "Advanced quizzes",
+          "Full gamification suite",
+          "Advanced analytics",
+          "Custom branding",
+          "API access",
+          "Email support",
         ],
       },
       enterprise: {
         name: "Enterprise",
-        price: 199,
+        price: 99,
         maxUsers: -1, // Unlimited
         maxRoleSlots: 10,
         features: [
-          "Everything in Professional",
           "Unlimited users",
-          "Custom branding",
-          "API access",
-          "Dedicated support",
+          "Unlimited courses",
+          "Advanced quizzes",
+          "Full gamification",
+          "Enterprise analytics",
+          "White-label solution",
+          "Full API access",
+          "SSO/SAML/SCIM",
+          "Dedicated CSM",
+          "SOC 2 compliance",
+          "24/7 phone support",
           "SLA guarantee",
         ],
       },
     };
 
-    const currentTier = subscriptionTiers[tenant.subscriptionTier] || subscriptionTiers.professional;
+    const currentTier = subscriptionTiers[tenant.subscriptionTier] || subscriptionTiers.free;
 
     // Calculate total spent on role slot purchases
     const totalSlotSpend = tenant.roleSlotPurchases
       .filter((p) => p.status === "active")
       .reduce((sum, p) => sum + p.totalPrice, 0);
 
-    // Mock subscription data (in production, this would come from Stripe)
-    const mockSubscription = {
-      status: "active",
-      currentPeriodStart: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
-      currentPeriodEnd: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-      cancelAtPeriodEnd: false,
+    // Get subscription data from tenant
+    const subscriptionData = {
+      status: tenant.subscriptionStatus || "active",
+      currentPeriodStart: tenant.updatedAt || new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      currentPeriodEnd: tenant.subscriptionEndsAt || new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      cancelAtPeriodEnd: tenant.cancelAtPeriodEnd || false,
+      trialEndsAt: tenant.trialEndsAt,
+      billingInterval: tenant.billingInterval || "monthly",
     };
 
     return NextResponse.json({
@@ -113,12 +131,14 @@ export async function GET() {
           tier: tenant.subscriptionTier,
           tierName: currentTier.name,
           monthlyPrice: currentTier.price,
-          status: mockSubscription.status,
-          currentPeriodStart: mockSubscription.currentPeriodStart,
-          currentPeriodEnd: mockSubscription.currentPeriodEnd,
-          cancelAtPeriodEnd: mockSubscription.cancelAtPeriodEnd,
+          status: subscriptionData.status,
+          currentPeriodStart: subscriptionData.currentPeriodStart,
+          currentPeriodEnd: subscriptionData.currentPeriodEnd,
+          cancelAtPeriodEnd: subscriptionData.cancelAtPeriodEnd,
+          trialEndsAt: subscriptionData.trialEndsAt,
+          billingInterval: subscriptionData.billingInterval,
           daysRemaining: Math.ceil(
-            (mockSubscription.currentPeriodEnd - new Date()) / (1000 * 60 * 60 * 24)
+            (new Date(subscriptionData.currentPeriodEnd) - new Date()) / (1000 * 60 * 60 * 24)
           ),
         },
 

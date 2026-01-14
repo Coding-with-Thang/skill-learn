@@ -44,12 +44,70 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
 
+import {
+  Gamepad2,
+  FileQuestion,
+  Trophy,
+  Gift,
+  Award,
+  Flame,
+  GraduationCap,
+  Coins,
+  FolderTree,
+  BarChart3,
+  ScrollText,
+  ToggleLeft,
+  ToggleRight,
+  Lock,
+  Unlock,
+} from 'lucide-react'
+
 // Tab definitions
 const tabs = [
   { id: 'users', label: 'Users', icon: Users },
   { id: 'roles', label: 'Roles', icon: Shield },
   { id: 'assignments', label: 'User Role Assignments', icon: Key },
+  { id: 'features', label: 'Features', icon: ToggleLeft },
 ]
+
+// Feature icon mapping
+const featureIcons = {
+  Gamepad2,
+  FileQuestion,
+  Trophy,
+  Gift,
+  Award,
+  Flame,
+  GraduationCap,
+  Coins,
+  FolderTree,
+  BarChart3,
+  ScrollText,
+  Shield,
+}
+
+// Custom Switch Component
+const Switch = ({ checked, onCheckedChange, disabled = false }) => (
+  <button
+    onClick={() => !disabled && onCheckedChange(!checked)}
+    disabled={disabled}
+    className={`
+      relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+      transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 
+      focus-visible:ring-primary focus-visible:ring-offset-2
+      ${checked ? 'bg-primary' : 'bg-input'}
+      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+    `}
+  >
+    <span
+      className={`
+        pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 
+        transition-transform duration-200 ease-in-out
+        ${checked ? 'translate-x-5' : 'translate-x-0'}
+      `}
+    />
+  </button>
+)
 
 export default function TenantDetailPage() {
   const params = useParams()
@@ -100,6 +158,11 @@ export default function TenantDetailPage() {
     templateId: '',
     permissionIds: [],
   })
+
+  // Features state
+  const [features, setFeatures] = useState([])
+  const [groupedFeatures, setGroupedFeatures] = useState({})
+  const [featureLoading, setFeatureLoading] = useState(false)
 
   // Fetch functions
   const fetchTenant = useCallback(async () => {
@@ -152,6 +215,14 @@ export default function TenantDetailPage() {
     setGroupedPermissions(data.groupedByCategory || {})
   }, [])
 
+  const fetchFeatures = useCallback(async () => {
+    const response = await fetch(`/api/tenants/${tenantId}/features`)
+    if (!response.ok) throw new Error('Failed to fetch features')
+    const data = await response.json()
+    setFeatures(data.features || [])
+    setGroupedFeatures(data.groupedByCategory || {})
+  }, [tenantId])
+
   // Load all data
   useEffect(() => {
     if (tenantId) {
@@ -164,11 +235,12 @@ export default function TenantDetailPage() {
         fetchUserRoles(),
         fetchRoleTemplates(),
         fetchPermissions(),
+        fetchFeatures(),
       ])
         .catch(err => setError(err.message))
         .finally(() => setLoading(false))
     }
-  }, [tenantId, fetchTenant, fetchUsers, fetchAllTenants, fetchRoles, fetchUserRoles, fetchRoleTemplates, fetchPermissions])
+  }, [tenantId, fetchTenant, fetchUsers, fetchAllTenants, fetchRoles, fetchUserRoles, fetchRoleTemplates, fetchPermissions, fetchFeatures])
 
   // Handle user selection for move
   const toggleUserSelection = (userId) => {
@@ -483,6 +555,68 @@ export default function TenantDetailPage() {
   // Get unique template sets
   const templateSets = [...new Set(roleTemplates.map(t => t.templateSetName))]
 
+  // Handle feature toggle (super admin controls superAdminEnabled)
+  const handleFeatureToggle = async (featureId, superAdminEnabled) => {
+    setFeatureLoading(true)
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}/features`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ featureId, superAdminEnabled }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update feature')
+      }
+
+      // Refresh features
+      await fetchFeatures()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setFeatureLoading(false)
+    }
+  }
+
+  // Initialize features for tenant
+  const handleInitializeFeatures = async () => {
+    setFeatureLoading(true)
+    try {
+      const response = await fetch(`/api/tenants/${tenantId}/features`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to initialize features')
+      }
+
+      await fetchFeatures()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setFeatureLoading(false)
+    }
+  }
+
+  // Get feature icon component
+  const getFeatureIcon = (iconName) => {
+    return featureIcons[iconName] || ToggleLeft
+  }
+
+  // Get category display name
+  const getFeatureCategoryDisplayName = (category) => {
+    const names = {
+      gamification: 'Gamification',
+      learning: 'Learning & Training',
+      analytics: 'Analytics',
+      admin: 'Administration',
+      general: 'General',
+    }
+    return names[category] || category.charAt(0).toUpperCase() + category.slice(1)
+  }
+
   if (loading) {
     return (
       <div className="p-4 lg:p-6 w-full flex items-center justify-center min-h-[400px]">
@@ -538,7 +672,7 @@ export default function TenantDetailPage() {
           size="icon"
           onClick={() => {
             setLoading(true)
-            Promise.all([fetchTenant(), fetchUsers(), fetchRoles(), fetchUserRoles()])
+            Promise.all([fetchTenant(), fetchUsers(), fetchRoles(), fetchUserRoles(), fetchFeatures()])
               .finally(() => setLoading(false))
           }}
         >
@@ -1131,6 +1265,139 @@ export default function TenantDetailPage() {
               </CardContent>
             </Card>
           )}
+        </div>
+      )}
+
+      {/* Features Tab */}
+      {activeTab === 'features' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Feature Management</h2>
+              <p className="text-sm text-muted-foreground">
+                Enable or disable features for this tenant. Locked features cannot be changed by tenant admins.
+              </p>
+            </div>
+            {features.length === 0 && (
+              <Button onClick={handleInitializeFeatures} disabled={featureLoading}>
+                {featureLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Initialize Features
+              </Button>
+            )}
+          </div>
+
+          {features.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <ToggleLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">No features configured for this tenant.</p>
+                <Button onClick={handleInitializeFeatures} disabled={featureLoading}>
+                  {featureLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Initialize Default Features
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(groupedFeatures).map(([category, categoryFeatures]) => (
+                <Card key={category}>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">{getFeatureCategoryDisplayName(category)}</CardTitle>
+                    <CardDescription>
+                      {categoryFeatures.filter(f => f.isEffectivelyEnabled).length} of {categoryFeatures.length} enabled
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {categoryFeatures.map((feature) => {
+                        const Icon = getFeatureIcon(feature.icon)
+                        return (
+                          <div
+                            key={feature.id}
+                            className={cn(
+                              "flex items-center justify-between p-4 rounded-lg border transition-colors",
+                              feature.superAdminEnabled ? "bg-background" : "bg-muted/50"
+                            )}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={cn(
+                                "p-2 rounded-lg",
+                                feature.isEffectivelyEnabled
+                                  ? "bg-primary/10 text-primary"
+                                  : "bg-muted text-muted-foreground"
+                              )}>
+                                <Icon className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-medium">{feature.name}</h4>
+                                  {!feature.superAdminEnabled && (
+                                    <Badge variant="secondary" className="text-xs gap-1">
+                                      <Lock className="h-3 w-3" />
+                                      Disabled by Admin
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {feature.description}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Key: <code className="bg-muted px-1 rounded">{feature.key}</code>
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-2">
+                              <Switch
+                                checked={feature.superAdminEnabled}
+                                onCheckedChange={(checked) => handleFeatureToggle(feature.id, checked)}
+                                disabled={featureLoading}
+                              />
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                {feature.superAdminEnabled ? (
+                                  <>
+                                    <Unlock className="h-3 w-3" />
+                                    Allowed
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock className="h-3 w-3" />
+                                    Blocked
+                                  </>
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* Feature Legend */}
+          <Card>
+            <CardContent className="p-4">
+              <h4 className="font-medium mb-3">Legend</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Unlock className="h-4 w-4" />
+                    <span>Allowed</span>
+                  </div>
+                  <span className="text-muted-foreground">- Tenant admin can enable/disable this feature</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Lock className="h-4 w-4" />
+                    <span>Blocked</span>
+                  </div>
+                  <span className="text-muted-foreground">- Feature is disabled and locked for this tenant</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 

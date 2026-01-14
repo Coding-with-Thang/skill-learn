@@ -1,6 +1,6 @@
 "use client";
 
-import { usePermissions } from "@skill-learn/lib";
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
 
 /**
  * PermissionGate - Conditionally render children based on user permissions

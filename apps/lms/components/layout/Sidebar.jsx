@@ -12,34 +12,41 @@ import {
   User
 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
+import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
 import { Logo } from "@/components/shared/Logo";
 
 export default function Sidebar({ isOperations }) {
   const pathname = usePathname();
+  const { isEnabled, isLoading } = useFeatures();
 
   // Admin Navigation Items
   const adminNavItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutGrid },
     { label: "Users", href: "/dashboard/users", icon: User },
-    { label: "Courses", href: "/dashboard/courses", icon: GraduationCap },
-    { label: "Quizzes", href: "/dashboard/quizzes", icon: ShieldCheck }, // Using ShieldCheck as placeholder or find better
-    { label: "Categories", href: "/dashboard/categories", icon: BarChart2 }, // Placeholder icon
-    { label: "Rewards", href: "/dashboard/rewards", icon: Trophy },
-    { label: "Audit Logs", href: "/dashboard/audit-logs", icon: ShieldCheck },
+    { label: "Courses", href: "/dashboard/courses", icon: GraduationCap, feature: "training_courses" },
+    { label: "Quizzes", href: "/dashboard/quizzes", icon: ShieldCheck, feature: "course_quizzes" },
+    { label: "Categories", href: "/dashboard/categories", icon: BarChart2, feature: "categories" },
+    { label: "Rewards", href: "/dashboard/rewards", icon: Trophy, feature: "rewards_store" },
+    { label: "Audit Logs", href: "/dashboard/audit-logs", icon: ShieldCheck, feature: "audit_logs" },
     { label: "Settings", href: "/dashboard/settings", icon: ShieldCheck },
   ];
 
   // User Navigation Items
   const userNavItems = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
-    { label: "Training", href: "/training", icon: GraduationCap },
-    { label: "Report Card", href: "/user/stats", icon: BarChart2 },
-    { label: "Games", href: "/games", icon: Gamepad2 },
-    { label: "Rewards", href: "/rewards", icon: Trophy },
+    { label: "Training", href: "/training", icon: GraduationCap, feature: "training_courses" },
+    { label: "Report Card", href: "/user/stats", icon: BarChart2, feature: "user_stats" },
+    { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
+    { label: "Rewards", href: "/rewards", icon: Trophy, feature: "rewards_store" },
   ];
 
   const isAdminRoute = pathname?.startsWith('/dashboard');
-  const items = isAdminRoute ? adminNavItems : userNavItems;
+  const baseItems = isAdminRoute ? adminNavItems : userNavItems;
+  
+  // Filter items based on feature availability (only filter if not loading)
+  const items = isLoading 
+    ? baseItems 
+    : baseItems.filter(item => !item.feature || isEnabled(item.feature));
 
   // Add link to switch between views if user has access
   if (isOperations && !isAdminRoute) {
