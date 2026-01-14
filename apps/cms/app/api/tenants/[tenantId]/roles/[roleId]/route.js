@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@skill-learn/database";
+import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
 
 /**
@@ -124,7 +124,8 @@ export async function PUT(request, { params }) {
 
     const { tenantId, roleId } = await params;
     const body = await request.json();
-    const { roleAlias, description, slotPosition, isActive, permissionIds } = body;
+    const { roleAlias, description, slotPosition, isActive, permissionIds } =
+      body;
 
     // Check if role exists and belongs to tenant
     const existingRole = await prisma.tenantRole.findFirst({
@@ -153,7 +154,9 @@ export async function PUT(request, { params }) {
 
       if (duplicateName) {
         return NextResponse.json(
-          { error: `A role with name "${roleAlias}" already exists in this tenant` },
+          {
+            error: `A role with name "${roleAlias}" already exists in this tenant`,
+          },
           { status: 400 }
         );
       }

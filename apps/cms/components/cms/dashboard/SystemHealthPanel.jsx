@@ -38,10 +38,11 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {systemStatus.map((service, index) => {
-            const Icon = statusIcons[service.name]
+            const Icon = statusIcons[service.name] || Activity
+            const key = service?.name || `system-status-${index}`
             return (
               <motion.div
-                key={service.name}
+                key={key}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 + index * 0.1 }}
@@ -93,31 +94,34 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
           <CardTitle>Resource Usage</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {resourceUsage.map((resource, index) => (
-            <motion.div
-              key={resource.name}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8 + index * 0.1 }}
-              className="space-y-2"
-            >
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium">{resource.name}</span>
-                <span className={cn(
-                  "font-medium",
-                  resource.percentage >= 85 && "text-red-600 dark:text-red-400",
-                  resource.percentage >= 70 && resource.percentage < 85 && "text-amber-600 dark:text-amber-400",
-                  resource.percentage < 70 && "text-green-600 dark:text-green-400"
-                )}>
-                  {resource.percentage}%
-                </span>
-              </div>
-              <Progress
-                value={resource.percentage}
-                indicatorClassName={getProgressColor(resource.percentage)}
-              />
-            </motion.div>
-          ))}
+          {resourceUsage.map((resource, index) => {
+            const key = resource?.name || `resource-usage-${index}`
+            return (
+              <motion.div
+                key={key}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                className="space-y-2"
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium">{resource.name}</span>
+                  <span className={cn(
+                    "font-medium",
+                    resource.percentage >= 85 && "text-red-600 dark:text-red-400",
+                    resource.percentage >= 70 && resource.percentage < 85 && "text-amber-600 dark:text-amber-400",
+                    resource.percentage < 70 && "text-green-600 dark:text-green-400"
+                  )}>
+                    {resource.percentage}%
+                  </span>
+                </div>
+                <Progress
+                  value={resource.percentage}
+                  indicatorClassName={getProgressColor(resource.percentage)}
+                />
+              </motion.div>
+            )
+          })}
         </CardContent>
       </Card>
     </motion.div>

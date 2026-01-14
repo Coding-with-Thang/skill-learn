@@ -45,10 +45,11 @@ export default function RecentAlertsPanel({ alerts }) {
         </CardHeader>
         <CardContent className="space-y-3">
           {alerts.map((alert, index) => {
-            const Icon = alertIcons[alert.type]
+            const Icon = alertIcons[alert.type] || AlertTriangle
+            const key = alert?.id || `alert-${index}`
             return (
               <motion.div
-                key={alert.id}
+                key={key}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}

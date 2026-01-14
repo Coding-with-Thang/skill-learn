@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@skill-learn/database";
+import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
 
 /**
@@ -60,7 +60,9 @@ export async function GET(request) {
       slotPosition: template.slotPosition,
       isDefaultSet: template.isDefaultSet,
       createdAt: template.createdAt,
-      permissions: template.roleTemplatePermissions.map((rtp) => rtp.permission),
+      permissions: template.roleTemplatePermissions.map(
+        (rtp) => rtp.permission
+      ),
       permissionCount: template.roleTemplatePermissions.length,
       tenantRolesUsingThisTemplate: template._count.tenantRoles,
     }));

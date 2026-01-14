@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@skill-learn/database";
+import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
 
 /**
@@ -96,7 +96,11 @@ export async function POST(request, { params }) {
     const { permissionIds } = body;
 
     // Validate input
-    if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+    if (
+      !permissionIds ||
+      !Array.isArray(permissionIds) ||
+      permissionIds.length === 0
+    ) {
       return NextResponse.json(
         { error: "permissionIds array is required" },
         { status: 400 }
@@ -204,7 +208,11 @@ export async function DELETE(request, { params }) {
     const { permissionIds } = body;
 
     // Validate input
-    if (!permissionIds || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+    if (
+      !permissionIds ||
+      !Array.isArray(permissionIds) ||
+      permissionIds.length === 0
+    ) {
       return NextResponse.json(
         { error: "permissionIds array is required" },
         { status: 400 }

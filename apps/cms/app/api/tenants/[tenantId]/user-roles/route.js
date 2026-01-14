@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@skill-learn/database";
+import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
 import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync.js";
 
@@ -249,7 +249,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { tenantId } = await params;
-    
+
     // Support both query params and body
     const { searchParams } = new URL(request.url);
     let userId = searchParams.get("userId");
@@ -279,7 +279,7 @@ export async function DELETE(request, { params }) {
 
     // Delete by userRoleId (preferred) or by userId + tenantRoleId
     let deletedUserRole = null;
-    
+
     if (userRoleId) {
       const userRole = await prisma.userRole.findFirst({
         where: {
@@ -321,7 +321,10 @@ export async function DELETE(request, { params }) {
       });
     } else {
       return NextResponse.json(
-        { error: "Either userRoleId or both userId and tenantRoleId are required" },
+        {
+          error:
+            "Either userRoleId or both userId and tenantRoleId are required",
+        },
         { status: 400 }
       );
     }
