@@ -23,9 +23,12 @@ const sitemapSections = [
     icon: Home,
     links: [
       { name: "Home", href: "/" },
+      { name: "Features", href: "/features" },
       { name: "Pricing", href: "/pricing" },
       { name: "Legal Hub", href: "/legal" },
       { name: "About Us", href: "/about" },
+      { name: "Contact Us", href: "/contact" },
+      { name: "FAQ Hub", href: "/support/faq" },
     ],
   },
   {

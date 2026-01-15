@@ -23,8 +23,8 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="#platform" className="text-gray-700 hover:text-brand-teal transition-colors">
-              Platform
+            <Link href="/features" className="text-gray-700 hover:text-brand-teal transition-colors">
+              Features
             </Link>
             <Link href="#solutions" className="text-gray-700 hover:text-brand-teal transition-colors">
               Solutions
@@ -80,11 +80,11 @@ export default function LandingHeader() {
           <div className="md:hidden border-t border-gray-200 py-4">
             <nav className="flex flex-col gap-4">
               <Link
-                href="#platform"
+                href="/features"
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Platform
+                Features
               </Link>
               <Link
                 href="#solutions"

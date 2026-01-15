@@ -6,7 +6,7 @@ import { Logo } from "@/components/shared/Logo";
 export default function LandingFooter() {
   const footerLinks = {
     Product: [
-      "Product tour",
+      { name: "Features", href: "/features" },
       "Templates",
       "Apps & Integrations",
       "Task management",
@@ -26,11 +26,12 @@ export default function LandingFooter() {
       "Professional Services"
     ],
     Resources: [
-      { name: "Help Center", href: "#" },
+      { name: "Help Center", href: "/support/faq" },
       { name: "Community", href: "/onboarding/welcome" },
       { name: "Pricing", href: "/pricing" },
       { name: "Sitemap", href: "/sitemap" },
-      { name: "Support", href: "#" }
+      { name: "Contact Us", href: "/contact" },
+      { name: "Support", href: "/support/faq" }
     ],
     Legal: [
       { name: "Legal Hub", href: "/legal" },
