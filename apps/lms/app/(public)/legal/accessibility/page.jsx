@@ -276,12 +276,6 @@ export default function AccessibilityPage() {
         </div>
       </main>
 
-      {/* Footer Note */}
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-200/60 mt-12">
-        <p className="text-sm italic text-slate-500 text-center md:text-left">
-          This statement was last updated on October 24, 2023. It was reviewed and approved by the Skill-Learn Compliance & Diversity Board.
-        </p>
-      </footer>
     </div>
   );
 }

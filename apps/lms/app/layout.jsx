@@ -31,6 +31,8 @@ export const metadata = {
   description: "Gamify your knowledge - have a blast learning",
 };
 
+import { CookieConsent } from "@/components/shared/CookieConsent";
+
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider
@@ -48,6 +50,7 @@ export default function RootLayout({ children }) {
               {children}
             </LayoutWrapper>
             <Toaster />
+            <CookieConsent />
           </ErrorBoundaryProvider>
         </body>
       </html>

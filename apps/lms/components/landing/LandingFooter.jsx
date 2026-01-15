@@ -26,40 +26,36 @@ export default function LandingFooter() {
       "Professional Services"
     ],
     Resources: [
-      "Help Center",
-      "Community",
-      "Webinars",
-      "Interactive Training",
-      "Support"
+      { name: "Help Center", href: "#" },
+      { name: "Community", href: "/onboarding/welcome" },
+      { name: "Pricing", href: "/pricing" },
+      { name: "Sitemap", href: "/sitemap" },
+      { name: "Support", href: "#" }
     ],
-    Company: [
-      "About Us",
-      "Careers",
-      "Our Customers",
-      "Blog",
-      "Events",
-      "Newsroom",
-      "Partner Program",
-      "User Conference",
-      "Contact Us"
+    Legal: [
+      { name: "Legal Hub", href: "/legal" },
+      { name: "Privacy Policy", href: "/legal/privacy-policy" },
+      { name: "Terms of Service", href: "/legal/terms-of-condition" },
+      { name: "Accessibility", href: "/legal/accessibility" },
+      { name: "Compliance", href: "/legal/compliance" }
     ]
   };
 
   return (
-    <footer className="bg-brand-teal text-white pt-12 md:py-6">
+    <footer className="bg-brand-teal text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="font-semibold mb-4">{category}</h3>
-              <ul className="space-y-2">
+              <h3 className="font-bold text-lg mb-6 text-white/90">{category}</h3>
+              <ul className="space-y-3">
                 {links.map((link, index) => (
                   <li key={index}>
                     <Link
-                      href="#"
-                      className="text-white/80 hover:text-white transition-colors text-sm"
+                      href={typeof link === "string" ? "#" : link.href}
+                      className="text-white/70 hover:text-white transition-colors text-sm font-medium flex items-center gap-1 group"
                     >
-                      {link}
+                      {typeof link === "string" ? link : link.name}
                     </Link>
                   </li>
                 ))}
@@ -67,19 +63,19 @@ export default function LandingFooter() {
             </div>
           ))}
         </div>
-        <div className="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-8">
             <Logo textClassName="text-white" />
+            <p className="text-white/50 text-xs font-medium tracking-wide">
+              © {new Date().getFullYear()} SKILL-LEARN INC. ALL RIGHTS RESERVED.
+            </p>
           </div>
-          <p className="text-white/80 text-sm">
-            Skill-Learn © All rights reserved
-          </p>
-          <div className="flex gap-6 text-sm">
-            <Link href="/legal/privacy-policy" className="text-white/80 hover:text-white transition-colors">
-              Privacy Policy
+          <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
+            <Link href="/legal" className="text-white/60 hover:text-white transition-colors">
+              Legal Hub
             </Link>
-            <Link href="/legal/terms-of-condition" className="text-white/80 hover:text-white transition-colors">
-              Terms of Service
+            <Link href="/sitemap" className="text-white/60 hover:text-white transition-colors">
+              Sitemap
             </Link>
           </div>
         </div>

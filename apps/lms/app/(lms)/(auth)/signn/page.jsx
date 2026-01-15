@@ -218,8 +218,10 @@ const SignInPage = () => {
           </div>
 
           <div className="flex items-center gap-6">
+            <Link href="/legal" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Legal Hub</Link>
             <Link href="/legal/privacy-policy" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Privacy Policy</Link>
             <Link href="/legal/terms-of-condition" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Terms of Service</Link>
+            <Link href="/sitemap" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Sitemap</Link>
           </div>
         </div>
       </div>

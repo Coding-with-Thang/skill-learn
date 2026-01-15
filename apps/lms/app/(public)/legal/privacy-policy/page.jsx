@@ -330,28 +330,6 @@ export default function PrivacyPolicyPage() {
                 </div>
             </main>
 
-            {/* Footer */}
-            <footer className="bg-slate-50 py-16 mt-20 border-t border-slate-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-                        <p className="text-sm text-slate-500">
-                            © 2024 Skill-Learn Inc. All rights reserved.
-                        </p>
-                        <div className="flex items-center gap-8">
-                            <Link href="/legal/terms-of-condition" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Terms of Service</Link>
-                            <Link href="/legal/privacy-policy" className="text-sm font-bold text-slate-900">Privacy Policy</Link>
-                            <Link href="#" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Sitemap</Link>
-                        </div>
-                    </div>
-
-                    <div className="pt-8 border-t border-slate-200/60 flex items-center gap-2">
-                        <div className="w-6 h-6 bg-brand-teal rounded-lg flex items-center justify-center">
-                            <ArrowRight className="w-4 h-4 text-white -rotate-45" />
-                        </div>
-                        <span className="text-sm font-bold text-slate-400 group cursor-pointer hover:text-slate-600 transition-colors">Skill-Learn Documentation Hub</span>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }
