@@ -32,7 +32,7 @@ export default function LandingHeader() {
             <Link href="#resources" className="text-gray-700 hover:text-brand-teal transition-colors">
               Resources
             </Link>
-            <Link href="#pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
+            <Link href="/pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
               Pricing
             </Link>
           </nav>
@@ -101,7 +101,7 @@ export default function LandingHeader() {
                 Resources
               </Link>
               <Link
-                href="#pricing"
+                href="/pricing"
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >

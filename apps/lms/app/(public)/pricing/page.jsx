@@ -44,24 +44,52 @@ const pricingTiers = [
     color: "from-gray-500 to-gray-600",
     bgColor: "bg-gray-50",
     borderColor: "border-gray-200",
-    users: "Up to 10 users",
+    users: "Up to 5 users",
     storage: "1 GB storage",
     features: [
-      { name: "Up to 10 users", included: true },
+      { name: "Up to 5 users", included: true },
       { name: "5 courses", included: true },
       { name: "Basic quizzes", included: true },
       { name: "Point system", included: true },
       { name: "Basic leaderboard", included: true },
-      { name: "Community support", included: true },
+      { name: "Email support", included: true },
       { name: "Standard analytics", included: false },
       { name: "Custom branding", included: false },
-      { name: "API access", included: false },
+      { name: "Custom branding", included: false },
       { name: "SSO integration", included: false },
       { name: "Priority support", included: false },
       { name: "Advanced security", included: false },
     ],
     cta: "Start Free",
     ctaVariant: "outline",
+    popular: false,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    description: "Perfect for small teams getting started with learning management",
+    price: { monthly: 15, annually: 12 },
+    icon: Users,
+    color: "from-brand-teal to-blue-600",
+    bgColor: "bg-brand-teal/5",
+    borderColor: "border-brand-teal",
+    users: "Up to 10 users",
+    storage: "10 GB storage",
+    features: [
+      { name: "Up to 10 users", included: true },
+      { name: "Unlimited courses", included: true },
+      { name: "Advanced quizzes", included: true },
+      { name: "Gamification suite", included: true },
+      { name: "Full leaderboard", included: true },
+      { name: "Email support", included: true },
+      { name: "Advanced analytics", included: true },
+      { name: "Custom branding", included: true },
+      { name: "SSO integration", included: false },
+      { name: "Priority support", included: false },
+      { name: "Advanced security", included: false },
+    ],
+    cta: "Start 14-Day Trial",
+    ctaVariant: "default",
     popular: false,
   },
   {
@@ -114,7 +142,6 @@ const pricingTiers = [
       { name: "24/7 phone support", included: true },
       { name: "Enterprise analytics", included: true },
       { name: "White-label solution", included: true },
-      { name: "Full API access", included: true },
       { name: "SSO/SAML/SCIM", included: true },
       { name: "Dedicated CSM", included: true },
       { name: "SOC 2 compliance", included: true },
@@ -131,75 +158,73 @@ const featureCategories = [
     name: "Users & Content",
     icon: Users,
     features: [
-      { name: "Team members", free: "10", pro: "100", enterprise: "Unlimited" },
-      { name: "Courses", free: "5", pro: "Unlimited", enterprise: "Unlimited" },
-      { name: "Storage", free: "1 GB", pro: "25 GB", enterprise: "Unlimited" },
-      { name: "File uploads", free: "100 MB/file", pro: "500 MB/file", enterprise: "No limit" },
+      { name: "Team members", free: "5", starter: "10", pro: "100", enterprise: "Unlimited" },
+      { name: "Courses", free: "5", starter: "Unlimited", pro: "Unlimited", enterprise: "Unlimited" },
+      { name: "Storage", free: "1 GB", starter: "10 GB", pro: "25 GB", enterprise: "Unlimited" },
+      { name: "File uploads", free: "100 MB/file", starter: "500 MB/file", pro: "1 GB/file", enterprise: "No limit" },
     ],
   },
   {
     name: "Learning Features",
     icon: BookOpen,
     features: [
-      { name: "Quizzes & assessments", free: "Basic", pro: "Advanced", enterprise: "Advanced" },
-      { name: "Course certificates", free: false, pro: true, enterprise: true },
-      { name: "Learning paths", free: false, pro: true, enterprise: true },
-      { name: "SCORM support", free: false, pro: true, enterprise: true },
+      { name: "Quizzes & assessments", free: "Basic", starter: "Advanced", pro: "Advanced", enterprise: "Advanced" },
+      { name: "Course certificates", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Learning paths", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SCORM support", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Gamification",
     icon: Trophy,
     features: [
-      { name: "Points system", free: true, pro: true, enterprise: true },
-      { name: "Leaderboards", free: "Basic", pro: "Full", enterprise: "Custom" },
-      { name: "Badges & achievements", free: false, pro: true, enterprise: true },
-      { name: "Rewards store", free: false, pro: true, enterprise: true },
-      { name: "Games & activities", free: false, pro: true, enterprise: true },
+      { name: "Points system", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Leaderboards", free: "Basic", starter: "Full", pro: "Full", enterprise: "Custom" },
+      { name: "Badges & achievements", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Rewards store", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Games & activities", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Analytics & Reports",
     icon: BarChart3,
     features: [
-      { name: "Basic reports", free: true, pro: true, enterprise: true },
-      { name: "Advanced analytics", free: false, pro: true, enterprise: true },
-      { name: "Custom dashboards", free: false, pro: false, enterprise: true },
-      { name: "Data export", free: "CSV", pro: "CSV, Excel", enterprise: "All formats" },
-      { name: "API reporting", free: false, pro: true, enterprise: true },
+      { name: "Basic reports", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Advanced analytics", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Custom dashboards", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Data export", free: "CSV", starter: "CSV, Excel", pro: "CSV, Excel", enterprise: "All formats" },
     ],
   },
   {
     name: "Administration",
     icon: Shield,
     features: [
-      { name: "Role management", free: "Basic", pro: "Custom", enterprise: "Advanced" },
-      { name: "Feature controls", free: false, pro: true, enterprise: true },
-      { name: "Audit logs", free: false, pro: true, enterprise: true },
-      { name: "Bulk operations", free: false, pro: true, enterprise: true },
+      { name: "Role management", free: "Custom", starter: "Custom", pro: "Custom", enterprise: "Advanced" },
+      { name: "Feature controls", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Audit logs", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Bulk operations", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Security & Compliance",
     icon: Lock,
     features: [
-      { name: "SSL encryption", free: true, pro: true, enterprise: true },
-      { name: "SSO integration", free: false, pro: false, enterprise: true },
-      { name: "SAML/SCIM", free: false, pro: false, enterprise: true },
-      { name: "SOC 2 Type II", free: false, pro: false, enterprise: true },
-      { name: "Data residency", free: false, pro: false, enterprise: true },
+      { name: "SSL encryption", free: true, starter: true, pro: true, enterprise: true },
+      { name: "SSO integration", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SAML/SCIM", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SOC 2 Type II", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Data residency", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Support",
     icon: Headphones,
     features: [
-      { name: "Community support", free: true, pro: true, enterprise: true },
-      { name: "Email support", free: false, pro: true, enterprise: true },
-      { name: "Priority support", free: false, pro: false, enterprise: true },
-      { name: "Phone support", free: false, pro: false, enterprise: true },
-      { name: "Dedicated CSM", free: false, pro: false, enterprise: true },
-      { name: "SLA guarantee", free: false, pro: false, enterprise: true },
+      { name: "Email support", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Priority support", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Phone support", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Dedicated CSM", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SLA guarantee", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
 ];
@@ -261,18 +286,18 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "relative flex flex-col rounded-2xl border-2 p-8 h-full",
+        "relative flex flex-col rounded-2xl border-2 p-8 h-full transition-all duration-300",
         tier.popular
-          ? "border-brand-teal shadow-2xl shadow-brand-teal/20 scale-105 z-10"
+          ? "border-brand-teal shadow-2xl shadow-brand-teal/20 scale-105 z-10 pt-12"
           : tier.borderColor,
         tier.bgColor
       )}
     >
       {/* Popular badge */}
       {tier.badge && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center">
           <span className={cn(
-            "inline-flex items-center gap-1 px-4 py-1 rounded-full text-sm font-semibold text-white",
+            "inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg",
             "bg-gradient-to-r", tier.color
           )}>
             <Sparkles className="w-4 h-4" />
@@ -394,23 +419,29 @@ function FeatureComparison() {
       <div className="overflow-x-auto">
         <div className="min-w-[800px]">
           {/* Header */}
-          <div className="grid grid-cols-4 gap-4 mb-4 sticky top-0 bg-white z-10 py-4">
+          <div className="grid grid-cols-5 gap-4 mb-4 sticky top-0 bg-white z-10 py-4 border-b border-gray-100">
             <div className="font-semibold text-gray-900">Features</div>
             <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
-                <Zap className="w-4 h-4" />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-sm">
+                <Zap className="w-3.5 h-3.5" />
                 Free
               </span>
             </div>
             <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-brand-teal/10 text-brand-teal rounded-lg font-semibold">
-                <Rocket className="w-4 h-4" />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-teal/5 text-brand-teal rounded-lg font-semibold text-sm">
+                <Users className="w-3.5 h-3.5" />
+                Starter
+              </span>
+            </div>
+            <div className="text-center">
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-lg font-semibold text-sm border border-brand-teal/20">
+                <Rocket className="w-3.5 h-3.5" />
                 Pro
               </span>
             </div>
             <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-700 rounded-lg">
-                <Building2 className="w-4 h-4" />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm">
+                <Building2 className="w-3.5 h-3.5" />
                 Enterprise
               </span>
             </div>
@@ -426,7 +457,7 @@ function FeatureComparison() {
                 {/* Category header */}
                 <button
                   onClick={() => toggleCategory(category.name)}
-                  className="w-full grid grid-cols-4 gap-4 items-center py-4 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="w-full grid grid-cols-5 gap-4 items-center py-4 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Icon className="w-5 h-5 text-gray-600" />
@@ -436,9 +467,6 @@ function FeatureComparison() {
                       isExpanded && "rotate-180"
                     )} />
                   </div>
-                  <div />
-                  <div />
-                  <div />
                 </button>
 
                 {/* Features */}
@@ -447,10 +475,11 @@ function FeatureComparison() {
                     {category.features.map((feature, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-4 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-r-lg"
+                        className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-r-lg"
                       >
                         <div className="text-sm text-gray-600 pl-4">{feature.name}</div>
                         <div className="text-center">{renderValue(feature.free)}</div>
+                        <div className="text-center">{renderValue(feature.starter)}</div>
                         <div className="text-center">{renderValue(feature.pro)}</div>
                         <div className="text-center">{renderValue(feature.enterprise)}</div>
                       </div>
@@ -537,8 +566,8 @@ export default function PricingPage() {
       const response = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          planId, 
+        body: JSON.stringify({
+          planId,
           interval,
           isOnboarding: !isSignedIn, // New users go through onboarding flow
         }),
@@ -645,7 +674,7 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
             {pricingTiers.map((tier, idx) => (
               <PricingCard
                 key={tier.id}
