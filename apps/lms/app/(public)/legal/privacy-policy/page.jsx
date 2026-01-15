@@ -202,25 +202,25 @@ export default function PrivacyPolicyPage() {
                                     </p>
                                     <ul className="space-y-4 list-none pl-0">
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Identity Data</strong> includes first name, last name, username or similar identifier.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Contact Data</strong> includes billing address, delivery address, email address and telephone numbers.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Technical Data</strong> includes internet protocol (IP) address, your login data, browser type and version.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-3 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Usage Data</strong> includes information about how you use our website, products and services.
                                             </p>
