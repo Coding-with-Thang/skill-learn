@@ -35,12 +35,9 @@ const sections = [
 
 export default function PrivacyPolicyPage() {
     const [activeSection, setActiveSection] = useState("introduction");
-    const [showScrollTop, setShowScrollTop] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
-            setShowScrollTop(window.scrollY > 400);
-
             // Simple intersection observer logic
             const scrollPosition = window.scrollY + 200;
             for (const section of sections) {
@@ -74,16 +71,6 @@ export default function PrivacyPolicyPage() {
 
     return (
         <div className="min-h-screen bg-[#F8F9FB] font-sans text-slate-900">
-            {/* Scroll to Top */}
-            <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: showScrollTop ? 1 : 0 }}
-                onClick={scrollToTop}
-                className="fixed bottom-8 right-8 z-50 p-3 bg-white border border-slate-200 rounded-full shadow-lg hover:shadow-xl transition-all"
-            >
-                <ArrowUp className="w-6 h-6 text-brand-teal" />
-            </motion.button>
-
             {/* Hero Header */}
             <section className="bg-white border-b border-slate-100 pt-16 pb-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TopBanner from "@/components/layout/TopBanner";
 import LandingHeader from "@/components/landing/LandingHeader";
 import LandingFooter from "@/components/landing/LandingFooter";
+import { ScrollToTop } from "@/components/shared/ScrollToTop";
 
 export default function PublicLayout({ children }) {
   const [loaded, setLoaded] = useState(false);
@@ -63,6 +64,7 @@ export default function PublicLayout({ children }) {
       >
         <LandingFooter />
       </div>
+      <ScrollToTop />
     </div>
   );
 }
