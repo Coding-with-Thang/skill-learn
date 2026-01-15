@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/ca
 import { Progress } from '@/components/cms/ui/progress'
 import { motion } from 'framer-motion'
 import { cn, getProgressColor } from '@/lib/cms/utils'
-import { Activity, Database, HardDrive, Mail, CreditCard } from 'lucide-react'
+import { Activity, Database, HardDrive, Mail, CreditCard, Server } from 'lucide-react'
 
 const statusIcons = {
   'API Server': Activity,
@@ -12,13 +12,30 @@ const statusIcons = {
   'Storage': HardDrive,
   'Email Service': Mail,
   'Payment Gateway': CreditCard,
+  'Redis Cache': Database,
+  'Auth Service': Shield,
+  'API Gateway': Server,
+  'Database Cluster': Database,
+  'Storage Service': HardDrive,
 }
+
+// Fallback icon imports if needed or rely on importing them above
+// Note: Shield is not imported above, need to add it.
+import { Shield } from 'lucide-react'
 
 export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
   const getStatusIcon = (status) => {
-    if (status === 'Operational') return '🟢'
-    if (status === 'Warning') return '🟡'
+    const s = status?.toLowerCase()
+    if (s === 'operational') return '🟢'
+    if (s === 'warning') return '🟡'
     return '🔴'
+  }
+
+  const getStatusColor = (status) => {
+    const s = status?.toLowerCase()
+    if (s === 'operational') return "text-green-600 dark:text-green-400"
+    if (s === 'warning') return "text-amber-600 dark:text-amber-400"
+    return "text-red-600 dark:text-red-400"
   }
 
   return (
@@ -74,9 +91,7 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
                 <div className="flex items-center gap-2">
                   <span className={cn(
                     "text-xs font-medium",
-                    service.status === 'Operational' && "text-green-600 dark:text-green-400",
-                    service.status === 'Warning' && "text-amber-600 dark:text-amber-400",
-                    service.status === 'Error' && "text-red-600 dark:text-red-400"
+                    getStatusColor(service.status)
                   )}>
                     {service.status}
                   </span>
@@ -95,7 +110,15 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {resourceUsage.map((resource, index) => {
-            const key = resource?.name || `resource-usage-${index}`
+            const name = resource.name || resource.resource
+            const key = name || `resource-usage-${index}`
+            // Calculate percentage if not provided directly
+            let percentage = resource.percentage
+            if (percentage === undefined && resource.value !== undefined && resource.limit !== undefined) {
+              percentage = Math.round((resource.value / resource.limit) * 100)
+            }
+            if (percentage === undefined) percentage = 0
+
             return (
               <motion.div
                 key={key}
@@ -105,19 +128,19 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
                 className="space-y-2"
               >
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{resource.name}</span>
+                  <span className="font-medium">{name}</span>
                   <span className={cn(
                     "font-medium",
-                    resource.percentage >= 85 && "text-red-600 dark:text-red-400",
-                    resource.percentage >= 70 && resource.percentage < 85 && "text-amber-600 dark:text-amber-400",
-                    resource.percentage < 70 && "text-green-600 dark:text-green-400"
+                    percentage >= 85 && "text-red-600 dark:text-red-400",
+                    percentage >= 70 && percentage < 85 && "text-amber-600 dark:text-amber-400",
+                    percentage < 70 && "text-green-600 dark:text-green-400"
                   )}>
-                    {resource.percentage}%
+                    {percentage}%
                   </span>
                 </div>
                 <Progress
-                  value={resource.percentage}
-                  indicatorClassName={getProgressColor(resource.percentage)}
+                  value={percentage}
+                  indicatorClassName={getProgressColor(percentage)}
                 />
               </motion.div>
             )

@@ -7,42 +7,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/ca
 import { Server, Database, Globe, Shield, Wifi, HardDrive } from 'lucide-react'
 
 // Mock Data
+// Mock Data
 const systemStatus = [
-  { name: 'API Gateway', status: 'operational', uptime: '99.99%' },
-  { name: 'Auth Service', status: 'operational', uptime: '99.95%' },
-  { name: 'Database Cluster', status: 'degraded', uptime: '99.90%' },
-  { name: 'Storage Service', status: 'operational', uptime: '99.99%' },
-  { name: 'Redis Cache', status: 'operational', uptime: '100%' },
+  { name: 'API Gateway', status: 'Operational', uptime: '99.99%', latency: '24ms' },
+  { name: 'Auth Service', status: 'Operational', uptime: '99.95%', latency: '45ms' },
+  { name: 'Database Cluster', status: 'Warning', uptime: '99.90%', latency: '150ms' }, // Changed to warning to demo color
+  { name: 'Storage Service', status: 'Operational', uptime: '99.99%', capacity: '45%' },
+  { name: 'Redis Cache', status: 'Operational', uptime: '100%', latency: '1ms' },
 ]
 
 const resourceUsage = [
-  { resource: 'CPU Usage', value: 45, limit: 100, unit: '%' },
-  { resource: 'Memory', value: 32, limit: 64, unit: 'GB' },
-  { resource: 'Storage', value: 1.2, limit: 5, unit: 'TB' },
-  { resource: 'Network', value: 450, limit: 1000, unit: 'Mbps' },
+  { name: 'CPU Usage', percentage: 45, value: 45, limit: 100, unit: '%' },
+  { name: 'Memory', percentage: 50, value: 32, limit: 64, unit: 'GB' },
+  { name: 'Storage', percentage: 24, value: 1.2, limit: 5, unit: 'TB' },
+  { name: 'Network', percentage: 45, value: 450, limit: 1000, unit: 'Mbps' },
 ]
+
 
 const recentAlerts = [
   {
     id: 1,
-    severity: 'critical',
-    title: 'High Database Latency',
-    message: 'Query execution time > 2s on primary node',
-    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
+    type: 'error',
+    message: 'High Database Latency: Query execution time > 2s',
+    time: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 mins ago
+    isNew: true,
   },
   {
     id: 2,
-    severity: 'warning',
-    title: 'Storage Capacity Warning',
-    message: 'S3 Bucket reaching 85% capacity',
-    timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
+    type: 'warning',
+    message: 'Storage Capacity Warning: S3 Bucket reaching 85% capacity',
+    time: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
+    isNew: false,
   },
   {
     id: 3,
-    severity: 'info',
-    title: 'Scheduled Maintenance',
-    message: 'Completed successfully',
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    type: 'info',
+    message: 'Scheduled Maintenance: Completed successfully',
+    time: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    isNew: false,
   },
 ]
 
@@ -97,7 +99,7 @@ export default function SystemHealthPage() {
                           <Icon className="h-5 w-5" />
                         </div>
                         <div className={`h-2.5 w-2.5 rounded-full ${node.status === 'online' ? 'bg-green-500' :
-                            node.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+                          node.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
                           }`} />
                       </div>
                       <div>
