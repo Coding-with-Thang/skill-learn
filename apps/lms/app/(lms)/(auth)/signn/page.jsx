@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Globe, GraduationCap, ArrowLeft } from 'lucide-react';
 
 const AnimatedBackground = () => {
@@ -217,8 +218,8 @@ const SignInPage = () => {
           </div>
 
           <div className="flex items-center gap-6">
-            <a href="#" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Privacy Policy</a>
-            <a href="#" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Terms of Service</a>
+            <Link href="/legal/privacy-policy" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Privacy Policy</Link>
+            <Link href="/legal/terms-of-condition" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Terms of Service</Link>
           </div>
         </div>
       </div>

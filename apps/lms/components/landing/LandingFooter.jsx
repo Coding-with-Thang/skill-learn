@@ -75,10 +75,10 @@ export default function LandingFooter() {
             Skill-Learn © All rights reserved
           </p>
           <div className="flex gap-6 text-sm">
-            <Link href="#" className="text-white/80 hover:text-white transition-colors">
+            <Link href="/legal/privacy-policy" className="text-white/80 hover:text-white transition-colors">
               Privacy Policy
             </Link>
-            <Link href="#" className="text-white/80 hover:text-white transition-colors">
+            <Link href="/legal/terms-of-condition" className="text-white/80 hover:text-white transition-colors">
               Terms of Service
             </Link>
           </div>

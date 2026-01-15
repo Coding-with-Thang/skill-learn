@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUser, useSignUp, useSignIn } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  ArrowRight, 
-  Loader2, 
+import {
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader2,
   CheckCircle2,
   Eye,
   EyeOff,
@@ -25,7 +25,7 @@ export default function OnboardingAccountPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
-  
+
   const { isSignedIn, user, isLoaded: userLoaded } = useUser();
   const { signUp, isLoaded: signUpLoaded, setActive } = useSignUp();
   const { signIn, isLoaded: signInLoaded } = useSignIn();
@@ -34,7 +34,7 @@ export default function OnboardingAccountPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -56,7 +56,7 @@ export default function OnboardingAccountPage() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    
+
     if (!signUpLoaded) return;
 
     try {
@@ -100,10 +100,10 @@ export default function OnboardingAccountPage() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        
+
         // Create user in database
         await createUserInDatabase();
-        
+
         toast.success("Account created successfully!");
         router.push(`/onboarding/workspace?session_id=${sessionId}`);
       }
@@ -206,7 +206,7 @@ export default function OnboardingAccountPage() {
             {mode === "verify" ? "Verify Your Email" : mode === "signup" ? "Create Your Account" : "Welcome Back"}
           </CardTitle>
           <CardDescription>
-            {mode === "verify" 
+            {mode === "verify"
               ? "Enter the verification code sent to your email"
               : mode === "signup"
                 ? "Set up your account to get started"
@@ -414,11 +414,11 @@ export default function OnboardingAccountPage() {
 
       <p className="text-xs text-center text-gray-500 mt-6">
         By continuing, you agree to our{" "}
-        <Link href="/legal/terms" className="text-brand-teal hover:underline">
+        <Link href="/legal/terms-of-condition" className="text-brand-teal hover:underline">
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link href="/legal/privacy" className="text-brand-teal hover:underline">
+        <Link href="/legal/privacy-policy" className="text-brand-teal hover:underline">
           Privacy Policy
         </Link>
       </p>
