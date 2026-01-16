@@ -67,7 +67,7 @@ export async function PUT(request, { params }) {
             return adminResult;
         }
 
-        const { user: currentUser, userId, tenantId } = adminResult;
+        const { user: currentUser, userId: currentUserId, tenantId } = adminResult;
         
         // Check for users.update permission
         const permResult = await requirePermission('users.update', tenantId);
@@ -115,7 +115,7 @@ export async function PUT(request, { params }) {
         }
 
         // Check if user can change roles - requires roles.assign permission
-        const canAssignRoles = await hasPermission(userId, 'roles.assign', tenantId);
+        const canAssignRoles = await hasPermission(currentUserId, 'roles.assign', tenantId);
         
         // Enforce role change restrictions
         // Users without roles.assign permission cannot change roles

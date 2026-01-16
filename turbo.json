@@ -14,6 +14,9 @@
         "FIREBASE_CLIENT_EMAIL",
         "FIREBASE_PROJECT_ID",
         "FIREBASE_STORAGE_BUCKET",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_WEBHOOK_SECRET",
         "NODE_ENV"
       ]
     },

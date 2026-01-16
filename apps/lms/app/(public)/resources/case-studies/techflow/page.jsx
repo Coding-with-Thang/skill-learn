@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
-import { cn } from "@skill-learn/lib/utils";
+import { cn } from "@skill-learn/lib/utils.js";
 
 export default function CaseStudyPage() {
   const fadeInUp = {

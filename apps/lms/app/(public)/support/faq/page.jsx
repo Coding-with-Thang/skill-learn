@@ -21,7 +21,7 @@ import Link from "next/link";
 import { Input } from "@skill-learn/ui/components/input";
 import { Button } from "@skill-learn/ui/components/button";
 import { Card } from "@skill-learn/ui/components/card";
-import { cn } from "@skill-learn/lib/utils";
+import { cn } from "@skill-learn/lib/utils.js";
 
 const faqData = [
   {
