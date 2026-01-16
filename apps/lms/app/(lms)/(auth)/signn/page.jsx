@@ -1,227 +1,264 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Globe, GraduationCap, ArrowLeft } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { SignIn } from '@clerk/nextjs';
+import {
+  Globe,
+  GraduationCap,
+  ArrowLeft,
+  Sparkles,
+  Trophy,
+  BookOpen,
+  Brain,
+  Zap,
+  ChevronRight,
+  ShieldCheck
+} from 'lucide-react';
 
-const AnimatedBackground = () => {
-  const canvasRef = useRef(null);
-  const mousePos = useRef({ x: 0, y: 0 });
-  const [mounted, setMounted] = useState(false);
+const FloatingIcon = ({ icon: Icon, delay = 0, className = "" }) => (
+  <motion.div
+    initial={{ y: 0, rotate: 0 }}
+    animate={{
+      y: [0, -20, 0],
+      rotate: [0, 10, -10, 0]
+    }}
+    transition={{
+      duration: 5,
+      repeat: Infinity,
+      delay,
+      ease: "easeInOut"
+    }}
+    className={`absolute p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl ${className}`}
+  >
+    <Icon className="w-8 h-8 text-white" />
+  </motion.div>
+);
 
-  useEffect(() => {
-    setMounted(true);
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-
-    // Polygon vertices
-    const polygons = [];
-    const numPolygons = 80;
-
-    // Initialize polygons
-    for (let i = 0; i < numPolygons; i++) {
-      polygons.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 100 + 50,
-        rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.001,
-        opacity: Math.random() * 0.3 + 0.1,
-      });
-    }
-
-    const handleMouseMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mousePos.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      };
-    };
-
-    canvas.addEventListener('mousemove', handleMouseMove);
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw gradient background
-      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-      gradient.addColorStop(0, '#0d4d4d');
-      gradient.addColorStop(0.5, '#1a6666');
-      gradient.addColorStop(1, '#0a3d3d');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Draw polygons
-      polygons.forEach((poly) => {
-        ctx.save();
-        ctx.translate(poly.x, poly.y);
-
-        // Rotate based on mouse position
-        const dx = mousePos.current.x - poly.x;
-        const dy = mousePos.current.y - poly.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const influence = Math.max(0, 1 - dist / 300);
-
-        ctx.rotate(poly.rotation + influence * 0.5);
-
-        // Draw triangle
-        ctx.beginPath();
-        ctx.moveTo(0, -poly.size / 2);
-        ctx.lineTo(-poly.size / 2, poly.size / 2);
-        ctx.lineTo(poly.size / 2, poly.size / 2);
-        ctx.closePath();
-
-        const hue = 180 + influence * 20;
-        ctx.fillStyle = `hsla(${hue}, 45%, 35%, ${poly.opacity + influence * 0.2})`;
-        ctx.fill();
-
-        ctx.strokeStyle = `hsla(${hue}, 55%, 45%, ${0.4 + influence * 0.3})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        ctx.restore();
-
-        // Update rotation
-        poly.rotation += poly.rotationSpeed;
-      });
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ display: 'block' }}
+const AnimatedBackground = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {/* Animated Blobs */}
+    <motion.div
+      animate={{
+        scale: [1, 1.2, 1],
+        x: [0, 100, 0],
+        y: [0, -50, 0]
+      }}
+      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      className="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-brand-teal/20 rounded-full blur-[120px]"
     />
-  );
-};
+    <motion.div
+      animate={{
+        scale: [1, 1.3, 1],
+        x: [0, -120, 0],
+        y: [0, 80, 0]
+      }}
+      transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+      className="absolute -bottom-[10%] -right-[10%] w-[70%] h-[70%] bg-brand-dark-blue/20 rounded-full blur-[120px]"
+    />
+
+    {/* Floating Elements */}
+    <FloatingIcon icon={BookOpen} delay={0} className="top-[15%] left-[10%] opacity-40" />
+    <FloatingIcon icon={Trophy} delay={1} className="top-[60%] left-[20%] opacity-30" />
+    <FloatingIcon icon={Brain} delay={2} className="top-[30%] right-[15%] opacity-40" />
+    <FloatingIcon icon={Sparkles} delay={3} className="bottom-[20%] right-[25%] opacity-30" />
+    <FloatingIcon icon={Zap} delay={4} className="top-[80%] left-[40%] opacity-20" />
+  </div>
+);
 
 const SignInPage = () => {
   const router = useRouter();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className="flex h-screen max-h-screen overflow-hidden">
-      {/* Left side - Animated Background */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-teal-900 via-teal-800 to-teal-700">
+    <div className="flex h-screen max-h-screen overflow-hidden bg-slate-50 font-sans">
+      {/* Left side - Dynamic Visual */}
+      <div className="hidden lg:flex lg:w-[45%] relative bg-[#0F172A] overflow-hidden">
         <AnimatedBackground />
 
-        {/* Back button and Logo */}
-        <div className="absolute top-8 left-8 flex items-center gap-4">
-          <button
-            onClick={() => router.push('/')}
-            className="bg-white rounded-full p-3 shadow-lg hover:bg-gray-50 transition-colors"
-            aria-label="Go back"
+        {/* Content Overlay */}
+        <div className="relative z-10 flex flex-col justify-between h-full p-12">
+          {/* Top: Logo Area */}
+          <motion.div
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="flex items-center gap-4"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-900" />
-          </button>
-
-          <div className="bg-white rounded-2xl px-6 py-3 shadow-xl flex items-center gap-3 ring-1 ring-white/10">
-            <GraduationCap className="w-8 h-8 text-teal-600" />
-            <span className="text-lg font-bold text-gray-900">Skill-Learn</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Right side - Sign In Form */}
-      <div className="w-full lg:w-1/2 bg-gray-50 flex items-center justify-center p-6 lg:p-8">
-        <div className="w-full max-w-[420px]">
-          {/* Language selector */}
-          <div className="flex justify-end mb-8">
-            <button className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-              <Globe className="w-4 h-4" />
-              <span className="text-sm">English</span>
-            </button>
-          </div>
-
-          {/* Sign in card */}
-          <div className="bg-white rounded-[28px] shadow-[0_30px_60px_rgba(6,17,29,0.18)] p-10 border border-transparent">
-            {/* Icon */}
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-teal-50 rounded-full flex items-center justify-center shadow-inner border border-white/60">
-                <GraduationCap className="w-8 h-8 text-teal-600" />
-              </div>
-            </div>
-
-            {/* Title */}
-            <h1 className="text-[30px] md:text-[34px] font-extrabold text-center text-[#0b1320] mb-2 leading-tight">
-              Sign In to Skill-Learn
-            </h1>
-            <p className="text-center text-[#55606a] mb-6 max-w-[360px] mx-auto">
-              Welcome back! Please sign in to continue.
-            </p>
-
-            {/* Form fields */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your username"
-                className="w-full px-4 py-3 border border-[#e6eef6] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06b6a4] focus:border-transparent bg-white placeholder:text-[#98a0aa] text-[#0b1320]"
-                aria-label="username"
-              />
-            </div>
-
             <button
-              className="w-full bg-[#07121c] text-white h-12 rounded-full text-base font-semibold hover:bg-[#071827] transition-colors flex items-center justify-center gap-3 shadow-[0_12px_30px_rgba(7,18,28,0.5)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#06b6a4]"
-              aria-label="Continue"
+              onClick={() => router.push('/')}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-3 shadow-lg transition-all border border-white/10 text-white"
             >
-              <span>Continue</span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block">
-                <path d="M5 12h14"></path>
-                <path d="M12 5l7 7-7 7"></path>
-              </svg>
+              <ArrowLeft className="w-5 h-5" />
             </button>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-black text-white tracking-tight">Skill-Learn</span>
+            </div>
+          </motion.div>
 
-            {/* Sign up link */}
-            <p className="text-center mt-6 text-sm text-[#59626b]">
-              Don&apos;t have an account?{' '}
-              <a href="#" className="text-blue-600 hover:underline font-medium">
-                Sign up
-              </a>
-            </p>
-
-            {/* Clerk branding */}
-            <p className="text-center mt-6 text-xs text-[#98a0a8]">
-              Secured by <span className="font-semibold text-[#0b1320]">Clerk</span>
-            </p>
+          {/* Middle: Fun Messaging */}
+          <div className="space-y-6">
+            <motion.h2
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-5xl font-black text-white leading-[1.1] tracking-tight"
+            >
+              Ready to <br />
+              <span className="text-indigo-400">level up</span> <br />
+              your skills?
+            </motion.h2>
+            <motion.p
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-slate-400 text-lg max-w-sm leading-relaxed"
+            >
+              Join thousands of professionals mastering new tech every day. Your learning adventure awaits!
+            </motion.p>
           </div>
+
+          {/* Bottom: Mini Social Proof */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center gap-6 p-6 bg-white/5 rounded-[2rem] border border-white/10 backdrop-blur-sm"
+          >
+            <div className="flex -space-x-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0F172A] bg-slate-800 overflow-hidden">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${i * 123}`} alt="User" />
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-slate-300 font-medium">
+              Join <span className="text-white font-bold">12k+</span> students today!
+            </p>
+          </motion.div>
         </div>
       </div>
 
-      {/* Footer bar at bottom matching screenshot */}
-      <div className="fixed left-0 right-0 bottom-0 bg-transparent pointer-events-none">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between text-xs text-[#94a3b8] pointer-events-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] text-[#a3b0bd]">© {new Date().getFullYear()} · All rights reserved by Skill-Learn.ca</span>
+      {/* Right side - Playful Form */}
+      <div className="w-full lg:w-[55%] flex flex-col justify-center items-center p-6 lg:p-12 relative overflow-hidden">
+        {/* Subtle background pattern for context */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none overflow-hidden flex flex-wrap gap-12 justify-center content-center rotate-12">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <GraduationCap key={i} size={80} className="text-slate-900" />
+          ))}
+        </div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-[440px] z-10"
+        >
+          {/* Header Moble */}
+          <div className="lg:hidden flex justify-between items-center mb-10 w-full">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-bold text-slate-900">Skill-Learn</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6">
-            <Link href="/legal" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Legal Hub</Link>
-            <Link href="/legal/privacy-policy" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Privacy Policy</Link>
-            <Link href="/legal/terms-of-condition" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Terms of Service</Link>
-            <Link href="/sitemap" className="text-[13px] text-[#94a3b8] hover:text-[#6b7280]">Sitemap</Link>
+          <motion.div variants={itemVariants} className="text-center mb-10">
+            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+              Welcome Back! 👋
+            </h1>
+            <p className="text-slate-500 text-lg font-medium">
+              We missed you! Let&apos;s get back to learning.
+            </p>
+          </motion.div>
+
+          <motion.div
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+            className="bg-white rounded-[2.5rem] p-10 shadow-[0_40px_100px_rgba(0,0,0,0.06)] border border-slate-100 mb-8"
+          >
+            <SignIn
+              routing="path"
+              path="/signn"
+              signUpUrl="/sign-up"
+              afterSignInUrl="/home"
+              appearance={{
+                elements: {
+                  rootBox: "w-full",
+                  card: "shadow-none border-none bg-transparent p-0",
+                  headerTitle: "hidden",
+                  headerSubtitle: "hidden",
+                  socialButtonsBlockButton: "h-14 rounded-2xl font-bold text-lg border-2 border-slate-100 hover:border-indigo-500 hover:bg-slate-50 transition-all",
+                  formButtonPrimary: "h-14 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-lg shadow-2xl shadow-slate-900/20 transition-all",
+                  formFieldInput: "h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400",
+                  formFieldLabel: "text-sm font-bold text-slate-700 ml-1",
+                  dividerLine: "bg-slate-100",
+                  dividerText: "text-xs text-slate-400 font-bold uppercase tracking-widest",
+                  footerActionLink: "text-indigo-600 font-extrabold hover:text-indigo-700 hover:underline transition-colors",
+                  identityPreviewText: "text-slate-900 font-medium",
+                  identityPreviewEditButton: "text-indigo-600 hover:text-indigo-700",
+                  formResendCodeLink: "text-indigo-600 hover:text-indigo-700",
+                  alertText: "text-sm",
+                  formFieldErrorText: "text-sm text-red-600",
+                },
+                layout: {
+                  socialButtonsPlacement: "top",
+                  showOptionalFields: false,
+                }
+              }}
+            />
+
+            <div className="mt-8 flex items-center gap-4 text-xs text-slate-400 justify-center">
+              <div className="h-px flex-1 bg-slate-100" />
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-50 rounded-full font-bold uppercase tracking-widest">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Secured by Clerk</span>
+              </div>
+              <div className="h-px flex-1 bg-slate-100" />
+            </div>
+          </motion.div>
+
+          <motion.p variants={itemVariants} className="text-center text-slate-500 font-medium">
+            New here?{' '}
+            <Link href="/sign-up" className="text-indigo-600 font-extrabold hover:text-indigo-700 hover:underline transition-colors">
+              Create an account
+            </Link>
+          </motion.p>
+        </motion.div>
+      </div>
+
+      {/* Footer bar at bottom */}
+      <div className="fixed left-0 right-0 bottom-0 bg-transparent pointer-events-none">
+        <div className="max-w-7xl mx-auto px-12 py-6 flex items-center justify-between pointer-events-auto">
+          <div className="hidden lg:block text-xs font-bold text-slate-600 tracking-wide uppercase opacity-40">
+            Skill-Learn.ca · {new Date().getFullYear()}
+          </div>
+
+          <div className="flex items-center gap-8">
+            {['Privacy', 'Terms', 'Legal'].map((link) => (
+              <Link key={link} href="#" className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">
+                {link}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

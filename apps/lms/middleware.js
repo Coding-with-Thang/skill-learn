@@ -26,6 +26,7 @@ function isPublicDirectoryRoute(pathname) {
     /^\/sitemap(\/.*)?$/, // /sitemap
     /^\/support(\/.*)?$/, // /support, /support/faq, etc.
     /^\/careers(\/.*)?$/, // /careers, /careers/job-id, etc.
+    /^\/video-ad(\/.*)?$/, // /video-ad
   ];
 
   return publicDirectoryPatterns.some((pattern) => pattern.test(pathname));

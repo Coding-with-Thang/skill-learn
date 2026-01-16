@@ -14,6 +14,7 @@ export const publicRoutes = [
   "/", // Landing page
   "/sign-in(.*)", // Sign in page
   "/sign-up(.*)", // Sign up page
+  "/signn(.*)", // Custom sign in page
   "/api/webhooks(.*)", // Webhooks (Clerk, etc)
   "/api/stripe/webhook", // Stripe webhook endpoint
   "/api/stripe/checkout", // Stripe checkout (supports unauthenticated)
@@ -31,6 +32,7 @@ export const publicRoutes = [
   "/resources(.*)", // Resources pages (in app/(public)/resources)
   "/sitemap(.*)", // Sitemap (in app/(public)/sitemap)
   "/support(.*)", // Support pages (in app/(public)/support)
+  "/video-ad(.*)", // Video ad page (in app/(public)/video-ad)
 ];
 
 // Define routes that require authentication but not a workspace
