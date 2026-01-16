@@ -45,7 +45,7 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 w-full z-1000 bg-[var(--background)] text-[var(--secondary-foreground)] font-fun transition-colors duration-300">
+    <header className="sticky top-0 w-full z-1000 bg-background text-secondary-foreground font-fun transition-colors duration-300">
       <div className="flex items-center h-16 justify-between px-4 md:px-0">
         {/* Logo always visible */}
         <div className="flex items-center justify-center pl-0 md:pl-5">
