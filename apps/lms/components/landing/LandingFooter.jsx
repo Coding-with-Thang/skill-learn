@@ -32,7 +32,8 @@ export default function LandingFooter() {
       { name: "Sitemap", href: "/sitemap" },
       { name: "Case Studies", href: "/resources/case-studies/techflow" },
       { name: "Contact Us", href: "/contact" },
-      { name: "Support", href: "/support/faq" }
+      { name: "Support", href: "/support/faq" },
+      { name: "Careers", href: "/careers" }
     ],
     Legal: [
       { name: "Legal Hub", href: "/legal" },

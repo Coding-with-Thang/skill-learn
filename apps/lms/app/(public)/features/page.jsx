@@ -38,9 +38,9 @@ export default function FeaturesPage() {
       title: "Advanced Gamification",
       description: "Boost employee engagement with immersive learning mechanics. Our platform transforms repetitive training into an achievement-driven experience that teams actually enjoy.",
       highlights: [
-        { icon: trophy_icon_jsx, label: "Achievement Badges", sub: "Reward milestones with custom digital badges." },
-        { icon: leaderboard_icon_jsx, label: "Global Leaderboards", sub: "Drive healthy competition with department rankings." },
-        { icon: points_icon_jsx, label: "Point Systems", sub: "Earn points for course completion and unlock rewards." }
+        { label: "Achievement Badges", sub: "Reward milestones with custom digital badges." },
+        { label: "Global Leaderboards", sub: "Drive healthy competition with department rankings." },
+        { label: "Point Systems", sub: "Earn points for course completion and unlock rewards." }
       ],
       image: "gamification_dashboard_ui_1768456006376.png",
       reverse: false,
@@ -52,9 +52,9 @@ export default function FeaturesPage() {
       title: "Intuitive Quiz Builder",
       description: "Create comprehensive assessments in minutes, not hours. Our drag-and-drop interface makes evaluation simple, effective, and visually engaging for learners.",
       highlights: [
-        { icon: drag_icon_jsx, label: "Drag-and-Drop", sub: "Build quizzes without any technical knowledge." },
-        { icon: feedback_icon_jsx, label: "Instant Feedback", sub: "Provide immediate results and explanations to learners." },
-        { icon: ai_icon_jsx, label: "AI Suggestions", sub: "Automatically generate questions from your course content." }
+        { label: "Drag-and-Drop", sub: "Build quizzes without any technical knowledge." },
+        { label: "Instant Feedback", sub: "Provide immediate results and explanations to learners." },
+        { label: "AI Suggestions", sub: "Automatically generate questions from your course content." }
       ],
       image: "quiz_builder_interface_1768456021921.png",
       reverse: true,
@@ -66,9 +66,9 @@ export default function FeaturesPage() {
       title: "Enterprise Analytics",
       description: "Make data-driven decisions with deep insights into learner performance and ROI tracking. Understand your team's skill landscape like never before.",
       highlights: [
-        { icon: tracking_icon_jsx, label: "Real-time Tracking", sub: "Monitor completion rates as they happen across global teams." },
-        { icon: gap_icon_jsx, label: "Skill Gap Analysis", sub: "Identify where your workforce needs more training." },
-        { icon: reporting_icon_jsx, label: "Custom Reporting", sub: "Export tailored reports for stakeholders with one click." }
+        { label: "Real-time Tracking", sub: "Monitor completion rates as they happen across global teams." },
+        { label: "Skill Gap Analysis", sub: "Identify where your workforce needs more training." },
+        { label: "Custom Reporting", sub: "Export tailored reports for stakeholders with one click." }
       ],
       image: "analytics_dashboard_saas_1768456040846.png",
       reverse: false,
@@ -124,7 +124,7 @@ export default function FeaturesPage() {
                 <div className="space-y-8">
                   {feature.highlights.map((h, i) => (
                     <div key={i} className="flex gap-5">
-                      <div className="mt-1 w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <div className="mt-1 w-6 h-6 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center shrink-0">
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                       <div>
@@ -143,7 +143,7 @@ export default function FeaturesPage() {
               >
                 <div className="relative rounded-[40px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.08)] bg-slate-100 group">
                   <Image
-                    src={`/api/placeholder/800/600`} // Using placeholder for now as per image naming convention in actual file
+                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop"
                     alt={feature.title}
                     width={800}
                     height={600}
@@ -257,14 +257,3 @@ export default function FeaturesPage() {
     </div>
   );
 }
-
-// Icon Components (Self-contained for the page)
-const trophy_icon_jsx = <Trophy className="w-4 h-4" />;
-const leaderboard_icon_jsx = <Zap className="w-4 h-4" />;
-const points_icon_jsx = <Sparkles className="w-4 h-4" />;
-const drag_icon_jsx = <MousePointer2 className="w-4 h-4" />;
-const feedback_icon_jsx = <MessageSquare className="w-4 h-4" />;
-const ai_icon_jsx = <Lightbulb className="w-4 h-4" />;
-const tracking_icon_jsx = <LineChart className="w-4 h-4" />;
-const gap_icon_jsx = <ShieldCheck className="w-4 h-4" />;
-const reporting_icon_jsx = <Globe className="w-4 h-4" />;

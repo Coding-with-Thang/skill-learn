@@ -35,6 +35,9 @@ export default function LandingHeader() {
             <Link href="/pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
               Pricing
             </Link>
+            <Link href="/careers" className="text-gray-700 hover:text-brand-teal transition-colors">
+              Careers
+            </Link>
           </nav>
 
           {/* Desktop Auth Buttons */}
@@ -106,6 +109,13 @@ export default function LandingHeader() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Pricing
+              </Link>
+              <Link
+                href="/careers"
+                className="text-gray-700 hover:text-brand-teal transition-colors px-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Careers
               </Link>
               <div className="border-t border-gray-200 pt-4 mt-2">
                 {isLoaded && (

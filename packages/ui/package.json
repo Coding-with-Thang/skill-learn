@@ -1,6 +1,6 @@
 {
   "name": "@skill-learn/ui",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "private": true,
   "main": "./components/index.js",
   "exports": {
@@ -47,7 +47,10 @@
     "./components/textarea": "./components/textarea.jsx",
     "./components/ThemeSwitcher": "./components/ThemeSwitcher.jsx",
     "./components/toggle": "./components/toggle.jsx",
-    "./components/feature-gate": "./components/feature-gate.jsx"
+    "./components/separator": "./components/separator.jsx",
+    "./components/feature-gate": "./components/feature-gate.jsx",
+    "./components/*": "./components/*.jsx",
+    "./*": "./*"
   },
   "scripts": {},
   "dependencies": {

@@ -96,7 +96,7 @@ export default function CaseStudyPage() {
             className="relative h-[400px] rounded-[40px] overflow-hidden shadow-2xl"
           >
             <Image
-              src="modern_office_productivity_study_1768457291693.png"
+              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop"
               alt="TechFlow Office"
               fill
               className="object-cover"
@@ -116,7 +116,7 @@ export default function CaseStudyPage() {
               <div className="space-y-6">
                 {snapshot.map((item, idx) => (
                   <div key={idx} className="bg-slate-50/50 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white hover:shadow-md transition-all">
-                    <div className={cn("p-2.5 rounded-xl flex-shrink-0 group-hover:scale-110 transition-transform", item.color)}>
+                    <div className={cn("p-2.5 rounded-xl shrink-0 group-hover:scale-110 transition-transform", item.color)}>
                       <item.icon className="w-5 h-5" />
                     </div>
                     <div>
@@ -241,7 +241,7 @@ export default function CaseStudyPage() {
                   </div>
                   <div className="flex-1 bg-slate-50 rounded-xl h-[45%]" />
                   <div className="flex-1 bg-brand-teal rounded-xl h-[75%]" />
-                  <div className="flex-1 bg-brand-teal rounded-xl h-[100%] relative group">
+                  <div className="flex-1 bg-brand-teal rounded-xl h-full relative group">
                     <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-600 text-center w-full">Post-Implementation</div>
                   </div>
                 </div>

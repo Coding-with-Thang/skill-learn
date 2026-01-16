@@ -12,7 +12,21 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      // For unauthenticated users (landing page), return default features
+      const allFeatures = await prisma.feature.findMany({
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      });
+
+      const featureFlags = {};
+      allFeatures.forEach((f) => {
+        featureFlags[f.key] = f.defaultEnabled;
+      });
+
+      return NextResponse.json({
+        features: featureFlags,
+        tenantId: null,
+      });
     }
 
     // Get user with tenant

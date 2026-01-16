@@ -34,10 +34,10 @@ export default function TopBanner() {
       <div className="max-w-7xl mx-auto flex items-center justify-center relative">
         <Link
           href="/about"
-          className="flex items-center gap-2 hover:underline text-sm md:text-base"
+          className="flex items-center gap-2 text-sm md:text-base"
         >
           <span>Elevating People, Partnered with AI.</span>
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1 hover:underline">
             Read our vision
             <ArrowRight className="w-4 h-4" />
           </span>
