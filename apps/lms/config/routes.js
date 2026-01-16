@@ -15,6 +15,7 @@ export const publicRoutes = [
   "/sign-in(.*)", // Sign in page
   "/sign-up(.*)", // Sign up page
   "/signn(.*)", // Custom sign in page
+  "/api/users/lookup", // User lookup for sign-in (public endpoint)
   "/api/webhooks(.*)", // Webhooks (Clerk, etc)
   "/api/stripe/webhook", // Stripe webhook endpoint
   "/api/stripe/checkout", // Stripe checkout (supports unauthenticated)
