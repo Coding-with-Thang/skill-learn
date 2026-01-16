@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@skill-learn/database";
+import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
 import { auth } from "@clerk/nextjs/server";
 
@@ -47,7 +47,7 @@ export async function GET(request, { params }) {
     // Merge global features with tenant settings
     const features = allFeatures.map((feature) => {
       const tenantFeature = tenantFeatureMap.get(feature.id);
-      
+
       return {
         id: feature.id,
         key: feature.key,

@@ -56,9 +56,10 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
         <CardContent className="space-y-4">
           {systemStatus.map((service, index) => {
             const Icon = statusIcons[service.name] || Activity
+            const key = service?.name || `system-status-${index}`
             return (
               <motion.div
-                key={service.name}
+                key={key}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.6 + index * 0.1 }}
@@ -110,6 +111,7 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
         <CardContent className="space-y-4">
           {resourceUsage.map((resource, index) => {
             const name = resource.name || resource.resource
+            const key = name || `resource-usage-${index}`
             // Calculate percentage if not provided directly
             let percentage = resource.percentage
             if (percentage === undefined && resource.value !== undefined && resource.limit !== undefined) {
@@ -119,7 +121,7 @@ export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
 
             return (
               <motion.div
-                key={name}
+                key={key}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 + index * 0.1 }}
