@@ -2,21 +2,28 @@
 
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
 import { LoadingPage } from "@skill-learn/ui/components/loading";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SidebarProvider } from "@skill-learn/ui/components/sidebar";
 import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
-  const { role, isLoading } = useUserRole();
+  const { hasAnyPermission, loading } = usePermissions();
   const pathname = usePathname();
 
-  if (isLoading) {
+  if (loading) {
     return <LoadingPage />;
   }
 
-  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
+  // Check for admin permissions instead of roles
+  const isOperations = hasAnyPermission([
+    'dashboard.admin',
+    'dashboard.manager',
+    'users.create',
+    'users.update',
+    'roles.assign'
+  ]);
   const isAdminRoute = isOperations && pathname?.startsWith('/dashboard');
 
   if (isAdminRoute) {

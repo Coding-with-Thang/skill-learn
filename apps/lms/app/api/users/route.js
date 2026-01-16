@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
@@ -13,7 +14,13 @@ export async function GET(request) {
     if (adminResult instanceof NextResponse) {
       return adminResult;
     }
-    const { userId } = adminResult;
+    const { userId, tenantId } = adminResult;
+    
+    // Check for users.read permission
+    const permResult = await requirePermission('users.read', tenantId);
+    if (permResult instanceof NextResponse) {
+      return permResult;
+    }
 
     const users = await prisma.user.findMany({
       select: {
@@ -45,17 +52,34 @@ export async function POST(request) {
     if (adminResult instanceof NextResponse) {
       return adminResult;
     }
-    const { userId } = adminResult;
+    const { userId, tenantId, user: currentUser } = adminResult;
+    
+    // Check for users.create permission
+    const permResult = await requirePermission('users.create', tenantId);
+    if (permResult instanceof NextResponse) {
+      return permResult;
+    }
 
-    const { user: currentUser } = adminResult;
     const { username, firstName, lastName, password, manager, role } =
       await validateRequestBody(request, userCreateSchema);
 
     const targetRole = role || "AGENT";
 
+    // Check if user can assign roles - requires roles.assign permission
+    const canAssignRoles = await hasPermission(userId, 'roles.assign', tenantId);
+    
     // Validate role assignment permissions
-    // Only OPERATIONS can create MANAGER or OPERATIONS roles
-    if (currentUser.role === "MANAGER" && targetRole !== "AGENT") {
+    // Users without roles.assign permission can only create AGENT roles
+    if (!canAssignRoles && targetRole !== "AGENT") {
+      throw new AppError(
+        "You do not have permission to create users with this role",
+        ErrorType.FORBIDDEN,
+        { status: 403 }
+      );
+    }
+    
+    // Legacy role-based restriction for backward compatibility
+    if (!canAssignRoles && currentUser.role === "MANAGER" && targetRole !== "AGENT") {
       throw new AppError(
         "Managers can only create users with AGENT role",
         ErrorType.FORBIDDEN,

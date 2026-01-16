@@ -57,8 +57,9 @@ async function requireTenantAdmin() {
     );
   });
 
-  // Also check legacy role - OPERATIONS role has admin access
-  const isLegacyAdmin = user.role === "OPERATIONS" || user.role === "MANAGER";
+  // Legacy fallback: check role if permission system not set up
+  // This ensures backward compatibility during migration
+  const isLegacyAdmin = !hasPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
 
   if (!hasPermission && !isLegacyAdmin) {
     return { error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }) };

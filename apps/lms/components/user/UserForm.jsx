@@ -10,13 +10,13 @@ import { FormInput } from "@skill-learn/ui/components/form-input"
 import { FormSelect } from "@skill-learn/ui/components/form-select"
 import { FormDescription } from "@skill-learn/ui/components/form"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
-import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js"
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js"
 import { toast } from "sonner"
 import { userCreateSchema, userUpdateSchema } from "@/lib/zodSchemas"
 
 export default function UserForm({ user = null, onSuccess }) {
     const { createUser, updateUser, isLoading, users } = useUsersStore()
-    const { role: currentUserRole } = useUserRole()
+    const { hasPermission, can } = usePermissions()
 
     // Fetch users if not already loaded
     useEffect(() => {
@@ -73,13 +73,12 @@ export default function UserForm({ user = null, onSuccess }) {
         }
     }, [watchedRole, watchedManager, form])
 
-    // Determine if current user can change roles
-    const canChangeRole = currentUserRole === "OPERATIONS"
+    // Check if current user can change roles - requires roles.assign permission
+    const canChangeRole = hasPermission('roles.assign')
 
     // Determine if role field should be disabled
-    const isRoleDisabled =
-        !canChangeRole ||
-        (user && user.role === "AGENT" && currentUserRole === "MANAGER")
+    // Note: Legacy role-based check removed - now purely permission-based
+    const isRoleDisabled = !canChangeRole
 
     const roleOptions = useMemo(() => {
         const options = [{ value: "AGENT", label: "Agent" }]
@@ -161,9 +160,7 @@ export default function UserForm({ user = null, onSuccess }) {
                         />
                         {isRoleDisabled && (
                             <FormDescription>
-                                {currentUserRole === "MANAGER" && user?.role === "AGENT"
-                                    ? "Managers cannot change agent roles"
-                                    : "Only Operations can change roles"}
+                                You do not have permission to change user roles
                             </FormDescription>
                         )}
 

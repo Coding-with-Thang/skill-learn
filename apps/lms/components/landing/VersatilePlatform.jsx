@@ -178,8 +178,8 @@ export default function VersatilePlatform() {
           <Button variant="outline" size="lg" className="px-6 py-3 text-xl bg-brand-teal text-white hover:bg-brand-teal-dark hover:text-white border-transparent">
             View Demo
           </Button>
-          <Button variant="ghost" size="lg" className="px-6 py-3 text-xl text-brand-teal hover:bg-brand-teal/5">
-            See all features
+          <Button asChild variant="ghost" size="lg" className="px-6 py-3 text-xl text-brand-teal hover:bg-brand-teal/5">
+            <Link href="/features">See all features</Link>
           </Button>
         </div>
       </div>

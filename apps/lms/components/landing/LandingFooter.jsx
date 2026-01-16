@@ -30,6 +30,7 @@ export default function LandingFooter() {
       { name: "Community", href: "/onboarding/welcome" },
       { name: "Pricing", href: "/pricing" },
       { name: "Sitemap", href: "/sitemap" },
+      { name: "Case Studies", href: "/resources/case-studies/techflow" },
       { name: "Contact Us", href: "/contact" },
       { name: "Support", href: "/support/faq" }
     ],

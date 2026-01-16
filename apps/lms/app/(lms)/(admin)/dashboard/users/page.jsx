@@ -5,17 +5,17 @@ import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
 import { Dialog, DialogContent } from "@skill-learn/ui/components/dialog"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
-import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js"
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js"
 import UserDetails from "@/components/user/UserDetails"
 import UserForm from "@/components/user/UserForm"
 import { UserFilters } from "@/components/user/UserFilters"
 
 export default function UsersPage() {
   const { users, isLoading, error, fetchUsers } = useUsersStore();
-  const { role: currentUserRole } = useUserRole();
+  const { hasPermission } = usePermissions();
 
-  // Only OPERATIONS can delete users
-  const canDeleteUsers = currentUserRole === "OPERATIONS";
+  // Check for users.delete permission instead of role
+  const canDeleteUsers = hasPermission('users.delete');
 
   useEffect(() => {
     fetchUsers();

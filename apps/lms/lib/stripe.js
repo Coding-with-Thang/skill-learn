@@ -1,10 +1,13 @@
 import Stripe from "stripe";
 
 // Initialize Stripe with the secret key
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-12-18.acacia",
-  typescript: false,
-});
+// Note: If STRIPE_SECRET_KEY is not set, stripe will be undefined and functions should check for it
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2024-12-18.acacia",
+      typescript: false,
+    })
+  : null;
 
 // Pricing plans configuration
 // These should match your Stripe product/price IDs
@@ -19,17 +22,46 @@ export const PRICING_PLANS = {
       annually: 0,
     },
     limits: {
-      users: 10,
+      users: 5,
       courses: 5,
       storage: "1 GB",
     },
     features: [
-      "Up to 10 users",
+      "Up to 5 users",
       "5 courses",
       "Basic quizzes",
       "Point system",
       "Basic leaderboard",
-      "Community support",
+      "Email support",
+    ],
+  },
+  starter: {
+    id: "starter",
+    name: "Starter",
+    description: "Perfect for small teams getting started with learning management",
+    // Replace with your actual Stripe price IDs
+    priceId: {
+      monthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID,
+      annually: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID,
+    },
+    price: {
+      monthly: 15,
+      annually: 12, // per month when billed annually
+    },
+    limits: {
+      users: 10,
+      courses: -1, // unlimited
+      storage: "10 GB",
+    },
+    features: [
+      "Up to 10 users",
+      "Unlimited courses",
+      "Advanced quizzes",
+      "Gamification suite",
+      "Full leaderboard",
+      "Email support",
+      "Advanced analytics",
+      "Custom branding",
     ],
   },
   pro: {
@@ -172,6 +204,10 @@ export async function createCheckoutSession({
     };
   }
 
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   const session = await stripe.checkout.sessions.create(sessionParams);
   return session;
 }
@@ -180,6 +216,10 @@ export async function createCheckoutSession({
  * Create a Stripe billing portal session
  */
 export async function createPortalSession({ customerId, returnUrl }) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: returnUrl,
@@ -192,6 +232,10 @@ export async function createPortalSession({ customerId, returnUrl }) {
  */
 export async function getSubscription(subscriptionId) {
   if (!subscriptionId) return null;
+  if (!stripe) {
+    console.error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+    return null;
+  }
 
   try {
     const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
@@ -208,6 +252,10 @@ export async function getSubscription(subscriptionId) {
  * Cancel subscription at period end
  */
 export async function cancelSubscription(subscriptionId) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   const subscription = await stripe.subscriptions.update(subscriptionId, {
     cancel_at_period_end: true,
   });
@@ -218,6 +266,10 @@ export async function cancelSubscription(subscriptionId) {
  * Resume a cancelled subscription
  */
 export async function resumeSubscription(subscriptionId) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   const subscription = await stripe.subscriptions.update(subscriptionId, {
     cancel_at_period_end: false,
   });
@@ -228,6 +280,10 @@ export async function resumeSubscription(subscriptionId) {
  * Update subscription to a new plan
  */
 export async function updateSubscription(subscriptionId, newPriceId) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
   
   const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
@@ -247,6 +303,10 @@ export async function updateSubscription(subscriptionId, newPriceId) {
  * Create or get Stripe customer for tenant
  */
 export async function getOrCreateCustomer({ email, name, tenantId, metadata = {} }) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   // Search for existing customer by email
   const existingCustomers = await stripe.customers.list({
     email,
@@ -303,6 +363,10 @@ export function getPlanFromPriceId(priceId) {
  * Verify Stripe webhook signature
  */
 export function verifyWebhookSignature(payload, signature, webhookSecret) {
+  if (!stripe) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+  }
+  
   try {
     return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   } catch (error) {

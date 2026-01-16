@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk.js";
 import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";
@@ -14,6 +15,14 @@ export async function GET(request, { params }) {
         const adminResult = await requireAdmin();
         if (adminResult instanceof NextResponse) {
             return adminResult;
+        }
+        
+        const { tenantId } = adminResult;
+        
+        // Check for users.read permission
+        const permResult = await requirePermission('users.read', tenantId);
+        if (permResult instanceof NextResponse) {
+            return permResult;
         }
 
         const resolvedParams = await params;
@@ -58,7 +67,14 @@ export async function PUT(request, { params }) {
             return adminResult;
         }
 
-        const { user: currentUser } = adminResult;
+        const { user: currentUser, userId, tenantId } = adminResult;
+        
+        // Check for users.update permission
+        const permResult = await requirePermission('users.update', tenantId);
+        if (permResult instanceof NextResponse) {
+            return permResult;
+        }
+        
         const { username, firstName, lastName, role, manager } = await validateRequestBody(request, userUpdateSchema);
 
         const resolvedParams = await params;
@@ -98,9 +114,20 @@ export async function PUT(request, { params }) {
             });
         }
 
+        // Check if user can change roles - requires roles.assign permission
+        const canAssignRoles = await hasPermission(userId, 'roles.assign', tenantId);
+        
         // Enforce role change restrictions
-        // Managers cannot change agent roles
-        if (currentUser.role === "MANAGER" && userToUpdate.role === "AGENT" && role && role !== userToUpdate.role) {
+        // Users without roles.assign permission cannot change roles
+        if (role && role !== userToUpdate.role && !canAssignRoles) {
+            throw new AppError("You do not have permission to change user roles", ErrorType.FORBIDDEN, {
+                status: 403,
+            });
+        }
+        
+        // Legacy role-based restriction for backward compatibility
+        // If no permission system, fall back to role check
+        if (!canAssignRoles && currentUser.role === "MANAGER" && userToUpdate.role === "AGENT" && role && role !== userToUpdate.role) {
             throw new AppError("Managers cannot change agent roles", ErrorType.FORBIDDEN, {
                 status: 403,
             });
@@ -197,13 +224,12 @@ export async function DELETE(request, { params }) {
             return adminResult;
         }
 
-        const { user: currentUser } = adminResult;
+        const { userId: currentUserId, tenantId } = adminResult;
 
-        // Only OPERATIONS can delete users
-        if (currentUser.role !== "OPERATIONS") {
-            throw new AppError("Only Operations can delete users", ErrorType.FORBIDDEN, {
-                status: 403,
-            });
+        // Check for users.delete permission
+        const permResult = await requirePermission('users.delete', tenantId);
+        if (permResult instanceof NextResponse) {
+            return permResult;
         }
 
         const resolvedParams = await params;

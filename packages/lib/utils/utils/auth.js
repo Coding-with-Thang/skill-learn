@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
+import { hasAnyPermission, getUserPermissions } from './permissions.js';
 
 /**
  * Require authentication for API routes
@@ -18,11 +19,14 @@ export async function requireAuth() {
 }
 
 /**
- * Require admin (OPERATIONS or MANAGER) role for API routes
- * @returns {Promise<{userId: string, user: object}|null>} The authenticated user's Clerk ID and user record, or null if not authorized
+ * Require admin permissions for API routes
+ * Checks for admin-level permissions like users.create, users.update, dashboard.admin, etc.
+ * Falls back to legacy role check if permission system is not set up
+ * @param {string} tenantId - Optional tenant ID to check permissions against
+ * @returns {Promise<{userId: string, user: object, tenantId?: string}|null>} The authenticated user's Clerk ID and user record, or null if not authorized
  * @returns {NextResponse|null} Returns 401 Unauthorized or 403 Forbidden response if not authorized, null if authorized
  */
-export async function requireAdmin() {
+export async function requireAdmin(tenantId = null) {
   const authResult = await requireAuth();
   
   // If requireAuth returned a NextResponse (error), return it
@@ -32,29 +36,67 @@ export async function requireAdmin() {
 
   const userId = authResult;
 
-  // Verify admin role (OPERATIONS or MANAGER)
+  // Get user with tenant info
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
-    select: { id: true, role: true },
+    select: { 
+      id: true, 
+      role: true, // Keep for legacy fallback
+      tenantId: true 
+    },
   });
 
-  if (!user || (user.role !== "OPERATIONS" && user.role !== "MANAGER")) {
+  if (!user) {
     return NextResponse.json(
-      { error: "Unauthorized - Requires OPERATIONS or MANAGER role" },
+      { error: "User not found" },
+      { status: 404 }
+    );
+  }
+
+  // Use tenantId from user if not provided
+  const effectiveTenantId = tenantId || user.tenantId;
+
+  // Check for admin permissions
+  // Admin permissions include: users.create, users.update, dashboard.admin, roles.assign, etc.
+  const adminPermissions = [
+    'users.create',
+    'users.update',
+    'users.delete',
+    'dashboard.admin',
+    'dashboard.manager',
+    'roles.assign',
+    'roles.create',
+    'settings.update'
+  ];
+
+  const hasAdminPermission = await hasAnyPermission(userId, adminPermissions, effectiveTenantId);
+
+  // Legacy fallback: if no permissions found and user has OPERATIONS or MANAGER role, allow access
+  // This ensures backward compatibility during migration
+  const isLegacyAdmin = !hasAdminPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
+
+  if (!hasAdminPermission && !isLegacyAdmin) {
+    return NextResponse.json(
+      { error: "Unauthorized - Admin permissions required" },
       { status: 403 }
     );
   }
 
-  return { userId, user };
+  return { 
+    userId, 
+    user,
+    ...(effectiveTenantId && { tenantId: effectiveTenantId })
+  };
 }
 
 /**
- * Require admin (OPERATIONS or MANAGER) role for server actions
+ * Require admin permissions for server actions
  * Throws Error if not authorized (for server actions that can't return NextResponse)
- * @returns {Promise<{userId: string, user: object}>} The authenticated user's Clerk ID and user record
+ * @param {string} tenantId - Optional tenant ID to check permissions against
+ * @returns {Promise<{userId: string, user: object, tenantId?: string}>} The authenticated user's Clerk ID and user record
  * @throws {Error} If not authenticated or not admin
  */
-export async function requireAdminForAction() {
+export async function requireAdminForAction(tenantId = null) {
   const { userId } = await auth();
 
   if (!userId) {
@@ -63,14 +105,46 @@ export async function requireAdminForAction() {
 
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
-    select: { id: true, role: true },
+    select: { 
+      id: true, 
+      role: true, // Keep for legacy fallback
+      tenantId: true 
+    },
   });
 
-  if (!user || (user.role !== "OPERATIONS" && user.role !== "MANAGER")) {
-    throw new Error("Unauthorized - Requires OPERATIONS or MANAGER role");
+  if (!user) {
+    throw new Error("User not found");
   }
 
-  return { userId, user };
+  // Use tenantId from user if not provided
+  const effectiveTenantId = tenantId || user.tenantId;
+
+  // Check for admin permissions
+  const adminPermissions = [
+    'users.create',
+    'users.update',
+    'users.delete',
+    'dashboard.admin',
+    'dashboard.manager',
+    'roles.assign',
+    'roles.create',
+    'settings.update'
+  ];
+
+  const hasAdminPermission = await hasAnyPermission(userId, adminPermissions, effectiveTenantId);
+
+  // Legacy fallback: if no permissions found and user has OPERATIONS or MANAGER role, allow access
+  const isLegacyAdmin = !hasAdminPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
+
+  if (!hasAdminPermission && !isLegacyAdmin) {
+    throw new Error("Unauthorized - Admin permissions required");
+  }
+
+  return { 
+    userId, 
+    user,
+    ...(effectiveTenantId && { tenantId: effectiveTenantId })
+  };
 }
 
 /**

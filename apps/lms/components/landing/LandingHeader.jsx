@@ -50,9 +50,9 @@ export default function LandingHeader() {
                   </Link>
                   <Button
                     asChild
-                    className="bg-brand-teal hover:bg-brand-teal-dark text-white"
+                    className="bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg px-6"
                   >
-                    <Link href="/sign-up">Request a demo</Link>
+                    <Link href="/sign-up">Schedule Demo</Link>
                   </Button>
                 </SignedOut>
               </>
@@ -128,7 +128,7 @@ export default function LandingHeader() {
                         className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Link href="/sign-up">Request a demo</Link>
+                        <Link href="/sign-up">Schedule Demo</Link>
                       </Button>
                     </SignedOut>
                   </>

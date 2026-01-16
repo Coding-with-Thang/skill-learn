@@ -6,7 +6,7 @@ import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { LoadingSpinner } from "@skill-learn/ui/components/loading";
 import { LoadingHeader } from "@skill-learn/ui/components/loading";
 import { ErrorCard } from "@skill-learn/ui/components/error-boundary";
-import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
 import { Navigation } from './Navigation/Navigation';
 import { Logo } from '../shared/Logo';
 import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
@@ -14,13 +14,20 @@ import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
 
 export default function Header() {
   const { isLoaded: clerkLoaded } = useUser();
-  const { role, isLoading: roleLoading } = useUserRole();
+  const { hasPermission, hasAnyPermission, loading: permissionsLoading } = usePermissions();
   const [error, setError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
+  // Check for admin permissions instead of roles
+  const isOperations = hasAnyPermission([
+    'dashboard.admin',
+    'dashboard.manager',
+    'users.create',
+    'users.update',
+    'roles.assign'
+  ]);
 
-  if (!clerkLoaded || roleLoading) {
+  if (!clerkLoaded || permissionsLoading) {
     return <LoadingHeader />
   }
 

@@ -212,9 +212,11 @@ export default function FeaturesPage() {
                   <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em] mb-4 block">The result</span>
                   <div className="text-4xl font-black text-[#1B1B53]">92% Certification Rate</div>
                 </div>
-                <Button className="w-full h-14 bg-[#1B1B53] hover:bg-[#1B1B53]/90 text-white rounded-2xl font-bold">
-                  Read Full Case Study
-                </Button>
+                <Link href="/resources/case-studies/techflow" className="block">
+                  <Button className="w-full h-14 bg-[#1B1B53] hover:bg-[#1B1B53]/90 text-white rounded-2xl font-bold">
+                    Read Full Case Study
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>

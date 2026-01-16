@@ -31,6 +31,14 @@ export async function POST(request) {
     );
   }
   
+  if (!stripe) {
+    console.error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
+    return NextResponse.json(
+      { error: "Stripe not configured" },
+      { status: 500 }
+    );
+  }
+  
   let event;
   
   try {

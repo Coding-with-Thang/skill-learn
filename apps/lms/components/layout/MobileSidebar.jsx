@@ -20,13 +20,21 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@skill-learn/ui/components/sheet";
-import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
+import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
 
 export default function MobileSidebar() {
   const pathname = usePathname();
-  const { role } = useUserRole();
+  const { hasAnyPermission } = usePermissions();
   const { isEnabled, isLoading } = useFeatures();
-  const isOperations = role === 'OPERATIONS' || role === 'MANAGER';
+  
+  // Check for admin permissions instead of roles
+  const isOperations = hasAnyPermission([
+    'dashboard.admin',
+    'dashboard.manager',
+    'users.create',
+    'users.update',
+    'roles.assign'
+  ]);
 
   // Admin Navigation Items
   const adminNavItems = [

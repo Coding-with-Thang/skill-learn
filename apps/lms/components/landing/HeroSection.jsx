@@ -251,7 +251,7 @@ export default function HeroSection() {
                 className="group px-6 sm:px-8 py-3 sm:py-4 bg-white border-2 border-brand-teal text-brand-teal font-semibold rounded-lg hover:bg-brand-teal/5 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <Play className="w-5 h-5" />
-                Watch Demo
+                Schedule Demo
               </button>
             </div>
 
