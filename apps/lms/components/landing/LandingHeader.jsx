@@ -35,9 +35,6 @@ export default function LandingHeader() {
             <Link href="/pricing" className="text-gray-700 hover:text-brand-teal transition-colors">
               Pricing
             </Link>
-            <Link href="/careers" className="text-gray-700 hover:text-brand-teal transition-colors">
-              Careers
-            </Link>
           </nav>
 
           {/* Desktop Auth Buttons */}

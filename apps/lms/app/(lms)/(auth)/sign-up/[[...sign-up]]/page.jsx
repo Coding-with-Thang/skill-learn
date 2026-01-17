@@ -33,6 +33,8 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState('signup'); // signup, verify
   const [verificationCode, setVerificationCode] = useState('');
+  const [error, setError] = useState(''); // Error message for sign-up
+  const [verificationError, setVerificationError] = useState(''); // Error message for verification
 
   // Redirect if already signed in
   useEffect(() => {
@@ -44,6 +46,7 @@ export default function SignUpPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setError(''); // Clear error when user types
   };
 
   const handleSignUp = async (e) => {
@@ -83,6 +86,7 @@ export default function SignUpPage() {
 
     try {
       setLoading(true);
+      setVerificationError(''); // Clear previous errors
 
       const result = await signUp.attemptEmailAddressVerification({
         code: verificationCode,
@@ -96,7 +100,7 @@ export default function SignUpPage() {
     } catch (err) {
       console.error('Verification error:', err);
       const errorMessage = err.errors?.[0]?.message || 'Invalid verification code';
-      toast.error(errorMessage);
+      setVerificationError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -107,6 +111,7 @@ export default function SignUpPage() {
 
     try {
       setLoading(true);
+      setError(''); // Clear previous errors
       await signUp.authenticateWithRedirect({
         strategy,
         redirectUrl: '/home',
@@ -114,7 +119,7 @@ export default function SignUpPage() {
       });
     } catch (err) {
       console.error('Social sign up error:', err);
-      toast.error('Failed to sign up with social provider');
+      setError('Failed to sign up with social provider');
       setLoading(false);
     }
   };
@@ -140,6 +145,13 @@ export default function SignUpPage() {
             </div>
 
             <form onSubmit={handleVerification} className="space-y-6">
+              {/* Error Message */}
+              {verificationError && (
+                <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-sm text-red-700">
+                  {verificationError}
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Verification Code
@@ -147,11 +159,16 @@ export default function SignUpPage() {
                 <input
                   type="text"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
+                  onChange={(e) => {
+                    setVerificationCode(e.target.value);
+                    setVerificationError(''); // Clear error when user types
+                  }}
                   placeholder="Enter 6-digit code"
                   required
                   maxLength={6}
-                  className="w-full h-14 px-4 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 text-center text-2xl tracking-widest font-mono"
+                  className={`w-full h-14 px-4 border-2 rounded-xl focus:outline-none text-center text-2xl tracking-widest font-mono ${
+                    verificationError ? 'border-red-300 focus:border-red-500' : 'border-slate-200 focus:border-indigo-500'
+                  }`}
                 />
               </div>
 

@@ -7,7 +7,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "npm run sync:env && turbo run dev",
+    "sync:env": "node scripts/sync-env.js",
     "build": "turbo run build",
     "start": "turbo run start",
     "lint": "turbo run lint",

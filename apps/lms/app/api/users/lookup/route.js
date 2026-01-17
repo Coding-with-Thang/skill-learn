@@ -6,10 +6,11 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 
 /**
  * GET /api/users/lookup
- * Look up user email by username (for sign-in purposes)
+ * Look up user email/phone by username (for sign-in purposes)
  * This is a public endpoint used during authentication
  * 
- * If database is unavailable, falls back to using username directly with Clerk
+ * Primary method: Search Clerk directly by username
+ * Fallback: Check database if available (for caching)
  */
 export async function GET(request) {
   try {
@@ -23,98 +24,184 @@ export async function GET(request) {
       );
     }
 
-    // Check if database is available
-    let user = null;
-    let dbAvailable = true;
+    console.log(`[Lookup API] Searching for username: "${username}"`);
 
+    // PRIMARY METHOD: Search Clerk directly by username
+    // This is the most reliable method for username-based authentication
     try {
-      // Find user by username in our database
-      user = await prisma.user.findUnique({
+      const client = await clerkClient();
+      if (!client || !client.users) {
+        console.error('Clerk client is not available');
+        return NextResponse.json(
+          { error: "Authentication service unavailable. Please try again later." },
+          { status: 503 }
+        );
+      }
+
+      console.log(`[Lookup API] Searching Clerk for username: "${username}"`);
+      const clerkUsers = await client.users.getUserList({
+        username: [username],
+        limit: 1,
+      });
+      
+      console.log(`[Lookup API] Clerk search result:`, {
+        hasData: !!clerkUsers?.data,
+        dataLength: clerkUsers?.data?.length || 0,
+        totalCount: clerkUsers?.totalCount || 0
+      });
+      
+      if (clerkUsers && clerkUsers.data && clerkUsers.data.length > 0) {
+        const clerkUser = clerkUsers.data[0];
+        const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+        const phoneNumber = clerkUser.phoneNumbers?.[0]?.phoneNumber;
+        
+        // Clerk requires email or phone number for authentication
+        const identifier = email || phoneNumber;
+        
+        if (identifier) {
+          console.log(`[Lookup API] ✅ Found user "${username}" in Clerk with identifier: ${identifier}`);
+          
+          // Note: We don't update the database here since email field might not exist in schema
+          // The database will be synced via Clerk webhooks if configured
+          
+          return successResponse({
+            email: email || undefined,
+            phoneNumber: phoneNumber || undefined,
+            identifier: identifier,
+            username: username,
+            clerkId: clerkUser.id,
+            useEmail: !!email,
+          });
+        } else {
+          // WORKAROUND: If user has no email/phone, return username as identifier
+          // This allows tenants that have username authentication enabled in Clerk to work
+          console.log(`[Lookup API] ⚠️ User "${username}" found in Clerk but has no email or phone`);
+          console.log(`[Lookup API] Returning username as identifier (tenant may have username-only auth enabled)`);
+          
+          return successResponse({
+            username: username,
+            clerkId: clerkUser.id,
+            identifier: username, // Return username as identifier for username-only auth
+            useUsername: true, // Flag to indicate username-only authentication
+            requiresEmail: false, // Indicates this tenant doesn't require email
+          });
+        }
+      } else {
+        console.log(`[Lookup API] No users found in Clerk with exact username: "${username}"`);
+        
+        // Try using query parameter for partial/fuzzy matching
+        console.log(`[Lookup API] Trying query search as fallback...`);
+        try {
+          const queryResult = await client.users.getUserList({
+            query: username,
+            limit: 5, // Get a few results to check
+          });
+          
+          console.log(`[Lookup API] Query search result:`, {
+            hasData: !!queryResult?.data,
+            dataLength: queryResult?.data?.length || 0
+          });
+          
+          // Check if any result matches the username exactly
+          if (queryResult?.data && queryResult.data.length > 0) {
+            const exactMatch = queryResult.data.find(u => 
+              u.username === username || 
+              u.username?.toLowerCase() === username.toLowerCase()
+            );
+            
+            if (exactMatch) {
+              const email = exactMatch.emailAddresses?.[0]?.emailAddress;
+              const phoneNumber = exactMatch.phoneNumbers?.[0]?.phoneNumber;
+              const identifier = email || phoneNumber;
+              
+              if (identifier) {
+                console.log(`[Lookup API] ✅ Found user via query search with identifier: ${identifier}`);
+                return successResponse({
+                  email: email || undefined,
+                  phoneNumber: phoneNumber || undefined,
+                  identifier: identifier,
+                  username: username,
+                  clerkId: exactMatch.id,
+                  useEmail: !!email,
+                });
+              }
+            }
+          }
+        } catch (queryError) {
+          console.error('[Lookup API] Query search also failed:', queryError);
+        }
+      }
+    } catch (clerkSearchError) {
+      console.error('[Lookup API] ❌ Error searching Clerk users by username:', clerkSearchError);
+      
+      // Check if it's a Clerk authentication error
+      if (clerkSearchError.message?.includes('key') || clerkSearchError.message?.includes('environment')) {
+        console.error('[Lookup API] Clerk authentication error - check environment variables');
+        return NextResponse.json(
+          { error: "Authentication service configuration error. Please contact support." },
+          { status: 503 }
+        );
+      }
+      
+      // For other Clerk errors, continue to fallback (database check)
+    }
+
+    // FALLBACK: Check database if available (optional, for users already in DB)
+    try {
+      const user = await prisma.user.findUnique({
         where: { username },
         select: {
-          email: true,
           clerkId: true,
         },
       });
-    } catch (dbError) {
-      // Database connection error (e.g., MONGODB_URI not set)
-      console.warn('Database unavailable, falling back to username authentication:', dbError.message);
-      dbAvailable = false;
       
-      // If database is not available, return username for direct Clerk authentication
-      // Clerk supports username authentication without database lookup
-      return successResponse({
-        username: username,
-        useEmail: false,
-        fallback: true, // Indicates we're using fallback mode
-      });
-    }
-
-    // If user not found in database, return error
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    // If email exists in database, use it
-    if (user.email) {
-      return successResponse({
-        email: user.email,
-        clerkId: user.clerkId,
-        useEmail: true,
-      });
-    }
-
-    // If email is not in database, try to get it from Clerk
-    try {
-      const clerkUser = await clerkClient.users.getUser(user.clerkId);
-      const email = clerkUser.emailAddresses?.[0]?.emailAddress;
-      
-      if (email) {
-        // Update database with email for future lookups (only if DB is available)
-        if (dbAvailable) {
-          await prisma.user.update({
-            where: { clerkId: user.clerkId },
-            data: { email },
-          }).catch(() => {
-            // Ignore update errors - non-critical
-          });
-        }
+      if (user && user.clerkId) {
+        console.log(`[Lookup API] Found user in database, fetching from Clerk by clerkId...`);
         
-        return successResponse({
-          email: email,
-          username: username,
-          clerkId: user.clerkId,
-          useEmail: true,
-        });
+        try {
+          const client = await clerkClient();
+          const clerkUser = await client.users.getUser(user.clerkId);
+          const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+          const phoneNumber = clerkUser.phoneNumbers?.[0]?.phoneNumber;
+          
+          const identifier = email || phoneNumber;
+          
+          if (identifier) {
+            console.log(`[Lookup API] ✅ Found identifier from Clerk via clerkId: ${identifier}`);
+            return successResponse({
+              email: email || undefined,
+              phoneNumber: phoneNumber || undefined,
+              identifier: identifier,
+              username: username,
+              clerkId: user.clerkId,
+              useEmail: !!email,
+            });
+          }
+        } catch (clerkError) {
+          console.error('[Lookup API] Error fetching from Clerk by clerkId:', clerkError);
+          // If clerkId is invalid, the user might have been deleted from Clerk
+          // or the clerkId in database is stale - skip this fallback
+          console.log(`[Lookup API] Invalid clerkId in database, skipping fallback`);
+        }
+      } else {
+        console.log(`[Lookup API] User not found in database`);
       }
-    } catch (clerkError) {
-      console.error('Error fetching email from Clerk:', clerkError);
+    } catch (dbError) {
+      // Database unavailable - this is okay, we already tried Clerk first
+      console.log('[Lookup API] Database check skipped (unavailable)');
     }
 
-    // If we still don't have email, return username for Clerk authentication
-    // Clerk supports username authentication directly
-    return successResponse({
-      username: username,
-      clerkId: user.clerkId,
-      useEmail: false,
-    });
+    // User not found in Clerk
+    console.log(`[Lookup API] ❌ User "${username}" not found in Clerk`);
+    console.log(`[Lookup API] Troubleshooting: Check if username "${username}" is set in Clerk Dashboard`);
+    return NextResponse.json(
+      { 
+        error: `User "${username}" not found. Please verify your username is correct, or sign in with your email address instead.` 
+      },
+      { status: 404 }
+    );
   } catch (error) {
-    // If all else fails, allow username authentication as fallback
-    const { searchParams } = new URL(request.url);
-    const username = searchParams.get("username");
-    
-    if (username) {
-      console.warn('Lookup failed, falling back to username authentication:', error.message);
-      return successResponse({
-        username: username,
-        useEmail: false,
-        fallback: true,
-      });
-    }
-    
+    console.error('[Lookup API] Unexpected error:', error);
     return handleApiError(error);
   }
 }
