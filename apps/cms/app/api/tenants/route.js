@@ -86,7 +86,7 @@ export async function POST(request) {
       data: {
         name,
         slug,
-        subscriptionTier: subscriptionTier || "professional",
+        subscriptionTier: subscriptionTier || "free",
         maxRoleSlots: 5,
         baseRoleSlots: 5,
         purchasedRoleSlots: 0,

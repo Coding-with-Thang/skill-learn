@@ -40,7 +40,7 @@ export default function TenantsPage() {
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
-    subscriptionTier: 'professional',
+    subscriptionTier: 'free',
     maxRoleSlots: 5,
   })
   const [formLoading, setFormLoading] = useState(false)
@@ -93,7 +93,7 @@ export default function TenantsPage() {
       }
 
       setCreateDialogOpen(false)
-      setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
+      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
       fetchTenants()
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
@@ -121,7 +121,7 @@ export default function TenantsPage() {
 
       setEditDialogOpen(false)
       setSelectedTenant(null)
-      setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
+      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
       fetchTenants()
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to update tenant')
@@ -271,9 +271,10 @@ export default function TenantsPage() {
                       onChange={(e) => setFormData({ ...formData, subscriptionTier: e.target.value })}
                       className="h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
-                      <option value="professional">Professional</option>
+                      <option value="free">Free</option>
+                      <option value="starter">Starter</option>
+                      <option value="pro">Pro</option>
                       <option value="enterprise">Enterprise</option>
-                      <option value="trial">Trial</option>
                     </select>
                   </div>
                   <div className="grid gap-2">
@@ -299,7 +300,7 @@ export default function TenantsPage() {
                     variant="outline"
                     onClick={() => {
                       setCreateDialogOpen(false)
-                      setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
+                      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
                       setError(null)
                     }}
                   >
@@ -543,9 +544,10 @@ export default function TenantsPage() {
                     onChange={(e) => setFormData({ ...formData, subscriptionTier: e.target.value })}
                     className="h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   >
-                    <option value="professional">Professional</option>
+                    <option value="free">Free</option>
+                    <option value="starter">Starter</option>
+                    <option value="pro">Pro</option>
                     <option value="enterprise">Enterprise</option>
-                    <option value="trial">Trial</option>
                   </select>
                 </div>
                 <div className="grid gap-2">
@@ -572,7 +574,7 @@ export default function TenantsPage() {
                   onClick={() => {
                     setEditDialogOpen(false)
                     setSelectedTenant(null)
-                    setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
+                    setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
                     setError(null)
                   }}
                 >

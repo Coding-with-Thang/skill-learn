@@ -61,6 +61,22 @@ export async function GET() {
           "Community support",
         ],
       },
+      starter: {
+        name: "Starter",
+        price: 15,
+        maxUsers: 25,
+        maxRoleSlots: 5,
+        features: [
+          "Up to 25 users",
+          "Unlimited courses",
+          "Advanced quizzes",
+          "Gamification suite",
+          "Full leaderboard",
+          "Email support",
+          "Advanced analytics",
+          "Custom branding",
+        ],
+      },
       pro: {
         name: "Pro",
         price: 29,

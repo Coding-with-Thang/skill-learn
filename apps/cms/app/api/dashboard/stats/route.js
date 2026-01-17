@@ -44,9 +44,12 @@ export async function GET(request) {
 
     // Format subscription distribution
     const subscriptionColors = {
-      enterprise: '#A855F7',
-      professional: '#6366F1',
+      free: '#94A3B8',
       starter: '#10B981',
+      pro: '#6366F1',
+      enterprise: '#A855F7',
+      // Legacy support
+      professional: '#6366F1',
       trial: '#F59E0B',
     };
 

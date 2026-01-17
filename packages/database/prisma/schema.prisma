@@ -326,7 +326,7 @@ model Tenant {
   id                 String @id @default(auto()) @map("_id") @db.ObjectId
   name               String
   slug               String @unique
-  subscriptionTier   String @default("free") // free, pro, enterprise
+  subscriptionTier   String @default("free") // free, starter, pro, enterprise
   subscriptionStatus String @default("active") // active, trialing, past_due, canceled, etc.
   maxRoleSlots       Int    @default(5)
   baseRoleSlots      Int    @default(5)

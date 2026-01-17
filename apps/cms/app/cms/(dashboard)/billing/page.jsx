@@ -1,6 +1,5 @@
 'use client'
 
-import DashboardLayout from '@/components/cms/layout/DashboardLayout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
 import { Button } from '@/components/cms/ui/button'
 import { Badge } from '@/components/cms/ui/badge'
@@ -10,9 +9,10 @@ import { TrendingUp, TrendingDown, Download, Calendar } from 'lucide-react'
 import { cn, formatCurrency } from '@/lib/cms/utils'
 
 const subscriptionData = [
-  { name: 'Enterprise', value: 35, count: 750, color: '#6366F1' },
+  { name: 'Enterprise', value: 25, count: 536, color: '#6366F1' },
   { name: 'Pro', value: 30, count: 640, color: '#8B5CF6' },
-  { name: 'Free', value: 35, count: 750, color: '#94A3B8' },
+  { name: 'Starter', value: 20, count: 428, color: '#10B981' },
+  { name: 'Free', value: 25, count: 536, color: '#94A3B8' },
 ]
 
 const churnData = [
@@ -65,8 +65,7 @@ const recentInvoices = [
 
 export default function BillingPage() {
   return (
-    <DashboardLayout>
-      <div className="p-4 lg:p-6 w-full">
+    <div className="p-4 lg:p-6 w-full">
         {/* Breadcrumb */}
         <div className="mb-4 text-sm text-muted-foreground">
           Dashboard / <span className="text-foreground">Billing & Revenue</span>
@@ -334,6 +333,5 @@ export default function BillingPage() {
           </Card>
         </motion.div>
       </div>
-    </DashboardLayout>
   )
 }

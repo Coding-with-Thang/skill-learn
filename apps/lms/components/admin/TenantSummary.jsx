@@ -42,13 +42,20 @@ export function TenantSummary() {
   }
 
   const getTierColor = (tier) => {
-    switch (tier) {
+    switch (tier?.toLowerCase()) {
+      case "free":
+        return "bg-gray-500 text-white";
+      case "starter":
+        return "bg-green-500 text-white";
+      case "pro":
+        return "bg-blue-500 text-white";
       case "enterprise":
         return "bg-purple-500 text-white";
+      // Legacy support
       case "professional":
         return "bg-blue-500 text-white";
       case "trial":
-        return "bg-gray-500 text-white";
+        return "bg-orange-500 text-white";
       default:
         return "bg-gray-500 text-white";
     }
