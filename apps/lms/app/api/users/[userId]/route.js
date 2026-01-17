@@ -136,18 +136,14 @@ export async function PUT(request, { params }) {
             );
         }
 
-        // Check if username exists for another user in the same tenant
-        const existingUser = await prisma.user.findFirst({
+        // Check if username exists for another user (usernames are globally unique)
+        const existingUser = await prisma.user.findUnique({
             where: {
                 username,
-                tenantId: tenantId, // Only check within same tenant
-                NOT: {
-                    id: userId,
-                },
             },
         });
 
-        if (existingUser) {
+        if (existingUser && existingUser.id !== userId) {
             throw new AppError("Username already exists", ErrorType.VALIDATION, {
                 status: 400,
             });
@@ -184,9 +180,13 @@ export async function PUT(request, { params }) {
         // Validate manager exists if provided
         // - AGENT role: manager can be MANAGER or OPERATIONS
         // - MANAGER role: manager must be OPERATIONS only
+        // NOTE: Manager lookup is scoped to tenant for security (ensures manager is in same tenant)
         if (manager && manager !== "") {
-            const managerUser = await prisma.user.findUnique({
-                where: { username: manager },
+            const managerUser = await prisma.user.findFirst({
+                where: { 
+                    username: manager,
+                    tenantId: tenantId, // Only find managers within the same tenant (security check)
+                },
                 select: { id: true, role: true }
             });
 

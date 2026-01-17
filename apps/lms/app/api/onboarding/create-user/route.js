@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 
 /**
@@ -37,13 +37,38 @@ export async function POST(request) {
     }
 
     // Generate a unique username
+    // Usernames are globally unique (enforced by both Clerk and database)
     const baseUsername = email?.split("@")[0] || firstName?.toLowerCase() || "user";
     let username = baseUsername;
     let counter = 1;
     
-    while (await prisma.user.findUnique({ where: { username } })) {
-      username = `${baseUsername}${counter}`;
-      counter++;
+    // Check both Clerk and database for username uniqueness
+    let usernameExists = true;
+    while (usernameExists) {
+      // Check Clerk first (enforces global uniqueness)
+      try {
+        const client = await clerkClient();
+        const clerkUsers = await client.users.getUserList({
+          username: [username],
+          limit: 1,
+        });
+        if (clerkUsers?.data?.length > 0) {
+          username = `${baseUsername}${counter}`;
+          counter++;
+          continue;
+        }
+      } catch (error) {
+        // If Clerk check fails, continue to database check
+      }
+      
+      // Check database (also enforces global uniqueness)
+      const dbUser = await prisma.user.findUnique({ where: { username } });
+      if (dbUser) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      } else {
+        usernameExists = false;
+      }
     }
 
     // Create the user

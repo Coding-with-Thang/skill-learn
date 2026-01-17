@@ -118,9 +118,13 @@ export async function POST(request) {
     // Validate manager exists if provided
     // - AGENT role: manager can be MANAGER or OPERATIONS
     // - MANAGER role: manager must be OPERATIONS only
+    // NOTE: Manager lookup is scoped to tenant for security (ensures manager is in same tenant)
     if (manager && manager !== "" && manager !== "none") {
-      const managerUser = await prisma.user.findUnique({
-        where: { username: manager },
+      const managerUser = await prisma.user.findFirst({
+        where: { 
+          username: manager,
+          tenantId: tenantId, // Only find managers within the same tenant (security check)
+        },
         select: { id: true, role: true },
       });
 
@@ -158,9 +162,11 @@ export async function POST(request) {
       }
     }
 
-    // Check if username exists
+    // Check if username exists globally (usernames are globally unique)
     const existingUser = await prisma.user.findUnique({
-      where: { username },
+      where: {
+        username,
+      },
     });
 
     if (existingUser) {

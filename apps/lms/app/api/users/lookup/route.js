@@ -117,6 +117,7 @@ export async function GET(request) {
     }
 
     // FALLBACK: Check database if available (optional, for users already in DB)
+    // Usernames are globally unique, so findUnique will work correctly
     try {
       const user = await prisma.user.findUnique({
         where: { username },
