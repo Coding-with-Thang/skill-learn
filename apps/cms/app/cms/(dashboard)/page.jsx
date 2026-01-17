@@ -10,6 +10,7 @@ import SubscriptionDistribution from '@/components/cms/dashboard/SubscriptionDis
 import QuickActions from '@/components/cms/dashboard/QuickActions'
 import { motion } from 'framer-motion'
 import { Loader2 } from 'lucide-react'
+import api from '@skill-learn/lib/utils/axios.js'
 
 export default function Home() {
   const [loading, setLoading] = useState(true)
@@ -29,23 +30,16 @@ export default function Home() {
       try {
         setLoading(true)
         setError(null)
-        const response = await fetch('/api/dashboard/stats')
+        const response = await api.get('/dashboard/stats')
 
-        if (response.status === 401 || response.status === 403) {
-          const data = await response.json()
-          setError(data.error || 'Unauthorized - Super admin access required')
-          return
-        }
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data')
-        }
-
-        const data = await response.json()
-        setDashboardData(data)
+        setDashboardData(response.data)
       } catch (err) {
         console.error('Error fetching dashboard data:', err)
-        setError(err.message || 'Failed to load dashboard data')
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+        } else {
+          setError(err.response?.data?.error || err.message || 'Failed to load dashboard data')
+        }
       } finally {
         setLoading(false)
       }

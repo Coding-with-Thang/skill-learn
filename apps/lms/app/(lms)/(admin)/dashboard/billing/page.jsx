@@ -24,62 +24,50 @@ import {
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useBillingStore } from "@skill-learn/lib/stores/billingStore.js";
 
 export default function BillingPage() {
-  const [billing, setBilling] = useState(null);
-  const [subscription, setSubscription] = useState(null);
+  // Use selectors to only re-render when specific state changes
+  const billing = useBillingStore((state) => state.billing);
+  const subscription = useBillingStore((state) => state.subscription);
+  const storeLoading = useBillingStore((state) => state.isLoading);
+  const storeError = useBillingStore((state) => state.error);
+  const fetchBillingData = useBillingStore((state) => state.fetchBillingData);
+  const openPortal = useBillingStore((state) => state.openBillingPortal);
+  const cancelSubscription = useBillingStore((state) => state.cancelSubscription);
+  const resumeSubscription = useBillingStore((state) => state.resumeSubscription);
+
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch both billing info and subscription details
-      const [billingRes, subscriptionRes] = await Promise.all([
-        fetch("/api/tenant/billing"),
-        fetch("/api/stripe/subscription"),
-      ]);
-      
-      const billingData = await billingRes.json();
-      const subscriptionData = await subscriptionRes.json();
-
-      if (!billingRes.ok) {
-        throw new Error(billingData.error || "Failed to fetch billing");
-      }
-
-      setBilling(billingData.billing);
-      setSubscription(subscriptionData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load data on mount
   useEffect(() => {
-    fetchData();
-  }, []);
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        await fetchBillingData();
+      } catch (err) {
+        setError(err.response?.data?.error || err.message || "Failed to fetch billing");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [fetchBillingData]);
+
+  // Combine loading states
+  const isLoading = loading || storeLoading;
+  const displayError = error || storeError;
 
   // Open Stripe billing portal
   const openBillingPortal = async () => {
     try {
       setActionLoading("portal");
-      const response = await fetch("/api/stripe/portal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to open billing portal");
-      }
-
-      window.location.href = data.url;
+      await openPortal();
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message || "Failed to open billing portal");
     } finally {
       setActionLoading(null);
     }
@@ -93,21 +81,10 @@ export default function BillingPage() {
 
     try {
       setActionLoading("cancel");
-      const response = await fetch("/api/stripe/subscription", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel" }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to cancel subscription");
-      }
-
-      toast.success(data.message);
-      fetchData(); // Refresh data
+      const result = await cancelSubscription();
+      toast.success(result.message || "Subscription canceled successfully");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message || "Failed to cancel subscription");
     } finally {
       setActionLoading(null);
     }
@@ -117,27 +94,16 @@ export default function BillingPage() {
   const handleResumeSubscription = async () => {
     try {
       setActionLoading("resume");
-      const response = await fetch("/api/stripe/subscription", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "resume" }),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to resume subscription");
-      }
-
-      toast.success(data.message);
-      fetchData(); // Refresh data
+      const result = await resumeSubscription();
+      toast.success(result.message || "Subscription resumed successfully");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.response?.data?.error || err.message || "Failed to resume subscription");
     } finally {
       setActionLoading(null);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -150,7 +116,7 @@ export default function BillingPage() {
       <Card>
         <CardContent className="p-12 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{displayError}</p>
         </CardContent>
       </Card>
     );
@@ -449,10 +415,10 @@ export default function BillingPage() {
                     Your trial ends on{" "}
                     {subscription?.subscription?.trialEnd
                       ? new Date(subscription.subscription.trialEnd).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                       : "soon"}
                     . Upgrade now to continue without interruption.
                   </p>
@@ -488,16 +454,16 @@ export default function BillingPage() {
                     Your subscription will end on{" "}
                     {subscription?.subscription?.currentPeriodEnd
                       ? new Date(subscription.subscription.currentPeriodEnd).toLocaleDateString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        })
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                       : "the end of your billing period"}
                     . You&apos;ll be downgraded to the Free plan after that.
                   </p>
                 </div>
-                <Button 
-                  onClick={handleResumeSubscription} 
+                <Button
+                  onClick={handleResumeSubscription}
                   disabled={actionLoading === "resume"}
                   className="bg-yellow-600 hover:bg-yellow-700"
                 >
@@ -538,8 +504,8 @@ export default function BillingPage() {
                 </Button>
               ) : (
                 <>
-                  <Button 
-                    onClick={openBillingPortal} 
+                  <Button
+                    onClick={openBillingPortal}
                     disabled={actionLoading === "portal"}
                   >
                     {actionLoading === "portal" ? (
@@ -549,8 +515,8 @@ export default function BillingPage() {
                     )}
                     Manage Plan
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={openBillingPortal}
                     disabled={actionLoading === "portal"}
                   >
@@ -561,8 +527,8 @@ export default function BillingPage() {
                     )}
                     Update Payment Method
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={openBillingPortal}
                     disabled={actionLoading === "portal"}
                   >
@@ -570,8 +536,8 @@ export default function BillingPage() {
                     View Invoices
                   </Button>
                   {!subscription?.subscription?.cancelAtPeriodEnd && (
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       onClick={handleCancelSubscription}
                       disabled={actionLoading === "cancel"}
                     >

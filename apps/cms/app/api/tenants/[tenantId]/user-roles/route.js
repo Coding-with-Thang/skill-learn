@@ -79,11 +79,11 @@ export async function GET(request, { params }) {
               username: userData.username,
               firstName: userData.firstName,
               lastName: userData.lastName,
-              fullName: `${userData.firstName} ${userData.lastName}`,
+              fullName: `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || userData.username,
               imageUrl: userData.imageUrl,
             }
           : null,
-        role: ur.tenantRole,
+        role: ur.tenantRole || null,
         assignedAt: ur.assignedAt,
         assignedBy: ur.assignedBy,
       };
@@ -96,8 +96,9 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error("Error fetching user roles:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
-      { error: "Failed to fetch user roles" },
+      { error: "Failed to fetch user roles", details: error.message },
       { status: 500 }
     );
   }

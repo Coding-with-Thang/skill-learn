@@ -14,6 +14,13 @@ export async function GET(request, { params }) {
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
       include: {
+        defaultRole: {
+          select: {
+            id: true,
+            roleAlias: true,
+            isActive: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -42,6 +49,8 @@ export async function GET(request, { params }) {
         maxRoleSlots: tenant.maxRoleSlots,
         baseRoleSlots: tenant.baseRoleSlots,
         purchasedRoleSlots: tenant.purchasedRoleSlots,
+        defaultRoleId: tenant.defaultRoleId,
+        defaultRole: tenant.defaultRole,
         activeUsers: tenant._count.users,
         roleCount: tenant._count.tenantRoles,
         quizCount: tenant._count.quizzes,
@@ -72,7 +81,7 @@ export async function PUT(request, { params }) {
 
     const { tenantId } = await params;
     const body = await request.json();
-    const { name, slug, subscriptionTier, maxRoleSlots } = body;
+    const { name, slug, subscriptionTier, maxRoleSlots, defaultRoleId } = body;
 
     // Check if tenant exists
     const existingTenant = await prisma.tenant.findUnique({
@@ -100,6 +109,27 @@ export async function PUT(request, { params }) {
       }
     }
 
+    // If defaultRoleId is being set, validate it belongs to this tenant
+    if (defaultRoleId !== undefined) {
+      if (defaultRoleId === null || defaultRoleId === "") {
+        // Allow clearing the default role
+      } else {
+        const role = await prisma.tenantRole.findFirst({
+          where: {
+            id: defaultRoleId,
+            tenantId,
+          },
+        });
+
+        if (!role) {
+          return NextResponse.json(
+            { error: "Default role must belong to this tenant" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     // Update tenant
     const tenant = await prisma.tenant.update({
       where: { id: tenantId },
@@ -108,8 +138,16 @@ export async function PUT(request, { params }) {
         ...(slug && { slug }),
         ...(subscriptionTier && { subscriptionTier }),
         ...(maxRoleSlots !== undefined && { maxRoleSlots }),
+        ...(defaultRoleId !== undefined && { defaultRoleId: defaultRoleId || null }),
       },
       include: {
+        defaultRole: {
+          select: {
+            id: true,
+            roleAlias: true,
+            isActive: true,
+          },
+        },
         _count: {
           select: {
             users: true,
@@ -128,6 +166,8 @@ export async function PUT(request, { params }) {
         maxRoleSlots: tenant.maxRoleSlots,
         baseRoleSlots: tenant.baseRoleSlots,
         purchasedRoleSlots: tenant.purchasedRoleSlots,
+        defaultRoleId: tenant.defaultRoleId,
+        defaultRole: tenant.defaultRole,
         activeUsers: tenant._count.users,
         roleCount: tenant._count.tenantRoles,
         createdAt: tenant.createdAt,

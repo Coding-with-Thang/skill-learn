@@ -331,6 +331,7 @@ model Tenant {
   maxRoleSlots       Int    @default(5)
   baseRoleSlots      Int    @default(5)
   purchasedRoleSlots Int    @default(0)
+  defaultRoleId      String? @unique @db.ObjectId // Default role for new users
 
   // Stripe integration fields
   stripeCustomerId     String?   @unique
@@ -347,6 +348,7 @@ model Tenant {
   // Relations
   tenantRoles       TenantRole[]
   userRoles         UserRole[]
+  defaultRole       TenantRole? @relation("DefaultRole", fields: [defaultRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   roleSlotPurchases RoleSlotPurchase[]
   tenantFeatures    TenantFeature[]
   users             User[]
@@ -442,6 +444,7 @@ model TenantRole {
   // Relations
   tenantRolePermissions TenantRolePermission[]
   userRoles             UserRole[]
+  defaultForTenant      Tenant? @relation("DefaultRole") // Optional: this role is the default for a tenant
 
   @@unique([tenantId, roleAlias])
   @@index([tenantId]) // Get all roles for a tenant

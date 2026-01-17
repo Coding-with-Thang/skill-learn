@@ -1,9 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
+import { useFeaturesStore, FEATURE_KEYS as FEATURE_KEYS_EXPORT } from '../../stores/store/featuresStore.js'
 
 /**
  * Hook to check if features are enabled for the current user's tenant
+ * 
+ * @deprecated Use useFeaturesStore directly for better performance
+ * This hook now wraps the Zustand store for backward compatibility
  * 
  * Usage:
  * const { isEnabled, isLoading, features } = useFeatures()
@@ -14,89 +18,19 @@ import { useState, useEffect, useCallback } from 'react'
  * // Check multiple features
  * const canShowGames = isEnabled('games')
  * const canShowLeaderboard = isEnabled('leaderboards')
+ * 
+ * // Recommended: Use store directly
+ * import { useFeaturesStore } from '@skill-learn/lib/stores/featuresStore';
+ * const { isEnabled, isLoading, fetchFeatures } = useFeaturesStore();
  */
 export function useFeatures() {
-  const [features, setFeatures] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const store = useFeaturesStore()
+  const { features, isLoading, error, isEnabled, allEnabled, anyEnabled, fetchFeatures } = store
 
-  const fetchFeatures = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
-      
-      const response = await fetch('/api/features')
-      
-      // Parse JSON first (even for error responses, they may contain useful data)
-      let data
-      try {
-        data = await response.json()
-      } catch (parseError) {
-        // If JSON parsing fails, throw a more descriptive error
-        throw new Error(`Failed to parse response: ${parseError.message}`)
-      }
-      
-      if (!response.ok) {
-        // Use error message from response if available, otherwise use status text
-        const errorMessage = data?.error || data?.message || response.statusText || 'Failed to fetch features'
-        // If error response includes features, use them for graceful degradation
-        if (data?.features) {
-          setFeatures(data.features)
-        }
-        throw new Error(errorMessage)
-      }
-      
-      setFeatures(data.features || {})
-    } catch (err) {
-      console.error('Error fetching features:', err)
-      setError(err.message)
-      // Default all features to enabled if there's an error (graceful degradation)
-      setFeatures({})
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
+  // Fetch features on mount
   useEffect(() => {
     fetchFeatures()
   }, [fetchFeatures])
-
-  /**
-   * Check if a feature is enabled
-   * @param {string} featureKey - The feature key to check
-   * @param {boolean} defaultValue - Default value if feature is not found (defaults to true)
-   * @returns {boolean} - Whether the feature is enabled
-   */
-  const isEnabled = useCallback((featureKey, defaultValue = true) => {
-    if (isLoading) {
-      return defaultValue // Return default while loading
-    }
-    
-    // If feature is not in the list, assume enabled (for backwards compatibility)
-    if (!(featureKey in features)) {
-      return defaultValue
-    }
-    
-    return features[featureKey]
-  }, [features, isLoading])
-
-  /**
-   * Check if multiple features are all enabled
-   * @param {string[]} featureKeys - Array of feature keys to check
-   * @returns {boolean} - Whether all features are enabled
-   */
-  const allEnabled = useCallback((featureKeys) => {
-    return featureKeys.every(key => isEnabled(key))
-  }, [isEnabled])
-
-  /**
-   * Check if any of the features are enabled
-   * @param {string[]} featureKeys - Array of feature keys to check
-   * @returns {boolean} - Whether any feature is enabled
-   */
-  const anyEnabled = useCallback((featureKeys) => {
-    return featureKeys.some(key => isEnabled(key))
-  }, [isEnabled])
 
   return {
     features,
@@ -111,20 +45,8 @@ export function useFeatures() {
 
 /**
  * Feature keys available in the system
+ * Re-exported from featuresStore for backward compatibility
  */
-export const FEATURE_KEYS = {
-  GAMES: 'games',
-  COURSE_QUIZZES: 'course_quizzes',
-  LEADERBOARDS: 'leaderboards',
-  REWARDS_STORE: 'rewards_store',
-  ACHIEVEMENTS: 'achievements',
-  STREAKS: 'streaks',
-  TRAINING_COURSES: 'training_courses',
-  POINT_SYSTEM: 'point_system',
-  CATEGORIES: 'categories',
-  USER_STATS: 'user_stats',
-  AUDIT_LOGS: 'audit_logs',
-  CUSTOM_ROLES: 'custom_roles',
-}
+export const FEATURE_KEYS = FEATURE_KEYS_EXPORT
 
 export default useFeatures

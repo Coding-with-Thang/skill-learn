@@ -1,132 +1,53 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useEffect } from "react";
+import { usePermissionsStore } from "../../stores/store/permissionsStore.js";
 
 /**
  * React hook for managing user permissions in the frontend
- * Fetches permissions from the API and provides helper functions
+ * 
+ * @deprecated Use usePermissionsStore directly for better performance
+ * This hook now wraps the Zustand store for backward compatibility
+ * 
+ * @param {string|null} tenantId - Optional tenant ID to fetch permissions for
+ * @returns {Object} Permissions state and helper functions
+ * 
+ * @example
+ * // Old way (still works):
+ * const { permissions, hasPermission, loading } = usePermissions(tenantId);
+ * 
+ * // Recommended: Use store directly
+ * import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore';
+ * const { permissions, hasPermission, isLoading, fetchPermissions } = usePermissionsStore();
+ * useEffect(() => { fetchPermissions(tenantId); }, [tenantId, fetchPermissions]);
  */
 export function usePermissions(tenantId = null) {
-  const [permissions, setPermissions] = useState([]);
-  const [permissionsByCategory, setPermissionsByCategory] = useState({});
-  const [tenantPermissions, setTenantPermissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch permissions from API
-  const fetchPermissions = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const url = tenantId
-        ? `/api/user-permissions?tenantId=${tenantId}`
-        : "/api/user-permissions";
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch permissions");
-      }
-
-      const data = await response.json();
-
-      setPermissions(data.allPermissions || []);
-      setPermissionsByCategory(data.permissionsByCategory || {});
-      setTenantPermissions(data.tenantPermissions || []);
-    } catch (err) {
-      console.error("Error fetching permissions:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [tenantId]);
+  const store = usePermissionsStore();
+  const {
+    permissions,
+    permissionsByCategory,
+    tenantPermissions,
+    isLoading: loading,
+    error,
+    fetchPermissions,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    can,
+    getPermissionsForCategory,
+    hasAccessToCategory,
+    canCreate,
+    canRead,
+    canUpdate,
+    canDelete,
+    canPublish,
+    canAssign,
+  } = store;
 
   // Fetch on mount and when tenantId changes
   useEffect(() => {
-    fetchPermissions();
-  }, [fetchPermissions]);
-
-  // Permission checking helpers
-  const permissionSet = useMemo(
-    () => new Set(permissions),
-    [permissions]
-  );
-
-  /**
-   * Check if user has a specific permission
-   * @param {string} permission - Permission name to check
-   * @returns {boolean}
-   */
-  const hasPermission = useCallback(
-    (permission) => {
-      return permissionSet.has(permission);
-    },
-    [permissionSet]
-  );
-
-  /**
-   * Check if user has any of the specified permissions
-   * @param {string[]} permissionList - List of permission names
-   * @returns {boolean}
-   */
-  const hasAnyPermission = useCallback(
-    (permissionList) => {
-      return permissionList.some((p) => permissionSet.has(p));
-    },
-    [permissionSet]
-  );
-
-  /**
-   * Check if user has all of the specified permissions
-   * @param {string[]} permissionList - List of permission names
-   * @returns {boolean}
-   */
-  const hasAllPermissions = useCallback(
-    (permissionList) => {
-      return permissionList.every((p) => permissionSet.has(p));
-    },
-    [permissionSet]
-  );
-
-  /**
-   * Check if user can perform a CRUD operation on a resource
-   * @param {string} resource - Resource name (e.g., 'users', 'quizzes')
-   * @param {string} action - Action name (e.g., 'create', 'read', 'update', 'delete')
-   * @returns {boolean}
-   */
-  const can = useCallback(
-    (resource, action) => {
-      const permission = `${resource}.${action}`;
-      return permissionSet.has(permission);
-    },
-    [permissionSet]
-  );
-
-  /**
-   * Get all permissions for a specific category
-   * @param {string} category - Category name
-   * @returns {string[]}
-   */
-  const getPermissionsForCategory = useCallback(
-    (category) => {
-      return permissionsByCategory[category] || [];
-    },
-    [permissionsByCategory]
-  );
-
-  /**
-   * Check if user has any permissions in a category
-   * @param {string} category - Category name
-   * @returns {boolean}
-   */
-  const hasAccessToCategory = useCallback(
-    (category) => {
-      const categoryPermissions = permissionsByCategory[category] || [];
-      return categoryPermissions.length > 0;
-    },
-    [permissionsByCategory]
-  );
+    fetchPermissions(tenantId);
+  }, [tenantId, fetchPermissions]);
 
   return {
     // State
@@ -137,7 +58,7 @@ export function usePermissions(tenantId = null) {
     error,
 
     // Actions
-    refetch: fetchPermissions,
+    refetch: () => fetchPermissions(tenantId),
 
     // Permission checks
     hasPermission,
@@ -148,12 +69,12 @@ export function usePermissions(tenantId = null) {
     hasAccessToCategory,
 
     // Convenience checks for common operations
-    canCreate: (resource) => can(resource, "create"),
-    canRead: (resource) => can(resource, "read"),
-    canUpdate: (resource) => can(resource, "update"),
-    canDelete: (resource) => can(resource, "delete"),
-    canPublish: (resource) => can(resource, "publish"),
-    canAssign: (resource) => can(resource, "assign"),
+    canCreate,
+    canRead,
+    canUpdate,
+    canDelete,
+    canPublish,
+    canAssign,
   };
 }
 

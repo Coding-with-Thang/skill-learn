@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -14,38 +14,18 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useBillingStore } from "@skill-learn/lib/stores/billingStore.js";
 
 export function TenantSummary() {
-  const [tenant, setTenant] = useState(null);
-  const [billing, setBilling] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Use selectors to only re-render when specific state changes
+  const tenant = useBillingStore((state) => state.tenant);
+  const billing = useBillingStore((state) => state.billing);
+  const loading = useBillingStore((state) => state.isLoading);
+  const fetchTenantAndBilling = useBillingStore((state) => state.fetchTenantAndBilling);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [tenantRes, billingRes] = await Promise.all([
-          fetch("/api/tenant"),
-          fetch("/api/tenant/billing"),
-        ]);
-
-        if (tenantRes.ok) {
-          const tenantData = await tenantRes.json();
-          setTenant(tenantData.tenant);
-        }
-
-        if (billingRes.ok) {
-          const billingData = await billingRes.json();
-          setBilling(billingData.billing);
-        }
-      } catch (err) {
-        console.error("Error loading tenant summary:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    fetchTenantAndBilling();
+  }, [fetchTenantAndBilling]);
 
   if (loading) {
     return (
@@ -137,9 +117,9 @@ export function TenantSummary() {
               </span>
             </div>
             {billing?.usage?.users?.limit !== "Unlimited" && (
-              <Progress 
-                value={billing?.usage?.users?.percentage || 0} 
-                className="h-1.5" 
+              <Progress
+                value={billing?.usage?.users?.percentage || 0}
+                className="h-1.5"
               />
             )}
           </div>
@@ -157,9 +137,9 @@ export function TenantSummary() {
                 </span>
               </span>
             </div>
-            <Progress 
-              value={billing?.usage?.roleSlots?.percentage || 0} 
-              className="h-1.5" 
+            <Progress
+              value={billing?.usage?.roleSlots?.percentage || 0}
+              className="h-1.5"
             />
           </div>
         </div>

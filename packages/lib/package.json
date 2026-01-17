@@ -6,13 +6,20 @@
   "exports": {
     ".": "./index.js",
     "./stores/auditLogStore.js": "./stores/store/auditLogStore.js",
+    "./stores/billingStore.js": "./stores/store/billingStore.js",
     "./stores/categoryStore.js": "./stores/store/categoryStore.js",
     "./stores/coursesStore.js": "./stores/store/coursesStore.js",
+    "./stores/featuresStore.js": "./stores/store/featuresStore.js",
+    "./stores/permissionsStore.js": "./stores/store/permissionsStore.js",
     "./stores/pointsStore.js": "./stores/store/pointsStore.js",
     "./stores/progressStore.js": "./stores/store/progressStore.js",
     "./stores/quizStore.js": "./stores/store/quizStore.js",
     "./stores/rewardStore.js": "./stores/store/rewardStore.js",
+    "./stores/roleTemplatesStore.js": "./stores/store/roleTemplatesStore.js",
+    "./stores/rolesStore.js": "./stores/store/rolesStore.js",
+    "./stores/tenantsStore.js": "./stores/store/tenantsStore.js",
     "./stores/usersStore.js": "./stores/store/usersStore.js",
+    "./stores/userRolesStore.js": "./stores/store/userRolesStore.js",
     "./stores/onboardingStore.js": "./stores/store/onboardingStore.js",
     "./hooks/useDebounce.js": "./hooks/hooks/useDebounce.js",
     "./hooks/useAppTheme.js": "./hooks/hooks/useAppTheme.js",
@@ -36,13 +43,14 @@
     "./utils/clerk.js": "./utils/utils/clerk.js",
     "./utils/clerkSync.js": "./utils/utils/clerkSync.js",
     "./utils/permissions.js": "./utils/utils/permissions.js",
-    "./utils/tenant.js": "./utils/utils/tenant.js"
+    "./utils/tenant.js": "./utils/utils/tenant.js",
+    "./utils/apiResponseParser.js": "./utils/utils/apiResponseParser.js"
   },
   "scripts": {},
   "dependencies": {
     "axios": "^1.8.2",
     "clsx": "^2.1.1",
-    "date-fns": "^2.30.0",
+    "date-fns": "^4.1.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.11",
     "zustand": "^5.0.3"

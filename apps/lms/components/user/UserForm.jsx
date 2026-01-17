@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@skill-learn/ui/components/button"
@@ -10,13 +10,17 @@ import { FormInput } from "@skill-learn/ui/components/form-input"
 import { FormSelect } from "@skill-learn/ui/components/form-select"
 import { FormDescription } from "@skill-learn/ui/components/form"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
+import { useRolesStore } from "@skill-learn/lib/stores/rolesStore.js"
 import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js"
 import { toast } from "sonner"
 import { userCreateSchema, userUpdateSchema } from "@/lib/zodSchemas"
+import api from "@skill-learn/lib/utils/axios.js"
 
 export default function UserForm({ user = null, onSuccess }) {
     const { createUser, updateUser, isLoading, users } = useUsersStore()
-    const { hasPermission, can } = usePermissions()
+    const { roles, tenant, fetchRoles } = useRolesStore()
+    const { hasPermission } = usePermissions()
+    const [defaultRoleId, setDefaultRoleId] = useState(null)
 
     // Fetch users if not already loaded
     useEffect(() => {
@@ -24,6 +28,26 @@ export default function UserForm({ user = null, onSuccess }) {
             useUsersStore.getState().fetchUsers()
         }
     }, [users.length])
+
+    // Fetch roles and tenant info on mount
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                // Fetch roles
+                await fetchRoles()
+                
+                // Fetch tenant info to get defaultRoleId
+                const tenantResponse = await api.get('/tenant')
+                const tenantData = tenantResponse.data?.tenant
+                if (tenantData?.defaultRoleId) {
+                    setDefaultRoleId(tenantData.defaultRoleId)
+                }
+            } catch (error) {
+                console.error('Error loading roles/tenant:', error)
+            }
+        }
+        loadData()
+    }, [fetchRoles])
 
     const schema = user ? userUpdateSchema : userCreateSchema
     const form = useForm({
@@ -33,77 +57,59 @@ export default function UserForm({ user = null, onSuccess }) {
             lastName: user?.lastName || "",
             username: user?.username || "",
             password: "",
-            role: user?.role || "AGENT",
+            tenantRoleId: user?.tenantRoleId || defaultRoleId || "",
+            // Legacy fields for backward compatibility
+            role: user?.role || "",
             manager: user?.manager || "",
         },
     })
 
-    const watchedRole = form.watch("role")
-    const watchedManager = form.watch("manager")
-
-    // Get list of managers for the dropdown
-    // - AGENT role: can be assigned MANAGER or OPERATIONS
-    // - MANAGER role: can only be assigned OPERATIONS
-    const managerOptions = useMemo(() => {
-        let managers
-        if (watchedRole === "MANAGER") {
-            // Managers can only be assigned OPERATIONS as their manager
-            managers = users.filter((u) => u.role === "OPERATIONS")
-        } else {
-            // Agents can be assigned MANAGER or OPERATIONS
-            managers = users.filter(
-                (u) => u.role === "MANAGER" || u.role === "OPERATIONS"
-            )
-        }
-        return [
-            { value: "none", label: "No Manager" },
-            ...managers.map((m) => ({
-                value: m.username,
-                label: `${m.firstName} ${m.lastName} (${m.username}) - ${m.role}`,
-            })),
-        ]
-    }, [users, watchedRole])
-
-    // Clear manager when role changes to non-AGENT/MANAGER
+    // Update form when defaultRoleId loads
     useEffect(() => {
-        if (watchedRole !== "AGENT" && watchedRole !== "MANAGER") {
-            if (watchedManager) {
-                form.setValue("manager", "")
-            }
+        if (defaultRoleId && !user && !form.getValues('tenantRoleId')) {
+            form.setValue('tenantRoleId', defaultRoleId)
         }
-    }, [watchedRole, watchedManager, form])
+    }, [defaultRoleId, user, form])
+
+    const watchedTenantRoleId = form.watch("tenantRoleId")
 
     // Check if current user can change roles - requires roles.assign permission
     const canChangeRole = hasPermission('roles.assign')
-
-    // Determine if role field should be disabled
-    // Note: Legacy role-based check removed - now purely permission-based
     const isRoleDisabled = !canChangeRole
 
+    // Get tenant roles for the dropdown (active roles only)
     const roleOptions = useMemo(() => {
-        const options = [{ value: "AGENT", label: "Agent" }]
-        if (canChangeRole) {
-            options.push(
-                { value: "MANAGER", label: "Manager" },
-                { value: "OPERATIONS", label: "Operations" }
-            )
-        }
-        return options
-    }, [canChangeRole])
+        const activeRoles = (roles || []).filter((r) => r.isActive)
+        return activeRoles.map((role) => ({
+            value: role.id,
+            label: role.roleAlias,
+        }))
+    }, [roles])
 
     const onSubmit = async (data) => {
         try {
-            // Prepare submit data - clear manager if role is not AGENT or MANAGER
+            // Prepare submit data
             const submitData = { ...data }
-            if (submitData.manager === "none") {
-                submitData.manager = ""
+            
+            // Use defaultRoleId if tenantRoleId is not provided and creating new user
+            if (!user && !submitData.tenantRoleId && defaultRoleId) {
+                submitData.tenantRoleId = defaultRoleId
             }
-            if (submitData.role !== "AGENT" && submitData.role !== "MANAGER") {
-                submitData.manager = ""
-            }
+            
             // Remove password if empty (for updates)
             if (user && !submitData.password) {
                 delete submitData.password
+            }
+
+            // Legacy fields: keep role for backward compatibility but prefer tenantRoleId
+            if (submitData.tenantRoleId) {
+                // tenantRoleId takes precedence
+                if (!submitData.role) {
+                    delete submitData.role
+                }
+                if (!submitData.manager) {
+                    delete submitData.manager
+                }
             }
 
             if (user) {
@@ -152,34 +158,29 @@ export default function UserForm({ user = null, onSuccess }) {
                             placeholder={user ? "Leave blank to keep current password" : "Enter password"}
                         />
 
-                        <FormSelect
-                            name="role"
-                            label="Role"
-                            options={roleOptions}
-                            disabled={isRoleDisabled}
-                        />
-                        {isRoleDisabled && (
-                            <FormDescription>
-                                You do not have permission to change user roles
-                            </FormDescription>
-                        )}
-
-                        {/* Manager selection - show for AGENT and MANAGER roles */}
-                        {(watchedRole === "AGENT" || watchedRole === "MANAGER") && (
+                        {roleOptions.length > 0 ? (
                             <>
                                 <FormSelect
-                                    name="manager"
-                                    label="Manager"
-                                    placeholder="Select a manager"
-                                    options={managerOptions}
+                                    name="tenantRoleId"
+                                    label="Role"
+                                    options={roleOptions}
+                                    disabled={isRoleDisabled}
                                 />
-                                {watchedRole === "MANAGER" && (
+                                {isRoleDisabled && (
                                     <FormDescription>
-                                        Managers can only be assigned an OPERATIONS user as their
-                                        manager
+                                        You do not have permission to change user roles
+                                    </FormDescription>
+                                )}
+                                {!user && defaultRoleId && watchedTenantRoleId === defaultRoleId && (
+                                    <FormDescription>
+                                        Default role for new users (can be changed in tenant settings)
                                     </FormDescription>
                                 )}
                             </>
+                        ) : (
+                            <div className="text-sm text-muted-foreground p-3 border rounded">
+                                No roles available. Please configure roles for this tenant first.
+                            </div>
                         )}
 
                         <Button type="submit" disabled={isLoading} className="w-full">

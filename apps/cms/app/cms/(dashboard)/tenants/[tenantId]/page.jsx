@@ -20,6 +20,11 @@ import { Checkbox } from '@skill-learn/ui/components/checkbox'
 import Link from 'next/link'
 import Image from 'next/image'
 import { cn } from '@/lib/cms/utils'
+import api from '@skill-learn/lib/utils/axios.js'
+import { useTenantsStore } from '@skill-learn/lib/stores/tenantsStore.js'
+import { useRoleTemplatesStore } from '@skill-learn/lib/stores/roleTemplatesStore.js'
+import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore.js'
+import { parseApiResponse } from '@skill-learn/lib/utils/apiResponseParser.js'
 
 import {
   ArrowLeft,
@@ -85,20 +90,20 @@ const Switch = ({ checked, onCheckedChange, disabled = false }) => (
   <button
     onClick={() => !disabled && onCheckedChange(!checked)}
     disabled={disabled}
-    className={`
-      relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-      transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 
-      focus-visible:ring-primary focus-visible:ring-offset-2
-      ${checked ? 'bg-primary' : 'bg-input'}
-      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-    `}
+    className={cn(
+      "relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent",
+      "transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+      "focus-visible:ring-primary focus-visible:ring-offset-2",
+      checked ? 'bg-primary' : 'bg-input',
+      disabled && 'opacity-50 cursor-not-allowed'
+    )}
   >
     <span
-      className={`
-        pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 
-        transition-transform duration-200 ease-in-out
-        ${checked ? 'translate-x-5' : 'translate-x-0'}
-      `}
+      className={cn(
+        "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0",
+        "transition-transform duration-200 ease-in-out",
+        checked ? 'translate-x-5' : 'translate-x-0'
+      )}
     />
   </button>
 )
@@ -108,21 +113,40 @@ export default function TenantDetailPage() {
   const router = useRouter()
   const tenantId = params.tenantId
 
-  // State
+  // Use selectors to only re-render when specific state changes
+  const tenant = useTenantsStore((state) => state.currentTenant);
+  const users = useTenantsStore((state) => state.users);
+  const roles = useTenantsStore((state) => state.roles);
+  const userRoles = useTenantsStore((state) => state.userRoles);
+  const features = useTenantsStore((state) => state.features);
+  const groupedFeatures = useTenantsStore((state) => state.featuresByCategory);
+  const allTenants = useTenantsStore((state) => state.allTenants);
+  const storeLoading = useTenantsStore((state) => state.isLoading);
+  const storeError = useTenantsStore((state) => state.error);
+  const fetchTenant = useTenantsStore((state) => state.fetchTenant);
+  const fetchUsers = useTenantsStore((state) => state.fetchUsers);
+  const fetchRoles = useTenantsStore((state) => state.fetchRoles);
+  const fetchUserRoles = useTenantsStore((state) => state.fetchUserRoles);
+  const fetchFeatures = useTenantsStore((state) => state.fetchFeatures);
+  const fetchTenants = useTenantsStore((state) => state.fetchTenants);
+
+  const roleTemplates = useRoleTemplatesStore((state) => state.roleTemplates);
+  const fetchRoleTemplates = useRoleTemplatesStore((state) => state.fetchRoleTemplates);
+
+  // Get store instance for accessing updated state after mutations
+  const tenantsStore = useTenantsStore.getState();
+
+  // Local state (UI only)
   const [activeTab, setActiveTab] = useState('users')
-  const [tenant, setTenant] = useState(null)
-  const [users, setUsers] = useState([])
-  const [allTenants, setAllTenants] = useState([])
-  const [roles, setRoles] = useState([])
-  const [userRoles, setUserRoles] = useState([])
-  const [roleTemplates, setRoleTemplates] = useState([])
-  const [permissions, setPermissions] = useState([])
-  const [groupedPermissions, setGroupedPermissions] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedUsers, setSelectedUsers] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState('')
   const [successMessage, setSuccessMessage] = useState(null)
+
+  // For permissions (can be fetched separately since it's not tenant-specific)
+  const [permissions, setPermissions] = useState([])
+  const [groupedPermissions, setGroupedPermissions] = useState({})
 
   // Dialog states
   const [moveDialogOpen, setMoveDialogOpen] = useState(false)
@@ -153,88 +177,47 @@ export default function TenantDetailPage() {
     permissionIds: [],
   })
 
-  // Features state
-  const [features, setFeatures] = useState([])
-  const [groupedFeatures, setGroupedFeatures] = useState({})
+  // Feature loading state
   const [featureLoading, setFeatureLoading] = useState(false)
 
-  // Fetch functions
-  const fetchTenant = useCallback(async () => {
-    const response = await fetch(`/api/tenants/${tenantId}`)
-    if (!response.ok) throw new Error('Failed to fetch tenant')
-    const data = await response.json()
-    setTenant(data.tenant)
-  }, [tenantId])
-
-  const fetchUsers = useCallback(async () => {
-    const response = await fetch(`/api/tenants/${tenantId}/users`)
-    if (!response.ok) throw new Error('Failed to fetch users')
-    const data = await response.json()
-    setUsers(data.users || [])
-  }, [tenantId])
-
-  const fetchAllTenants = useCallback(async () => {
-    const response = await fetch('/api/tenants')
-    if (!response.ok) throw new Error('Failed to fetch tenants')
-    const data = await response.json()
-    setAllTenants((data.tenants || []).filter(t => t.id !== tenantId))
-  }, [tenantId])
-
-  const fetchRoles = useCallback(async () => {
-    const response = await fetch(`/api/tenants/${tenantId}/roles`)
-    if (!response.ok) throw new Error('Failed to fetch roles')
-    const data = await response.json()
-    setRoles(data.roles || [])
-  }, [tenantId])
-
-  const fetchUserRoles = useCallback(async () => {
-    const response = await fetch(`/api/tenants/${tenantId}/user-roles`)
-    if (!response.ok) throw new Error('Failed to fetch user roles')
-    const data = await response.json()
-    setUserRoles(data.userRoles || [])
-  }, [tenantId])
-
-  const fetchRoleTemplates = useCallback(async () => {
-    const response = await fetch('/api/role-templates')
-    if (!response.ok) throw new Error('Failed to fetch role templates')
-    const data = await response.json()
-    setRoleTemplates(data.roleTemplates || [])
-  }, [])
-
+  // Fetch permissions (global, not tenant-specific)
   const fetchPermissions = useCallback(async () => {
-    const response = await fetch('/api/permissions')
-    if (!response.ok) throw new Error('Failed to fetch permissions')
-    const data = await response.json()
-    setPermissions(data.permissions || [])
-    setGroupedPermissions(data.groupedByCategory || {})
+    try {
+      const response = await api.get('/permissions')
+      const data = parseApiResponse(response)
+      setPermissions(data.permissions || [])
+      setGroupedPermissions(data.groupedByCategory || {})
+    } catch (err) {
+      console.error('Error fetching permissions:', err)
+    }
   }, [])
-
-  const fetchFeatures = useCallback(async () => {
-    const response = await fetch(`/api/tenants/${tenantId}/features`)
-    if (!response.ok) throw new Error('Failed to fetch features')
-    const data = await response.json()
-    setFeatures(data.features || [])
-    setGroupedFeatures(data.groupedByCategory || {})
-  }, [tenantId])
 
   // Load all data
   useEffect(() => {
     if (tenantId) {
       setLoading(true)
+      setError(null)
+
       Promise.all([
-        fetchTenant(),
-        fetchUsers(),
-        fetchAllTenants(),
-        fetchRoles(),
-        fetchUserRoles(),
+        fetchTenant(tenantId),
+        fetchUsers(tenantId),
+        fetchTenants(),
+        fetchRoles(tenantId),
+        fetchUserRoles(tenantId),
         fetchRoleTemplates(),
-        fetchPermissions(),
-        fetchFeatures(),
+        fetchPermissions(), // Global permissions (no tenantId)
+        fetchFeatures(tenantId),
       ])
-        .catch(err => setError(err.message))
+        .catch(err => {
+          setError(err.response?.data?.error || err.message || 'Failed to load data')
+        })
         .finally(() => setLoading(false))
     }
-  }, [tenantId, fetchTenant, fetchUsers, fetchAllTenants, fetchRoles, fetchUserRoles, fetchRoleTemplates, fetchPermissions, fetchFeatures])
+  }, [tenantId, fetchTenant, fetchUsers, fetchRoles, fetchUserRoles, fetchFeatures, fetchTenants, fetchRoleTemplates, fetchPermissions])
+
+  // Get filtered allTenants (exclude current tenant) - use selector or getState
+  const allTenantsFromStore = useTenantsStore((state) => state.tenants);
+  const filteredAllTenants = allTenantsFromStore.filter(t => t.id !== tenantId)
 
   // Handle user selection for move
   const toggleUserSelection = (userId) => {
@@ -261,20 +244,13 @@ export default function TenantDetailPage() {
     setFormError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/users`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userIds: Array.from(selectedUsers),
-          targetTenantId,
-        }),
+      const response = await api.post(`/tenants/${tenantId}/users`, {
+        userIds: Array.from(selectedUsers),
+        targetTenantId,
       })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to move users')
-
-      setSuccessMessage(data.message || `Successfully moved ${selectedUsers.size} user(s)`)
-      await Promise.all([fetchTenant(), fetchUsers(), fetchUserRoles()])
+      setSuccessMessage(response.data.message || `Successfully moved ${selectedUsers.size} user(s)`)
+      await Promise.all([fetchTenant(tenantId), fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
       setSelectedUsers(new Set())
       setTargetTenantId('')
 
@@ -297,22 +273,18 @@ export default function TenantDetailPage() {
 
     try {
       const url = isEditing
-        ? `/api/tenants/${tenantId}/roles/${selectedRole.id}`
-        : `/api/tenants/${tenantId}/roles`
-      const method = isEditing ? 'PUT' : 'POST'
+        ? `/tenants/${tenantId}/roles/${selectedRole.id}`
+        : `/tenants/${tenantId}/roles`
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(roleForm),
-      })
+      const response = isEditing
+        ? await api.put(url, roleForm)
+        : await api.post(url, roleForm)
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to save role')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to save role')
 
       setRoleDialogOpen(false)
       resetRoleForm()
-      await Promise.all([fetchTenant(), fetchRoles()])
+      await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true)])
     } catch (err) {
       setFormError(err.message)
     } finally {
@@ -328,16 +300,13 @@ export default function TenantDetailPage() {
     setFormError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/roles/${selectedRole.id}`, {
-        method: 'DELETE',
-      })
+      const response = await api.delete(`/tenants/${tenantId}/roles/${selectedRole.id}`)
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to delete role')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to delete role')
 
       setDeleteRoleDialogOpen(false)
       setSelectedRole(null)
-      await Promise.all([fetchTenant(), fetchRoles(), fetchUserRoles()])
+      await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true), fetchUserRoles(tenantId, true)])
     } catch (err) {
       setFormError(err.message)
     } finally {
@@ -353,24 +322,19 @@ export default function TenantDetailPage() {
     setFormError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/user-roles`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: selectedUserForRole,
-          tenantRoleId: selectedRoleForAssignment,
-        }),
+      const response = await api.post(`/tenants/${tenantId}/user-roles`, {
+        userId: selectedUserForRole,
+        tenantRoleId: selectedRoleForAssignment,
       })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to assign role')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to assign role')
 
       setAssignRoleDialogOpen(false)
       setSelectedUserForRole('')
       setSelectedRoleForAssignment('')
-      await fetchUserRoles()
+      await fetchUserRoles(tenantId, true)
     } catch (err) {
-      setFormError(err.message)
+      setFormError(err.response?.data?.error || err.message || 'Failed to assign role')
     } finally {
       setFormLoading(false)
     }
@@ -379,14 +343,13 @@ export default function TenantDetailPage() {
   // Handle remove user role
   const handleRemoveUserRole = async (userRoleId) => {
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/user-roles?userRoleId=${userRoleId}`, {
-        method: 'DELETE',
+      const response = await api.delete(`/tenants/${tenantId}/user-roles`, {
+        params: { userRoleId },
       })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to remove role')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to remove role')
 
-      await fetchUserRoles()
+      await fetchUserRoles(tenantId, true)
     } catch (err) {
       setError(err.message)
     }
@@ -398,17 +361,12 @@ export default function TenantDetailPage() {
     setFormError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/roles`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateSetName }),
-      })
+      const response = await api.put(`/tenants/${tenantId}/roles`, { templateSetName })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to initialize roles')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to initialize roles')
 
       setInitializeRolesDialogOpen(false)
-      await Promise.all([fetchTenant(), fetchRoles()])
+      await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true)])
     } catch (err) {
       setFormError(err.message)
     } finally {
@@ -421,32 +379,22 @@ export default function TenantDetailPage() {
     if (!selectedRole) return
 
     try {
-      const url = `/api/tenants/${tenantId}/roles/${selectedRole.id}/permissions`
-      const method = isChecked ? 'POST' : 'DELETE'
+      const url = `/tenants/${tenantId}/roles/${selectedRole.id}/permissions`
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permissionIds: [permissionId] }),
-      })
+      const response = isChecked
+        ? await api.post(url, { permissionIds: [permissionId] })
+        : await api.delete(url, { data: { permissionIds: [permissionId] } })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update permissions')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to update permissions')
+
+      await fetchRoles(tenantId, true)
+
+      // Update selected role from updated store data
+      const updatedRoles = useTenantsStore.getState().roles
+      const updatedRole = updatedRoles.find(r => r.id === selectedRole.id)
+      if (updatedRole) {
+        setSelectedRole(updatedRole)
       }
-
-      await fetchRoles()
-      // Update selected role
-      const updatedRoles = roles.map(r => {
-        if (r.id === selectedRole.id) {
-          const newPerms = isChecked
-            ? [...(r.permissions || []), permissions.find(p => p.id === permissionId)]
-            : (r.permissions || []).filter(p => p.id !== permissionId)
-          return { ...r, permissions: newPerms }
-        }
-        return r
-      })
-      setSelectedRole(updatedRoles.find(r => r.id === selectedRole.id))
     } catch (err) {
       console.error('Error updating permissions:', err)
     }
@@ -455,38 +403,40 @@ export default function TenantDetailPage() {
   // Handle toggle role active/inactive
   const handleToggleRoleActive = async (role) => {
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/roles/${role.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          isActive: !role.isActive,
-        }),
+      const response = await api.put(`/tenants/${tenantId}/roles/${role.id}`, {
+        isActive: !role.isActive,
       })
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to update role')
+      if (response.data.error) throw new Error(response.data.error || 'Failed to update role')
 
-      await fetchRoles()
+      await fetchRoles(tenantId, true)
+
+      // Update selected role from updated store data if it exists
+      const updatedRoles = useTenantsStore.getState().roles
+      const updatedRole = updatedRoles.find(r => r.id === role.id)
+      if (updatedRole) {
+        setSelectedRole(updatedRole)
+      }
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to update role')
     }
   }
 
   // Handle view role details
   const handleViewRoleDetails = async (role) => {
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/roles/${role.id}`)
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || 'Failed to fetch role details')
+      const response = await api.get(`/tenants/${tenantId}/roles/${role.id}`)
 
-      setSelectedRole(data.role)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to fetch role details')
+
+      setSelectedRole(response.data.role)
       setRoleDetailsDialogOpen(true)
     } catch (err) {
       setError(err.message)
     }
   }
 
-  // Filter roles
+  // Filter roles from store (using selector for reactivity)
   const filteredRoles = roles.filter(role => {
     const searchLower = roleSearchQuery.toLowerCase()
     return (
@@ -538,6 +488,23 @@ export default function TenantDetailPage() {
     )
   })
 
+  // Create a map of user roles by userId (Clerk ID) for quick lookup
+  const userRoleMap = new Map()
+  userRoles.forEach(ur => {
+    const userId = ur.userId
+    // Store the role with highest priority (if user has multiple roles, take the first active one)
+    if (!userRoleMap.has(userId) && ur.role?.roleAlias) {
+      userRoleMap.set(userId, ur.role.roleAlias)
+    }
+  })
+
+  // Helper function to get user's role from userRoles
+  const getUserRole = (user) => {
+    // Try clerkId first, then id
+    const userId = user.clerkId || user.id
+    return userRoleMap.get(userId) || null
+  }
+
   // Get category display name
   const getCategoryDisplayName = (category) => {
     return category
@@ -552,21 +519,46 @@ export default function TenantDetailPage() {
   // Handle feature toggle (super admin controls superAdminEnabled)
   const handleFeatureToggle = async (featureId, superAdminEnabled) => {
     setFeatureLoading(true)
+    
+    // Optimistic update: immediately update the store for instant UI feedback
+    const previousFeatures = [...features]
+    const previousGroupedFeatures = { ...groupedFeatures }
+    
+    const updatedFeatures = features.map(f => 
+      f.id === featureId 
+        ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+        : f
+    )
+    
+    // Update grouped features as well
+    const updatedGroupedFeatures = Object.entries(groupedFeatures).reduce((acc, [category, categoryFeatures]) => {
+      acc[category] = categoryFeatures.map(f => 
+        f.id === featureId 
+          ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+          : f
+      )
+      return acc
+    }, {})
+    
+    // Apply optimistic update to store using Zustand's setState
+    useTenantsStore.setState({
+      features: updatedFeatures,
+      featuresByCategory: updatedGroupedFeatures,
+    })
+    
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/features`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featureId, superAdminEnabled }),
-      })
+      const response = await api.put(`/tenants/${tenantId}/features`, { featureId, superAdminEnabled })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update feature')
-      }
+      if (response.data.error) throw new Error(response.data.error || 'Failed to update feature')
 
-      // Refresh features
-      await fetchFeatures()
+      // Refresh features to get the latest state from server (force bypasses request deduplication)
+      await fetchFeatures(tenantId, true)
     } catch (err) {
+      // Revert optimistic update on error
+      useTenantsStore.setState({
+        features: previousFeatures,
+        featuresByCategory: previousGroupedFeatures,
+      })
       setError(err.message)
     } finally {
       setFeatureLoading(false)
@@ -577,16 +569,12 @@ export default function TenantDetailPage() {
   const handleInitializeFeatures = async () => {
     setFeatureLoading(true)
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/features`, {
-        method: 'POST',
-      })
+      const response = await api.post(`/tenants/${tenantId}/features`)
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to initialize features')
-      }
+      if (response.data.error) throw new Error(response.data.error || 'Failed to initialize features')
 
-      await fetchFeatures()
+      // Refresh features (force bypasses request deduplication)
+      await fetchFeatures(tenantId, true)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -611,7 +599,11 @@ export default function TenantDetailPage() {
     return names[category] || category.charAt(0).toUpperCase() + category.slice(1)
   }
 
-  if (loading) {
+  // Combine store loading with local loading
+  const isLoading = loading || storeLoading
+  const displayError = error || storeError
+
+  if (isLoading) {
     return (
       <div className="p-4 lg:p-6 w-full flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -619,13 +611,13 @@ export default function TenantDetailPage() {
     )
   }
 
-  if (error && !tenant) {
+  if (displayError && !tenant) {
     return (
       <div className="p-4 lg:p-6 w-full">
         <Card>
           <CardContent className="p-12 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-red-600">{error}</p>
+            <p className="text-red-600">{displayError}</p>
             <Link href="/cms/tenants">
               <Button className="mt-4">Back to Tenants</Button>
             </Link>
@@ -666,7 +658,13 @@ export default function TenantDetailPage() {
           size="icon"
           onClick={() => {
             setLoading(true)
-            Promise.all([fetchTenant(), fetchUsers(), fetchRoles(), fetchUserRoles(), fetchFeatures()])
+            Promise.all([
+              fetchTenant(tenantId),
+              fetchUsers(tenantId),
+              fetchRoles(tenantId),
+              fetchUserRoles(tenantId),
+              fetchFeatures(tenantId),
+            ])
               .finally(() => setLoading(false))
           }}
         >
@@ -750,9 +748,9 @@ export default function TenantDetailPage() {
       </div>
 
       {/* Error display */}
-      {error && (
+      {displayError && (
         <div className="mb-6 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-4">
-          {error}
+          {displayError}
         </div>
       )}
 
@@ -827,7 +825,7 @@ export default function TenantDetailPage() {
                           className="h-10 w-10 rounded-full"
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
                           {user.firstName?.[0] || user.username?.[0] || 'U'}
                         </div>
                       )}
@@ -839,9 +837,18 @@ export default function TenantDetailPage() {
                           @{user.username}
                         </p>
                       </div>
-                      <Badge variant="outline" className="capitalize">
-                        {user.role}
-                      </Badge>
+                      {(() => {
+                        const userRole = getUserRole(user)
+                        return userRole ? (
+                          <Badge variant="outline">
+                            {userRole}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            No role
+                          </Badge>
+                        )
+                      })()}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -879,8 +886,10 @@ export default function TenantDetailPage() {
               )}
               <Button
                 onClick={() => {
+                  console.log('Add Role button clicked')
                   resetRoleForm()
                   setRoleDialogOpen(true)
+                  console.log('roleDialogOpen set to:', true)
                 }}
                 disabled={roles.length >= (tenant?.maxRoleSlots || 5)}
               >
@@ -889,6 +898,58 @@ export default function TenantDetailPage() {
               </Button>
             </div>
           </div>
+
+          {/* Default Role Setting */}
+          {roles.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Default Role for New Users</CardTitle>
+                <CardDescription>
+                  Select which role should be assigned by default when creating new users in the LMS admin dashboard.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Label htmlFor="defaultRole">Default Role</Label>
+                    <select
+                      id="defaultRole"
+                      value={tenant?.defaultRoleId || ''}
+                      onChange={async (e) => {
+                        const newDefaultRoleId = e.target.value || null
+                        try {
+                          const response = await api.put(`/tenants/${tenantId}`, {
+                            defaultRoleId: newDefaultRoleId,
+                          })
+                          if (response.data.error) {
+                            throw new Error(response.data.error)
+                          }
+                          // Refresh tenant data
+                          await fetchTenant(tenantId, true)
+                        } catch (err) {
+                          console.error('Error updating default role:', err)
+                          setError(err.response?.data?.error || err.message || 'Failed to update default role')
+                        }
+                      }}
+                      className="w-full mt-2 h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      <option value="">No default role</option>
+                      {roles.filter(r => r.isActive).map((role) => (
+                        <option key={role.id} value={role.id}>
+                          {role.roleAlias} {role.id === tenant?.defaultRoleId ? '(Current Default)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {tenant?.defaultRole && (
+                    <div className="text-sm text-muted-foreground">
+                      Current: <Badge variant="secondary">{tenant.defaultRole.roleAlias}</Badge>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {roles.length > 0 && (
             <div className="flex items-center gap-4">
@@ -1244,7 +1305,7 @@ export default function TenantDetailPage() {
                                 className="h-8 w-8 rounded-full"
                               />
                             ) : (
-                              <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
+                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
                                 {ur.user?.firstName?.[0] || 'U'}
                               </div>
                             )}
@@ -1474,7 +1535,7 @@ export default function TenantDetailPage() {
                     disabled={formLoading}
                   >
                     <option value="">Select a tenant...</option>
-                    {allTenants.map((t) => (
+                    {filteredAllTenants.map((t) => (
                       <option key={t.id} value={t.id}>
                         {t.name} ({t.activeUsers} users)
                       </option>
@@ -1504,7 +1565,10 @@ export default function TenantDetailPage() {
       </Dialog>
 
       {/* Role Dialog */}
-      <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
+      <Dialog open={roleDialogOpen} onOpenChange={(open) => {
+        console.log('Dialog onOpenChange called with:', open)
+        setRoleDialogOpen(open)
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{isEditing ? 'Edit Role' : 'Create Role'}</DialogTitle>
@@ -1751,17 +1815,17 @@ export default function TenantDetailPage() {
                   </div>
                   <div>
                     <Label className="text-sm text-muted-foreground">Slot Position</Label>
-                    <p className="font-medium">
+                    <div className="font-medium">
                       <Badge variant="secondary">Slot {selectedRole.slotPosition}</Badge>
-                    </p>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-sm text-muted-foreground">Status</Label>
-                    <p>
+                    <div>
                       <Badge variant={selectedRole.isActive ? 'default' : 'destructive'}>
                         {selectedRole.isActive ? 'Active' : 'Inactive'}
                       </Badge>
-                    </p>
+                    </div>
                   </div>
                   <div>
                     <Label className="text-sm text-muted-foreground">Users with Role</Label>

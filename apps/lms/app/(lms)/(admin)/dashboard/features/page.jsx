@@ -28,6 +28,8 @@ import {
   XCircle,
 } from 'lucide-react'
 import { cn } from '@skill-learn/lib/utils.js'
+import api from '@skill-learn/lib/utils/axios.js'
+import { useFeaturesStore } from '@skill-learn/lib/stores/featuresStore.js'
 
 // Feature icon mapping
 const featureIcons = {
@@ -70,6 +72,9 @@ const Switch = ({ checked, onCheckedChange, disabled = false }) => (
 )
 
 export default function FeaturesPage() {
+  // Note: Tenant-specific features are different from global features
+  // For tenant admin, we need to fetch tenant features, not global features
+  // So we'll keep local state for tenant features, but use store for global feature flags if needed
   const [features, setFeatures] = useState([])
   const [groupedFeatures, setGroupedFeatures] = useState({})
   const [summary, setSummary] = useState({ total: 0, enabled: 0, disabled: 0, locked: 0 })
@@ -77,25 +82,19 @@ export default function FeaturesPage() {
   const [error, setError] = useState(null)
   const [togglingFeatureId, setTogglingFeatureId] = useState(null)
 
-  // Fetch features
+  // Fetch tenant features
   const fetchFeatures = async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/tenant/features')
+      const response = await api.get('/tenant/features')
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to fetch features')
-      }
-
-      const data = await response.json()
-      setFeatures(data.features || [])
-      setGroupedFeatures(data.groupedByCategory || {})
-      setSummary(data.summary || { total: 0, enabled: 0, disabled: 0, locked: 0 })
+      setFeatures(response.data.features || [])
+      setGroupedFeatures(response.data.groupedByCategory || {})
+      setSummary(response.data.summary || { total: 0, enabled: 0, disabled: 0, locked: 0 })
     } catch (err) {
       console.error('Error fetching features:', err)
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to fetch features')
     } finally {
       setLoading(false)
     }
@@ -109,21 +108,16 @@ export default function FeaturesPage() {
   const handleToggle = async (featureId, newEnabledState) => {
     setTogglingFeatureId(featureId)
     try {
-      const response = await fetch('/api/tenant/features', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ featureId, enabled: newEnabledState }),
-      })
+      const response = await api.put('/tenant/features', { featureId, enabled: newEnabledState })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update feature')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to update feature')
       }
 
       // Refresh features
       await fetchFeatures()
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to update feature')
     } finally {
       setTogglingFeatureId(null)
     }

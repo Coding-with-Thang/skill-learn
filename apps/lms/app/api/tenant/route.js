@@ -20,6 +20,13 @@ export async function GET() {
       include: {
         tenant: {
           include: {
+            defaultRole: {
+              select: {
+                id: true,
+                roleAlias: true,
+                isActive: true,
+              },
+            },
             _count: {
               select: {
                 users: true,
@@ -56,6 +63,8 @@ export async function GET() {
         maxRoleSlots: tenant.maxRoleSlots,
         baseRoleSlots: tenant.baseRoleSlots,
         purchasedRoleSlots: tenant.purchasedRoleSlots,
+        defaultRoleId: tenant.defaultRoleId,
+        defaultRole: tenant.defaultRole,
         stripeCustomerId: tenant.stripeCustomerId,
         stripeSubscriptionId: tenant.stripeSubscriptionId,
         createdAt: tenant.createdAt,

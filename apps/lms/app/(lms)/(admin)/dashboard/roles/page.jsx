@@ -30,14 +30,29 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "@skill-learn/lib/utils/axios.js";
+import { useRolesStore } from "@skill-learn/lib/stores/rolesStore.js";
 
 export default function RolesPage() {
-  // Data state
-  const [tenant, setTenant] = useState(null);
-  const [roles, setRoles] = useState([]);
-  const [permissions, setPermissions] = useState([]);
-  const [groupedPermissions, setGroupedPermissions] = useState({});
-  const [templates, setTemplates] = useState([]);
+  // Use selectors to only re-render when specific state changes
+  const roles = useRolesStore((state) => state.roles);
+  const tenant = useRolesStore((state) => state.tenant);
+  const permissions = useRolesStore((state) => state.permissions);
+  const groupedPermissions = useRolesStore((state) => state.permissionsByCategory);
+  const templates = useRolesStore((state) => state.templates);
+  const storeLoading = useRolesStore((state) => state.isLoading);
+  const storeError = useRolesStore((state) => state.error);
+  const fetchRoles = useRolesStore((state) => state.fetchRoles);
+  const fetchPermissions = useRolesStore((state) => state.fetchPermissions);
+  const fetchTemplates = useRolesStore((state) => state.fetchTemplates);
+  const createRole = useRolesStore((state) => state.createRole);
+  const updateRole = useRolesStore((state) => state.updateRole);
+  const deleteRole = useRolesStore((state) => state.deleteRole);
+  
+  // Get store instance for accessing updated state after mutations
+  const rolesStore = useRolesStore.getState();
+
+  // Local state (UI only)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -63,49 +78,36 @@ export default function RolesPage() {
   // Expanded categories in permissions dialog
   const [expandedCategories, setExpandedCategories] = useState({});
 
-  // Fetch functions
-  const fetchRoles = useCallback(async () => {
-    const response = await fetch("/api/tenant/roles");
-    if (!response.ok) throw new Error("Failed to fetch roles");
-    const data = await response.json();
-    setRoles(data.roles || []);
-    setTenant(data.tenant);
-  }, []);
-
-  const fetchPermissions = useCallback(async () => {
-    const response = await fetch("/api/tenant/permissions");
-    if (!response.ok) throw new Error("Failed to fetch permissions");
-    const data = await response.json();
-    setPermissions(data.permissions || []);
-    setGroupedPermissions(data.groupedByCategory || {});
-    // Expand all categories
-    const expanded = {};
-    data.categories?.forEach((cat) => (expanded[cat] = true));
-    setExpandedCategories(expanded);
-  }, []);
-
-  const fetchTemplates = useCallback(async () => {
-    const response = await fetch("/api/tenant/templates");
-    if (!response.ok) throw new Error("Failed to fetch templates");
-    const data = await response.json();
-    setTemplates(data.templateSets || []);
-  }, []);
-
   // Load data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       setError(null);
       try {
-        await Promise.all([fetchRoles(), fetchPermissions(), fetchTemplates()]);
+        const [rolesData, permissionsData, templatesData] = await Promise.all([
+          fetchRoles(),
+          fetchPermissions(),
+          fetchTemplates(),
+        ]);
+
+        // Set expanded categories from permissions data
+        if (permissionsData?.categories) {
+          const expanded = {};
+          permissionsData.categories.forEach((cat) => (expanded[cat] = true));
+          setExpandedCategories(expanded);
+        }
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.error || err.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
     loadData();
   }, [fetchRoles, fetchPermissions, fetchTemplates]);
+
+  // Combine store loading with local loading
+  const isLoading = loading || storeLoading;
+  const displayError = error || storeError;
 
   // Handle create/update role
   const handleRoleSubmit = async (e) => {
@@ -114,23 +116,14 @@ export default function RolesPage() {
     setFormError(null);
 
     try {
-      const url = isEditing
-        ? `/api/tenant/roles/${selectedRole.id}`
-        : "/api/tenant/roles";
-      const method = isEditing ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(roleForm),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to save role");
+      if (isEditing) {
+        await updateRole(selectedRole.id, roleForm);
+      } else {
+        await createRole(roleForm);
+      }
 
       setRoleDialogOpen(false);
       resetRoleForm();
-      await fetchRoles();
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -145,16 +138,10 @@ export default function RolesPage() {
     setFormError(null);
 
     try {
-      const response = await fetch(`/api/tenant/roles/${selectedRole.id}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to delete role");
+      await deleteRole(selectedRole.id);
 
       setDeleteDialogOpen(false);
       setSelectedRole(null);
-      await fetchRoles();
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -168,17 +155,14 @@ export default function RolesPage() {
     setFormError(null);
 
     try {
-      const response = await fetch("/api/tenant/roles", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateSetName: selectedTemplateSet }),
-      });
+      const response = await api.put("/tenant/roles", { templateSetName: selectedTemplateSet });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to initialize roles");
+      if (response.data.error) throw new Error(response.data.error || "Failed to initialize roles");
+
+      // Refresh roles from store
+      await fetchRoles(true); // Force refresh
 
       setInitDialogOpen(false);
-      await fetchRoles();
     } catch (err) {
       setFormError(err.message);
     } finally {
@@ -191,24 +175,21 @@ export default function RolesPage() {
     if (!selectedRole) return;
 
     try {
-      const response = await fetch(`/api/tenant/roles/${selectedRole.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          permissionIds: isChecked
-            ? [...selectedRole.permissions.map((p) => p.id), permissionId]
-            : selectedRole.permissions.filter((p) => p.id !== permissionId).map((p) => p.id),
-        }),
+      const response = await api.put(`/tenant/roles/${selectedRole.id}`, {
+        permissionIds: isChecked
+          ? [...selectedRole.permissions.map((p) => p.id), permissionId]
+          : selectedRole.permissions.filter((p) => p.id !== permissionId).map((p) => p.id),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update permissions");
+      if (response.data.error) {
+        throw new Error(response.data.error || "Failed to update permissions");
       }
 
-      // Refresh roles and update selected
-      await fetchRoles();
-      const updated = roles.find((r) => r.id === selectedRole.id);
+      // Refresh roles and update selected from store
+      await fetchRoles(true); // Force refresh
+      // Get fresh state after refresh
+      const updatedRoles = useRolesStore.getState().roles;
+      const updated = updatedRoles.find((r) => r.id === selectedRole.id);
       if (updated) setSelectedRole(updated);
     } catch (err) {
       console.error("Failed to update permission:", err);
@@ -248,7 +229,7 @@ export default function RolesPage() {
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
       .join(" ");
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -256,12 +237,12 @@ export default function RolesPage() {
     );
   }
 
-  if (error) {
+  if (displayError) {
     return (
       <Card>
         <CardContent className="p-12 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{displayError}</p>
         </CardContent>
       </Card>
     );
@@ -283,7 +264,7 @@ export default function RolesPage() {
             size="icon"
             onClick={() => {
               setLoading(true);
-              fetchRoles().finally(() => setLoading(false));
+              Promise.all([fetchRoles(true), fetchPermissions(true), fetchTemplates(true)]).finally(() => setLoading(false));
             }}
           >
             <RefreshCw className="h-4 w-4" />

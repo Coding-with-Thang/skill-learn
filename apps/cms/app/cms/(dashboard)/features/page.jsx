@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
+import api from '@skill-learn/lib/utils/axios.js'
 import { Badge } from '@/components/cms/ui/badge'
 import { Button } from '@/components/cms/ui/button'
 import { Input } from '@/components/cms/ui/input'
@@ -15,6 +16,7 @@ import {
   DialogTitle,
 } from '@skill-learn/ui/components/dialog'
 import { Label } from '@skill-learn/ui/components/label'
+import { cn } from '@/lib/cms/utils'
 import {
   Gamepad2,
   FileQuestion,
@@ -60,20 +62,20 @@ const Switch = ({ checked, onCheckedChange, disabled = false }) => (
   <button
     onClick={() => !disabled && onCheckedChange(!checked)}
     disabled={disabled}
-    className={`
-      relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent 
-      transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 
-      focus-visible:ring-primary focus-visible:ring-offset-2
-      ${checked ? 'bg-primary' : 'bg-input'}
-      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-    `}
+    className={cn(
+      "relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent",
+      "transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+      "focus-visible:ring-primary focus-visible:ring-offset-2",
+      checked ? 'bg-primary' : 'bg-input',
+      disabled && 'opacity-50 cursor-not-allowed'
+    )}
   >
     <span
-      className={`
-        pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 
-        transition-transform duration-200 ease-in-out
-        ${checked ? 'translate-x-5' : 'translate-x-0'}
-      `}
+      className={cn(
+        "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0",
+        "transition-transform duration-200 ease-in-out",
+        checked ? 'translate-x-5' : 'translate-x-0'
+      )}
     />
   </button>
 )
@@ -124,18 +126,13 @@ export default function FeaturesPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/features')
+      const response = await api.get('/features')
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch features')
-      }
-
-      const data = await response.json()
-      setFeatures(data.features || [])
-      setGroupedFeatures(data.groupedByCategory || {})
+      setFeatures(response.data.features || [])
+      setGroupedFeatures(response.data.groupedByCategory || {})
     } catch (err) {
       console.error('Error fetching features:', err)
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to fetch features')
     } finally {
       setLoading(false)
     }
@@ -145,17 +142,11 @@ export default function FeaturesPage() {
   const seedFeatures = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/features/seed', {
-        method: 'POST',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to seed features')
-      }
+      await api.post('/features/seed')
 
       await fetchFeatures()
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to seed features')
     } finally {
       setLoading(false)
     }
@@ -172,16 +163,10 @@ export default function FeaturesPage() {
     setError(null)
 
     try {
-      const response = await fetch('/api/features', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const response = await api.post('/features', formData)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create feature')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to create feature')
       }
 
       setCreateDialogOpen(false)
@@ -201,16 +186,10 @@ export default function FeaturesPage() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/features/${selectedFeature.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const response = await api.put(`/features/${selectedFeature.id}`, formData)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update feature')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to update feature')
       }
 
       setEditDialogOpen(false)
@@ -230,14 +209,10 @@ export default function FeaturesPage() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/features/${selectedFeature.id}`, {
-        method: 'DELETE',
-      })
+      const response = await api.delete(`/features/${selectedFeature.id}`)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete feature')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to delete feature')
       }
 
       setDeleteDialogOpen(false)
@@ -253,14 +228,10 @@ export default function FeaturesPage() {
   // Handle toggle active
   const handleToggleActive = async (feature) => {
     try {
-      const response = await fetch(`/api/features/${feature.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !feature.isActive }),
-      })
+      const response = await api.put(`/features/${feature.id}`, { isActive: !feature.isActive })
 
-      if (!response.ok) {
-        throw new Error('Failed to toggle feature')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to toggle feature')
       }
 
       fetchFeatures()
@@ -395,11 +366,15 @@ export default function FeaturesPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className={`flex items-center gap-4 p-4 rounded-lg border ${
+                        className={cn(
+                          "flex items-center gap-4 p-4 rounded-lg border",
                           feature.isActive ? 'bg-background' : 'bg-muted/50'
-                        }`}
+                        )}
                       >
-                        <div className={`p-3 rounded-lg ${feature.isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                        <div className={cn(
+                          "p-3 rounded-lg",
+                          feature.isActive ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        )}>
                           <Icon className="h-6 w-6" />
                         </div>
                         <div className="flex-1">

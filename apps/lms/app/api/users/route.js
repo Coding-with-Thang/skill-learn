@@ -5,7 +5,7 @@ import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
+import { validateRequest, validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { userCreateSchema } from "@/lib/zodSchemas";
 
 export async function GET(request) {
@@ -71,35 +71,71 @@ export async function POST(request) {
       return permResult;
     }
 
-    const { username, firstName, lastName, password, manager, role } =
-      await validateRequestBody(request, userCreateSchema);
+    // Parse body and extract tenantRoleId (may not be in schema yet)
+    const body = await request.json();
+    const { tenantRoleId } = body;
+    
+    // Validate request body using schema (legacy role field)
+    const validatedData = await validateRequest(userCreateSchema, body);
+    const { username, firstName, lastName, password, manager, role } = validatedData;
 
+    // Determine target tenant role ID
+    let targetTenantRoleId = tenantRoleId;
+    
+    // If tenantRoleId not provided, use tenant's defaultRoleId
+    if (!targetTenantRoleId) {
+      const tenant = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { defaultRoleId: true },
+      });
+      
+      if (tenant?.defaultRoleId) {
+        targetTenantRoleId = tenant.defaultRoleId;
+      }
+    }
+
+    // Validate tenantRoleId if provided
+    if (targetTenantRoleId) {
+      const tenantRole = await prisma.tenantRole.findFirst({
+        where: {
+          id: targetTenantRoleId,
+          tenantId,
+          isActive: true,
+        },
+      });
+
+      if (!tenantRole) {
+        throw new AppError(
+          "Tenant role not found or is not active",
+          ErrorType.NOT_FOUND,
+          { status: 404 }
+        );
+      }
+
+      // Check if user can assign roles - requires roles.assign permission
+      const canAssignRoles = await hasPermission(userId, 'roles.assign', tenantId);
+      
+      if (!canAssignRoles) {
+        // If user can't assign roles, they can only assign the default role
+        const tenant = await prisma.tenant.findUnique({
+          where: { id: tenantId },
+          select: { defaultRoleId: true },
+        });
+        
+        if (targetTenantRoleId !== tenant?.defaultRoleId) {
+          throw new AppError(
+            "You do not have permission to assign this role. Only the default role can be assigned.",
+            ErrorType.FORBIDDEN,
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    // Legacy role support for backward compatibility
     const targetRole = role || "AGENT";
 
-    // Check if user can assign roles - requires roles.assign permission
-    const canAssignRoles = await hasPermission(userId, 'roles.assign', tenantId);
-    
-    // Validate role assignment permissions
-    // Users without roles.assign permission can only create AGENT roles
-    if (!canAssignRoles && targetRole !== "AGENT") {
-      throw new AppError(
-        "You do not have permission to create users with this role",
-        ErrorType.FORBIDDEN,
-        { status: 403 }
-      );
-    }
-    
-    // Legacy role-based restriction for backward compatibility
-    if (!canAssignRoles && currentUser.role === "MANAGER" && targetRole !== "AGENT") {
-      throw new AppError(
-        "Managers can only create users with AGENT role",
-        ErrorType.FORBIDDEN,
-        { status: 403 }
-      );
-    }
-
-    // Validate manager assignment
-    // Manager field should only be set for AGENT role
+    // Validate manager assignment (legacy - only for backward compatibility)
     if (
       manager &&
       manager !== "" &&
@@ -115,15 +151,12 @@ export async function POST(request) {
       );
     }
 
-    // Validate manager exists if provided
-    // - AGENT role: manager can be MANAGER or OPERATIONS
-    // - MANAGER role: manager must be OPERATIONS only
-    // NOTE: Manager lookup is scoped to tenant for security (ensures manager is in same tenant)
+    // Validate manager exists if provided (legacy)
     if (manager && manager !== "" && manager !== "none") {
       const managerUser = await prisma.user.findFirst({
         where: { 
           username: manager,
-          tenantId: tenantId, // Only find managers within the same tenant (security check)
+          tenantId: tenantId,
         },
         select: { id: true, role: true },
       });
@@ -132,33 +165,6 @@ export async function POST(request) {
         throw new AppError("Manager not found", ErrorType.NOT_FOUND, {
           status: 404,
         });
-      }
-
-      // If target role is MANAGER, manager must be OPERATIONS
-      if (targetRole === "MANAGER") {
-        if (managerUser.role !== "OPERATIONS") {
-          throw new AppError(
-            "Users with MANAGER role can only be assigned a manager with OPERATIONS role",
-            ErrorType.VALIDATION,
-            {
-              status: 400,
-            }
-          );
-        }
-      } else if (targetRole === "AGENT") {
-        // Agents can have MANAGER or OPERATIONS as manager
-        if (
-          managerUser.role !== "MANAGER" &&
-          managerUser.role !== "OPERATIONS"
-        ) {
-          throw new AppError(
-            "Assigned manager must have MANAGER or OPERATIONS role",
-            ErrorType.VALIDATION,
-            {
-              status: 400,
-            }
-          );
-        }
       }
     }
 
@@ -203,15 +209,17 @@ export async function POST(request) {
       lastName,
       password,
       username,
-    }); // Create user in database
+    }); 
+
+    // Create user in database
     const newUser = await prisma.user.create({
       data: {
         clerkId: clerkUser.id,
         username,
         firstName,
         lastName,
-        role: targetRole,
-        tenantId: tenantId, // CRITICAL: Assign user to current tenant
+        role: targetRole, // Legacy role field for backward compatibility
+        tenantId: tenantId,
         manager:
           manager === "none" ||
           manager === "" ||
@@ -221,6 +229,27 @@ export async function POST(request) {
         imageUrl: clerkUser.imageUrl,
       },
     });
+
+    // Create UserRole assignment if tenantRoleId is provided
+    if (targetTenantRoleId) {
+      await prisma.userRole.create({
+        data: {
+          userId: clerkUser.id, // Use Clerk ID
+          tenantId: tenantId,
+          tenantRoleId: targetTenantRoleId,
+          assignedBy: userId, // Admin who created the user
+        },
+      });
+
+      // Sync user metadata to Clerk (includes role/permissions)
+      try {
+        const { syncUserMetadataToClerk } = await import("@skill-learn/lib/utils/clerkSync.js");
+        await syncUserMetadataToClerk(clerkUser.id, tenantId);
+      } catch (syncError) {
+        console.error("Failed to sync user metadata to Clerk:", syncError);
+        // Don't fail the request, user was created successfully
+      }
+    }
 
     return successResponse({ user: newUser });
   } catch (error) {

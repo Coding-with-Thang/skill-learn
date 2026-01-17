@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import api from "../../utils/utils/axios.js";
 
 /**
  * React hook for checking subscription status on the client
@@ -15,17 +16,11 @@ export function useSubscription() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch("/api/subscription/status");
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch subscription status");
-      }
-
-      setStatus(data);
+      const response = await api.get("/subscription/status");
+      setStatus(response.data);
     } catch (err) {
       console.error("Error fetching subscription status:", err);
-      setError(err.message);
+      setError(err.response?.data?.error || err.message || "Failed to fetch subscription status");
       setStatus({
         authenticated: false,
         isActive: false,

@@ -20,6 +20,7 @@ import { Search, MoreVertical, Plus, Edit, Trash2, Loader2 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn, getStatusColor, getPlanColor } from '@/lib/cms/utils'
 import Link from 'next/link'
+import api from '@skill-learn/lib/utils/axios.js'
 
 export default function TenantsPage() {
   const [tenants, setTenants] = useState([])
@@ -50,24 +51,17 @@ export default function TenantsPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/tenants')
+      const response = await api.get('/tenants')
 
-      if (response.status === 401 || response.status === 403) {
-        const data = await response.json()
-        setError(data.error || 'Unauthorized - Super admin access required')
-        setTenants([])
-        return
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch tenants')
-      }
-
-      const data = await response.json()
-      setTenants(data.tenants || [])
+      setTenants(response.data.tenants || [])
     } catch (err) {
       console.error('Error fetching tenants:', err)
-      setError(err.message || 'Failed to load tenants')
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to load tenants')
+      }
+      setTenants([])
     } finally {
       setLoading(false)
     }
@@ -92,27 +86,21 @@ export default function TenantsPage() {
     setError(null)
 
     try {
-      const response = await fetch('/api/tenants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const response = await api.post('/tenants', formData)
 
-      const data = await response.json()
-
-      if (response.status === 401 || response.status === 403) {
-        throw new Error(data.error || 'Unauthorized - Super admin access required')
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create tenant')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to create tenant')
       }
 
       setCreateDialogOpen(false)
       setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
       fetchTenants()
     } catch (err) {
-      setError(err.message)
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to create tenant')
+      }
     } finally {
       setFormLoading(false)
     }
@@ -125,16 +113,10 @@ export default function TenantsPage() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${selectedTenant.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const response = await api.put(`/tenants/${selectedTenant.id}`, formData)
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update tenant')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to update tenant')
       }
 
       setEditDialogOpen(false)
@@ -142,7 +124,7 @@ export default function TenantsPage() {
       setFormData({ name: '', slug: '', subscriptionTier: 'professional', maxRoleSlots: 5 })
       fetchTenants()
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.error || err.message || 'Failed to update tenant')
     } finally {
       setFormLoading(false)
     }
@@ -154,25 +136,21 @@ export default function TenantsPage() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/tenants/${selectedTenant.id}`, {
-        method: 'DELETE',
-      })
+      const response = await api.delete(`/tenants/${selectedTenant.id}`)
 
-      const data = await response.json()
-
-      if (response.status === 401 || response.status === 403) {
-        throw new Error(data.error || 'Unauthorized - Super admin access required')
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete tenant')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to delete tenant')
       }
 
       setDeleteDialogOpen(false)
       setSelectedTenant(null)
       fetchTenants()
     } catch (err) {
-      setError(err.message)
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+      } else {
+        setError(err.response?.data?.error || err.message || 'Failed to delete tenant')
+      }
     } finally {
       setFormLoading(false)
     }

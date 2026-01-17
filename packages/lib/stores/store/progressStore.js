@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "../../utils/utils/axios.js";
 
 /**
  * Progress Store - Manages user training progress data
@@ -17,21 +18,18 @@ export const useProgressStore = create((set, get) => ({
   fetchProgress: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch("/api/user/progress");
-      if (!response.ok) throw new Error("Failed to fetch progress");
-
-      const data = await response.json();
+      const response = await api.get("/user/progress");
       set({
-        currentModule: data.currentModule || null,
+        currentModule: response.data.currentModule || null,
         stats: {
-          completed: data.completed || 0,
-          inProgress: data.inProgress || 0,
+          completed: response.data.completed || 0,
+          inProgress: response.data.inProgress || 0,
         },
         isLoading: false,
       });
     } catch (error) {
       set({
-        error: error.message,
+        error: error.response?.data?.error || error.message || "Failed to fetch progress",
         isLoading: false,
         currentModule: null,
       });

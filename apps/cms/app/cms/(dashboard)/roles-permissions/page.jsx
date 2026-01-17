@@ -33,6 +33,9 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
+import api from '@skill-learn/lib/utils/axios.js'
+import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore.js'
+import { useRoleTemplatesStore } from '@skill-learn/lib/stores/roleTemplatesStore.js'
 
 // Tab components
 const tabs = [
@@ -41,19 +44,37 @@ const tabs = [
 ]
 
 export default function RolesPermissionsPage() {
+  // Use selectors to only re-render when specific state changes
+  const permissionsLoading = usePermissionsStore((state) => state.isLoading);
+  const permissionsError = usePermissionsStore((state) => state.error);
+  const fetchGlobalPermissions = usePermissionsStore((state) => state.fetchPermissions);
+
+  const roleTemplates = useRoleTemplatesStore((state) => state.roleTemplates);
+  const groupedTemplates = useRoleTemplatesStore((state) => state.templatesBySet);
+  const templateSets = useRoleTemplatesStore((state) => state.templateSets);
+  const templatesLoading = useRoleTemplatesStore((state) => state.isLoading);
+  const templatesError = useRoleTemplatesStore((state) => state.error);
+  const fetchRoleTemplates = useRoleTemplatesStore((state) => state.fetchRoleTemplates);
+  const createRoleTemplate = useRoleTemplatesStore((state) => state.createRoleTemplate);
+  const updateRoleTemplate = useRoleTemplatesStore((state) => state.updateRoleTemplate);
+  const deleteRoleTemplate = useRoleTemplatesStore((state) => state.deleteRoleTemplate);
+  const updateTemplatePermissions = useRoleTemplatesStore((state) => state.updateTemplatePermissions);
+  
+  // Get store instance for accessing updated state after mutations
+  const roleTemplatesStore = useRoleTemplatesStore.getState();
+
+  // Local state (UI only)
   const [activeTab, setActiveTab] = useState('permissions')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Permissions state
+  // Note: For permissions, we need to fetch with includeDeprecated=true for CMS admin view
+  // Since permissionsStore fetches user-specific permissions (/user-permissions),
+  // we'll keep a local fetch for global permissions management (/permissions).
+  // The store is for user permissions, this page manages global permissions.
   const [permissions, setPermissions] = useState([])
   const [groupedPermissions, setGroupedPermissions] = useState({})
   const [categories, setCategories] = useState([])
-
-  // Role templates state
-  const [roleTemplates, setRoleTemplates] = useState([])
-  const [templateSets, setTemplateSets] = useState([])
-  const [groupedTemplates, setGroupedTemplates] = useState({})
 
   // UI state
   const [searchQuery, setSearchQuery] = useState('')
@@ -87,15 +108,13 @@ export default function RolesPermissionsPage() {
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState(null)
 
-  // Fetch permissions
+  // Fetch permissions (with includeDeprecated for CMS admin view)
+  // Note: permissionsStore is for user permissions, this page manages global permissions
+  // So we keep local fetch for global permissions management
   const fetchPermissions = useCallback(async () => {
     try {
-      const response = await fetch('/api/permissions?includeDeprecated=true')
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to fetch permissions')
-      }
-      const data = await response.json()
+      const response = await api.get('/permissions', { params: { includeDeprecated: true } })
+      const data = response.data
       setPermissions(data.permissions || [])
       setGroupedPermissions(data.groupedByCategory || {})
       setCategories(data.categories || [])
@@ -106,29 +125,14 @@ export default function RolesPermissionsPage() {
         expanded[cat] = true
       })
       setExpandedCategories(expanded)
+
+      // Also fetch to store for shared state (user permissions for other components)
+      await fetchGlobalPermissions(null)
     } catch (err) {
       console.error('Error fetching permissions:', err)
-      throw err
+      throw new Error(err.response?.data?.error || err.message || 'Failed to fetch permissions')
     }
-  }, [])
-
-  // Fetch role templates
-  const fetchRoleTemplates = useCallback(async () => {
-    try {
-      const response = await fetch('/api/role-templates')
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to fetch role templates')
-      }
-      const data = await response.json()
-      setRoleTemplates(data.roleTemplates || [])
-      setGroupedTemplates(data.groupedBySet || {})
-      setTemplateSets(data.templateSets || [])
-    } catch (err) {
-      console.error('Error fetching role templates:', err)
-      throw err
-    }
-  }, [])
+  }, [fetchGlobalPermissions])
 
   // Load data
   useEffect(() => {
@@ -136,15 +140,19 @@ export default function RolesPermissionsPage() {
       setLoading(true)
       setError(null)
       try {
-        await Promise.all([fetchPermissions(), fetchRoleTemplates()])
+        await Promise.all([fetchPermissions(), fetchRoleTemplates(true)]) // Force refresh templates
       } catch (err) {
-        setError(err.message)
+        setError(err.response?.data?.error || err.message || 'Failed to load data')
       } finally {
         setLoading(false)
       }
     }
     loadData()
   }, [fetchPermissions, fetchRoleTemplates])
+
+  // Combine loading and error states
+  const isLoading = loading || permissionsLoading || templatesLoading
+  const displayError = error || permissionsError || templatesError
 
   // Filter permissions
   const filteredPermissions = permissions.filter(perm => {
@@ -172,24 +180,21 @@ export default function RolesPermissionsPage() {
 
     try {
       const url = isEditing
-        ? `/api/permissions/${selectedItem.id}`
-        : '/api/permissions'
-      const method = isEditing ? 'PUT' : 'POST'
+        ? `/permissions/${selectedItem.id}`
+        : '/permissions'
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(permissionForm),
-      })
+      const response = isEditing
+        ? await api.put(url, permissionForm)
+        : await api.post(url, permissionForm)
 
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save permission')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to save permission')
       }
 
       setPermissionDialogOpen(false)
       resetPermissionForm()
-      await fetchPermissions()
+      await fetchPermissions() // Refresh local permissions (with deprecated)
+      await fetchGlobalPermissions(null) // Refresh store
     } catch (err) {
       setFormError(err.message)
     } finally {
@@ -204,27 +209,17 @@ export default function RolesPermissionsPage() {
     setFormError(null)
 
     try {
-      const url = isEditing
-        ? `/api/role-templates/${selectedItem.id}`
-        : '/api/role-templates'
-      const method = isEditing ? 'PUT' : 'POST'
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(templateForm),
-      })
-
-      const data = await response.json()
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save role template')
+      if (isEditing) {
+        await updateRoleTemplate(selectedItem.id, templateForm)
+      } else {
+        await createRoleTemplate(templateForm)
       }
 
       setTemplateDialogOpen(false)
       resetTemplateForm()
-      await fetchRoleTemplates()
+      // Store automatically refreshes templates
     } catch (err) {
-      setFormError(err.message)
+      setFormError(err.response?.data?.error || err.message || 'Failed to save role template')
     } finally {
       setFormLoading(false)
     }
@@ -236,27 +231,26 @@ export default function RolesPermissionsPage() {
     setFormError(null)
 
     try {
-      const url = activeTab === 'permissions'
-        ? `/api/permissions/${selectedItem.id}`
-        : `/api/role-templates/${selectedItem.id}`
-
-      const response = await fetch(url, { method: 'DELETE' })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete')
-      }
-
-      setDeleteDialogOpen(false)
-      setSelectedItem(null)
-
       if (activeTab === 'permissions') {
-        await fetchPermissions()
+        // Permissions delete - use API directly (not in store yet)
+        const response = await api.delete(`/permissions/${selectedItem.id}`)
+        if (response.data.error) {
+          throw new Error(response.data.error || 'Failed to delete permission')
+        }
+        
+        setDeleteDialogOpen(false)
+        setSelectedItem(null)
+        await fetchPermissions() // Refresh local permissions (with deprecated)
+        await fetchGlobalPermissions(null) // Refresh store
       } else {
-        await fetchRoleTemplates()
+        // Templates delete - use store method
+        await deleteRoleTemplate(selectedItem.id)
+        setDeleteDialogOpen(false)
+        setSelectedItem(null)
+        // Store automatically refreshes templates
       }
     } catch (err) {
-      setFormError(err.message)
+      setFormError(err.response?.data?.error || err.message || 'Failed to delete')
     } finally {
       setFormLoading(false)
     }
@@ -267,25 +261,22 @@ export default function RolesPermissionsPage() {
     if (!selectedItem) return
 
     try {
-      const url = `/api/role-templates/${selectedItem.id}/permissions`
-      const method = isChecked ? 'POST' : 'DELETE'
-      const body = { permissionIds: [permissionId] }
+      const url = `/role-templates/${selectedItem.id}/permissions`
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
+      const response = isChecked
+        ? await api.post(url, { permissionIds: [permissionId] })
+        : await api.delete(url, { data: { permissionIds: [permissionId] } })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update permissions')
+      if (response.data.error) {
+        throw new Error(response.data.error || 'Failed to update permissions')
       }
 
-      // Refresh templates
-      await fetchRoleTemplates()
-      // Update selected item
-      const updatedTemplate = roleTemplates.find(t => t.id === selectedItem.id)
+      // Use store method for permission assignment
+      await updateTemplatePermissions(selectedItem.id, permissionId, isChecked)
+      
+      // Refresh templates and update selected item
+      const updatedTemplates = useRoleTemplatesStore.getState().roleTemplates
+      const updatedTemplate = updatedTemplates.find(t => t.id === selectedItem.id)
       if (updatedTemplate) {
         setSelectedItem(updatedTemplate)
       }
@@ -436,9 +427,9 @@ export default function RolesPermissionsPage() {
       </div>
 
       {/* Error display */}
-      {error && (
+      {displayError && (
         <div className="mb-6 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-4">
-          {error}
+          {displayError}
         </div>
       )}
 
@@ -490,9 +481,13 @@ export default function RolesPermissionsPage() {
           onClick={async () => {
             setLoading(true)
             try {
-              await Promise.all([fetchPermissions(), fetchRoleTemplates()])
+              await Promise.all([
+                fetchPermissions(),
+                fetchGlobalPermissions(null),
+                fetchRoleTemplates(true),
+              ])
             } catch (err) {
-              setError(err.message)
+              setError(err.response?.data?.error || err.message || 'Failed to refresh')
             } finally {
               setLoading(false)
             }

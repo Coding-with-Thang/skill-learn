@@ -10,7 +10,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.20.2",
+    "@clerk/nextjs": "^6.36.8",
     "@skill-learn/database": "*",
     "@skill-learn/ui": "*",
     "@skill-learn/lib": "*",
@@ -18,9 +18,9 @@
     "next": "^15.5.9",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "framer-motion": "^12.23.26",
+    "framer-motion": "^12.26.2",
     "recharts": "^3.6.0",
-    "lucide-react": "^0.544.0",
+    "lucide-react": "^0.562.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.0.17",

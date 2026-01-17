@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -26,12 +26,20 @@ import {
   Shield,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useUserRolesStore } from "@skill-learn/lib/stores/userRolesStore.js";
 
 export default function UserRolesPage() {
-  // Data state
-  const [userRoles, setUserRoles] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [users, setUsers] = useState([]);
+  // Use selectors to only re-render when specific state changes
+  const userRoles = useUserRolesStore((state) => state.userRoles);
+  const roles = useUserRolesStore((state) => state.roles);
+  const users = useUserRolesStore((state) => state.users);
+  const storeLoading = useUserRolesStore((state) => state.isLoading);
+  const storeError = useUserRolesStore((state) => state.error);
+  const fetchAll = useUserRolesStore((state) => state.fetchAll);
+  const assignRole = useUserRolesStore((state) => state.assignRole);
+  const removeRole = useUserRolesStore((state) => state.removeRole);
+
+  // Local state (UI only)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,43 +55,25 @@ export default function UserRolesPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState(null);
 
-  // Fetch functions
-  const fetchUserRoles = useCallback(async () => {
-    const response = await fetch("/api/tenant/user-roles");
-    if (!response.ok) throw new Error("Failed to fetch user roles");
-    const data = await response.json();
-    setUserRoles(data.userRoles || []);
-  }, []);
-
-  const fetchRoles = useCallback(async () => {
-    const response = await fetch("/api/tenant/roles");
-    if (!response.ok) throw new Error("Failed to fetch roles");
-    const data = await response.json();
-    setRoles(data.roles?.filter((r) => r.isActive) || []);
-  }, []);
-
-  const fetchUsers = useCallback(async () => {
-    const response = await fetch("/api/users");
-    if (!response.ok) throw new Error("Failed to fetch users");
-    const data = await response.json();
-    setUsers(data.users || []);
-  }, []);
-
   // Load data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       setError(null);
       try {
-        await Promise.all([fetchUserRoles(), fetchRoles(), fetchUsers()]);
+        await fetchAll();
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.error || err.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, [fetchUserRoles, fetchRoles, fetchUsers]);
+  }, [fetchAll]);
+
+  // Combine loading states
+  const isLoading = loading || storeLoading;
+  const displayError = error || storeError;
 
   // Handle assign role
   const handleAssignRole = async () => {
@@ -92,24 +82,12 @@ export default function UserRolesPage() {
     setFormError(null);
 
     try {
-      const response = await fetch("/api/tenant/user-roles", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: selectedUserId,
-          tenantRoleId: selectedRoleId,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to assign role");
-
+      await assignRole(selectedUserId, selectedRoleId);
       setAssignDialogOpen(false);
       setSelectedUserId("");
       setSelectedRoleId("");
-      await fetchUserRoles();
     } catch (err) {
-      setFormError(err.message);
+      setFormError(err.response?.data?.error || err.message || "Failed to assign role");
     } finally {
       setFormLoading(false);
     }
@@ -122,19 +100,11 @@ export default function UserRolesPage() {
     setFormError(null);
 
     try {
-      const response = await fetch(
-        `/api/tenant/user-roles?userRoleId=${selectedUserRole.id}`,
-        { method: "DELETE" }
-      );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to remove role");
-
+      await removeRole(selectedUserRole.id);
       setDeleteDialogOpen(false);
       setSelectedUserRole(null);
-      await fetchUserRoles();
     } catch (err) {
-      setFormError(err.message);
+      setFormError(err.response?.data?.error || err.message || "Failed to remove role");
     } finally {
       setFormLoading(false);
     }
@@ -166,7 +136,7 @@ export default function UserRolesPage() {
     return acc;
   }, {});
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -179,7 +149,7 @@ export default function UserRolesPage() {
       <Card>
         <CardContent className="p-12 text-center">
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{displayError}</p>
         </CardContent>
       </Card>
     );
@@ -199,11 +169,13 @@ export default function UserRolesPage() {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => {
+            onClick={async () => {
               setLoading(true);
-              Promise.all([fetchUserRoles(), fetchRoles(), fetchUsers()]).finally(
-                () => setLoading(false)
-              );
+              try {
+                await fetchAll(true); // Force refresh
+              } finally {
+                setLoading(false);
+              }
             }}
           >
             <RefreshCw className="h-4 w-4" />

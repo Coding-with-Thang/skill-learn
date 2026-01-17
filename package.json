@@ -19,7 +19,7 @@
     "seed:all": "npm run prisma:seed && npm run seed:permissions"
   },
   "devDependencies": {
-    "turbo": "^2.0.0"
+    "turbo": "^2.7.5"
   },
   "engines": {
     "node": ">=18.0.0",
