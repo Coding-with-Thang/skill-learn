@@ -93,7 +93,7 @@ export default function CMSSignInPage() {
                 </h3>
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
                   You are signed in as <strong>{user?.emailAddresses?.[0]?.emailAddress || user?.username}</strong>, 
-                  but you don't have super admin privileges.
+                  but you don&apos;t have super admin privileges.
                 </p>
                 <p className="text-xs text-yellow-700 dark:text-yellow-300">
                   Contact an existing super administrator to request access.
