@@ -352,6 +352,15 @@ export default function RolesPage() {
                         <Badge variant="secondary" className="text-xs">
                           Slot {role.slotPosition}
                         </Badge>
+                        {role.createdFromTemplate ? (
+                          <Badge variant="default" className="text-xs bg-blue-500">
+                            Template
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            Custom
+                          </Badge>
+                        )}
                         {!role.isActive && (
                           <Badge variant="destructive" className="text-xs">
                             Inactive

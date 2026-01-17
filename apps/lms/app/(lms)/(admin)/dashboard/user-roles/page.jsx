@@ -334,7 +334,18 @@ export default function UserRolesPage() {
                       </div>
                     </td>
                     <td className="p-4">
-                      <Badge variant="outline">{ur.role?.roleAlias}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{ur.role?.roleAlias}</Badge>
+                        {ur.role?.createdFromTemplate ? (
+                          <Badge variant="secondary" className="text-xs">
+                            Template
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            Custom
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-sm text-muted-foreground">
                       {new Date(ur.assignedAt).toLocaleDateString()}
@@ -396,9 +407,13 @@ export default function UserRolesPage() {
                 {roles.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.roleAlias}
+                    {r.createdFromTemplate ? ` (Template: ${r.createdFromTemplate.templateSetName})` : ' (Custom)'}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-muted-foreground">
+                You can assign both custom roles and roles created from templates.
+              </p>
             </div>
             {formError && (
               <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">

@@ -955,7 +955,18 @@ export default function TenantDetailPage() {
                       <tr key={role.id} className="border-b last:border-b-0 hover:bg-muted/50">
                         <td className="p-4">
                           <div>
-                            <p className="font-medium">{role.roleAlias}</p>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{role.roleAlias}</p>
+                              {role.createdFromTemplate ? (
+                                <Badge variant="default" className="text-xs bg-blue-500">
+                                  Template
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs">
+                                  Custom
+                                </Badge>
+                              )}
+                            </div>
                             {role.description && (
                               <p className="text-sm text-muted-foreground">{role.description}</p>
                             )}
@@ -1056,6 +1067,15 @@ export default function TenantDetailPage() {
                           <Badge variant="secondary" className="text-xs">
                             Slot {role.slotPosition}
                           </Badge>
+                          {role.createdFromTemplate ? (
+                            <Badge variant="default" className="text-xs bg-blue-500">
+                              Template
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              Custom
+                            </Badge>
+                          )}
                           {!role.isActive && (
                             <Badge variant="destructive" className="text-xs">
                               Inactive
@@ -1241,7 +1261,18 @@ export default function TenantDetailPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <Badge variant="outline">{ur.role?.roleAlias}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{ur.role?.roleAlias}</Badge>
+                            {ur.role?.createdFromTemplate ? (
+                              <Badge variant="secondary" className="text-xs">
+                                Template
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                Custom
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
                           {new Date(ur.assignedAt).toLocaleDateString()}
@@ -1582,9 +1613,13 @@ export default function TenantDetailPage() {
                 {roles.filter(r => r.isActive).map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.roleAlias}
+                    {r.createdFromTemplate ? ` (Template: ${r.createdFromTemplate.templateSetName})` : ' (Custom)'}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-muted-foreground">
+                You can assign both custom roles and roles created from templates.
+              </p>
             </div>
             {formError && (
               <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
