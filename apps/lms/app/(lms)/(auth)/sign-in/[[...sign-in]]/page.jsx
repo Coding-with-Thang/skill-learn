@@ -103,13 +103,6 @@ const SignInPage = () => {
     }
   }, [userLoaded, isSignedIn, router]);
 
-  // Debug: Log error state changes
-  useEffect(() => {
-    if (error) {
-      console.log('Error state updated:', error);
-    }
-  }, [error]);
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -142,7 +135,6 @@ const SignInPage = () => {
 
       // First, try username directly (if Clerk has username authentication enabled)
       try {
-        console.log('Attempting sign-in with username directly:', username);
         result = await signIn.create({
           identifier: username,
           password: password,
@@ -158,7 +150,6 @@ const SignInPage = () => {
         } else if (result.status === 'needs_second_factor') {
           // 2FA required - username auth works, continue to 2FA handling below
           identifier = username;
-          console.log('Username authentication works, proceeding to 2FA');
         } else {
           // Some other status - might need lookup, but continue with result
           identifier = username;
@@ -167,13 +158,14 @@ const SignInPage = () => {
         // Username direct auth failed - likely "identifier is invalid"
         // This means Clerk doesn't support username-only auth, need email/phone lookup
         const errorMsg = directError.errors?.[0]?.message || directError.message || '';
-        const isInvalidIdentifier = errorMsg.includes('invalid') || errorMsg.includes('identifier');
+        const isInvalidIdentifier = errorMsg.toLowerCase().includes('invalid') ||
+          errorMsg.toLowerCase().includes('identifier') ||
+          errorMsg.toLowerCase().includes('not found');
 
         if (isInvalidIdentifier) {
-          console.log('Username direct auth not supported, falling back to email/phone lookup');
           result = null; // Clear result so we do lookup
         } else {
-          // Some other error (wrong password, etc.) - rethrow it
+          // Some other error (wrong password, etc.) - show error
           throw directError;
         }
       }
@@ -214,7 +206,6 @@ const SignInPage = () => {
                   identifier: username,
                   password: password,
                 });
-                console.log('Username-only authentication successful');
               } catch (retryError) {
                 // Still failed, use the identifier from lookup (shouldn't happen, but fallback)
                 identifier = lookupData.identifier || lookupData.email || lookupData.phoneNumber;
@@ -285,7 +276,6 @@ const SignInPage = () => {
       } else if (result.status === 'needs_second_factor') {
         // Check available second factor strategies
         const supportedFactors = result.supportedSecondFactors || [];
-        console.log('Available 2FA strategies:', supportedFactors);
 
         // Find TOTP factor (no preparation needed)
         const totpFactor = supportedFactors.find(f => f.strategy === 'totp');
@@ -363,7 +353,6 @@ const SignInPage = () => {
         errorMessage = err;
       }
 
-      console.error('Setting error:', errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -499,12 +488,6 @@ const SignInPage = () => {
       // If we get here, the code was invalid
       setTwoFactorError('Invalid code. Please try again.');
     } catch (err) {
-      console.error('2FA error:', err);
-      console.error('Error details:', {
-        message: err.message,
-        errors: err.errors,
-        strategy: twoFactorStrategy?.strategy,
-      });
       const errorMessage = err.errors?.[0]?.message || err.message || 'Invalid authentication code. Please try again.';
       setTwoFactorError(errorMessage);
     } finally {

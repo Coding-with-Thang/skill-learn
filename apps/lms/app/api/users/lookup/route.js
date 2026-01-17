@@ -24,30 +24,20 @@ export async function GET(request) {
       );
     }
 
-    console.log(`[Lookup API] Searching for username: "${username}"`);
-
     // PRIMARY METHOD: Search Clerk directly by username
     // This is the most reliable method for username-based authentication
     try {
       const client = await clerkClient();
       if (!client || !client.users) {
-        console.error('Clerk client is not available');
         return NextResponse.json(
           { error: "Authentication service unavailable. Please try again later." },
           { status: 503 }
         );
       }
 
-      console.log(`[Lookup API] Searching Clerk for username: "${username}"`);
       const clerkUsers = await client.users.getUserList({
         username: [username],
         limit: 1,
-      });
-      
-      console.log(`[Lookup API] Clerk search result:`, {
-        hasData: !!clerkUsers?.data,
-        dataLength: clerkUsers?.data?.length || 0,
-        totalCount: clerkUsers?.totalCount || 0
       });
       
       if (clerkUsers && clerkUsers.data && clerkUsers.data.length > 0) {
@@ -59,11 +49,6 @@ export async function GET(request) {
         const identifier = email || phoneNumber;
         
         if (identifier) {
-          console.log(`[Lookup API] ✅ Found user "${username}" in Clerk with identifier: ${identifier}`);
-          
-          // Note: We don't update the database here since email field might not exist in schema
-          // The database will be synced via Clerk webhooks if configured
-          
           return successResponse({
             email: email || undefined,
             phoneNumber: phoneNumber || undefined,
@@ -75,9 +60,6 @@ export async function GET(request) {
         } else {
           // WORKAROUND: If user has no email/phone, return username as identifier
           // This allows tenants that have username authentication enabled in Clerk to work
-          console.log(`[Lookup API] ⚠️ User "${username}" found in Clerk but has no email or phone`);
-          console.log(`[Lookup API] Returning username as identifier (tenant may have username-only auth enabled)`);
-          
           return successResponse({
             username: username,
             clerkId: clerkUser.id,
@@ -87,19 +69,11 @@ export async function GET(request) {
           });
         }
       } else {
-        console.log(`[Lookup API] No users found in Clerk with exact username: "${username}"`);
-        
         // Try using query parameter for partial/fuzzy matching
-        console.log(`[Lookup API] Trying query search as fallback...`);
         try {
           const queryResult = await client.users.getUserList({
             query: username,
-            limit: 5, // Get a few results to check
-          });
-          
-          console.log(`[Lookup API] Query search result:`, {
-            hasData: !!queryResult?.data,
-            dataLength: queryResult?.data?.length || 0
+            limit: 5,
           });
           
           // Check if any result matches the username exactly
@@ -115,7 +89,6 @@ export async function GET(request) {
               const identifier = email || phoneNumber;
               
               if (identifier) {
-                console.log(`[Lookup API] ✅ Found user via query search with identifier: ${identifier}`);
                 return successResponse({
                   email: email || undefined,
                   phoneNumber: phoneNumber || undefined,
@@ -128,15 +101,12 @@ export async function GET(request) {
             }
           }
         } catch (queryError) {
-          console.error('[Lookup API] Query search also failed:', queryError);
+          // Query search failed, continue to fallback
         }
       }
     } catch (clerkSearchError) {
-      console.error('[Lookup API] ❌ Error searching Clerk users by username:', clerkSearchError);
-      
       // Check if it's a Clerk authentication error
       if (clerkSearchError.message?.includes('key') || clerkSearchError.message?.includes('environment')) {
-        console.error('[Lookup API] Clerk authentication error - check environment variables');
         return NextResponse.json(
           { error: "Authentication service configuration error. Please contact support." },
           { status: 503 }
@@ -156,8 +126,6 @@ export async function GET(request) {
       });
       
       if (user && user.clerkId) {
-        console.log(`[Lookup API] Found user in database, fetching from Clerk by clerkId...`);
-        
         try {
           const client = await clerkClient();
           const clerkUser = await client.users.getUser(user.clerkId);
@@ -167,7 +135,6 @@ export async function GET(request) {
           const identifier = email || phoneNumber;
           
           if (identifier) {
-            console.log(`[Lookup API] ✅ Found identifier from Clerk via clerkId: ${identifier}`);
             return successResponse({
               email: email || undefined,
               phoneNumber: phoneNumber || undefined,
@@ -178,22 +145,15 @@ export async function GET(request) {
             });
           }
         } catch (clerkError) {
-          console.error('[Lookup API] Error fetching from Clerk by clerkId:', clerkError);
           // If clerkId is invalid, the user might have been deleted from Clerk
           // or the clerkId in database is stale - skip this fallback
-          console.log(`[Lookup API] Invalid clerkId in database, skipping fallback`);
         }
-      } else {
-        console.log(`[Lookup API] User not found in database`);
       }
     } catch (dbError) {
       // Database unavailable - this is okay, we already tried Clerk first
-      console.log('[Lookup API] Database check skipped (unavailable)');
     }
 
     // User not found in Clerk
-    console.log(`[Lookup API] ❌ User "${username}" not found in Clerk`);
-    console.log(`[Lookup API] Troubleshooting: Check if username "${username}" is set in Clerk Dashboard`);
     return NextResponse.json(
       { 
         error: `User "${username}" not found. Please verify your username is correct, or sign in with your email address instead.` 
@@ -201,7 +161,6 @@ export async function GET(request) {
       { status: 404 }
     );
   } catch (error) {
-    console.error('[Lookup API] Unexpected error:', error);
     return handleApiError(error);
   }
 }
