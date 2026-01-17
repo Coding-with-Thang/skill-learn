@@ -317,7 +317,7 @@ export default function UserRolesPage() {
                             className="h-8 w-8 rounded-full"
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
+                          <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
                             {ur.user?.firstName?.[0] || "U"}
                           </div>
                         )}

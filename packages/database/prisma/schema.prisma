@@ -17,7 +17,7 @@ model User {
   imageUrl        String?
   manager         String?         @default("")
   role            Role            @default(AGENT) // Legacy role enum (can be deprecated later)
-  tenantId       String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
+  tenantId        String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
   tenant          Tenant?         @relation(fields: [tenantId], references: [id])
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -62,7 +62,7 @@ model Category {
   updatedAt     DateTime       @updatedAt
   quizzes       Quiz[]
   categoryStats CategoryStat[]
-  courses        Course[]
+  courses       Course[]
 
   // INDEXES FOR CATEGORY QUERIES
   @@index([isActive]) // Filter active categories
@@ -71,27 +71,27 @@ model Category {
 }
 
 model Quiz {
-  id             String     @id @default(auto()) @map("_id") @db.ObjectId
-  title          String
-  description    String?
-  imageUrl       String?
-  fileKey        String?    // Firebase Storage path for quiz image (similar to Course model)
-  categoryId     String     @db.ObjectId
-  category       Category   @relation(fields: [categoryId], references: [id])
-  questions      Question[]
-  isActive       Boolean    @default(true)
-  tenantId       String?    @db.ObjectId // Multi-tenant: quiz belongs to ONE tenant (null = global)
-  tenant         Tenant?    @relation(fields: [tenantId], references: [id])
-  isGlobal       Boolean    @default(false) // Global content available to all tenants
-  timeLimit      Int?
-  passingScore   Int        @default(70)
-  lastAttempt    DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  userId         String?    @db.ObjectId
-  user           User?      @relation(fields: [userId], references: [id])
-  score          Int?
-  totalQuestions Int?
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String?
+  imageUrl           String?
+  fileKey            String? // Firebase Storage path for quiz image (similar to Course model)
+  categoryId         String     @db.ObjectId
+  category           Category   @relation(fields: [categoryId], references: [id])
+  questions          Question[]
+  isActive           Boolean    @default(true)
+  tenantId           String?    @db.ObjectId // Multi-tenant: quiz belongs to ONE tenant (null = global)
+  tenant             Tenant?    @relation(fields: [tenantId], references: [id])
+  isGlobal           Boolean    @default(false) // Global content available to all tenants
+  timeLimit          Int?
+  passingScore       Int        @default(70)
+  lastAttempt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  userId             String?    @db.ObjectId
+  user               User?      @relation(fields: [userId], references: [id])
+  score              Int?
+  totalQuestions     Int?
   showQuestionReview Boolean    @default(true)
   showCorrectAnswers Boolean    @default(false)
 
@@ -109,7 +109,7 @@ model Question {
   id       String   @id @default(auto()) @map("_id") @db.ObjectId
   text     String
   imageUrl String?
-  fileKey  String?  // Firebase Storage path for question image (similar to Quiz/Course)
+  fileKey  String? // Firebase Storage path for question image (similar to Quiz/Course)
   videoUrl String?
   quizId   String   @db.ObjectId
   quiz     Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
@@ -186,7 +186,7 @@ model Reward {
   description    String?
   cost           Int
   imageUrl       String?
-  fileKey        String?     // Firebase Storage path for reward image (similar to Quiz/Course)
+  fileKey        String? // Firebase Storage path for reward image (similar to Quiz/Course)
   featured       Boolean     @default(false)
   enabled        Boolean     @default(true)
   allowMultiple  Boolean     @default(false)
@@ -323,26 +323,26 @@ enum CourseStatus {
 
 // Organizations/tenants in the system
 model Tenant {
-  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  name                 String
-  slug                 String   @unique
-  subscriptionTier     String   @default("free") // free, pro, enterprise
-  subscriptionStatus   String   @default("active") // active, trialing, past_due, canceled, etc.
-  maxRoleSlots         Int      @default(5)
-  baseRoleSlots        Int      @default(5)
-  purchasedRoleSlots   Int      @default(0)
-  
+  id                 String @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  slug               String @unique
+  subscriptionTier   String @default("free") // free, pro, enterprise
+  subscriptionStatus String @default("active") // active, trialing, past_due, canceled, etc.
+  maxRoleSlots       Int    @default(5)
+  baseRoleSlots      Int    @default(5)
+  purchasedRoleSlots Int    @default(0)
+
   // Stripe integration fields
-  stripeCustomerId     String?  @unique
-  stripeSubscriptionId String?  @unique
-  stripePriceId        String?  // Current price ID
-  billingInterval      String?  // monthly, annually
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String? // Current price ID
+  billingInterval      String? // monthly, annually
   trialEndsAt          DateTime?
   subscriptionEndsAt   DateTime? // When current period ends
-  cancelAtPeriodEnd    Boolean  @default(false)
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  cancelAtPeriodEnd    Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
   tenantRoles       TenantRole[]
@@ -515,18 +515,18 @@ model RoleSlotPurchase {
 
 // Global feature definitions (managed by super admin)
 model Feature {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  key             String          @unique // e.g., "games", "course_quizzes", "leaderboards"
-  name            String // Display name e.g., "Games", "Course Quizzes", "Leaderboards"
-  description     String?
-  category        String          @default("general") // e.g., "gamification", "learning", "social"
-  defaultEnabled  Boolean         @default(true) // Default state for new tenants
-  isActive        Boolean         @default(true) // If false, feature is globally disabled
-  icon            String? // Icon name for UI (e.g., "Gamepad2", "Trophy")
-  sortOrder       Int             @default(0) // For UI ordering
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  tenantFeatures  TenantFeature[]
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  key            String          @unique // e.g., "games", "course_quizzes", "leaderboards"
+  name           String // Display name e.g., "Games", "Course Quizzes", "Leaderboards"
+  description    String?
+  category       String          @default("general") // e.g., "gamification", "learning", "social"
+  defaultEnabled Boolean         @default(true) // Default state for new tenants
+  isActive       Boolean         @default(true) // If false, feature is globally disabled
+  icon           String? // Icon name for UI (e.g., "Gamepad2", "Trophy")
+  sortOrder      Int             @default(0) // For UI ordering
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tenantFeatures TenantFeature[]
 
   @@index([category])
   @@index([isActive])
@@ -536,18 +536,18 @@ model Feature {
 
 // Tenant-specific feature settings
 model TenantFeature {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  tenantId              String   @db.ObjectId
-  tenant                Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  featureId             String   @db.ObjectId
-  feature               Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  enabled               Boolean  @default(true) // Tenant admin can toggle (if superAdminEnabled is true)
-  superAdminEnabled     Boolean  @default(true) // Super admin override - if false, tenant admin cannot enable
-  superAdminLockedAt    DateTime? // When super admin locked/unlocked the feature
-  lastToggledAt         DateTime? // When tenant admin last toggled
-  lastToggledBy         String? // Clerk user ID of who last toggled
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String    @db.ObjectId
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  featureId          String    @db.ObjectId
+  feature            Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  enabled            Boolean   @default(true) // Tenant admin can toggle (if superAdminEnabled is true)
+  superAdminEnabled  Boolean   @default(true) // Super admin override - if false, tenant admin cannot enable
+  superAdminLockedAt DateTime? // When super admin locked/unlocked the feature
+  lastToggledAt      DateTime? // When tenant admin last toggled
+  lastToggledBy      String? // Clerk user ID of who last toggled
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([tenantId, featureId])
   @@index([tenantId])
