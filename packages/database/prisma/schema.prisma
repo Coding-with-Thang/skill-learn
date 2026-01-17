@@ -305,12 +305,6 @@ model Course {
   user               User?        @relation(fields: [userId], references: [id])
 }
 
-enum Role {
-  AGENT
-  MANAGER
-  OPERATIONS
-}
-
 enum CourseStatus {
   Published
   Draft

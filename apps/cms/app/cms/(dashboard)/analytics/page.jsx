@@ -1,10 +1,12 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
 import RevenueChart from '@/components/cms/dashboard/RevenueChart'
 import SubscriptionDistribution from '@/components/cms/dashboard/SubscriptionDistribution'
-import { ArrowUpRight, ArrowDownRight, Users, Zap, Clock, MousePointerClick } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, Users, Zap, Clock, MousePointerClick, Loader2 } from 'lucide-react'
+import api from '@skill-learn/lib/utils/axios.js'
 
 // Mock Data
 const revenueData = [
@@ -14,12 +16,6 @@ const revenueData = [
   { date: 'Apr', mrr: 138000, newRevenue: 25000, churned: 2200 },
   { date: 'May', mrr: 145000, newRevenue: 12000, churned: 3000 },
   { date: 'Jun', mrr: 152000, newRevenue: 18000, churned: 2500 },
-]
-
-const subscriptionData = [
-  { name: 'Enterprise', value: 45, color: '#6366F1' },
-  { name: 'Pro Plan', value: 35, color: '#8B5CF6' },
-  { name: 'Starter', value: 20, color: '#EC4899' },
 ]
 
 const engagementStats = [
@@ -54,6 +50,37 @@ const engagementStats = [
 ]
 
 export default function AnalyticsPage() {
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [subscriptionData, setSubscriptionData] = useState([])
+
+  useEffect(() => {
+    const fetchSubscriptionData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await api.get('/dashboard/stats')
+
+        // Extract subscription distribution from API response
+        const distribution = response.data?.subscriptionDistribution || []
+        setSubscriptionData(distribution)
+      } catch (err) {
+        console.error('Error fetching subscription data:', err)
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+        } else {
+          setError(err.response?.data?.error || err.message || 'Failed to load subscription data')
+        }
+        // Fallback to empty array on error
+        setSubscriptionData([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSubscriptionData()
+  }, [])
+
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
       <motion.div
@@ -70,7 +97,7 @@ export default function AnalyticsPage() {
         {engagementStats.map((stat, index) => {
           const Icon = stat.icon
           const isPositive = stat.trend === 'up'
-          
+
           return (
             <motion.div
               key={stat.title}
@@ -110,7 +137,29 @@ export default function AnalyticsPage() {
 
         {/* Subscription Distribution */}
         <div>
-          <SubscriptionDistribution data={subscriptionData} />
+          {loading ? (
+            <Card>
+              <CardContent className="p-6 flex items-center justify-center min-h-[280px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card>
+              <CardContent className="p-6">
+                <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-4 text-sm">
+                  {error}
+                </div>
+              </CardContent>
+            </Card>
+          ) : subscriptionData.length > 0 ? (
+            <SubscriptionDistribution data={subscriptionData} />
+          ) : (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-sm text-muted-foreground">No subscription data available</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

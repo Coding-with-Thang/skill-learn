@@ -34,7 +34,7 @@ export async function GET(request) {
     
     // Calculate subscription distribution
     const subscriptionDistribution = tenants.reduce((acc, tenant) => {
-      const tier = tenant.subscriptionTier || 'trial';
+      const tier = tenant.subscriptionTier || 'free';
       if (!acc[tier]) {
         acc[tier] = 0;
       }
@@ -71,7 +71,7 @@ export async function GET(request) {
         id: tenant.id,
         name: tenant.name,
         slug: tenant.slug,
-        plan: tenant.subscriptionTier || 'trial',
+        plan: tenant.subscriptionTier || 'free',
         users: tenant._count.users,
         status: tenant._count.users > 0 ? 'Active' : 'Inactive',
         lastActive: tenant.updatedAt,

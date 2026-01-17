@@ -98,8 +98,8 @@ export default function TenantActivityTable({ tenants }) {
                       </div>
                     </td>
                     <td className="py-4 hidden md:table-cell">
-                      <Badge className={cn("font-medium", getPlanColor(tenant.plan || tenant.subscriptionTier || 'trial'))}>
-                        {tenant.plan || tenant.subscriptionTier || 'Trial'}
+                      <Badge className={cn("font-medium", getPlanColor(tenant.plan || tenant.subscriptionTier || 'free'))}>
+                        {tenant.plan || tenant.subscriptionTier || 'Free'}
                       </Badge>
                     </td>
                     <td className="py-4 hidden sm:table-cell">

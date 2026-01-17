@@ -140,9 +140,16 @@ export default function BillingPage() {
   };
 
   const getTierColor = (tier) => {
-    switch (tier) {
+    switch (tier?.toLowerCase()) {
+      case "free":
+        return "bg-gray-500";
+      case "starter":
+        return "bg-green-500";
+      case "pro":
+        return "bg-blue-500";
       case "enterprise":
         return "bg-purple-500";
+      // Legacy support
       case "professional":
         return "bg-blue-500";
       case "trial":

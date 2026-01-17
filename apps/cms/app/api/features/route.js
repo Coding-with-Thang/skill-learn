@@ -13,24 +13,58 @@ export async function GET(request) {
       return adminResult;
     }
 
+    // Get total tenant count
+    const totalTenants = await prisma.tenant.count();
+
     const features = await prisma.feature.findMany({
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       include: {
-        _count: {
+        tenantFeatures: {
           select: {
-            tenantFeatures: true,
+            enabled: true,
+            superAdminEnabled: true,
           },
         },
       },
     });
 
-    // Group by category
-    const groupedByCategory = features.reduce((acc, feature) => {
-      const category = feature.category || "general";
-      if (!acc[category]) {
-        acc[category] = [];
+    // Calculate effective tenant count for each feature
+    const featuresWithCounts = features.map((feature) => {
+      // If feature is not active, no tenants are using it
+      if (!feature.isActive) {
+        return {
+          ...feature,
+          tenantCount: 0,
+        };
       }
-      acc[category].push({
+
+      // Get tenants with explicit TenantFeature records
+      const explicitRecords = feature.tenantFeatures || [];
+      
+      // Count tenants where feature is effectively enabled:
+      // 1. TenantFeature exists with enabled=true AND superAdminEnabled=true
+      const explicitlyEnabled = explicitRecords.filter(
+        (tf) => tf.enabled && tf.superAdminEnabled
+      ).length;
+
+      // 2. TenantFeature exists with enabled=false OR superAdminEnabled=false
+      const explicitlyDisabled = explicitRecords.filter(
+        (tf) => !tf.enabled || !tf.superAdminEnabled
+      ).length;
+
+      // 3. Tenants without explicit records use defaultEnabled
+      const tenantsWithoutRecords = totalTenants - explicitRecords.length;
+
+      let tenantCount = 0;
+      if (feature.defaultEnabled) {
+        // Default enabled: count all except explicitly disabled
+        tenantCount = totalTenants - explicitlyDisabled;
+      } else {
+        // Default disabled: count only explicitly enabled
+        tenantCount = explicitlyEnabled;
+      }
+
+      return {
         id: feature.id,
         key: feature.key,
         name: feature.name,
@@ -40,28 +74,24 @@ export async function GET(request) {
         isActive: feature.isActive,
         icon: feature.icon,
         sortOrder: feature.sortOrder,
-        tenantCount: feature._count.tenantFeatures,
+        tenantCount,
         createdAt: feature.createdAt,
         updatedAt: feature.updatedAt,
-      });
+      };
+    });
+
+    // Group by category
+    const groupedByCategory = featuresWithCounts.reduce((acc, feature) => {
+      const category = feature.category || "general";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(feature);
       return acc;
     }, {});
 
     return NextResponse.json({
-      features: features.map((f) => ({
-        id: f.id,
-        key: f.key,
-        name: f.name,
-        description: f.description,
-        category: f.category,
-        defaultEnabled: f.defaultEnabled,
-        isActive: f.isActive,
-        icon: f.icon,
-        sortOrder: f.sortOrder,
-        tenantCount: f._count.tenantFeatures,
-        createdAt: f.createdAt,
-        updatedAt: f.updatedAt,
-      })),
+      features: featuresWithCounts,
       groupedByCategory,
     });
   } catch (error) {
