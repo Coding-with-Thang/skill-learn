@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
+import { requireTenantContext } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * GET /api/tenant/templates
@@ -10,24 +10,16 @@ import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissio
  */
 export async function GET() {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get tenant context using standardized utility
+    const tenantContext = await requireTenantContext();
+    if (tenantContext instanceof NextResponse) {
+      return tenantContext;
     }
 
-    // Get user's tenant
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { tenantId: true },
-    });
-
-    if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
-    }
+    const { tenantId } = tenantContext;
 
     // Check permission
-    const permResult = await requirePermission(PERMISSIONS.ROLES_CREATE, user.tenantId);
+    const permResult = await requirePermission(PERMISSIONS.ROLES_CREATE, tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }

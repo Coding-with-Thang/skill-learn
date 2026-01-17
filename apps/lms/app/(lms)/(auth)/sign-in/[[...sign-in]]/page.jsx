@@ -449,7 +449,6 @@ const SignInPage = () => {
       if (!twoFactorStrategy) {
         // Fallback: check available strategies
         const supportedFactors = signIn.supportedSecondFactors || [];
-        console.log('Attempting 2FA with available strategies:', supportedFactors);
 
         // Try the first available strategy
         const strategy = supportedFactors[0];

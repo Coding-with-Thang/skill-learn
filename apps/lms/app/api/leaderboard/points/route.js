@@ -1,24 +1,15 @@
 import { prisma } from '@skill-learn/database';
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { auth } from "@clerk/nextjs/server";
+import { getTenantId, buildTenantOnlyFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function GET(request) {
   try {
-    // Get current user's tenantId
-    const { userId } = await auth();
-    let tenantId = null;
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
 
-    if (userId) {
-      const currentUser = await prisma.user.findUnique({
-        where: { clerkId: userId },
-        select: { tenantId: true },
-      });
-      tenantId = currentUser?.tenantId || null;
-    }
-
-    // Build query with tenant filter
-    const whereClause = tenantId ? { tenantId } : { tenantId: null };
+    // Build query with tenant filter (tenant-only, no global content for leaderboards)
+    const whereClause = buildTenantOnlyFilter(tenantId);
 
     const leaderboard = await prisma.user.findMany({
       where: whereClause,

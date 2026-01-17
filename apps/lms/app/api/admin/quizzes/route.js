@@ -7,14 +7,27 @@ import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { quizCreateSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function GET(request) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) {
       return adminResult;
-    } // Fetch all quizzes with their categories and question count
+    }
+
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quizzes by tenant or global content using standardized utility
+    // Pattern: (tenantId = userTenantId OR (isGlobal = true AND tenantId IS NULL))
+    const whereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
+    // Fetch all quizzes with their categories and question count
     const quizzes = await prisma.quiz.findMany({
+      where: whereClause,
       include: {
         category: {
           select: {
@@ -75,6 +88,9 @@ export async function POST(request) {
 
     const data = await validateRequestBody(request, quizCreateSchema);
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
     // Get default passing score from settings
     const defaultPassingScore = parseInt(
       await getSystemSetting("DEFAULT_PASSING_SCORE"),
@@ -89,6 +105,8 @@ export async function POST(request) {
         imageUrl: data.imageUrl,
         fileKey: data.fileKey,
         categoryId: data.categoryId,
+        tenantId: tenantId, // Assign to current user's tenant
+        isGlobal: data.isGlobal ?? false, // Allow admin to set global flag
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,

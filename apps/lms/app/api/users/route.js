@@ -22,7 +22,18 @@ export async function GET(request) {
       return permResult;
     }
 
+    // CRITICAL: Filter users by tenantId to prevent data leakage
+    if (!tenantId) {
+      return NextResponse.json(
+        { error: "Tenant context required" },
+        { status: 400 }
+      );
+    }
+
     const users = await prisma.user.findMany({
+      where: {
+        tenantId: tenantId, // Only return users from the current tenant
+      },
       select: {
         id: true,
         username: true,
@@ -171,6 +182,15 @@ export async function POST(request) {
       );
     }
 
+    // CRITICAL: Ensure tenantId is set when creating user
+    if (!tenantId) {
+      throw new AppError(
+        "Tenant context required to create user",
+        ErrorType.VALIDATION,
+        { status: 400 }
+      );
+    }
+
     // Create user in Clerk
     const clerkUser = await clerkClient.users.createUser({
       firstName,
@@ -185,6 +205,7 @@ export async function POST(request) {
         firstName,
         lastName,
         role: targetRole,
+        tenantId: tenantId, // CRITICAL: Assign user to current tenant
         manager:
           manager === "none" ||
           manager === "" ||

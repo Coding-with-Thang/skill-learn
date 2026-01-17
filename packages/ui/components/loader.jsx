@@ -74,32 +74,230 @@ export function Loader({
     )
   }
 
-  // Page Loader (Centralized Card)
-  if (variant === "page") {
-    return (
-      <div className={cn("container mx-auto px-4 py-8 min-h-[80dvh] flex items-center justify-center", className)} {...props}>
-        <Card className="w-full max-w-md p-8">
-          <div className="flex flex-col items-center justify-center gap-4">
-            <Loader2 className={cn("animate-spin text-primary", sizeClasses.lg)} />
-            <p className="text-muted-foreground">{text || "Loading your content..."}</p>
-          </div>
-        </Card>
-      </div>
-    )
-  }
-
-  // Fullscreen Overlay
-  if (variant === "fullscreen") {
-    return (
-      <div className={cn("fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm", className)} {...props}>
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className={cn("animate-spin text-primary", sizeClasses.xl)} />
-          {text && <p className="text-lg font-medium text-foreground">{text}</p>}
-        </div>
-      </div>
-    )
+  // Fullscreen / Page Loader (Animated & Premium)
+  if (variant === "page" || variant === "fullscreen") {
+    return <FullScreenLoader text={text} className={className} {...props} />
   }
 
   // Fallback
   return null
 }
+
+// ----------------------------------------------------------------------
+// Premium Full Screen Loader Implementation
+// ----------------------------------------------------------------------
+
+import { motion } from "framer-motion"
+import {
+  GraduationCap,
+  Sparkles,
+  Rocket,
+  PartyPopper,
+  Wand2,
+  Medal,
+  Zap,
+  Lightbulb,
+} from "lucide-react"
+
+const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{
+      opacity: [0, 1, 1, 0],
+      scale: [0.5, 1, 1, 0.5],
+      y: [0, -20, -40]
+    }}
+    transition={{
+      duration: 4,
+      repeat: Infinity,
+      delay: delay,
+      ease: "easeInOut",
+      times: [0, 0.2, 0.8, 1]
+    }}
+    className={cn("absolute pointer-events-none", color)}
+    style={{ left: x, top: y, zIndex: 10 }}
+  >
+    <div className={cn("p-3 rounded-2xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20")}>
+      <Icon className={`w-${size} h-${size}`} />
+    </div>
+  </motion.div>
+);
+
+const FullScreenLoader = ({ text }) => {
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-50 dark:bg-[#0F172A] overflow-hidden">
+      {/* Background Gradients - pushed to back */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          animate={{
+            scale: [1, 1.2, 1],
+            rotate: [0, 45, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] bg-indigo-500/10 dark:bg-indigo-500/20 rounded-full blur-[100px]"
+        />
+        <motion.div
+          animate={{
+            scale: [1, 1.3, 1],
+            rotate: [0, -45, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[20%] -right-[10%] w-[70vw] h-[70vw] bg-teal-500/10 dark:bg-teal-500/20 rounded-full blur-[100px]"
+        />
+      </div>
+
+      {/* Floating Icons around center - clearly positioned */}
+      <div className="absolute inset-0 pointer-events-none z-10 w-full h-full">
+        {/* Top Left */}
+        <FloatingIcon icon={Rocket} delay={0} x="10%" y="15%" color="text-orange-500 bg-orange-500/10" size={6} />
+
+        {/* Bottom Left */}
+        <FloatingIcon icon={Zap} delay={1.5} x="15%" y="75%" color="text-yellow-500 bg-yellow-500/10" size={5} />
+
+        {/* Top Right */}
+        <FloatingIcon icon={Sparkles} delay={0.5} x="85%" y="20%" color="text-purple-500 bg-purple-500/10" size={6} />
+
+        {/* Middle Right */}
+        <FloatingIcon icon={PartyPopper} delay={2} x="80%" y="50%" color="text-pink-500 bg-pink-500/10" size={5} />
+
+        {/* Bottom Right */}
+        <FloatingIcon icon={Lightbulb} delay={3} x="75%" y="80%" color="text-amber-500 bg-amber-500/10" size={5} />
+      </div>
+
+      {/* Main Content - Highest Z-Index */}
+      <div className="relative z-30 flex flex-col items-center max-w-lg w-full px-6 text-center">
+
+        {/* Central Logo / Icon */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="mb-8 relative"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -inset-4 rounded-full border border-dashed border-slate-300 dark:border-slate-700"
+          />
+
+          <div className="w-24 h-24 bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl shadow-indigo-500/20 flex items-center justify-center relative z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl" />
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl p-4 shadow-lg shadow-orange-500/30 transform rotate-3"
+            >
+              <GraduationCap className="w-8 h-8 text-white" />
+            </motion.div>
+          </div>
+
+          {/* Floating mini-badge */}
+          <motion.div
+            animate={{ y: [0, -5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+            className="absolute -top-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg border-2 border-white dark:border-[#0F172A] z-20"
+          >
+            <Sparkles className="w-3 h-3" />
+          </motion.div>
+        </motion.div>
+
+        {/* Brand Name */}
+        <motion.h2
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl font-black text-slate-900 dark:text-white mb-1 tracking-tight"
+        >
+          Skill-Learn<span className="text-orange-500">.</span>
+        </motion.h2>
+
+        <motion.p
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase mb-12"
+        >
+          People-First AI
+        </motion.p>
+
+
+        {/* Main Text */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-3 mb-10"
+        >
+          <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
+            Your potential is <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-400">powering up!</span>
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">
+            {text || "Unlocking awesome insights just for you..."}
+          </p>
+        </motion.div>
+
+        {/* Steps / Icons Row */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="flex items-center justify-center gap-8 mb-10"
+        >
+          {[
+            { Icon: Rocket, color: "text-orange-500" },
+            { Icon: PartyPopper, color: "text-pink-500" },
+            { Icon: Wand2, color: "text-teal-500" },
+            { Icon: Medal, color: "text-yellow-500" },
+          ].map(({ Icon, color }, i) => (
+            <motion.div
+              key={i}
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+            >
+              <Icon className={cn("w-6 h-6 opacity-80", color)} />
+              <motion.div
+                className={cn("w-1.5 h-1.5 rounded-full mx-auto mt-2 opacity-50", color.replace('text-', 'bg-'))}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Progress Bar (Indeterminate) */}
+        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden relative mb-4">
+          <motion.div
+            animate={{ x: ["-100%", "100%"] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-orange-400 via-pink-500 to-indigo-500 rounded-full"
+          />
+        </div>
+
+        <p className="text-[10px] font-bold tracking-[0.2em] text-orange-500 uppercase">
+          OPTIMIZING YOUR LEARNING JOURNEY
+        </p>
+
+      </div>
+
+      {/* Footer */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className="absolute bottom-10 left-0 right-0 z-30 flex flex-col items-center gap-4 text-center px-4"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
+          <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 tracking-wider uppercase">
+            AI-Enhanced • Human-Centered • Ready to Learn
+          </span>
+        </div>
+        <p className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">
+          Built for Humans • Powered by Imagination
+        </p>
+      </motion.div>
+    </div>
+  )
+}
+
+

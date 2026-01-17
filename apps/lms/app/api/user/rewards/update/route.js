@@ -8,6 +8,7 @@ import { validateRequest } from "@skill-learn/lib/utils/validateRequest.js";
 import { rewardUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function PUT(request) {
   try {
@@ -26,6 +27,24 @@ export async function PUT(request) {
     // Validate update data if provided
     if (Object.keys(updateData).length > 0) {
       await validateRequest(rewardUpdateSchema, updateData);
+    }
+
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Verify reward belongs to tenant before updating
+    const whereClause = buildTenantContentFilter(tenantId);
+    const existingReward = await prisma.reward.findFirst({
+      where: { 
+        id,
+        ...whereClause,
+      },
+    });
+
+    if (!existingReward) {
+      throw new AppError("Reward not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     // Generate signed URL if fileKey exists
@@ -50,10 +69,11 @@ export async function PUT(request) {
     // If setting a reward as featured, we need to handle it in a transaction
     if (featured === true) {
       const result = await prisma.$transaction(async (tx) => {
-        // First, unset featured flag for all other rewards
+        // First, unset featured flag for all other rewards in the same tenant
         await tx.reward.updateMany({
           where: {
             featured: true,
+            ...whereClause,
           },
           data: {
             featured: false,
@@ -63,7 +83,12 @@ export async function PUT(request) {
         // Then set the new featured reward
         const updatedReward = await tx.reward.update({
           where: { id },
-          data: { ...updateData, featured: true },
+          data: { 
+            ...updateData, 
+            featured: true,
+            tenantId: updateData.tenantId !== undefined ? updateData.tenantId : existingReward.tenantId,
+            isGlobal: updateData.isGlobal !== undefined ? updateData.isGlobal : existingReward.isGlobal,
+          },
         });
 
         return updatedReward;
@@ -83,7 +108,11 @@ export async function PUT(request) {
       // If not setting as featured, just update the reward normally
       const updatedReward = await prisma.reward.update({
         where: { id },
-        data: updateData,
+        data: {
+          ...updateData,
+          tenantId: updateData.tenantId !== undefined ? updateData.tenantId : existingReward.tenantId,
+          isGlobal: updateData.isGlobal !== undefined ? updateData.isGlobal : existingReward.isGlobal,
+        },
       });
 
       // Log the audit event

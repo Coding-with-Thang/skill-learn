@@ -35,7 +35,8 @@
     "./utils/rateLimit.js": "./utils/utils/rateLimit.js",
     "./utils/clerk.js": "./utils/utils/clerk.js",
     "./utils/clerkSync.js": "./utils/utils/clerkSync.js",
-    "./utils/permissions.js": "./utils/utils/permissions.js"
+    "./utils/permissions.js": "./utils/utils/permissions.js",
+    "./utils/tenant.js": "./utils/utils/tenant.js"
   },
   "scripts": {},
   "dependencies": {

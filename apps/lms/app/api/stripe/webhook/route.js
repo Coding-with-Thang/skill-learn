@@ -84,7 +84,8 @@ export async function POST(request) {
         break;
         
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        // Unhandled event type - log for monitoring but don't error
+        break;
     }
     
     return NextResponse.json({ received: true });
@@ -102,8 +103,6 @@ export async function POST(request) {
  * This is called when a customer completes the checkout
  */
 async function handleCheckoutCompleted(session) {
-  console.log("Checkout completed:", session.id);
-  
   const { customer, subscription, metadata } = session;
   const { tenantId, userId } = metadata || {};
   
@@ -161,23 +160,19 @@ async function handleCheckoutCompleted(session) {
       });
     }
   }
-  
-  console.log(`Checkout processed for tenant: ${tenantId}, plan: ${planId}`);
 }
 
 /**
  * Handle customer.subscription.created event
  */
 async function handleSubscriptionCreated(subscription) {
-  console.log("Subscription created:", subscription.id);
-  
   // Find tenant by Stripe customer ID
   const tenant = await prisma.tenant.findFirst({
     where: { stripeCustomerId: subscription.customer },
   });
   
   if (!tenant) {
-    console.log("No tenant found for customer:", subscription.customer);
+    console.warn("No tenant found for customer:", subscription.customer);
     return;
   }
   
@@ -200,23 +195,19 @@ async function handleSubscriptionCreated(subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
-  
-  console.log(`Subscription created for tenant: ${tenant.id}, plan: ${planId}`);
 }
 
 /**
  * Handle customer.subscription.updated event
  */
 async function handleSubscriptionUpdated(subscription) {
-  console.log("Subscription updated:", subscription.id);
-  
   // Find tenant by subscription ID
   const tenant = await prisma.tenant.findFirst({
     where: { stripeSubscriptionId: subscription.id },
   });
   
   if (!tenant) {
-    console.log("No tenant found for subscription:", subscription.id);
+    console.warn("No tenant found for subscription:", subscription.id);
     return;
   }
   
@@ -238,8 +229,6 @@ async function handleSubscriptionUpdated(subscription) {
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
     },
   });
-  
-  console.log(`Subscription updated for tenant: ${tenant.id}, status: ${subscription.status}`);
 }
 
 /**
@@ -272,16 +261,12 @@ async function handleSubscriptionDeleted(subscription) {
       cancelAtPeriodEnd: false,
     },
   });
-  
-  console.log(`Subscription canceled for tenant: ${tenant.id}, downgraded to free`);
 }
 
 /**
  * Handle invoice.paid event
  */
 async function handleInvoicePaid(invoice) {
-  console.log("Invoice paid:", invoice.id);
-  
   if (!invoice.subscription) return;
   
   // Find tenant by subscription ID
@@ -290,7 +275,7 @@ async function handleInvoicePaid(invoice) {
   });
   
   if (!tenant) {
-    console.log("No tenant found for subscription:", invoice.subscription);
+    console.warn("No tenant found for subscription:", invoice.subscription);
     return;
   }
   
@@ -301,8 +286,6 @@ async function handleInvoicePaid(invoice) {
       subscriptionStatus: "active",
     },
   });
-  
-  console.log(`Invoice paid for tenant: ${tenant.id}`);
 }
 
 /**
@@ -332,7 +315,6 @@ async function handlePaymentFailed(invoice) {
   });
   
   // TODO: Send notification to tenant admins about payment failure
-  console.log(`Payment failed for tenant: ${tenant.id}`);
 }
 
 /**
@@ -340,8 +322,6 @@ async function handlePaymentFailed(invoice) {
  * Called 3 days before trial ends
  */
 async function handleTrialWillEnd(subscription) {
-  console.log("Trial will end:", subscription.id);
-  
   // Find tenant by subscription ID
   const tenant = await prisma.tenant.findFirst({
     where: { stripeSubscriptionId: subscription.id },

@@ -31,6 +31,15 @@ export async function GET(request, { params }) {
             resolvedParams
         );
 
+        // CRITICAL: Verify tenantId is available
+        if (!tenantId) {
+            throw new AppError(
+                "Tenant context required",
+                ErrorType.VALIDATION,
+                { status: 400 }
+            );
+        }
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -44,6 +53,7 @@ export async function GET(request, { params }) {
                 points: true,
                 lifetimePoints: true,
                 createdAt: true,
+                tenantId: true, // Include tenantId for verification
             },
         });
 
@@ -51,6 +61,15 @@ export async function GET(request, { params }) {
             throw new AppError("User not found", ErrorType.NOT_FOUND, {
                 status: 404,
             });
+        }
+
+        // CRITICAL: Verify user belongs to the current tenant
+        if (user.tenantId !== tenantId) {
+            throw new AppError(
+                "Access denied: User does not belong to your organization",
+                ErrorType.FORBIDDEN,
+                { status: 403 }
+            );
         }
 
         return successResponse({ user });
@@ -83,10 +102,45 @@ export async function PUT(request, { params }) {
             resolvedParams
         );
 
-        // Check if username exists for another user
+        // CRITICAL: Verify tenantId is available
+        if (!tenantId) {
+            throw new AppError(
+                "Tenant context required",
+                ErrorType.VALIDATION,
+                { status: 400 }
+            );
+        }
+
+        // Get user to update with current role and tenantId
+        const userToUpdate = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { 
+                clerkId: true,
+                role: true,
+                tenantId: true, // Include tenantId for verification
+            }
+        });
+
+        if (!userToUpdate) {
+            throw new AppError("User not found", ErrorType.NOT_FOUND, {
+                status: 404,
+            });
+        }
+
+        // CRITICAL: Verify user belongs to the current tenant
+        if (userToUpdate.tenantId !== tenantId) {
+            throw new AppError(
+                "Access denied: User does not belong to your organization",
+                ErrorType.FORBIDDEN,
+                { status: 403 }
+            );
+        }
+
+        // Check if username exists for another user in the same tenant
         const existingUser = await prisma.user.findFirst({
             where: {
                 username,
+                tenantId: tenantId, // Only check within same tenant
                 NOT: {
                     id: userId,
                 },
@@ -96,21 +150,6 @@ export async function PUT(request, { params }) {
         if (existingUser) {
             throw new AppError("Username already exists", ErrorType.VALIDATION, {
                 status: 400,
-            });
-        }
-
-        // Get user to update with current role
-        const userToUpdate = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { 
-                clerkId: true,
-                role: true 
-            }
-        });
-
-        if (!userToUpdate) {
-            throw new AppError("User not found", ErrorType.NOT_FOUND, {
-                status: 404,
             });
         }
 
@@ -238,16 +277,37 @@ export async function DELETE(request, { params }) {
             resolvedParams
         );
 
-        // Get user to delete
+        // CRITICAL: Verify tenantId is available
+        if (!tenantId) {
+            throw new AppError(
+                "Tenant context required",
+                ErrorType.VALIDATION,
+                { status: 400 }
+            );
+        }
+
+        // Get user to delete with tenantId verification
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { clerkId: true }
+            select: { 
+                clerkId: true,
+                tenantId: true, // Include tenantId for verification
+            }
         });
 
         if (!user) {
             throw new AppError("User not found", ErrorType.NOT_FOUND, {
                 status: 404,
             });
+        }
+
+        // CRITICAL: Verify user belongs to the current tenant
+        if (user.tenantId !== tenantId) {
+            throw new AppError(
+                "Access denied: User does not belong to your organization",
+                ErrorType.FORBIDDEN,
+                { status: 403 }
+            );
         }
 
         // Delete from both Clerk and database in parallel

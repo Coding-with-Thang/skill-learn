@@ -379,3 +379,13 @@ export default {
   requireTenantMembership,
   PERMISSIONS,
 };
+
+// Re-export tenant utilities for convenience
+export {
+  getTenantContext,
+  getTenantContextForAction,
+  getTenantId,
+  requireTenantContext,
+  buildTenantContentFilter,
+  buildTenantOnlyFilter,
+} from "./tenant.js";

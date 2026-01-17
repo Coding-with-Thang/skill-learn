@@ -6,6 +6,7 @@ import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/erro
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { rewardRedeemSchema } from "@/lib/zodSchemas";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function POST(request) {
   try {
@@ -17,14 +18,25 @@ export async function POST(request) {
 
     const { rewardId } = await validateRequestBody(request, rewardRedeemSchema);
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter reward by tenant or global content
+    const rewardWhereClause = buildTenantContentFilter(tenantId, {
+      enabled: true,
+    });
+
     // Get the user and reward
     const [user, reward] = await prisma.$transaction([
       prisma.user.findUnique({
         where: { clerkId: userId },
         select: { id: true, points: true },
       }),
-      prisma.reward.findUnique({
-        where: { id: rewardId },
+      prisma.reward.findFirst({
+        where: { 
+          id: rewardId,
+          ...rewardWhereClause,
+        },
         select: {
           id: true,
           prize: true,

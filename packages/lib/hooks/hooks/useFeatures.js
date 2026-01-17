@@ -27,16 +27,30 @@ export function useFeatures() {
       
       const response = await fetch('/api/features')
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch features')
+      // Parse JSON first (even for error responses, they may contain useful data)
+      let data
+      try {
+        data = await response.json()
+      } catch (parseError) {
+        // If JSON parsing fails, throw a more descriptive error
+        throw new Error(`Failed to parse response: ${parseError.message}`)
       }
       
-      const data = await response.json()
+      if (!response.ok) {
+        // Use error message from response if available, otherwise use status text
+        const errorMessage = data?.error || data?.message || response.statusText || 'Failed to fetch features'
+        // If error response includes features, use them for graceful degradation
+        if (data?.features) {
+          setFeatures(data.features)
+        }
+        throw new Error(errorMessage)
+      }
+      
       setFeatures(data.features || {})
     } catch (err) {
       console.error('Error fetching features:', err)
       setError(err.message)
-      // Default all features to enabled if there's an error
+      // Default all features to enabled if there's an error (graceful degradation)
       setFeatures({})
     } finally {
       setIsLoading(false)

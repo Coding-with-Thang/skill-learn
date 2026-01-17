@@ -3,6 +3,7 @@ import { prisma } from '@skill-learn/database';
 import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * GET /api/user/quiz/:quizId
@@ -22,10 +23,19 @@ export async function GET(req, { params }) {
       });
     }
 
-    const quiz = await prisma.quiz.findUnique({
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quiz by tenant or global content
+    const whereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
+    // Use findFirst with tenant filter since findUnique doesn't support OR clauses
+    const quiz = await prisma.quiz.findFirst({
       where: {
         id: quizId,
-        isActive: true, // Only fetch active quizzes
+        ...whereClause,
       },
       select: {
         id: true,

@@ -64,6 +64,14 @@ export async function GET() {
       where: { isActive: true },
     });
 
+    if (!allFeatures || allFeatures.length === 0) {
+      // If no features exist, return empty object (graceful degradation)
+      return NextResponse.json({
+        features: {},
+        tenantId: user.tenant.id,
+      });
+    }
+
     // Get tenant's feature settings
     const tenantFeatures = await prisma.tenantFeature.findMany({
       where: { tenantId: user.tenant.id },
@@ -97,7 +105,11 @@ export async function GET() {
   } catch (error) {
     console.error("Error fetching features:", error);
     return NextResponse.json(
-      { error: "Failed to fetch features" },
+      { 
+        error: "Failed to fetch features",
+        message: error.message || "An unexpected error occurred",
+        features: {} // Return empty features object for graceful degradation
+      },
       { status: 500 }
     );
   }

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import {
   requirePermission,
@@ -7,6 +6,7 @@ import {
   PERMISSIONS,
 } from "@skill-learn/lib/utils/permissions.js";
 import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync.js";
+import { requireTenantContext } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * GET /api/tenant/user-roles
@@ -15,26 +15,18 @@ import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync.js";
  */
 export async function GET(request) {
   try {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get tenant context using standardized utility
+    const tenantContext = await requireTenantContext();
+    if (tenantContext instanceof NextResponse) {
+      return tenantContext;
     }
 
-    // Get user's tenant
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-      select: { tenantId: true },
-    });
-
-    if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
-    }
+    const { tenantId } = tenantContext;
 
     // Check permission
     const permResult = await requireAnyPermission(
       [PERMISSIONS.ROLES_READ, PERMISSIONS.ROLES_ASSIGN],
-      user.tenantId
+      tenantId
     );
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -45,7 +37,7 @@ export async function GET(request) {
     const filterRoleId = searchParams.get("roleId");
 
     // Build where clause
-    const where = { tenantId: user.tenantId };
+    const where = { tenantId: tenantId };
     if (filterUserId) where.userId = filterUserId;
     if (filterRoleId) where.tenantRoleId = filterRoleId;
 
@@ -122,24 +114,16 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const { userId: currentUserId } = await auth();
-
-    if (!currentUserId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get tenant context using standardized utility
+    const tenantContext = await requireTenantContext();
+    if (tenantContext instanceof NextResponse) {
+      return tenantContext;
     }
 
-    // Get current user's tenant
-    const currentUser = await prisma.user.findUnique({
-      where: { clerkId: currentUserId },
-      select: { tenantId: true },
-    });
-
-    if (!currentUser?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
-    }
+    const { tenantId } = tenantContext;
 
     // Check permission
-    const permResult = await requirePermission(PERMISSIONS.ROLES_ASSIGN, currentUser.tenantId);
+    const permResult = await requirePermission(PERMISSIONS.ROLES_ASSIGN, tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
@@ -158,7 +142,7 @@ export async function POST(request) {
     const role = await prisma.tenantRole.findFirst({
       where: {
         id: tenantRoleId,
-        tenantId: currentUser.tenantId,
+        tenantId: tenantId,
         isActive: true,
       },
     });
@@ -174,7 +158,7 @@ export async function POST(request) {
     const targetUser = await prisma.user.findFirst({
       where: {
         clerkId: userId,
-        tenantId: currentUser.tenantId,
+        tenantId: tenantId,
       },
     });
 
@@ -218,7 +202,7 @@ export async function POST(request) {
 
     // Sync to Clerk
     try {
-      await syncUserMetadataToClerk(userId, currentUser.tenantId);
+      await syncUserMetadataToClerk(userId, tenantId);
     } catch (err) {
       console.error("Failed to sync to Clerk:", err);
     }
@@ -250,24 +234,16 @@ export async function POST(request) {
  */
 export async function DELETE(request) {
   try {
-    const { userId: currentUserId } = await auth();
-
-    if (!currentUserId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get tenant context using standardized utility
+    const tenantContext = await requireTenantContext();
+    if (tenantContext instanceof NextResponse) {
+      return tenantContext;
     }
 
-    // Get current user's tenant
-    const currentUser = await prisma.user.findUnique({
-      where: { clerkId: currentUserId },
-      select: { tenantId: true },
-    });
-
-    if (!currentUser?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
-    }
+    const { tenantId } = tenantContext;
 
     // Check permission
-    const permResult = await requirePermission(PERMISSIONS.ROLES_ASSIGN, currentUser.tenantId);
+    const permResult = await requirePermission(PERMISSIONS.ROLES_ASSIGN, tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
@@ -329,7 +305,7 @@ export async function DELETE(request) {
     // Sync to Clerk
     if (deletedUserRole) {
       try {
-        await syncUserMetadataToClerk(deletedUserRole.userId, currentUser.tenantId);
+        await syncUserMetadataToClerk(deletedUserRole.userId, tenantId);
       } catch (err) {
         console.error("Failed to sync to Clerk:", err);
       }

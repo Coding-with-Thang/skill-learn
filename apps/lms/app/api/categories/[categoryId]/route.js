@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * GET /api/categories/:categoryId
@@ -18,17 +19,25 @@ export async function GET(request, { params }) {
       )
     }
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quizzes by tenant or global content
+    const quizWhereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
     // Fetch category with quizzes
+    // Note: We filter the category by checking tenant access after fetch
+    // and filter quizzes using tenant filter
     const category = await prisma.category.findUnique({
       where: {
         id: categoryId,
-        isActive: true
+        isActive: true,
       },
       include: {
         quizzes: {
-          where: {
-            isActive: true
-          },
+          where: quizWhereClause,
           select: {
             id: true,
             title: true,
@@ -51,6 +60,18 @@ export async function GET(request, { params }) {
     })
 
     if (!category) {
+      return NextResponse.json(
+        { error: "Category not found" },
+        { status: 404 }
+      )
+    }
+
+    // Verify tenant access: category must be tenant-specific or global
+    const hasAccess = !category.tenantId || 
+                      category.tenantId === tenantId || 
+                      (category.isGlobal && !category.tenantId);
+
+    if (!hasAccess) {
       return NextResponse.json(
         { error: "Category not found" },
         { status: 404 }

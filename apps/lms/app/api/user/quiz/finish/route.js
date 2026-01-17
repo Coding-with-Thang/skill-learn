@@ -7,6 +7,7 @@ import { getSystemSetting } from "@/lib/actions/settings";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { quizFinishSchema } from "@/lib/zodSchemas";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function POST(req) {
   try {
@@ -28,9 +29,18 @@ export async function POST(req) {
       });
     }
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quiz by tenant or global content
+    const quizWhereClause = buildTenantContentFilter(tenantId);
+
     // Get quiz to check passing score
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    const quiz = await prisma.quiz.findFirst({
+      where: { 
+        id: quizId,
+        ...quizWhereClause,
+      },
       select: { passingScore: true, title: true },
     });
 

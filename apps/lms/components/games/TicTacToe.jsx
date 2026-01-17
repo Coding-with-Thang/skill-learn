@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
 import { usePathname } from 'next/navigation';
 import { Button } from "@skill-learn/ui/components/button";
@@ -91,6 +91,7 @@ const TicTacToe = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const pathname = usePathname();
+  const isAIMovingRef = useRef(false);
 
   useEffect(() => {
     if (round >= 3) {
@@ -99,34 +100,7 @@ const TicTacToe = () => {
     }
   }, [round, pathname]);
 
-  //Tic Tac Toe Logic
-  useEffect(() => {
-    const savedScore = localStorage.getItem('ticTacToeScore');
-    if (savedScore) {
-      setPlayerScore(parseInt(savedScore));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (winner === 'X') {
-      const points = difficulty === 'easy' ? 1 : 2;
-      updatePlayerScore(points);
-    }
-    if (winner === 'O' || winner === 'draw') {
-      resetBoard()
-    }
-  }, [winner, difficulty, resetBoard, updatePlayerScore]);
-
-  useEffect(() => {
-    if (!winner && !isXNext) {
-      setIsAIThinking(true);
-      setTimeout(() => {
-        makeAIMove();
-        setIsAIThinking(false);
-      }, 500);
-    }
-  }, [board, isXNext, winner, makeAIMove]);
-
+  // Define callbacks before useEffects that use them
   const updatePlayerScore = useCallback((points) => {
     setPlayerScore(prevScore => {
       const newScore = prevScore + points;
@@ -138,12 +112,22 @@ const TicTacToe = () => {
     setTimeout(() => setShowScoreAnimation(false), 1500);
   }, []);
 
+  const resetBoard = useCallback(() => {
+    setBoard(Array(9).fill(null));
+    setIsXNext(true);
+    setWinner(null);
+    setWinningLine([]);
+    setRound((prev) => (prev >= 3 ? 3 : prev + 1))
+  }, [setRound]);
+
+  // Helper function
   const getEmptySquares = (squares) => {
     return squares
       .map((square, index) => (square === null ? index : null))
       .filter((index) => index !== null);
   };
 
+  // Define handleMove before makeAIMove (since makeAIMove uses handleMove)
   const handleMove = useCallback((index) => {
     if (board[index] || winner || isAIThinking) return;
 
@@ -163,46 +147,102 @@ const TicTacToe = () => {
     }
   }, [board, winner, isAIThinking, isXNext]);
 
+  // Define makeAIMove before useEffect that uses it
   const makeAIMove = useCallback(() => {
-    const newBoard = [...board];
-    let moveIndex;
+    if (isAIMovingRef.current || winner) return;
+    isAIMovingRef.current = true;
 
-    if (difficulty === "easy") {
-      //Random move for easy AI
-      const emptySquares = getEmptySquares(newBoard);
-      moveIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
-    } else {
-      //Minimax for hard AI
-      let bestScore = -Infinity;
-      moveIndex = -1;
+    setBoard((currentBoard) => {
+      const newBoard = [...currentBoard];
+      let moveIndex;
 
-      for (let i = 0; i < newBoard.length; i++) {
-        if (!newBoard[i]) {
-          newBoard[i] = "O";
-          const score = minimax(newBoard, 0, false);
-          newBoard[i] = null;
-          if (score > bestScore) {
-            bestScore = score;
-            moveIndex = i;
+      if (difficulty === "easy") {
+        //Random move for easy AI
+        const emptySquares = getEmptySquares(newBoard);
+        if (emptySquares.length > 0) {
+          moveIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
+        }
+      } else {
+        //Minimax for hard AI
+        let bestScore = -Infinity;
+        moveIndex = -1;
+
+        for (let i = 0; i < newBoard.length; i++) {
+          if (!newBoard[i]) {
+            newBoard[i] = "O";
+            const score = minimax(newBoard, 0, false);
+            newBoard[i] = null;
+            if (score > bestScore) {
+              bestScore = score;
+              moveIndex = i;
+            }
           }
         }
       }
-    }
 
-    if (moveIndex !== -1) {
-      handleMove(moveIndex);
-    }
-    // minimax is a pure function defined outside component, stable reference
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board, difficulty, handleMove]);
+      if (moveIndex !== -1 && moveIndex !== undefined) {
+        newBoard[moveIndex] = "O";
+      }
 
-  const resetBoard = useCallback(() => {
-    setBoard(Array(9).fill(null));
-    setIsXNext(true);
-    setWinner(null);
-    setWinningLine([]);
-    setRound((prev) => (prev >= 3 ? 3 : prev + 1))
-  }, [setRound]);
+      return newBoard;
+    });
+  }, [difficulty, winner]);
+
+  // Check for winner/draw after board changes
+  useEffect(() => {
+    if (winner) return;
+    
+    const { winner: gameWinner, line } = calculateWinner(board);
+    if (gameWinner) {
+      setWinner(gameWinner);
+      setWinningLine(line);
+      if (isAIMovingRef.current) {
+        isAIMovingRef.current = false;
+        setIsAIThinking(false);
+      }
+    } else if (!board.includes(null)) {
+      setWinner("draw");
+      setWinningLine([]);
+      if (isAIMovingRef.current) {
+        isAIMovingRef.current = false;
+        setIsAIThinking(false);
+      }
+    } else if (!isXNext && isAIMovingRef.current) {
+      // After AI move completes, switch back to player's turn
+      setIsXNext(true);
+      isAIMovingRef.current = false;
+      setIsAIThinking(false);
+    }
+  }, [board, winner, isXNext]);
+
+  //Tic Tac Toe Logic
+  useEffect(() => {
+    const savedScore = localStorage.getItem('ticTacToeScore');
+    if (savedScore) {
+      setPlayerScore(parseInt(savedScore));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (winner === 'X') {
+      const points = difficulty === 'easy' ? 1 : 2;
+      updatePlayerScore(points);
+    }
+    if (winner === 'O' || winner === 'draw') {
+      resetBoard()
+    }
+  }, [winner, difficulty, resetBoard, updatePlayerScore]);
+
+  // Trigger AI move when it's AI's turn
+  useEffect(() => {
+    if (!winner && !isXNext && !isAIThinking && !isAIMovingRef.current) {
+      setIsAIThinking(true);
+      const timer = setTimeout(() => {
+        makeAIMove();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isXNext, winner, isAIThinking, makeAIMove]);
 
   const handleDifficultyChange = (value) => {
     setDifficulty(value);

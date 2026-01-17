@@ -7,6 +7,7 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequest } from "@skill-learn/lib/utils/validateRequest.js";
 import { rewardCreateSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
 
 export async function POST(request) {
   try {
@@ -20,6 +21,9 @@ export async function POST(request) {
     
     // Validate the request body
     await validateRequest(rewardCreateSchema, body);
+
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
 
     // Generate signed URL if fileKey exists
     let imageUrl = body.imageUrl || null;
@@ -43,6 +47,8 @@ export async function POST(request) {
         cost: body.cost,
         imageUrl: imageUrl,
         fileKey: body.fileKey,
+        tenantId: tenantId, // Assign to current user's tenant
+        isGlobal: body.isGlobal ?? false, // Allow admin to set global flag
         enabled: body.enabled ?? true,
         allowMultiple: body.allowMultiple ?? false,
         maxRedemptions: body.maxRedemptions ?? 1,

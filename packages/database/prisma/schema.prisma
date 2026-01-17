@@ -11,11 +11,14 @@ model User {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   clerkId         String          @unique
   username        String          @unique
+  email           String? // Added for multi-tenant RBAC (optional for migration)
   firstName       String
   lastName        String
   imageUrl        String?
   manager         String?         @default("")
-  role            Role            @default(AGENT)
+  role            Role            @default(AGENT) // Legacy role enum (can be deprecated later)
+  tenantId       String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id])
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   points          Int             @default(0)
@@ -31,6 +34,8 @@ model User {
   systemSettings  SystemSetting[]
   quizzes         Quiz[]
   courses         Course[]
+  // Note: userRoles relation removed - UserRole.userId is Clerk ID (String), not User.id (ObjectId)
+  // Query user roles by matching User.clerkId with UserRole.userId in application code
 
   // CRITICAL INDEXES FOR COMMON QUERIES
   @@index([role]) // Filter by role: "Get all managers"
@@ -50,6 +55,9 @@ model Category {
   description   String?
   imageUrl      String?
   isActive      Boolean        @default(true)
+  tenantId      String?        @db.ObjectId // Multi-tenant: category belongs to ONE tenant (null = global)
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id])
+  isGlobal      Boolean        @default(false) // Global content available to all tenants
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   quizzes       Quiz[]
@@ -72,6 +80,9 @@ model Quiz {
   category       Category   @relation(fields: [categoryId], references: [id])
   questions      Question[]
   isActive       Boolean    @default(true)
+  tenantId       String?    @db.ObjectId // Multi-tenant: quiz belongs to ONE tenant (null = global)
+  tenant         Tenant?    @relation(fields: [tenantId], references: [id])
+  isGlobal       Boolean    @default(false) // Global content available to all tenants
   timeLimit      Int?
   passingScore   Int        @default(70)
   lastAttempt    DateTime?
@@ -180,6 +191,9 @@ model Reward {
   enabled        Boolean     @default(true)
   allowMultiple  Boolean     @default(false)
   maxRedemptions Int         @default(1)
+  tenantId       String?     @db.ObjectId // Multi-tenant: reward belongs to ONE tenant (null = global)
+  tenant         Tenant?     @relation(fields: [tenantId], references: [id])
+  isGlobal       Boolean     @default(false) // Global content available to all tenants
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   rewardLogs     RewardLog[]
@@ -222,6 +236,9 @@ model Game {
   imageUrl    String?
   slug        String
   genre       String?
+  tenantId    String? @db.ObjectId // Multi-tenant: game belongs to ONE tenant (null = global)
+  tenant      Tenant? @relation(fields: [tenantId], references: [id])
+  isGlobal    Boolean @default(false) // Global content available to all tenants
   rules       Rule[] // One-to-many relationship
 
   // GAME TRACKING INDEXES
@@ -279,6 +296,9 @@ model Course {
   excerptDescription String
   slug               String       @unique
   status             CourseStatus @default(Draft)
+  tenantId           String?      @db.ObjectId // Multi-tenant: course belongs to ONE tenant (null = global)
+  tenant             Tenant?      @relation(fields: [tenantId], references: [id])
+  isGlobal           Boolean      @default(false) // Global content available to all tenants
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
   userId             String?      @db.ObjectId
@@ -329,6 +349,12 @@ model Tenant {
   userRoles         UserRole[]
   roleSlotPurchases RoleSlotPurchase[]
   tenantFeatures    TenantFeature[]
+  users             User[]
+  courses           Course[]
+  categories        Category[]
+  quizzes           Quiz[]
+  rewards           Reward[]
+  games             Game[]
 
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
   // Note: stripeCustomerId and stripeSubscriptionId have @unique, which creates indexes

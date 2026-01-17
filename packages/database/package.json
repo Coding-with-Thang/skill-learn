@@ -9,7 +9,8 @@
     "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js",
     "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:studio": "prisma studio --schema=./prisma/schema.prisma"
+    "prisma:studio": "prisma studio --schema=./prisma/schema.prisma",
+    "migrate:games-global": "node prisma/migrations/make_games_global.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

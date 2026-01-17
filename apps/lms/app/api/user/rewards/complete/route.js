@@ -4,6 +4,7 @@ import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * Combined rewards endpoint that returns both available rewards and user's reward history
@@ -29,10 +30,19 @@ export async function GET(request) {
       });
     }
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter rewards by tenant or global content
+    const whereClause = buildTenantContentFilter(tenantId, {
+      enabled: true,
+    });
+
     // Fetch both rewards and history in parallel
     const [rewards, history] = await Promise.all([
       // Get all available rewards
       prisma.reward.findMany({
+        where: whereClause,
         select: {
           id: true,
           prize: true,

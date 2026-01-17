@@ -8,6 +8,7 @@ import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";
 import { quizUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
@@ -22,8 +23,17 @@ export async function GET(request, { params }) {
       params
     );
 
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quiz by tenant or global content
+    const whereClause = buildTenantContentFilter(tenantId);
+
+    const quiz = await prisma.quiz.findFirst({
+      where: { 
+        id: quizId,
+        ...whereClause,
+      },
       include: {
         category: {
           select: {
@@ -107,6 +117,20 @@ export async function PUT(request, { params }) {
       params
     );
 
+    // Verify quiz belongs to tenant before updating
+    const existingQuiz = await prisma.quiz.findFirst({
+      where: { 
+        id: quizId,
+        ...whereClause,
+      },
+    });
+
+    if (!existingQuiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
+    }
+
     // Update quiz and manage questions
     let quiz = await prisma.quiz.update({
       where: { id: quizId },
@@ -116,6 +140,8 @@ export async function PUT(request, { params }) {
         imageUrl: data.imageUrl,
         fileKey: data.fileKey,
         categoryId: data.categoryId,
+        tenantId: data.tenantId !== undefined ? data.tenantId : existingQuiz.tenantId, // Allow admin to change tenant
+        isGlobal: data.isGlobal !== undefined ? data.isGlobal : existingQuiz.isGlobal, // Allow admin to change global flag
         timeLimit: data.timeLimit,
         passingScore: data.passingScore || defaultPassingScore,
         isActive: data.isActive ?? true,
@@ -167,8 +193,11 @@ export async function PUT(request, { params }) {
     }
 
     // Return updated quiz with all relations
-    quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    quiz = await prisma.quiz.findFirst({
+      where: { 
+        id: quizId,
+        ...whereClause,
+      },
       include: {
         category: {
           select: {
@@ -239,6 +268,26 @@ export async function DELETE(request, { params }) {
       z.object({ quizId: objectIdSchema }),
       params
     );
+
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter quiz by tenant or global content
+    const whereClause = buildTenantContentFilter(tenantId);
+
+    // Verify quiz belongs to tenant before deleting
+    const existingQuiz = await prisma.quiz.findFirst({
+      where: { 
+        id: quizId,
+        ...whereClause,
+      },
+    });
+
+    if (!existingQuiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
+    }
 
     // Delete quiz and all related data (questions and options will be deleted automatically due to cascade)
     await prisma.quiz.delete({

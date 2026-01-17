@@ -6,6 +6,7 @@ import { getDailyPointStatus } from "@/lib/points";
 import { updateStreak, getStreakInfo } from "@/lib/streak";
 import { prisma } from '@skill-learn/database';
 import { AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 /**
  * Batch endpoint for initial page load data
@@ -80,8 +81,17 @@ export async function GET(request) {
     }
 
     if (includes.includes("rewards")) {
+      // Get current user's tenantId using standardized utility
+      const tenantId = await getTenantId();
+
+      // CRITICAL: Filter rewards by tenant or global content using standardized utility
+      const whereClause = buildTenantContentFilter(tenantId, {
+        enabled: true,
+      });
+
       queries.push(
         prisma.reward.findMany({
+          where: whereClause,
           select: {
             id: true,
             prize: true,

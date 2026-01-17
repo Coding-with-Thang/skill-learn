@@ -3,6 +3,7 @@ import { prisma } from '@skill-learn/database';
 import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function GET(request) {
   try {
@@ -105,11 +106,18 @@ export async function GET(request) {
       take: 5
     });
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+    const quizWhereClause = buildTenantContentFilter(tenantId);
+
     // Enrich logs with quiz titles
     const recentActivity = await Promise.all(recentLogs.map(async (log) => {
       const quizId = log.reason.replace("quiz_completed_", "");
-      const quiz = await prisma.quiz.findUnique({
-        where: { id: quizId },
+      const quiz = await prisma.quiz.findFirst({
+        where: { 
+          id: quizId,
+          ...quizWhereClause,
+        },
         select: { title: true, category: { select: { name: true } } }
       });
       return {
