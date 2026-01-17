@@ -10,7 +10,8 @@
     "prisma:seed": "node prisma/seed.js",
     "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=./prisma/schema.prisma",
-    "migrate:games-global": "node prisma/migrations/make_games_global.js"
+    "migrate:games-global": "node prisma/migrations/make_games_global.js",
+    "migrate:assign-twcc-corp": "node prisma/migrations/assign_resources_to_twcc_corp.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
