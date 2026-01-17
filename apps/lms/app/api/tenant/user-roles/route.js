@@ -120,7 +120,7 @@ export async function POST(request) {
       return tenantContext;
     }
 
-    const { tenantId } = tenantContext;
+    const { tenantId, userId: currentUserId } = tenantContext;
 
     // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_ASSIGN, tenantId);
@@ -185,7 +185,7 @@ export async function POST(request) {
     const userRole = await prisma.userRole.create({
       data: {
         userId,
-        tenantId: currentUser.tenantId,
+        tenantId: tenantId,
         tenantRoleId,
         assignedBy: currentUserId,
       },
@@ -269,7 +269,7 @@ export async function DELETE(request) {
 
     if (userRoleId) {
       const userRole = await prisma.userRole.findFirst({
-        where: { id: userRoleId, tenantId: currentUser.tenantId },
+        where: { id: userRoleId, tenantId: tenantId },
       });
 
       if (!userRole) {
@@ -283,7 +283,7 @@ export async function DELETE(request) {
       await prisma.userRole.delete({ where: { id: userRoleId } });
     } else if (userId && tenantRoleId) {
       const userRole = await prisma.userRole.findFirst({
-        where: { userId, tenantRoleId, tenantId: currentUser.tenantId },
+        where: { userId, tenantRoleId, tenantId: tenantId },
       });
 
       if (!userRole) {
