@@ -1,8 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { ArrowRight, Sparkles, Target, Users, Lightbulb, TrendingUp, Shield, Heart, Zap, Coffee } from 'lucide-react';
+import { ArrowRight, Sparkles, Heart, Zap, Coffee, Infinity, Rocket, Grid3X3 } from 'lucide-react';
 import { Dancing_Script } from 'next/font/google';
+import profileShot from '../../../../../public/profile.png'
+import businessLady from '../../../../../public/business.jpg'
+import { useRouter } from 'next/navigation';
 
 const dancingScript = Dancing_Script({
     subsets: ['latin'],
@@ -34,6 +37,7 @@ const teamMembers = [
 ];
 
 export default function AboutPage() {
+    const router = useRouter();
     return (
         <main className="w-full bg-white">
             {/* HERO SECTION */}
@@ -60,21 +64,50 @@ export default function AboutPage() {
                             <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-md">
                                 We empower the future of learning with AI-driven insights and personalized growth paths. Our mission is to make skill development accessible, engaging, and impactful for everyone.
                             </p>
-                            <div className="flex items-center gap-3 text-sm">
-                                <div className="flex -space-x-2">
-                                    <div className="w-8 h-8 rounded-full bg-purple-200 border-2 border-white"></div>
-                                    <div className="w-8 h-8 rounded-full bg-blue-200 border-2 border-white"></div>
+                            <div className="flex items-center gap-4 text-sm mt-4">
+                                <div className="flex -space-x-3">
+                                    <div className="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                        <Image
+                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&q=80"
+                                            alt="User"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <div className="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                        <Image
+                                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80"
+                                            alt="User"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
+                                    <div className="relative w-18 h-18 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                        <Image
+                                            src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop&q=80"
+                                            alt="User"
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    </div>
                                 </div>
-                                <span className="text-gray-600">2.4k</span>
+                                <div className="flex flex-col -space-y-1">
+                                    <span className="font-bold text-gray-900 text-base">2.4k+</span>
+                                    <span className="text-gray-500 text-xs font-medium">Happy Learners</span>
+                                </div>
                             </div>
                         </div>
 
                         {/* Right Image */}
-                        <div className="relative">
-                            <div className="relative w-full aspect-square max-w-md mx-auto lg:ml-auto rounded-3xl overflow-hidden shadow-2xl">
+                        <div className="relative w-full max-w-md mx-auto lg:ml-auto">
+                            {/* Decorative Borders */}
+                            <div className="absolute -inset-4 border-2 border-purple-100 rounded-[2rem] -rotate-3"></div>
+                            <div className="absolute -inset-4 border-2 border-blue-100 rounded-[2rem] rotate-2"></div>
+
+                            <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=600&h=600&fit=crop&q=80"
-                                    alt="Professional headshot"
+                                    src={businessLady}
+                                    alt="Team member"
                                     fill
                                     className="object-cover"
                                     priority
@@ -86,42 +119,57 @@ export default function AboutPage() {
             </section>
 
             {/* HUMANIZING TECH SECTION */}
-            <section className="relative bg-gray-50 py-16 md:py-24">
+            <section className="relative bg-white py-16 md:py-24">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="grid lg:grid-cols-2 gap-16 items-center">
                         {/* Left Image */}
-                        <div className="relative order-2 lg:order-1">
-                            <div className="relative w-full aspect-square max-w-md mx-auto lg:mr-auto rounded-3xl overflow-hidden shadow-2xl">
+                        <div className="relative">
+                            <div className="relative w-full aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&h=600&fit=crop&q=80"
-                                    alt="Team member"
+                                    src={profileShot}
+                                    alt="Humanizing Tech"
                                     fill
-                                    className="object-cover"
+                                    className="object-cover grayscale"
                                 />
-                            </div>
-                            {/* Stats Badge */}
-                            <div className="absolute bottom-6 left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-4">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-purple-600">100+</div>
-                                    <div className="text-xs text-gray-500">Courses</div>
-                                </div>
-                                <div className="w-px h-12 bg-gray-200"></div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-purple-600">150+</div>
-                                    <div className="text-xs text-gray-500">Instructors</div>
+
+                                {/* Human-First Design Floating Card */}
+                                <div className="absolute bottom-8 left-8 right-8">
+                                    <div className="bg-white/70 backdrop-blur-md rounded-[2rem] p-8 shadow-xl border border-white/30">
+                                        <div className="bg-blue-500/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-4">
+                                            <Heart className="w-6 h-6 text-blue-600 fill-blue-600" />
+                                        </div>
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">Human-First Design</h4>
+                                        <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                                            Every solution we build starts with the people who will use it.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right Content */}
-                        <div className="space-y-6 order-1 lg:order-2">
-                            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-                                Humanizing Tech<br />
-                                with <span className="text-cyan-500">Purpose</span>.
-                            </h2>
-                            <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-lg">
-                                Technology should enhance human potential, not replace it. We combine cutting-edge AI with human-centered design to create learning experiences that truly resonate and drive meaningful growth.
-                            </p>
+                        <div className="space-y-10">
+                            <div className="space-y-6">
+                                <h2 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight text-[#1a2b3b]">
+                                    Humanizing Tech<br />
+                                    <span className="text-[#00a884]">with Purpose.</span>
+                                </h2>
+                                <p className="text-lg md:text-xl text-gray-500 leading-relaxed font-medium">
+                                    Skill-Learn was born from a simple realization: the future isn't about machines replacing humans, but about machines empowering them. We create exceptional workplaces where people are the primary asset.
+                                </p>
+                            </div>
+
+                            {/* Stats Cards */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="bg-[#f4fbf9] rounded-[2rem] p-8 space-y-2">
+                                    <div className="text-4xl font-bold text-gray-900">100k+</div>
+                                    <div className="text-xs font-bold text-[#00a884] tracking-widest uppercase">Learners</div>
+                                </div>
+                                <div className="bg-[#f4f7ff] rounded-[2rem] p-8 space-y-2">
+                                    <div className="text-4xl font-bold text-gray-900">150+</div>
+                                    <div className="text-xs font-bold text-[#6366f1] tracking-widest uppercase">Global Partners</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -131,102 +179,97 @@ export default function AboutPage() {
             <section className="py-16 md:py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Guiding Light</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
-                            Core principles that drive everything we do
+                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">Our Guiding Light</h2>
+                        <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+                            These values aren't just posters on a wall. They are the heartbeat of everything we create.
                         </p>
                     </div>
 
-                    {/* Principles Grid */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                        {/* Precision-Aligned */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                                    <Target className="w-6 h-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Precision-Aligned</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Every feature is meticulously crafted to align with your learning goals.
-                                    </p>
-                                </div>
+                    {/* Principles Bento Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+                        {/* 1. Deep Engagement */}
+                        <div className="relative group md:col-span-1 bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex flex-col items-start min-h-[380px] overflow-hidden">
+                            {/* Background Image */}
+                            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-all duration-700 ease-in-out group-hover:scale-110">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80"
+                                    alt="Deep Engagement"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 blur-[1px] group-hover:blur-0 transition-all duration-700"
+                                />
+                                {/* Overlay for readability */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent group-hover:from-white/60 group-hover:via-white/20 transition-all duration-700"></div>
                             </div>
+                            <div className="relative z-10 w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                                <Sparkles className="w-10 h-10 text-emerald-500" />
+                            </div>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">Deep Engagement</h3>
+                            <p className="relative z-10 text-slate-800 font-semibold leading-relaxed transition-colors duration-500">
+                                Personalized attention, cutting through complexity.
+                            </p>
                         </div>
 
-                        {/* Led Anywhere */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center">
-                                    <Sparkles className="w-6 h-6 text-cyan-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Led Anywhere</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Learn on your terms, wherever you are with intelligent technology.
-                                    </p>
-                                </div>
+                        {/* 2. Seasoned Expertise */}
+                        <div className="relative group md:col-span-2 bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex flex-col items-start min-h-[380px] overflow-hidden">
+                            {/* Background Image */}
+                            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-all duration-700 ease-in-out group-hover:scale-110">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80"
+                                    alt="Seasoned Expertise"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 blur-[1px] group-hover:blur-0 transition-all duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent group-hover:from-white/60 group-hover:via-white/20 transition-all duration-700"></div>
                             </div>
+                            <div className="relative z-10 w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                                <Infinity className="w-10 h-10 text-indigo-500" />
+                            </div>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">Seasoned Expertise</h3>
+                            <p className="relative z-10 text-slate-800 font-semibold text-lg leading-relaxed max-w-md transition-colors duration-500">
+                                Deep industry knowledge meets fresh perspective. We don't just follow trends; we define them.
+                            </p>
                         </div>
 
-                        {/* Human-Centered */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-pink-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Human-Centered</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Technology that enhances human potential, not replaces it.
-                                    </p>
-                                </div>
+                        {/* 3. Efficiency Unleashed */}
+                        <div className="relative group md:col-span-2 bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex flex-col items-start min-h-[380px] overflow-hidden">
+                            {/* Background Image */}
+                            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-all duration-700 ease-in-out group-hover:scale-110">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80"
+                                    alt="Efficiency Unleashed"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 blur-[1px] group-hover:blur-0 transition-all duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent group-hover:from-white/60 group-hover:via-white/20 transition-all duration-700"></div>
                             </div>
+                            <div className="relative z-10 w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                                <Rocket className="w-10 h-10 text-blue-500" />
+                            </div>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">Efficiency Unleashed</h3>
+                            <p className="relative z-10 text-slate-800 font-semibold text-lg leading-relaxed max-w-xl transition-colors duration-500">
+                                We optimize your human capital investment by removing friction and focusing on high-impact growth strategies.
+                            </p>
                         </div>
 
-                        {/* Innovation First */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <Lightbulb className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Innovation First</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Constantly evolving with cutting-edge learning methodologies.
-                                    </p>
-                                </div>
+                        {/* 4. Tailored Solutions */}
+                        <div className="relative group md:col-span-1 bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.06)] flex flex-col items-start min-h-[380px] overflow-hidden">
+                            {/* Background Image */}
+                            <div className="absolute inset-0 opacity-30 group-hover:opacity-60 transition-all duration-700 ease-in-out group-hover:scale-110">
+                                <Image
+                                    src="https://images.unsplash.com/photo-1558403194-611308249627?w=800&q=80"
+                                    alt="Tailored Solutions"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 blur-[1px] group-hover:blur-0 transition-all duration-700"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-white/40 to-transparent group-hover:from-white/60 group-hover:via-white/20 transition-all duration-700"></div>
                             </div>
-                        </div>
-
-                        {/* Growth Mindset */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                                    <TrendingUp className="w-6 h-6 text-green-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Growth Mindset</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Fostering continuous improvement and lifelong learning.
-                                    </p>
-                                </div>
+                            <div className="relative z-10 w-20 h-20 rounded-full bg-pink-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
+                                <Grid3X3 className="w-10 h-10 text-pink-500" />
                             </div>
-                        </div>
-
-                        {/* Trust & Security */}
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4">
-                                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                                    <Shield className="w-6 h-6 text-indigo-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold mb-2">Trust & Security</h3>
-                                    <p className="text-gray-600 text-sm leading-relaxed">
-                                        Your data and privacy are protected with enterprise-grade security.
-                                    </p>
-                                </div>
-                            </div>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">Tailored Solutions</h3>
+                            <p className="relative z-10 text-slate-800 font-semibold leading-relaxed transition-colors duration-500">
+                                Your organization is unique. Your learning ecosystem should be too. We build for your specific DNA.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -377,7 +420,7 @@ export default function AboutPage() {
                                     We are looking for dreamers, builders, and disruptors who are ready to redefine how talent is developed in the AI era.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4">
-                                    <button className="inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 transition-colors">
+                                    <button className="inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 transition-colors" onClick={() => router.push('/careers')}>
                                         View Open Positions <ArrowRight className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -387,17 +430,21 @@ export default function AboutPage() {
                             <div className="relative">
                                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 max-w-md mx-auto lg:ml-auto">
                                     <div className="space-y-8">
-                                        {/* Purple Icon */}
-                                        <div className="flex justify-between items-start">
-                                            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                                        {/* Icon and Title aligned horizontally */}
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex-shrink-0 flex items-center justify-center shadow-lg shadow-purple-100">
                                                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                                 </svg>
                                             </div>
+                                            <h3 className="text-2xl font-bold text-gray-900 leading-tight">
+                                                your <span className={`${dancingScript.className} text-purple-600 italic`}>future</span><br />
+                                                is calling
+                                            </h3>
                                         </div>
 
                                         {/* Placeholder Lines */}
-                                        <div className="space-y-3">
+                                        <div className="space-y-3 pt-2">
                                             <div className="h-3 bg-gray-100 rounded-full w-3/4"></div>
                                             <div className="h-3 bg-gray-100 rounded-full w-full"></div>
                                             <div className="h-3 bg-gray-100 rounded-full w-5/6"></div>

@@ -1,3 +1,6 @@
 {
-  "cSpell.words": ["COOLDOWN", "nums", "SCORM", "sonner", "upserting"]
+  "cSpell.words": ["COOLDOWN", "nums", "SCORM", "sonner", "upserting"],
+  "redhat.dependencyAnalytics.manifestExclusionPatterns": [
+    "**/.next/**/package.json"
+  ]
 }
