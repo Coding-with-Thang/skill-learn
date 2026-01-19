@@ -4,6 +4,7 @@ export * from "./zodSchemas.js";
 
 // Export commonly used utils
 export * from "./utils/utils/axios.js";
+export * from "./utils/utils/utils.js";
 export * from "./utils/utils/errorHandler.js";
 export * from "./utils/utils/apiWrapper.js";
 export * from "./utils/utils/permissions.js";

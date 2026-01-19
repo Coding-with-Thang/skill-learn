@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
+  History,
   X,
 } from 'lucide-react'
 import { Button } from '@/components/cms/ui/button'
@@ -34,6 +35,7 @@ const menuItems = [
   { icon: Users, label: 'Admin Users', href: '/cms/admins' },
   { icon: Zap, label: 'Features', href: '/cms/features' },
   { icon: MessageSquare, label: 'Support', href: '/cms/support' },
+  { icon: History, label: 'Changelog', href: '/cms/changelog' },
   { icon: Megaphone, label: 'Announcements', href: '/cms/announcements' },
   { icon: Settings, label: 'Settings', href: '/cms/settings' },
 ]
@@ -53,7 +55,7 @@ export default function Sidebar() {
   return (
     <motion.aside
       initial={false}
-      animate={{ 
+      animate={{
         width: isCollapsed ? 80 : 256,
       }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}

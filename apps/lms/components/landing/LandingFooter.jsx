@@ -12,7 +12,7 @@ export default function LandingFooter() {
       "Task management",
       "Gantt charts",
       "Skill-Learn status",
-      "Security",
+      { name: "Changelog", href: "/changelog" },
       "CA Notice of Collection",
       "AI"
     ],
