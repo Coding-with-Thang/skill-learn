@@ -19,6 +19,13 @@ export async function GET(request) {
     // Find the user in the db
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
+      include: {
+        tenant: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -27,7 +34,38 @@ export async function GET(request) {
       });
     }
 
-    return successResponse({ user });
+    // Get the user's actual role from UserRole → TenantRole
+    let roleAlias = null;
+    if (user.tenantId) {
+      const userRole = await prisma.userRole.findFirst({
+        where: {
+          userId: userId,
+          tenantId: user.tenantId,
+        },
+        include: {
+          tenantRole: {
+            select: {
+              roleAlias: true,
+            },
+          },
+        },
+        orderBy: {
+          assignedAt: "desc", // Get the most recently assigned role
+        },
+      });
+
+      if (userRole?.tenantRole?.roleAlias) {
+        roleAlias = userRole.tenantRole.roleAlias;
+      }
+    }
+
+    // Return user data with the actual roleAlias instead of legacy role field
+    const userData = {
+      ...user,
+      role: roleAlias || user.role, // Use roleAlias if available, fallback to legacy role
+    };
+
+    return successResponse({ user: userData });
   } catch (error) {
     return handleApiError(error);
   }

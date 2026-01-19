@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { Input } from '@/components/cms/ui/input'
 import { Button } from '@/components/cms/ui/button'
 import { Badge } from '@/components/cms/ui/badge'
@@ -20,6 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
 
 export default function TopBar() {
+  const { user } = useUser()
   const { theme, toggleTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
@@ -28,6 +30,14 @@ export default function TopBar() {
   const [showSearch, setShowSearch] = useState(false)
 
   const unreadCount = notifications.filter(n => !n.read).length
+
+  // Get user display data from Clerk
+  const userName = user?.fullName || user?.firstName || 'Super Admin'
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress || user?.primaryEmailAddress?.emailAddress || ''
+  const userImageUrl = user?.imageUrl
+  const userInitials = user?.firstName?.[0] && user?.lastName?.[0] 
+    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    : user?.firstName?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'SA'
 
   return (
     <header className="sticky top-0 z-30 border-b bg-card backdrop-blur-sm">
@@ -207,10 +217,18 @@ export default function TopBar() {
               onClick={() => setShowProfile(!showProfile)}
               className="gap-2"
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
-                SA
-              </div>
-              <span className="hidden md:inline text-sm font-medium">Super Admin</span>
+              {userImageUrl ? (
+                <img
+                  src={userImageUrl}
+                  alt={userName}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
+                  {userInitials}
+                </div>
+              )}
+              <span className="hidden md:inline text-sm font-medium">{userName}</span>
             </Button>
 
             <AnimatePresence>
@@ -223,8 +241,10 @@ export default function TopBar() {
                   className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-lg border bg-card shadow-lg"
                 >
                   <div className="p-4 border-b">
-                    <p className="font-medium">Super Admin</p>
-                    <p className="text-xs text-muted-foreground">admin@skill-learn.com</p>
+                    <p className="font-medium">{userName}</p>
+                    {userEmail && (
+                      <p className="text-xs text-muted-foreground">{userEmail}</p>
+                    )}
                   </div>
                   <div className="p-1">
                     <Button
