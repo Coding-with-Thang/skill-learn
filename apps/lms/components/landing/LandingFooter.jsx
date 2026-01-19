@@ -26,7 +26,7 @@ export default function LandingFooter() {
       { name: "Case Studies", href: "/resources/case-studies/techflow" },
       { name: "Contact Us", href: "/contact" },
       { name: "Support", href: "/support/faq" },
-      { name: "Careers", href: "/careers" }
+      { name: "Careers", href: "/careers" },
       { name: "Changelog", href: "/changelog" },
     ],
     Legal: [
