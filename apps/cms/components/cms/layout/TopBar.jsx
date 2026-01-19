@@ -9,23 +9,28 @@ import {
   Bell,
   Sun,
   Moon,
-  User,
-  LogOut,
-  Settings,
   Menu,
   X
 } from 'lucide-react'
 import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
+import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
+import { useUser } from '@clerk/nextjs'
+import { useEffect } from 'react'
 
 export default function TopBar() {
-  const { theme, toggleTheme } = useThemeStore()
+  const { theme, toggleTheme, initializeTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
+  const { user } = useUser()
   const [showNotifications, setShowNotifications] = useState(false)
-  const [showProfile, setShowProfile] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+
+  // Initialize theme on mount to ensure it's applied
+  useEffect(() => {
+    initializeTheme()
+  }, [initializeTheme])
 
   const unreadCount = notifications.filter(n => !n.read).length
 
@@ -91,8 +96,8 @@ export default function TopBar() {
           </AnimatePresence>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-1 lg:gap-2">
+        {/* Right Section - Pushed to the right */}
+        <div className="flex items-center gap-1 lg:gap-2 ml-auto">
           {/* Theme Toggle */}
           <Button
             variant="ghost"
@@ -151,7 +156,7 @@ export default function TopBar() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 rounded-lg border bg-card shadow-lg"
+                  className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 rounded-lg border bg-card shadow-lg z-50"
                 >
                   <div className="p-4 border-b">
                     <div className="flex items-center justify-between">
@@ -201,57 +206,16 @@ export default function TopBar() {
           </div>
 
           {/* User Profile */}
-          <div className="relative">
-            <Button
-              variant="ghost"
-              onClick={() => setShowProfile(!showProfile)}
-              className="gap-2"
-            >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
-                SA
-              </div>
-              <span className="hidden md:inline text-sm font-medium">Super Admin</span>
-            </Button>
-
-            <AnimatePresence>
-              {showProfile && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-lg border bg-card shadow-lg"
-                >
-                  <div className="p-4 border-b">
-                    <p className="font-medium">Super Admin</p>
-                    <p className="text-xs text-muted-foreground">admin@skill-learn.com</p>
-                  </div>
-                  <div className="p-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2"
-                    >
-                      <User className="h-4 w-4" />
-                      Profile
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2"
-                    >
-                      <Settings className="h-4 w-4" />
-                      Settings
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="flex items-center gap-3 pl-2 border-l border-border">
+            <div className="hidden md:flex flex-col items-end">
+              <span className="text-sm font-semibold text-foreground">
+                {user?.fullName || "Super Admin"}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Super Admin
+              </span>
+            </div>
+            <UserButtonWrapper />
           </div>
         </div>
       </div>

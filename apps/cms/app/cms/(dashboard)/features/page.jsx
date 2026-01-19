@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
 import api from '@skill-learn/lib/utils/axios.js'
+import { slugify } from '@skill-learn/lib/utils/utils.js'
 import { Badge } from '@/components/cms/ui/badge'
 import { Button } from '@/components/cms/ui/button'
 import { Input } from '@/components/cms/ui/input'
@@ -281,12 +282,9 @@ export default function FeaturesPage() {
     return featureIcons[iconName] || ToggleLeft
   }
 
-  // Generate key from name
+  // Generate key from name using slugify utility (with underscores for keys)
   const generateKey = (name) => {
-    return name
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '')
-      .replace(/\s+/g, '_')
+    return slugify(name).replace(/-/g, '_')
   }
 
   if (loading && features.length === 0) {

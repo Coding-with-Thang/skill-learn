@@ -7,23 +7,16 @@ export default function LandingFooter() {
   const footerLinks = {
     Product: [
       { name: "Features", href: "/features" },
-      "Templates",
-      "Apps & Integrations",
-      "Task management",
       "Gantt charts",
-      "Skill-Learn status",
-      { name: "Changelog", href: "/changelog" },
-      "CA Notice of Collection",
       "AI"
     ],
-    Solutions: [
+    Business: [
       "All teams",
       "Marketing",
       "Creative",
       "Project Management",
       "Product Development",
       "Business Operations",
-      "Professional Services"
     ],
     Resources: [
       { name: "Help Center", href: "/support/faq" },
@@ -34,6 +27,7 @@ export default function LandingFooter() {
       { name: "Contact Us", href: "/contact" },
       { name: "Support", href: "/support/faq" },
       { name: "Careers", href: "/careers" }
+      { name: "Changelog", href: "/changelog" },
     ],
     Legal: [
       { name: "Legal Hub", href: "/legal" },

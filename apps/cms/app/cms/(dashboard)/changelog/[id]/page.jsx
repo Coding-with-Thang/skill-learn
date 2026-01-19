@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import ChangelogForm from '@/components/cms/changelog/ChangelogForm'
 import { ChevronLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
-import api from '@skill-learn/lib/utils/utils/axios.js'
+import api from '@skill-learn/lib/utils/axios.js'
 import { toast } from 'sonner'
 
 export default function EditChangelogPage({ params }) {

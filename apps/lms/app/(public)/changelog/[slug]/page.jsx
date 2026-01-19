@@ -4,22 +4,15 @@ import { Badge } from "@skill-learn/ui/components/badge";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import {
-  Bell,
   ChevronLeft,
   Terminal,
-  Calendar,
-  CheckCircle2,
-  Zap,
-  Info,
-  Bug,
-  Layout,
+  ChevronRight,
   ExternalLink,
-  Twitter,
-  Linkedin,
-  Copy,
-  ArrowRight
 } from "lucide-react";
 import { notFound } from "next/navigation";
+
+// Fallback image for changelog entries without images
+const FALLBACK_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwMCIgaGVpZ2h0PSI2NzUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMTRkOGNkIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMGc1NDY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNnKSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNjQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSIgZm9udC13ZWlnaHQ9IjYwMCIgb3BhY2l0eT0iMC44Ij5DaGFuZ2Vsb2c8L3RleHQ+PC9zdmc+'
 
 // Simple utility for categories/tags styling
 const getTagStyles = (tag) => {
@@ -35,7 +28,7 @@ const getTagStyles = (tag) => {
 };
 
 export default async function ChangelogDetailPage({ params }) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const update = await prisma.changelog.findUnique({
     where: { slug },
@@ -70,11 +63,13 @@ export default async function ChangelogDetailPage({ params }) {
           <div className="lg:col-span-8 space-y-12">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge className="bg-teal-500 text-white border-0 uppercase text-[10px] font-bold px-3 py-1">
-                  New Release
-                </Badge>
+                {update.version && (
+                  <span className="text-sm font-semibold text-slate-600">
+                    {update.version}
+                  </span>
+                )}
                 <span className="text-sm font-semibold text-slate-400">
-                  {update.version} • {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
 
@@ -82,117 +77,54 @@ export default async function ChangelogDetailPage({ params }) {
                 {update.title}
               </h1>
 
-              {update.imageUrl && (
-                <div className="relative aspect-video rounded-3xl overflow-hidden border shadow-2xl shadow-slate-200">
-                  <img
-                    src={update.imageUrl}
-                    alt={update.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-                </div>
-              )}
+              <div className="relative aspect-video rounded-3xl overflow-hidden border shadow-2xl shadow-slate-200">
+                <img
+                  src={update.imageUrl || FALLBACK_IMAGE}
+                  alt={update.title}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              </div>
             </div>
 
             <div className="space-y-10">
-              {/* Overview */}
+              {/* Tags */}
+              {update.tags && update.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {update.tags.map(tag => (
+                    <Badge key={tag} className={`${getTagStyles(tag)} border px-3 py-1 text-xs font-semibold uppercase tracking-wider`}>
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Content */}
               <section className="space-y-4">
-                <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-                  <Zap className="w-6 h-6 text-teal-500 fill-teal-500/20" /> Overview
-                </h2>
-                <div className="prose prose-slate prose-lg max-w-none text-slate-600 leading-relaxed">
-                  <p>{update.content}</p>
+                <div className="prose prose-slate prose-lg max-w-none text-slate-600 leading-relaxed whitespace-pre-wrap">
+                  {update.content}
                 </div>
               </section>
 
-              {/* Boxed Featured Items (Matching Mockup 2 style) */}
-              <Card className="bg-teal-50/30 border-teal-100 rounded-3xl shadow-sm border-2 border-dashed">
-                <CardContent className="p-8 space-y-6">
-                  <h3 className="text-xl font-bold text-slate-900">What&apos;s New</h3>
-                  <div className="grid grid-cols-1 gap-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center shrink-0 mt-1">
-                        <CheckCircle2 className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 mb-1">Interactive Learning Hub</h4>
-                        <p className="text-slate-600 text-sm">A dedicated space for 3D assets that students can rotate, explode, and explore with physics-based interactions.</p>
-                      </div>
+              {/* Author */}
+              {update.authorName && (
+                <div className="pt-8 border-t">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                      {update.authorImage ? (
+                        <img src={update.authorImage} alt={update.authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500" />
+                      )}
                     </div>
-                    <div className="flex items-start gap-4">
-                      <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center shrink-0 mt-1">
-                        <CheckCircle2 className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900 mb-1">Dynamic Skill Trees</h4>
-                        <p className="text-slate-600 text-sm">Visual progress tracking that branches as learners complete specific curriculum nodes, inspired by RPG systems.</p>
-                      </div>
+                    <div>
+                      <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-1">Author</div>
+                      <div className="font-bold text-slate-900 text-lg">{update.authorName}</div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Image Grid Placeholder */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border group">
-                  <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 group-hover:scale-110 transition-transform duration-700 flex items-center justify-center">
-                    <Layout className="w-12 h-12 text-slate-400 opacity-20" />
-                  </div>
                 </div>
-                <div className="aspect-[4/3] bg-slate-100 rounded-2xl overflow-hidden border group">
-                  <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 group-hover:scale-110 transition-transform duration-700 flex items-center justify-center">
-                    <Layout className="w-12 h-12 text-slate-400 opacity-20" />
-                  </div>
-                </div>
-              </div>
+              )}
 
-              {/* Lists Section */}
-              <div className="grid grid-cols-1 gap-12">
-                <section className="space-y-4">
-                  <h2 className="text-2xl font-bold text-slate-900">Improvements</h2>
-                  <ul className="space-y-3">
-                    {["Optimized WebGL rendering for smoother performance on mobile devices.",
-                      "Enhanced dark mode contrast for better readability in late-night study sessions.",
-                      "Faster dashboard loading times by pre-caching essential curriculum assets."].map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 text-slate-600">
-                          <div className="w-1.5 h-1.5 rounded-full bg-teal-500 mt-2.5 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                  </ul>
-                </section>
-
-                <section className="space-y-4">
-                  <h2 className="text-2xl font-bold text-slate-900">Bug Fixes</h2>
-                  <ul className="space-y-3">
-                    {["Fixed an issue where video progress wasn't saving correctly on iOS Safari.",
-                      "Resolved a layout shift in the student sidebar when resizing the browser.",
-                      "Patched a security vulnerability in the asset upload pipeline."].map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 text-slate-600">
-                          <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-2.5 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                  </ul>
-                </section>
-              </div>
-
-              {/* Share Section */}
-              <div className="pt-8 border-t flex flex-wrap items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Share Update</span>
-                  <div className="flex gap-2">
-                    {[Twitter, Linkedin, Copy].map((Ico, i) => (
-                      <button key={i} className="w-9 h-9 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50 transition-all">
-                        <Ico className="w-4 h-4" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button className="text-teal-600 font-bold flex items-center gap-2 hover:underline">
-                  <Copy className="w-4 h-4" /> Copy Link
-                </button>
-              </div>
             </div>
           </div>
 
@@ -201,31 +133,39 @@ export default async function ChangelogDetailPage({ params }) {
             <Card className="bg-white border-slate-100 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden sticky top-8">
               <CardContent className="p-8 space-y-8">
                 {/* Stats */}
-                <div className="flex justify-between divide-x border-b pb-8">
-                  <div className="pr-6">
-                    <div className="text-3xl font-black text-teal-500">{update.newFeaturesCount || 12}</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Features</div>
-                  </div>
-                  <div className="px-6 border-l">
-                    <div className="text-3xl font-black text-slate-800">{update.bugFixesCount || 45}</div>
-                    <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bug Fixes</div>
-                  </div>
-                </div>
-
-                {/* Author */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
-                    {update.authorImage ? (
-                      <img src={update.authorImage} alt={update.authorName} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500" />
+                {(update.newFeaturesCount > 0 || update.bugFixesCount > 0) && (
+                  <div className="flex justify-between divide-x border-b pb-8">
+                    {update.newFeaturesCount > 0 && (
+                      <div className="pr-6">
+                        <div className="text-3xl font-black text-teal-500">{update.newFeaturesCount}</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Features</div>
+                      </div>
+                    )}
+                    {update.bugFixesCount > 0 && (
+                      <div className={`${update.newFeaturesCount > 0 ? 'px-6 border-l' : ''}`}>
+                        <div className="text-3xl font-black text-slate-800">{update.bugFixesCount}</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bug Fixes</div>
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <div className="font-bold text-slate-900">{update.authorName || 'Elias Nguyen'}</div>
-                    <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Release Lead</div>
+                )}
+
+                {/* Author */}
+                {update.authorName && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 overflow-hidden">
+                      {update.authorImage ? (
+                        <img src={update.authorImage} alt={update.authorName} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-bold text-slate-900">{update.authorName}</div>
+                      <div className="text-xs text-slate-400 uppercase font-bold tracking-widest">Author</div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Links */}
                 <div className="space-y-3">
@@ -266,7 +206,7 @@ export default async function ChangelogDetailPage({ params }) {
 
       {/* Related Updates Section */}
       {relatedUpdates.length > 0 && (
-        <section className="container px-4 mx-auto max-w-5xl py-24 mt-12 border-t">
+        <section className="container px-4 mx-auto max-w-5xl py-24 mt-24 border-t">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Related Updates</h2>
             <Link href="/changelog" className="text-teal-600 font-bold flex items-center gap-2 hover:underline">
@@ -279,11 +219,11 @@ export default async function ChangelogDetailPage({ params }) {
                 <Card className="h-full border-slate-100 hover:border-teal-200 transition-all group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl">
                   <CardContent className="p-0">
                     <div className="aspect-[16/10] bg-slate-100 overflow-hidden relative">
-                      {u.imageUrl ? (
-                        <img src={u.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt={u.title} />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-teal-50 to-blue-50" />
-                      )}
+                      <img 
+                        src={u.imageUrl || FALLBACK_IMAGE} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                        alt={u.title} 
+                      />
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-white/90 backdrop-blur-md text-slate-900 border-0 text-[10px] uppercase font-bold">
                           {u.version}

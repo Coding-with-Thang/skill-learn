@@ -21,6 +21,7 @@ import { motion } from 'framer-motion'
 import { cn, getStatusColor, getPlanColor } from '@/lib/cms/utils'
 import Link from 'next/link'
 import api from '@skill-learn/lib/utils/axios.js'
+import { slugify } from '@skill-learn/lib/utils/utils.js'
 
 export default function TenantsPage() {
   const [tenants, setTenants] = useState([])
@@ -174,13 +175,9 @@ export default function TenantsPage() {
     setDeleteDialogOpen(true)
   }
 
-  // Generate slug from name
+  // Generate slug from name using slugify utility
   const generateSlug = (name) => {
-    return name
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
+    return slugify(name)
   }
 
   // Get tenant logo (first letter of name)

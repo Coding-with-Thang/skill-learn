@@ -1,16 +1,32 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/cms/ui/card'
 import { Button } from '@/components/cms/ui/button'
 import { Badge } from '@/components/cms/ui/badge'
-import { Save, X, Image as ImageIcon, Plus, Trash2, Layout, Calendar as CalendarIcon, Tag, Terminal, ExternalLink, Bug, Flare } from 'lucide-react'
+import { Save, X, Image as ImageIcon, Plus, Trash2, Layout, Calendar as CalendarIcon, Tag, Terminal, ExternalLink, Bug, Sparkles, HelpCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import api from '@skill-learn/lib/utils/utils/axios.js'
+import api from '@skill-learn/lib/utils/axios.js'
 import { toast } from 'sonner'
+import { Uploader } from '@/components/cms/file-uploader/Uploader'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@skill-learn/ui/components/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@skill-learn/ui/components/select'
 
 const TAG_OPTIONS = [
-  { label: 'New', color: 'bg-blue-500', icon: Flare },
+  { label: 'New', color: 'bg-blue-500', icon: Sparkles },
   { label: 'Enterprise', color: 'bg-purple-500', icon: Layout },
   { label: 'Improved', color: 'bg-green-500', icon: Terminal },
   { label: 'Fixed', color: 'bg-orange-500', icon: Bug },
@@ -21,6 +37,8 @@ const TAG_OPTIONS = [
 export default function ChangelogForm({ initialData = null }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [superAdmins, setSuperAdmins] = useState([])
+  const [loadingAdmins, setLoadingAdmins] = useState(true)
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     version: initialData?.version || '',
@@ -37,12 +55,48 @@ export default function ChangelogForm({ initialData = null }) {
     authorImage: initialData?.authorImage || '',
   })
 
+  // Fetch super admins on mount
+  useEffect(() => {
+    const fetchSuperAdmins = async () => {
+      try {
+        setLoadingAdmins(true)
+        const response = await api.get('/admin/super-admins')
+        console.log('Super admins response:', response.data)
+        if (response.data?.superAdmins) {
+          setSuperAdmins(response.data.superAdmins)
+          console.log('Loaded super admins:', response.data.superAdmins.length)
+        } else {
+          console.warn('No superAdmins in response:', response.data)
+          toast.error('No super admins found')
+        }
+      } catch (error) {
+        console.error('Error fetching super admins:', error)
+        console.error('Error details:', error.response?.data || error.message)
+        toast.error('Failed to load super admins')
+      } finally {
+        setLoadingAdmins(false)
+      }
+    }
+    fetchSuperAdmins()
+  }, [])
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
+  }
+
+  const handleAuthorChange = (authorId) => {
+    const selectedAdmin = superAdmins.find(admin => admin.id === authorId)
+    if (selectedAdmin) {
+      setFormData(prev => ({
+        ...prev,
+        authorName: selectedAdmin.fullName,
+        authorImage: selectedAdmin.imageUrl || ''
+      }))
+    }
   }
 
   const toggleTag = (tag) => {
@@ -59,11 +113,22 @@ export default function ChangelogForm({ initialData = null }) {
     setLoading(true)
 
     try {
+      // Convert number fields to integers
+      const submitData = {
+        ...formData,
+        newFeaturesCount: formData.newFeaturesCount != null && formData.newFeaturesCount !== '' 
+          ? parseInt(formData.newFeaturesCount, 10) || 0 
+          : 0,
+        bugFixesCount: formData.bugFixesCount != null && formData.bugFixesCount !== '' 
+          ? parseInt(formData.bugFixesCount, 10) || 0 
+          : 0,
+      }
+
       if (initialData?.id) {
-        await api.patch(`/changelog/${initialData.id}`, formData)
+        await api.patch(`/changelog/${initialData.id}`, submitData)
         toast.success('Changelog updated successfully')
       } else {
-        await api.post('/changelog', formData)
+        await api.post('/changelog', submitData)
         toast.success('Changelog created successfully')
       }
       router.push('/cms/changelog')
@@ -122,7 +187,83 @@ export default function ChangelogForm({ initialData = null }) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Content / Description (Markdown supported)</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Content / Description (Markdown supported)</label>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        aria-label="Markdown help"
+                      >
+                        <HelpCircle className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Markdown Guide</DialogTitle>
+                        <DialogDescription>
+                          Learn how to format your content using Markdown
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 text-sm">
+                        <div>
+                          <h4 className="font-semibold mb-2">Headers</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`# H1 Header
+## H2 Header
+### H3 Header`}
+                          </pre>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Text Formatting</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`**bold text**
+*italic text*
+~~strikethrough~~`}
+                          </pre>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Lists</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`- Unordered item
+- Another item
+
+1. Ordered item
+2. Another item`}
+                          </pre>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Links & Images</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`[Link text](https://example.com)
+![Image alt](https://example.com/image.jpg)`}
+                          </pre>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Code</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`\`inline code\`
+
+\`\`\`javascript
+// Code block
+const example = "code";
+\`\`\``}
+                          </pre>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Blockquotes</h4>
+                          <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
+{`> This is a blockquote
+> It can span multiple lines`}
+                          </pre>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <textarea
                   required
                   name="content"
@@ -145,20 +286,23 @@ export default function ChangelogForm({ initialData = null }) {
               <div className="space-y-3">
                 <label className="text-sm font-medium">Select Tags</label>
                 <div className="flex flex-wrap gap-2">
-                  {TAG_OPTIONS.map(opt => (
-                    <button
-                      key={opt.label}
-                      type="button"
-                      onClick={() => toggleTag(opt.label)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${formData.tags.includes(opt.label)
-                        ? `${opt.color} text-white shadow-md scale-105`
-                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                        }`}
-                    >
-                      <opt.icon className="h-3.5 w-3.5" />
-                      {opt.label}
-                    </button>
-                  ))}
+                  {TAG_OPTIONS.map(opt => {
+                    const Icon = opt.icon
+                    return (
+                      <button
+                        key={opt.label}
+                        type="button"
+                        onClick={() => toggleTag(opt.label)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${formData.tags.includes(opt.label)
+                          ? `${opt.color} text-white shadow-md scale-105`
+                          : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                          }`}
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {opt.label}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -196,20 +340,13 @@ export default function ChangelogForm({ initialData = null }) {
                 <ImageIcon className="h-4 w-4" /> Cover Image
               </h3>
               <div className="space-y-2">
-                <input
-                  name="imageUrl"
+                <Uploader
                   value={formData.imageUrl}
-                  onChange={handleChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-2 text-xs rounded-lg border bg-background focus:ring-2 focus:ring-teal-500 outline-none"
+                  onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || '' }))}
+                  uploadEndpoint="/api/admin/upload"
                 />
-                <p className="text-[10px] text-muted-foreground">URL to a representative image for this update.</p>
+                <p className="text-[10px] text-muted-foreground">Drag and drop an image or click to upload. Images will be automatically resized to fit.</p>
               </div>
-              {formData.imageUrl && (
-                <div className="aspect-video rounded-lg overflow-hidden border">
-                  <img src={formData.imageUrl} alt="Preview" className="w-full h-full object-cover" />
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -219,24 +356,32 @@ export default function ChangelogForm({ initialData = null }) {
                 Author Info
               </h3>
               <div className="space-y-2 text-sm">
-                <label>Author Name</label>
-                <input
-                  name="authorName"
-                  value={formData.authorName}
-                  onChange={handleChange}
-                  placeholder="e.g., Sarah Chen"
-                  className="w-full px-4 py-2 rounded-lg border bg-background focus:ring-2 focus:ring-teal-500 outline-none"
-                />
-              </div>
-              <div className="space-y-2 text-sm">
-                <label>Author Image URL</label>
-                <input
-                  name="authorImage"
-                  value={formData.authorImage}
-                  onChange={handleChange}
-                  placeholder="URL to avatar..."
-                  className="w-full px-4 py-2 rounded-lg border bg-background focus:ring-2 focus:ring-teal-500 outline-none"
-                />
+                <label>Author (Super Admin)</label>
+                <Select
+                  value={superAdmins.find(admin => admin.fullName === formData.authorName)?.id || ''}
+                  onValueChange={handleAuthorChange}
+                  disabled={loadingAdmins}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={loadingAdmins ? "Loading..." : "Select an author"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {superAdmins.map((admin) => (
+                      <SelectItem key={admin.id} value={admin.id}>
+                        <div className="flex items-center gap-2">
+                          {admin.imageUrl && (
+                            <img 
+                              src={admin.imageUrl} 
+                              alt={admin.fullName}
+                              className="w-5 h-5 rounded-full object-cover"
+                            />
+                          )}
+                          <span>{admin.fullName}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
@@ -269,7 +414,7 @@ export default function ChangelogForm({ initialData = null }) {
             </CardContent>
           </Card>
 
-          <Card className={formData.published ? 'bg-green-50/50 border-green-200' : 'bg-gray-50'}>
+          <Card className={formData.published ? 'border-green-500/50 dark:border-green-400/50' : ''}>
             <CardContent className="pt-6 space-y-4">
               <div className="flex items-center justify-between">
                 <label className="font-semibold">Published Status</label>
@@ -278,7 +423,7 @@ export default function ChangelogForm({ initialData = null }) {
                   name="published"
                   checked={formData.published}
                   onChange={handleChange}
-                  className="h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                  className="h-5 w-5 rounded border-input bg-background text-teal-600 focus:ring-teal-500 focus:ring-2"
                 />
               </div>
               <p className="text-xs text-muted-foreground">

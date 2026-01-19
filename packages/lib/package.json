@@ -31,6 +31,7 @@
     "./hooks/usePermissions.js": "./hooks/hooks/usePermissions.js",
     "./hooks/useSubscription.js": "./hooks/hooks/useSubscription.js",
     "./utils.js": "./utils.js",
+    "./utils/utils.js": "./utils/utils/utils.js",
     "./utils/axios.js": "./utils/utils/axios.js",
     "./utils/errorHandler.js": "./utils/utils/errorHandler.js",
     "./utils/apiWrapper.js": "./utils/utils/apiWrapper.js",

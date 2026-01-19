@@ -54,6 +54,10 @@ export async function POST(request) {
 
     const slug = slugify(title) + '-' + Math.random().toString(36).substring(2, 7);
 
+    // Convert number fields to integers
+    const newFeaturesCountInt = newFeaturesCount != null ? parseInt(newFeaturesCount, 10) : 0;
+    const bugFixesCountInt = bugFixesCount != null ? parseInt(bugFixesCount, 10) : 0;
+
     const changelog = await prisma.changelog.create({
       data: {
         title,
@@ -65,8 +69,8 @@ export async function POST(request) {
         releaseDate: releaseDate ? new Date(releaseDate) : new Date(),
         published: published || false,
         tags: tags || [],
-        newFeaturesCount: newFeaturesCount || 0,
-        bugFixesCount: bugFixesCount || 0,
+        newFeaturesCount: isNaN(newFeaturesCountInt) ? 0 : newFeaturesCountInt,
+        bugFixesCount: isNaN(bugFixesCountInt) ? 0 : bugFixesCountInt,
         apiDocsUrl,
         githubRepoUrl,
         authorName,

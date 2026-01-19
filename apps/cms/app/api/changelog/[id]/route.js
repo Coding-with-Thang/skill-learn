@@ -51,6 +51,16 @@ export async function PATCH(request, { params }) {
         body.slug = slugify(body.title) + '-' + Math.random().toString(36).substring(2, 7);
     }
 
+    // Convert number fields to integers
+    if (body.newFeaturesCount != null) {
+      const parsed = parseInt(body.newFeaturesCount, 10);
+      body.newFeaturesCount = isNaN(parsed) ? 0 : parsed;
+    }
+    if (body.bugFixesCount != null) {
+      const parsed = parseInt(body.bugFixesCount, 10);
+      body.bugFixesCount = isNaN(parsed) ? 0 : parsed;
+    }
+
     const changelog = await prisma.changelog.update({
       where: { id },
       data: body

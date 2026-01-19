@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/shared/Logo";
 
+// Fallback image for changelog entries without images
+const FALLBACK_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxNGQ4Y2QiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMwZzU0NjYiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2cpIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSI0OCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIiBmb250LXdlaWdodD0iNjAwIiBvcGFjaXR5PSIwLjgiPkNoYW5nZWxvZzwvdGV4dD48L3N2Zz4='
+
 // Simple utility for categories/tags styling
 const getTagStyles = (tag) => {
   const styles = {
@@ -48,27 +51,15 @@ export default async function ChangelogPage() {
   return (
     <div className="min-h-screen bg-slate-50/30">
       {/* Hero Section */}
-      <section className="relative pt-12 pb-24 overflow-hidden">
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto rounded-[2.5rem] bg-slate-900 p-12 md:p-20 text-center relative overflow-hidden group">
-            {/* Abstract Background Shapes */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-teal-500/20 transition-colors duration-700" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 group-hover:bg-blue-500/20 transition-colors duration-700" />
-
-            <div className="relative z-10">
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white mb-6">
-                What&apos;s New
-              </h1>
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-                Follow the latest updates, feature releases, and improvements to the Skill-Learn platform.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button className="bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold rounded-full px-8 h-12 shadow-lg shadow-teal-500/20 group">
-                  <Bell className="w-4 h-4 mr-2 group-hover:animate-ring" />
-                  Subscribe to Updates
-                </Button>
-              </div>
-            </div>
+      <section className="relative pt-8 pb-12">
+        <div className="container px-4 mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-3">
+              What&apos;s New
+            </h1>
+            <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+              Follow the latest updates, feature releases, and improvements to the Skill-Learn platform.
+            </p>
           </div>
         </div>
       </section>
@@ -121,15 +112,13 @@ export default async function ChangelogPage() {
                               {update.content}
                             </p>
 
-                            {update.imageUrl && (
-                              <div className="relative aspect-video rounded-xl overflow-hidden border bg-slate-50 grayscale hover:grayscale-0 transition-all duration-700">
-                                <img
-                                  src={update.imageUrl}
-                                  alt={update.title}
-                                  className="object-cover w-full h-full transform group-hover/card:scale-105 transition-transform duration-700"
-                                />
-                              </div>
-                            )}
+                            <div className="relative aspect-video rounded-xl overflow-hidden border bg-slate-50 grayscale hover:grayscale-0 transition-all duration-700">
+                              <img
+                                src={update.imageUrl || FALLBACK_IMAGE}
+                                alt={update.title}
+                                className="object-cover w-full h-full transform group-hover/card:scale-105 transition-transform duration-700"
+                              />
+                            </div>
 
                             {/* Bullet points (optional placeholder for mockup) */}
                             <ul className="space-y-3 pt-4">
