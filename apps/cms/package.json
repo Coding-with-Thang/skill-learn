@@ -24,7 +24,10 @@
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.0.17",
-    "tw-animate-css": "^1.2.4"
+    "tw-animate-css": "^1.2.4",
+    "react-dropzone": "^14.3.8",
+    "axios": "^1.8.2",
+    "sonner": "^2.0.2"
   },
   "devDependencies": {
     "eslint": "^8.57.1",

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { slugify } from "@skill-learn/lib/utils/utils.js";
 
 /**
  * POST /api/onboarding/create-workspace
@@ -35,11 +36,7 @@ export async function POST(request) {
     }
 
     // Generate a unique slug from subdomain or organization name
-    const baseSlug = (subdomain || organizationName)
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .substring(0, 30);
+    const baseSlug = slugify(subdomain || organizationName).substring(0, 30);
 
     // Check if slug already exists and make it unique if needed
     let slug = baseSlug;

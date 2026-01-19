@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@skill-learn/ui/components/select";
 import { toast } from "sonner";
+import { slugify } from "@skill-learn/lib/utils/utils.js";
 
 const industries = [
   { value: "technology", label: "Technology" },
@@ -73,11 +74,7 @@ export default function OnboardingWorkspacePage() {
   // Auto-generate subdomain from organization name
   useEffect(() => {
     if (formData.organizationName) {
-      const subdomain = formData.organizationName
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .substring(0, 30);
+      const subdomain = slugify(formData.organizationName).substring(0, 30);
       setFormData((prev) => ({ ...prev, subdomain }));
     }
   }, [formData.organizationName]);

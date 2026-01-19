@@ -7,7 +7,6 @@ import {
   Search,
   MapPin,
   Briefcase,
-  DollarSign,
   Globe,
   BookOpen,
   Heart,
@@ -19,14 +18,14 @@ import { Button } from "@skill-learn/ui/components/button";
 import { Input } from "@skill-learn/ui/components/input";
 import { Badge } from "@skill-learn/ui/components/badge";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
+import { useRouter } from "next/navigation";
 
 const JOBS = [
   {
     id: "senior-frontend-engineer",
     title: "Senior Frontend Engineer (React)",
     department: "Engineering",
-    location: "Remote",
-    salary: "$140k - $180k",
+    location: "San Francisco / Remote",
     type: "Full-time",
     isNew: true,
   },
@@ -35,7 +34,6 @@ const JOBS = [
     title: "Product Designer (LMS)",
     department: "Product",
     location: "London / Remote",
-    salary: "£70k - £95k",
     type: "Full-time",
     isNew: false,
   },
@@ -43,8 +41,7 @@ const JOBS = [
     id: "strategic-account-executive",
     title: "Strategic Account Executive",
     department: "Sales",
-    location: "New York, NY",
-    salary: "$110k + OTE",
+    location: "Vancouver / Remote",
     type: "Full-time",
     isNew: true,
   },
@@ -52,8 +49,7 @@ const JOBS = [
     id: "technical-content-marketer",
     title: "Technical Content Marketer",
     department: "Marketing",
-    location: "Remote",
-    salary: "$90k - $120k",
+    location: "Toronto / Remote",
     type: "Full-time",
     isNew: false,
   },
@@ -78,6 +74,7 @@ const CULTURE_PERKS = [
 ];
 
 export default function CareersPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDept, setSelectedDept] = useState("All Departments");
 
@@ -89,6 +86,13 @@ export default function CareersPage() {
   });
 
   const departments = ["All Departments", ...new Set(JOBS.map(job => job.department))];
+
+  const scrollToOpenings = () => {
+    const element = document.getElementById('openings');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -115,10 +119,14 @@ export default function CareersPage() {
               Join a remote-first team building the next generation of interactive education tools for the world&apos;s leading enterprises.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-8 shadow-lg shadow-teal-200">
+              <Button
+                size="lg"
+                className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-8 shadow-lg shadow-teal-200"
+                onClick={scrollToOpenings}
+              >
                 View Openings
               </Button>
-              <Button variant="outline" size="lg" className="rounded-full px-8 bg-white">
+              <Button variant="outline" size="lg" className="rounded-full px-8 bg-white" onClick={() => router.push('/about')}>
                 Our Mission
               </Button>
             </div>
@@ -159,7 +167,7 @@ export default function CareersPage() {
       </section>
 
       {/* Open Positions Section */}
-      <section className="py-20">
+      <section id="openings" className="py-20">
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
@@ -183,8 +191,8 @@ export default function CareersPage() {
                     key={dept}
                     onClick={() => setSelectedDept(dept)}
                     className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${selectedDept === dept
-                        ? "bg-slate-900 text-white"
-                        : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"
+                      ? "bg-slate-900 text-white"
+                      : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300"
                       }`}
                   >
                     {dept}
@@ -224,14 +232,10 @@ export default function CareersPage() {
                             <MapPin className="w-4 h-4 text-slate-400" />
                             {job.location}
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <DollarSign className="w-4 h-4 text-slate-400" />
-                            {job.salary}
-                          </div>
                         </div>
                       </div>
 
-                      <Button variant="outline" className="group/btn border-slate-200 text-slate-900 group-hover:bg-teal-600 group-hover:text-white group-hover:border-teal-600 rounded-xl px-6">
+                      <Button variant="outline" className="group/btn border-slate-200 text-slate-900 group-hover:bg-teal-600 group-hover:border-teal-600 rounded-xl px-6">
                         View Role
                         <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                       </Button>

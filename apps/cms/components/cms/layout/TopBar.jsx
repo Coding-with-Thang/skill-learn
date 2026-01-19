@@ -10,24 +10,29 @@ import {
   Bell,
   Sun,
   Moon,
-  User,
-  LogOut,
-  Settings,
   Menu,
   X
 } from 'lucide-react'
 import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
+import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
+import { useUser } from '@clerk/nextjs'
+import { useEffect } from 'react'
 
 export default function TopBar() {
   const { user } = useUser()
   const { theme, toggleTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
+  const { user } = useUser()
   const [showNotifications, setShowNotifications] = useState(false)
-  const [showProfile, setShowProfile] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
+
+  // Initialize theme on mount to ensure it's applied
+  useEffect(() => {
+    initializeTheme()
+  }, [initializeTheme])
 
   const unreadCount = notifications.filter(n => !n.read).length
 
@@ -35,7 +40,7 @@ export default function TopBar() {
   const userName = user?.fullName || user?.firstName || 'Super Admin'
   const userEmail = user?.emailAddresses?.[0]?.emailAddress || user?.primaryEmailAddress?.emailAddress || ''
   const userImageUrl = user?.imageUrl
-  const userInitials = user?.firstName?.[0] && user?.lastName?.[0] 
+  const userInitials = user?.firstName?.[0] && user?.lastName?.[0]
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : user?.firstName?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'SA'
 
@@ -101,8 +106,8 @@ export default function TopBar() {
           </AnimatePresence>
         </div>
 
-        {/* Right Section */}
-        <div className="flex items-center gap-1 lg:gap-2">
+        {/* Right Section - Pushed to the right */}
+        <div className="flex items-center gap-1 lg:gap-2 ml-auto">
           {/* Theme Toggle */}
           <Button
             variant="ghost"
@@ -161,7 +166,7 @@ export default function TopBar() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 rounded-lg border bg-card shadow-lg"
+                  className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-80 rounded-lg border bg-card shadow-lg z-50"
                 >
                   <div className="p-4 border-b">
                     <div className="flex items-center justify-between">

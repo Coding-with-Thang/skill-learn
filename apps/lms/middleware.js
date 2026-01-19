@@ -18,6 +18,7 @@ function isPublicDirectoryRoute(pathname) {
   // These patterns match the actual URL paths (route groups don't appear in URLs)
   const publicDirectoryPatterns = [
     /^\/about(\/.*)?$/, // /about
+    /^\/changelog(\/.*)?$/, // /changelog, /changelog/slug, etc.
     /^\/contact(\/.*)?$/, // /contact
     /^\/features(\/.*)?$/, // /features
     /^\/legal(\/.*)?$/, // /legal, /legal/privacy-policy, etc.

@@ -26,6 +26,7 @@ export const publicRoutes = [
   // Routes in app/(public)/ - automatically public via middleware
   // Listed here for documentation only:
   "/about", // About page (in app/(public)/about)
+  "/changelog(.*)", // Changelog pages (in app/(public)/changelog)
   "/contact", // Contact page (in app/(public)/contact)
   "/features", // Features page (in app/(public)/features)
   "/legal(.*)", // Legal pages (in app/(public)/legal)

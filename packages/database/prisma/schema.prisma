@@ -7,6 +7,13 @@ datasource db {
   url      = env("MONGODB_URI")
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  AGENT
+  USER
+}
+
 model User {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   clerkId         String          @unique
@@ -562,3 +569,41 @@ model TenantFeature {
   @@index([enabled])
   @@map("tenant_features")
 }
+
+// ============================================
+// CHANGELOG MODELS
+// ============================================
+
+model Changelog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String   // Main content / description
+  version     String?
+  imageUrl    String?
+  fileKey     String?  // For Firebase Storage
+  releaseDate DateTime @default(now())
+  published   Boolean  @default(false)
+  authorId    String?  // Clerk ID of the admin who posted
+  authorName  String?
+  authorImage String?
+  
+  // Tags/Categories
+  tags        String[] // e.g., ["New", "Enterprise", "Improved", "Fixed", "Security"]
+  
+  // Stats for the release (Mockup 2)
+  newFeaturesCount Int? @default(0)
+  bugFixesCount    Int? @default(0)
+  
+  // External links (Mockup 2)
+  apiDocsUrl    String?
+  githubRepoUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([releaseDate(sort: Desc)])
+  @@index([published])
+  @@map("changelogs")
+}
+
