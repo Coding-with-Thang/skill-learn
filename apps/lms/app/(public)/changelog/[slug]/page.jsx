@@ -30,22 +30,30 @@ const getTagStyles = (tag) => {
 export default async function ChangelogDetailPage({ params }) {
   const { slug } = await params;
 
-  const update = await prisma.changelog.findUnique({
-    where: { slug },
-  });
+  let update;
+  let relatedUpdates = [];
 
-  if (!update || !update.published) {
+  try {
+    update = await prisma.changelog.findUnique({
+      where: { slug },
+    });
+
+    if (!update || !update.published) {
+      notFound();
+    }
+
+    relatedUpdates = await prisma.changelog.findMany({
+      where: {
+        id: { not: update.id },
+        published: true
+      },
+      take: 3,
+      orderBy: { releaseDate: 'desc' },
+    });
+  } catch (error) {
+    console.error('Error fetching changelog detail:', error);
     notFound();
   }
-
-  const relatedUpdates = await prisma.changelog.findMany({
-    where: {
-      id: { not: update.id },
-      published: true
-    },
-    take: 3,
-    orderBy: { releaseDate: 'desc' },
-  });
 
   return (
     <div className="min-h-screen bg-slate-50/10">

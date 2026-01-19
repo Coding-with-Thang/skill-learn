@@ -32,21 +32,42 @@ const getTagStyles = (tag) => {
 };
 
 export default async function ChangelogPage() {
-  const updates = await prisma.changelog.findMany({
-    where: { published: true },
-    orderBy: { releaseDate: 'desc' },
-  });
+  let updates = [];
+  let years = [];
+  let tagCounts = {};
 
-  // Extract years for archiving
-  const years = [...new Set(updates.map(u => new Date(u.releaseDate).getFullYear()))].sort((a, b) => b - a);
-
-  // Count by tag
-  const tagCounts = {};
-  updates.forEach(u => {
-    u.tags.forEach(tag => {
-      tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+  try {
+    updates = await prisma.changelog.findMany({
+      where: { published: true },
+      orderBy: { releaseDate: 'desc' },
     });
-  });
+
+    // Extract years for archiving
+    years = [...new Set(updates.map(u => {
+      try {
+        return new Date(u.releaseDate).getFullYear();
+      } catch {
+        return new Date().getFullYear();
+      }
+    }))].sort((a, b) => b - a);
+
+    // Count by tag
+    updates.forEach(u => {
+      if (u.tags && Array.isArray(u.tags)) {
+        u.tags.forEach(tag => {
+          if (tag) {
+            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching changelog:', error);
+    // Return empty state on error - prevents Server Component crash
+    updates = [];
+    years = [];
+    tagCounts = {};
+  }
 
   return (
     <div className="min-h-screen bg-slate-50/30">
@@ -96,13 +117,15 @@ export default async function ChangelogPage() {
                       <Card className="overflow-hidden border-slate-100 hover:border-teal-200 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/5 group/card bg-white rounded-2xl">
                         <CardContent className="p-0">
                           <div className="p-8 space-y-6">
-                            <div className="flex flex-wrap gap-2">
-                              {update.tags.map(tag => (
-                                <Badge key={tag} className={`${getTagStyles(tag)} border px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider`}>
-                                  {tag}
-                                </Badge>
-                              ))}
-                            </div>
+                            {update.tags && update.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {update.tags.map(tag => (
+                                  <Badge key={tag} className={`${getTagStyles(tag)} border px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider`}>
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
 
                             <h2 className="text-2xl md:text-3xl font-bold text-slate-900 group-hover/card:text-teal-600 transition-colors">
                               {update.title}
