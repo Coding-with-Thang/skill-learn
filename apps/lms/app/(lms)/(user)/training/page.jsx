@@ -130,32 +130,8 @@ export default function TrainingPage() {
           courses = []
         }
 
-        // Transform course data to match CourseCard format
-        const transformedCourses = courses.map(course => {
-          // Format duration from minutes to "Xh Ym" format
-          const hours = Math.floor((course.duration || 0) / 60)
-          const minutes = (course.duration || 0) % 60
-          const durationStr = hours > 0
-            ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
-            : `${minutes}m`
-
-          // Get course progress data (currently returns defaults until progress tracking is implemented)
-          const { moduleCount, progress, status } = getCourseProgressData(course, userProgress)
-
-          return {
-            id: course.id,
-            title: course.title,
-            description: course.description || course.excerptDescription || "",
-            imageUrl: course.imageUrl || "/placeholder-course.jpg",
-            duration: durationStr,
-            moduleCount,
-            progress,
-            status,
-            category: course.category?.name || "Uncategorized"
-          }
-        })
-
-        setAllCourses(transformedCourses)
+        // Store raw course data; UI transformation happens in a separate effect
+        setRawCourses(courses)
       } catch (error) {
         console.error("Error fetching courses:", error)
         if (error.response) {
@@ -220,7 +196,14 @@ export default function TrainingPage() {
   // Fetch all quizzes from all categories
   useEffect(() => {
     const fetchAllQuizzes = async () => {
-      if (categories.length === 0) return
+      // While categories are loading, keep quiz loading state as-is
+      if (categoriesLoading) return
+
+      if (categories.length === 0) {
+        setAllQuizzes([])
+        setQuizzesLoading(false)
+        return
+      }
 
       setQuizzesLoading(true)
       try {
@@ -229,8 +212,13 @@ export default function TrainingPage() {
           try {
             const response = await api.get(`/categories/${category.id}`)
             const data = response.data
+            const quizzes =
+              (Array.isArray(data?.quizzes) && data.quizzes) ||
+              (Array.isArray(data?.data?.quizzes) && data.data.quizzes) ||
+              (Array.isArray(data?.data?.category?.quizzes) && data.data.category.quizzes) ||
+              []
             // Add category info to each quiz
-            return (data.quizzes || []).map(quiz => ({
+            return quizzes.map(quiz => ({
               ...quiz,
               categoryName: category.name,
               categoryId: category.id
@@ -252,7 +240,7 @@ export default function TrainingPage() {
     }
 
     fetchAllQuizzes()
-  }, [categories])
+  }, [categories, categoriesLoading])
 
   // Filter and search logic
   const filteredCourses = useMemo(() => {
