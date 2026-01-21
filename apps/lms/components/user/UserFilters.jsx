@@ -5,10 +5,17 @@ import { Input } from "@skill-learn/ui/components/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@skill-learn/ui/components/select"
 import { Card, CardContent } from "@skill-learn/ui/components/card"
 import { useDebounce } from "@skill-learn/lib/hooks/useDebounce.js"
+import { useRolesStore } from "@skill-learn/lib/stores/rolesStore.js"
 
 export function UserFilters({ onFilterChange }) {
     const [searchValue, setSearchValue] = useState('')
     const debouncedSearchValue = useDebounce(searchValue, 300)
+    const { roles, fetchRoles } = useRolesStore()
+
+    // Fetch tenant roles on mount
+    useEffect(() => {
+        fetchRoles()
+    }, [fetchRoles])
 
     // Update parent when debounced value changes
     useEffect(() => {
@@ -42,9 +49,20 @@ export function UserFilters({ onFilterChange }) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
-                            <SelectItem value="AGENT">Agent</SelectItem>
-                            <SelectItem value="MANAGER">Manager</SelectItem>
-                            <SelectItem value="OPERATIONS">Operations</SelectItem>
+                            {roles && roles.length > 0 ? (
+                                roles.map((role) => (
+                                    <SelectItem key={role.id} value={role.roleAlias}>
+                                        {role.roleAlias}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                // Fallback to legacy roles if tenant roles not loaded yet
+                                <>
+                                    <SelectItem value="AGENT">Agent</SelectItem>
+                                    <SelectItem value="MANAGER">Manager</SelectItem>
+                                    <SelectItem value="OPERATIONS">Operations</SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
                     <Select onValueChange={handleSortChange}>

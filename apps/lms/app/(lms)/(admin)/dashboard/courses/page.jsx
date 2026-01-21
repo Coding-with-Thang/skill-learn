@@ -9,6 +9,7 @@ import CourseEditLink from '@/components/courses/CourseEditLink';
 import CourseFilters from '@/components/courses/CourseFilters';
 import CourseActions from '@/components/courses/CourseActions';
 import Pagination from '@/components/shared/Pagination';
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 async function getCourses({ page = 1, pageSize = 5, category } = {}) {
     const where = {};
@@ -56,9 +57,20 @@ export default async function CoursesPage({ searchParams }) {
     const pageSize = parseInt(params?.pageSize || "5", 10) || 5;
     const category = params?.category || "";
 
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter categories by tenant or global content using standardized utility
+    const categoryWhereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
     const [{ courses, total, totalPages, currentPage }, categories] = await Promise.all([
         getCourses({ page, pageSize, category: category || undefined }),
-        prisma.category.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
+        prisma.category.findMany({ 
+          where: categoryWhereClause, 
+          orderBy: { name: 'asc' } 
+        }),
     ]);
 
     const baseHref = `/dashboard/courses?pageSize=${pageSize}` + (category ? `&category=${encodeURIComponent(category)}` : '');

@@ -7,6 +7,7 @@ import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/uti
 import { categoryUpdateSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 import { objectIdSchema } from "@/lib/zodSchemas";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 // Get a specific category
 export async function GET(request, { params }) {
@@ -21,8 +22,16 @@ export async function GET(request, { params }) {
       params
     );
 
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter categories by tenant or global content using standardized utility
+    const whereClause = buildTenantContentFilter(tenantId, {
+      id: categoryId,
+    });
+
+    const category = await prisma.category.findFirst({
+      where: whereClause,
       include: {
         _count: {
           select: { quizzes: true },
@@ -86,9 +95,17 @@ export async function DELETE(request, { params }) {
       params
     );
 
-    // Check if category has any quizzes
-    const category = await prisma.category.findUnique({
-      where: { id: categoryId },
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
+    // CRITICAL: Filter categories by tenant or global content using standardized utility
+    const whereClause = buildTenantContentFilter(tenantId, {
+      id: categoryId,
+    });
+
+    // Check if category has any quizzes (and verify tenant access)
+    const category = await prisma.category.findFirst({
+      where: whereClause,
       include: {
         _count: {
           select: { quizzes: true },

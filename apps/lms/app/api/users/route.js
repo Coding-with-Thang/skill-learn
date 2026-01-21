@@ -36,6 +36,7 @@ export async function GET(request) {
       },
       select: {
         id: true,
+        clerkId: true,
         username: true,
         firstName: true,
         lastName: true,
@@ -51,7 +52,41 @@ export async function GET(request) {
       },
     });
 
-    return successResponse({ users });
+    // Get user roles for all users
+    const userIds = users.map(u => u.clerkId);
+    const userRoles = await prisma.userRole.findMany({
+      where: {
+        userId: { in: userIds },
+        tenantId: tenantId,
+      },
+      include: {
+        tenantRole: {
+          select: {
+            id: true,
+            roleAlias: true,
+          },
+        },
+      },
+      orderBy: {
+        assignedAt: "desc", // Get most recently assigned role
+      },
+    });
+
+    // Create a map of userId -> roleAlias (most recent role)
+    const userRoleMap = new Map();
+    userRoles.forEach(ur => {
+      if (!userRoleMap.has(ur.userId) && ur.tenantRole?.roleAlias) {
+        userRoleMap.set(ur.userId, ur.tenantRole.roleAlias);
+      }
+    });
+
+    // Add tenant role to each user
+    const usersWithRoles = users.map(user => ({
+      ...user,
+      tenantRole: userRoleMap.get(user.clerkId) || null, // Add tenant role alias
+    }));
+
+    return successResponse({ users: usersWithRoles });
   } catch (error) {
     return handleApiError(error);
   }

@@ -40,7 +40,10 @@ export default function UsersPage() {
           user.username.toLowerCase().includes(searchTerm.toLowerCase())
           : true;
 
-        const matchesRole = roleFilter === 'all' ? true : user.role === roleFilter;
+        // Filter by tenant role (preferred) or legacy role (fallback)
+        const matchesRole = roleFilter === 'all'
+          ? true
+          : (user.tenantRole === roleFilter || (user.tenantRole === null && user.role === roleFilter));
 
         return matchesSearch && matchesRole;
       })
@@ -49,7 +52,10 @@ export default function UsersPage() {
           case 'name':
             return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
           case 'role':
-            return a.role.localeCompare(b.role);
+            // Sort by tenant role first, then legacy role
+            const aRole = a.tenantRole || a.role || '';
+            const bRole = b.tenantRole || b.role || '';
+            return aRole.localeCompare(bRole);
           case 'recent':
             return new Date(b.createdAt) - new Date(a.createdAt);
           default:
@@ -161,7 +167,7 @@ export default function UsersPage() {
               <th className="p-4 text-left">Username</th>
               <th className="p-4 text-left">First Name</th>
               <th className="p-4 text-left">Last Name</th>
-              <th className="p-4 text-left">Manager</th>
+              <th className="p-4 text-left">Reports To</th>
               <th className="p-4 text-left">Role</th>
               <th className="p-4 text-left">Actions</th>
             </tr>
@@ -175,10 +181,10 @@ export default function UsersPage() {
                 <td className="p-4">
                   {user.manager ? (() => {
                     const managerUser = users.find(u => u.username === user.manager);
-                    return managerUser ? `${managerUser.firstName} ${managerUser.lastName}` : 'No manager';
-                  })() : 'No manager'}
+                    return managerUser ? `${managerUser.firstName} ${managerUser.lastName}` : 'None';
+                  })() : 'None'}
                 </td>
-                <td className="p-4">{user.role || 'AGENT'}</td>
+                <td className="p-4">{user.tenantRole || user.role || 'No role'}</td>
                 <td className="p-4 space-x-4">
                   <Button onClick={() => handleEdit(user)} variant="secondary">
                     Edit

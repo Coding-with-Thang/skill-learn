@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { prisma } from '@skill-learn/database';
+import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/user/progress
@@ -8,15 +9,25 @@ import { prisma } from '@skill-learn/database';
  */
 export async function GET() {
   try {
-    const { userId } = await auth();
+    const authResult = await requireAuth();
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    const clerkUserId = authResult;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Get database user ID from Clerk userId
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkUserId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Fetch user's quiz attempts to calculate stats
+    // Fetch user's quiz attempts to calculate stats (using database user ID)
     const quizAttempts = await prisma.quizAttempt.findMany({
-      where: { userId },
+      where: { userId: user.id },
       include: {
         quiz: {
           include: {
@@ -72,9 +83,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Error fetching user progress:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch progress" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

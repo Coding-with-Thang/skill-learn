@@ -22,19 +22,21 @@ export async function GET(request, { params }) {
     // Get current user's tenantId using standardized utility
     const tenantId = await getTenantId();
 
+    // CRITICAL: Filter categories by tenant or global content using standardized utility
+    const categoryWhereClause = buildTenantContentFilter(tenantId, {
+      id: categoryId,
+      isActive: true,
+    });
+
     // CRITICAL: Filter quizzes by tenant or global content
     const quizWhereClause = buildTenantContentFilter(tenantId, {
       isActive: true,
     });
 
     // Fetch category with quizzes
-    // Note: We filter the category by checking tenant access after fetch
-    // and filter quizzes using tenant filter
-    const category = await prisma.category.findUnique({
-      where: {
-        id: categoryId,
-        isActive: true,
-      },
+    // Note: We now filter the category using tenant filter in the where clause
+    const category = await prisma.category.findFirst({
+      where: categoryWhereClause,
       include: {
         quizzes: {
           where: quizWhereClause,
@@ -60,18 +62,6 @@ export async function GET(request, { params }) {
     })
 
     if (!category) {
-      return NextResponse.json(
-        { error: "Category not found" },
-        { status: 404 }
-      )
-    }
-
-    // Verify tenant access: category must be tenant-specific or global
-    const hasAccess = !category.tenantId || 
-                      category.tenantId === tenantId || 
-                      (category.isGlobal && !category.tenantId);
-
-    if (!hasAccess) {
       return NextResponse.json(
         { error: "Category not found" },
         { status: 404 }

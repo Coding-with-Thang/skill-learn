@@ -44,6 +44,7 @@
     "./utils/clerk.js": "./utils/utils/clerk.js",
     "./utils/clerkSync.js": "./utils/utils/clerkSync.js",
     "./utils/permissions.js": "./utils/utils/permissions.js",
+    "./utils/tenant": "./utils/utils/tenant.js",
     "./utils/tenant.js": "./utils/utils/tenant.js",
     "./utils/apiResponseParser.js": "./utils/utils/apiResponseParser.js"
   },

@@ -131,11 +131,13 @@ export async function GET(request) {
     }));
 
 
-    // Get all categories for filtering
+    // Get all categories for filtering (filtered by tenant)
+    const categoryWhereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
     const categories = await prisma.category.findMany({
-      where: {
-        isActive: true,
-      },
+      where: categoryWhereClause,
       select: {
         id: true,
         name: true,

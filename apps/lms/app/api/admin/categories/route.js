@@ -5,6 +5,7 @@ import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/erro
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { categoryCreateSchema } from "@/lib/zodSchemas";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 // Get all categories
 export async function GET(request) {
@@ -14,8 +15,15 @@ export async function GET(request) {
             return adminResult;
         }
 
-        // Fetch all categories with quiz count
+        // Get current user's tenantId using standardized utility
+        const tenantId = await getTenantId();
+
+        // CRITICAL: Filter categories by tenant or global content using standardized utility
+        const whereClause = buildTenantContentFilter(tenantId);
+
+        // Fetch all categories with quiz count (filtered by tenant)
         const categories = await prisma.category.findMany({
+            where: whereClause,
             include: {
                 _count: {
                     select: { quizzes: true },
@@ -42,13 +50,17 @@ export async function POST(request) {
 
         const data = await validateRequestBody(request, categoryCreateSchema);
 
-        // Create new category
+        // Get current user's tenantId using standardized utility
+        const tenantId = await getTenantId();
+
+        // Create new category (assigned to current tenant)
         const category = await prisma.category.create({
             data: {
                 name: data.name,
                 description: data.description,
                 imageUrl: data.imageUrl,
                 isActive: data.isActive ?? true,
+                tenantId: tenantId, // Assign to current tenant
             },
         });
 

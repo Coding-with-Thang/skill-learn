@@ -231,7 +231,7 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground uppercase">{activity.role}</p>
-                    <p className="text-sm text-muted-foreground break-words line-clamp-2">{activity.action}</p>
+                    <p className="text-sm text-muted-foreground wrap-break-word line-clamp-2">{activity.action}</p>
                     <div className="pt-1">
                       <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold">COMPLETE</span>
                     </div>

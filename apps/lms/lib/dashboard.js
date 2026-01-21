@@ -1,7 +1,11 @@
 import { prisma } from '@skill-learn/database';
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 export async function getDashboardStats() {
   try {
+    // Get current user's tenantId using standardized utility
+    const tenantId = await getTenantId();
+
     // Time periods for trend calculations
     const today = new Date();
     const oneMonthAgo = new Date(today);
@@ -9,13 +13,16 @@ export async function getDashboardStats() {
     const twoMonthsAgo = new Date(today);
     twoMonthsAgo.setMonth(today.getMonth() - 2);
 
-    // Get total users count and trend
+    // Get total users count and trend (filtered by tenant)
     // Exclude only obvious test users (users with test/demo/temp/fake in username)
     // Count all other users regardless of activity
     const testUserPattern = /test|demo|temp|fake|^test_/i;
 
-    // Fetch all users to filter out test users
+    // Fetch users for this tenant to filter out test users
     const allUsers = await prisma.user.findMany({
+      where: {
+        tenantId: tenantId, // Filter by tenant
+      },
       select: {
         id: true,
         username: true,
@@ -47,19 +54,27 @@ export async function getDashboardStats() {
         ? ((lastMonthUsers - previousMonthUsers) / previousMonthUsers) * 100
         : 0;
 
-    // Get active rewards count and trend
-    const activeRewards = await prisma.reward.count({
-      where: {
-        enabled: true,
-      },
+    // CRITICAL: Filter rewards by tenant or global content using standardized utility
+    const rewardWhereClause = buildTenantContentFilter(tenantId, {
+      enabled: true,
     });
+
+    // Get active rewards count and trend (filtered by tenant)
+    const activeRewards = await prisma.reward.count({
+      where: rewardWhereClause,
+    });
+
     // Calculate trend based on reward redemptions (more meaningful metric for activity)
+    // Filter rewardLog by users in this tenant
     const lastMonthRedemptions = await prisma.rewardLog.count({
       where: {
         claimed: true,
         createdAt: {
           gte: oneMonthAgo,
           lt: today,
+        },
+        user: {
+          tenantId: tenantId, // Filter by tenant
         },
       },
     });
@@ -70,6 +85,9 @@ export async function getDashboardStats() {
           gte: twoMonthsAgo,
           lt: oneMonthAgo,
         },
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
       },
     });
     const rewardsTrend =
@@ -79,8 +97,13 @@ export async function getDashboardStats() {
           100
         : 0;
 
-    // Get total points awarded and trend
+    // Get total points awarded and trend (filtered by tenant)
     const pointsData = await prisma.pointLog.aggregate({
+      where: {
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
+      },
       _sum: {
         amount: true,
       },
@@ -90,6 +113,9 @@ export async function getDashboardStats() {
         createdAt: {
           gte: oneMonthAgo,
           lt: today,
+        },
+        user: {
+          tenantId: tenantId, // Filter by tenant
         },
       },
       _sum: {
@@ -101,6 +127,9 @@ export async function getDashboardStats() {
         createdAt: {
           gte: twoMonthsAgo,
           lt: oneMonthAgo,
+        },
+        user: {
+          tenantId: tenantId, // Filter by tenant
         },
       },
       _sum: {
@@ -116,10 +145,13 @@ export async function getDashboardStats() {
           100
         : 0;
 
-    // Get total rewards claimed and trend
+    // Get total rewards claimed and trend (filtered by tenant)
     const rewardsClaimed = await prisma.rewardLog.count({
       where: {
         claimed: true,
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
       },
     });
     const lastMonthClaimed = await prisma.rewardLog.count({
@@ -129,6 +161,9 @@ export async function getDashboardStats() {
           gte: oneMonthAgo,
           lt: today,
         },
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
       },
     });
     const previousMonthClaimed = await prisma.rewardLog.count({
@@ -137,6 +172,9 @@ export async function getDashboardStats() {
         createdAt: {
           gte: twoMonthsAgo,
           lt: oneMonthAgo,
+        },
+        user: {
+          tenantId: tenantId, // Filter by tenant
         },
       },
     });
@@ -165,11 +203,16 @@ export async function getDashboardStats() {
       },
     });
 
-    // Get points distribution by category with trends
+    // Get points distribution by category with trends (filtered by tenant)
     const pointsDistribution = await prisma.pointLog.groupBy({
       by: ["reason"],
       _sum: {
         amount: true,
+      },
+      where: {
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
       },
     });
 
@@ -189,11 +232,13 @@ export async function getDashboardStats() {
       });
     }
 
-    // Fetch quiz names for all unique quiz IDs
+    // Fetch quiz names for all unique quiz IDs (filtered by tenant)
+    const quizWhereClause = buildTenantContentFilter(tenantId, {
+      id: { in: Array.from(quizIds) },
+    });
+
     const quizzes = await prisma.quiz.findMany({
-      where: {
-        id: { in: Array.from(quizIds) },
-      },
+      where: quizWhereClause,
       select: {
         id: true,
         title: true,
@@ -230,7 +275,7 @@ export async function getDashboardStats() {
       });
     }
 
-    // Get category engagement trends
+    // Get category engagement trends (filtered by tenant)
     const categoryStats = await prisma.categoryStat.groupBy({
       by: ["categoryId"],
       _avg: {
@@ -240,13 +285,23 @@ export async function getDashboardStats() {
         attempts: true,
         completed: true,
       },
+      where: {
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
+      },
     });
 
-    // Get recent activity with more context
+    // Get recent activity with more context (filtered by tenant)
     const recentActivity = await prisma.auditLog.findMany({
       take: 5,
       orderBy: {
         timestamp: "desc",
+      },
+      where: {
+        user: {
+          tenantId: tenantId, // Filter by tenant
+        },
       },
       include: {
         user: {
@@ -259,12 +314,19 @@ export async function getDashboardStats() {
       },
     });
 
+    // CRITICAL: Filter categories by tenant or global content using standardized utility
+    const categoryWhereClause = buildTenantContentFilter(tenantId);
+
     // Calculate completion rates for categories
     const categoryCompletionRates = Array.isArray(categoryStats) 
       ? await Promise.all(
           categoryStats.map(async (stat) => {
-            const category = await prisma.category.findUnique({
-              where: { id: stat.categoryId },
+            // Filter category lookup by tenant
+            const category = await prisma.category.findFirst({
+              where: {
+                ...categoryWhereClause,
+                id: stat.categoryId,
+              },
               select: { name: true },
             });
             return {
