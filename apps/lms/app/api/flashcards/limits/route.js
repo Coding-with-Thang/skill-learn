@@ -29,10 +29,14 @@ export async function GET() {
       where: { tenantId, ownerId: user.id },
     });
 
+    const maxCardsPerBatch =
+      limits.maxCardsPerDeck < 0 ? 500 : limits.maxCardsPerDeck;
+
     return successResponse({
       limits: {
         maxDecks: limits.maxDecks,
         maxCardsPerDeck: limits.maxCardsPerDeck,
+        maxCardsPerBatch,
       },
       currentDeckCount: deckCount,
       subscriptionTier: tier,

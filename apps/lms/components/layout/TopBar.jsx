@@ -7,6 +7,8 @@ import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import { useUser } from "@clerk/nextjs";
 import { SidebarTrigger } from "@skill-learn/ui/components/sidebar";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
+import { SearchCommand } from "./SearchCommand";
+import { useState } from "react";
 
 export default function TopBar({ adminMode }) {
   const { user } = useUser();
@@ -14,47 +16,61 @@ export default function TopBar({ adminMode }) {
 
   const displayRole = role ? role.toLowerCase().replace('_', ' ') : 'Member';
 
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-20 w-full bg-card border-b border-border px-4 md:px-6 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-20 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all">
       <div className="flex items-center gap-4">
         {adminMode ? <SidebarTrigger /> : <MobileSidebar />}
       </div>
 
-      <div className="flex items-center gap-6">
-        {/* Search Bar - Hidden on small screens or expandable */}
-        <div className="hidden md:flex items-center bg-muted rounded-full px-4 py-2 border border-input focus-within:ring-2 focus-within:ring-ring transition-all">
-          <Search className="w-4 h-4 text-muted-foreground mr-2" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground w-48"
-          />
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Actions */}
-          <div className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-muted transition-colors cursor-pointer">
-            <Search className="w-5 h-5 text-muted-foreground md:hidden" />
+      <div className="flex items-center gap-8">
+        {/* Search Trigger Button */}
+        <button
+          onClick={() => setIsSearchOpen(true)}
+          className="hidden md:flex items-center bg-muted/50 rounded-2xl px-5 py-3 border border-border/50 hover:border-primary/50 hover:bg-muted transition-all w-full max-w-lg group cursor-pointer"
+        >
+          <Search className="w-4 h-4 text-muted-foreground mr-4 group-hover:text-primary transition-colors" />
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors flex-1 text-left">
+            Search your knowledge base...
+          </span>
+          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-border bg-background text-[10px] font-medium text-muted-foreground">
+            <span className="text-xs">⌘</span>
+            <span>K</span>
           </div>
+        </button>
+
+        <SearchCommand isOpen={isSearchOpen} setIsOpen={setIsSearchOpen} />
+
+        <div className="flex items-center gap-5">
+          {/* Actions */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer md:hidden"
+          >
+            <Search className="w-5 h-5 text-muted-foreground" />
+          </button>
 
           <ThemeSwitcher />
 
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-muted transition-colors cursor-pointer">
+          <div className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer">
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-card"></span>
+            <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-card"></span>
           </div>
 
           {/* User Profile */}
-          <div className="flex items-center gap-3 pl-2 border-l border-border">
+          <div className="flex items-center gap-4 pl-6 border-l border-border/50">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-sm font-semibold text-foreground">
+              <span className="text-sm font-bold text-foreground whitespace-nowrap">
                 {user?.fullName || "User"}
               </span>
-              <span className="text-xs text-muted-foreground capitalize">
+              <span className="text-[11px] font-medium text-muted-foreground capitalize whitespace-nowrap">
                 {displayRole}
               </span>
             </div>
-            <UserButtonWrapper />
+            <div className="hover:scale-105 transition-transform duration-200">
+              <UserButtonWrapper />
+            </div>
           </div>
         </div>
       </div>

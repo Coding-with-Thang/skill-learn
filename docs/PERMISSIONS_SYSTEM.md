@@ -127,6 +127,7 @@ model UserRole {
 | roles | roles.create, roles.read, roles.update, roles.delete, roles.assign |
 | billing | billing.view, billing.manage |
 | dashboard | dashboard.admin, dashboard.manager |
+| flashcards | flashcards.create, flashcards.read, flashcards.update, flashcards.delete, flashcards.manage_tenant, flashcards.manage_global |
 
 ## Usage in Backend (API Routes)
 

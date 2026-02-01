@@ -44,10 +44,10 @@ export default function Sidebar({ isOperations }) {
 
   const isAdminRoute = pathname?.startsWith('/dashboard');
   const baseItems = isAdminRoute ? adminNavItems : userNavItems;
-  
+
   // Filter items based on feature availability (only filter if not loading)
-  const items = isLoading 
-    ? baseItems 
+  const items = isLoading
+    ? baseItems
     : baseItems.filter(item => !item.feature || isEnabled(item.feature));
 
   // Add link to switch between views if user has access
@@ -97,15 +97,32 @@ export default function Sidebar({ isOperations }) {
         })}
       </nav>
 
-      <div className="p-4 border-t border-gray-50">
-        <div className="px-4 py-3 bg-gray-50 rounded-xl">
+      <div className="px-6 py-4 border-t border-border/50">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
+              <span>Weekly Goal</span>
+              <span className="text-primary">65%</span>
+            </div>
+            <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: '65%' }} />
+            </div>
+            <div className="text-[10px] text-muted-foreground">
+              65% Achieved
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 border-t border-border/50">
+        <div className="px-4 py-3 bg-muted/50 rounded-xl">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <User className="w-4 h-4" />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs font-semibold text-gray-700">Need Help?</span>
-              <span className="text-[10px] text-gray-500">Contact Support</span>
+              <span className="text-xs font-semibold text-foreground">Need Help?</span>
+              <span className="text-[10px] text-muted-foreground">Contact Support</span>
             </div>
           </div>
         </div>

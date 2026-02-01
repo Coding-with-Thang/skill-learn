@@ -358,7 +358,7 @@ export const flashCardStudySessionSchema = z.object({
 
 export const flashCardProgressSchema = z.object({
   flashCardId: objectIdSchema,
-  feedback: z.enum(["needs_review", "got_it"]),
+  feedback: z.enum(["needs_review", "got_it", "mastered"]),
 });
 
 export const flashCardCreateSchema = z.object({
@@ -372,6 +372,7 @@ export const flashCardCreateSchema = z.object({
 
 export const flashCardUpdateSchema = flashCardCreateSchema.partial().extend({
   categoryId: objectIdSchema.optional(),
+  isGlobal: z.boolean().optional(),
 });
 
 export const flashCardCategoryUpdateSchema = z.object({
@@ -416,6 +417,14 @@ export const flashCardAcceptSchema = z.object({
 
 export const flashCardDeckAcceptSchema = z.object({
   deckId: objectIdSchema,
+});
+
+export const flashCardDeckShareSchema = z.object({
+  deckIds: z.array(objectIdSchema).min(1, "Select at least one deck"),
+  recipientUserIds: z.union([
+    z.literal("all"),
+    z.array(objectIdSchema).min(1, "Select at least one recipient"),
+  ]),
 });
 
 // Admin flash card priority schemas

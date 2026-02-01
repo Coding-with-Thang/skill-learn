@@ -67,9 +67,11 @@ export function computeSm2Update(progress, quality) {
 export function feedbackToQuality(feedback) {
   switch (feedback) {
     case "needs_review":
-      return QUALITY_NEEDS_REVIEW;
+      return QUALITY_NEEDS_REVIEW; // 2
     case "got_it":
-      return QUALITY_GOT_IT;
+      return 4;
+    case "mastered":
+      return 5;
     default:
       return QUALITY_NEEDS_REVIEW;
   }

@@ -49,7 +49,15 @@
 - Cards in multiple decks: Supported (same cardId in multiple deck.cardIds)
 - Categories: Recommendation only — deck builder allows any cards; categories for organization
 
-### 6. Fork card option
+### 6. Permissions & tenant architecture ✅ DONE
+
+- **Permissions**: flashcards.create, flashcards.read, flashcards.update, flashcards.delete, flashcards.manage_tenant, flashcards.manage_global
+- **Schema**: isGlobal on FlashCard and FlashCardCategory for platform-wide content
+- **API**: Permission checks on cards, categories, home, study-session, decks; include global cards in queries
+- **Seed**: `npm run seed:flashcard-permissions` to add permissions to Permission table. Then assign flashcards.create and flashcards.read to Member/User role in role templates so users can create and study.
+- **Feature**: flash_cards feature defaulted on (tenant architecture)
+
+### 7. Fork card option
 
 - Spec mentions "optionally allow forking later" — add fork endpoint that duplicates a shared card into user's owned cards
 

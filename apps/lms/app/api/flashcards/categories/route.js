@@ -10,12 +10,26 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { flashCardCategoryCreateSchema } from "@/lib/zodSchemas";
 import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
-import { hasAnyPermission } from "@skill-learn/lib/utils/permissions.js";
+import { requireAnyPermission, hasAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
+
+const FLASHCARD_READ_PERMS = [
+  PERMISSIONS.FLASHCARDS_READ,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+];
+
+const FLASHCARD_CREATE_PERMS = [
+  PERMISSIONS.FLASHCARDS_CREATE,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+  PERMISSIONS.FLASHCARDS_MANAGE_TENANT,
+];
 
 export async function GET() {
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
+    const clerkId = authResult;
 
     const tenantId = await getTenantId();
     if (!tenantId) {
@@ -24,8 +38,13 @@ export async function GET() {
       });
     }
 
+    const permResult = await requireAnyPermission(FLASHCARD_READ_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
+
     const categories = await prisma.flashCardCategory.findMany({
-      where: { tenantId },
+      where: {
+        OR: [{ tenantId }, { isGlobal: true }],
+      },
       orderBy: { name: "asc" },
       include: {
         _count: { select: { flashCards: true } },
@@ -53,6 +72,9 @@ export async function POST(req) {
       });
     }
 
+    const permResult = await requireAnyPermission(FLASHCARD_CREATE_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
+
     const user = await prisma.user.findUnique({
       where: { clerkId },
       select: { id: true },
@@ -63,7 +85,7 @@ export async function POST(req) {
 
     const isAdmin = await hasAnyPermission(
       clerkId,
-      ["dashboard.admin", "dashboard.manager", "settings.update"],
+      [PERMISSIONS.FLASHCARDS_MANAGE_TENANT, PERMISSIONS.DASHBOARD_ADMIN, PERMISSIONS.DASHBOARD_MANAGER],
       tenantId
     );
 

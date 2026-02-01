@@ -11,7 +11,20 @@ import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { flashCardCreateSchema } from "@/lib/zodSchemas";
 import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
 import { computeFingerprint } from "@skill-learn/lib/utils/flashCardFingerprint.js";
-import { hasAnyPermission } from "@skill-learn/lib/utils/permissions.js";
+import { requireAnyPermission, hasAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
+
+const FLASHCARD_READ_PERMS = [
+  PERMISSIONS.FLASHCARDS_READ,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+];
+
+const FLASHCARD_CREATE_PERMS = [
+  PERMISSIONS.FLASHCARDS_CREATE,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+  PERMISSIONS.FLASHCARDS_MANAGE_TENANT,
+];
 
 export async function GET(req) {
   try {
@@ -26,6 +39,9 @@ export async function GET(req) {
       });
     }
 
+    const permResult = await requireAnyPermission(FLASHCARD_READ_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
+
     const user = await prisma.user.findUnique({
       where: { clerkId },
       select: { id: true },
@@ -37,6 +53,7 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const categoryId = searchParams.get("categoryId");
 
+    // Owned cards: user-created in their tenant
     const owned = await prisma.flashCard.findMany({
       where: {
         tenantId,
@@ -47,6 +64,7 @@ export async function GET(req) {
       orderBy: { createdAt: "desc" },
     });
 
+    // Shared cards (tenant) + global cards not yet owned
     const shared = await prisma.flashCardAccess.findMany({
       where: { tenantId, userId: user.id },
       include: {
@@ -56,14 +74,28 @@ export async function GET(req) {
       },
     });
 
+    // Global cards visible to all (exclude already in owned/shared)
+    const ownedIds = new Set(owned.map((c) => c.id));
+    const sharedIds = new Set(shared.map((a) => a.flashCardId));
+    const globalCards = await prisma.flashCard.findMany({
+      where: {
+        isGlobal: true,
+        id: { notIn: [...ownedIds, ...sharedIds] },
+        ...(categoryId ? { categoryId } : {}),
+      },
+      include: { category: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+
     const sharedCards = shared.map((a) => ({
       ...a.flashCard,
       source: "shared",
     }));
     const ownedCards = owned.map((c) => ({ ...c, source: "owned" }));
+    const globalCardsList = globalCards.map((c) => ({ ...c, source: "global" }));
 
     return successResponse({
-      cards: [...ownedCards, ...sharedCards],
+      cards: [...ownedCards, ...sharedCards, ...globalCardsList],
     });
   } catch (error) {
     return handleApiError(error);
@@ -85,6 +117,9 @@ export async function POST(req) {
       });
     }
 
+    const permResult = await requireAnyPermission(FLASHCARD_CREATE_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
+
     const user = await prisma.user.findUnique({
       where: { clerkId },
       select: { id: true },
@@ -95,7 +130,7 @@ export async function POST(req) {
 
     const isAdmin = await hasAnyPermission(
       clerkId,
-      ["dashboard.admin", "dashboard.manager", "settings.update"],
+      [PERMISSIONS.FLASHCARDS_MANAGE_TENANT, PERMISSIONS.DASHBOARD_ADMIN, PERMISSIONS.DASHBOARD_MANAGER],
       tenantId
     );
 

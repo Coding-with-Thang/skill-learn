@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireAuth } from "@skill-learn/lib/utils/auth.js";
+import { requireAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import {
   handleApiError,
   AppError,
@@ -26,31 +27,51 @@ export async function GET() {
     const context = await getTenantContext();
     if (context instanceof NextResponse) return context;
 
+    const permResult = await requireAnyPermission(
+      [PERMISSIONS.FLASHCARDS_READ, PERMISSIONS.DASHBOARD_ADMIN, PERMISSIONS.DASHBOARD_MANAGER],
+      context.tenantId
+    );
+    if (permResult instanceof NextResponse) return permResult;
+    if (context instanceof NextResponse) return context;
+
     const { tenantId, tenant, user } = context;
     const userId = user.id;
     const tier = tenant?.subscriptionTier || "free";
     const limits = await getFlashCardLimitsFromDb(prisma, tier);
     const now = new Date();
 
-    const [decks, deckCount, sharedDecks, categories, progressList, adminPriorities] = await Promise.all([
-      prisma.flashCardDeck.findMany({
-        where: { tenantId, ownerId: userId },
-        orderBy: { updatedAt: "desc" },
-        take: 10,
-      }),
-      prisma.flashCardDeck.count({ where: { tenantId, ownerId: userId } }),
-      prisma.flashCardDeck.findMany({
-        where: {
-          tenantId,
-          isPublic: true,
-          ownerId: { not: userId },
-        },
-        orderBy: { updatedAt: "desc" },
-        take: 10,
-        include: {
-          owner: { select: { id: true, username: true } },
-        },
-      }),
+    const [decks, deckCount, publicDecks, sharedDecks, categories, progressList, adminPriorities] =
+      await Promise.all([
+        prisma.flashCardDeck.findMany({
+          where: { tenantId, ownerId: userId },
+          orderBy: { updatedAt: "desc" },
+          take: 10,
+        }),
+        prisma.flashCardDeck.count({ where: { tenantId, ownerId: userId } }),
+        prisma.flashCardDeck.findMany({
+          where: {
+            tenantId,
+            isPublic: true,
+            ownerId: { not: userId },
+          },
+          orderBy: { updatedAt: "desc" },
+          take: 20,
+          include: {
+            owner: { select: { id: true, username: true } },
+          },
+        }),
+        prisma.flashCardDeckShare.findMany({
+          where: { tenantId, sharedTo: userId },
+          include: {
+            deck: {
+              include: {
+                owner: { select: { id: true, username: true } },
+              },
+            },
+          },
+          orderBy: { sharedAt: "desc" },
+          take: 20,
+        }),
       prisma.flashCardCategory.findMany({
         where: { tenantId },
         orderBy: { name: "asc" },
@@ -161,13 +182,7 @@ export async function GET() {
 
     return successResponse({
       decks,
-      sharedDecks: sharedDecks.map((d) => ({
-        id: d.id,
-        name: d.name,
-        description: d.description,
-        cardCount: d.cardIds?.length ?? 0,
-        ownerUsername: d.owner?.username ?? "Unknown",
-      })),
+      sharedDecks,
       categories,
       recommended,
       stats: {

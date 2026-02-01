@@ -375,6 +375,7 @@ model Tenant {
   flashCardPrioritySettings FlashCardPrioritySettings[]
   flashCardCategoryPrioritySuggestions FlashCardCategoryPrioritySuggestion[]
   flashCardDecks        FlashCardDeck[]
+  flashCardDeckShares   FlashCardDeckShare[]
 
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
   // Note: stripeCustomerId and stripeSubscriptionId have @unique, which creates indexes
@@ -631,6 +632,7 @@ model FlashCard {
   createdBy    String   @db.ObjectId
   createdRole  String   // "admin" | "user"
   isPublic     Boolean  @default(false)
+  isGlobal     Boolean  @default(false) // When true, visible to all tenants (platform-wide)
   tags         String[] @default([])
   difficulty   String?  // "easy" | "good" | "hard" | null; null = always show
   createdAt    DateTime @default(now())
@@ -655,6 +657,7 @@ model FlashCardCategory {
   name      String
   createdBy String   @db.ObjectId
   isSystem  Boolean  @default(false) // Admin default categories
+  isGlobal  Boolean  @default(false) // When true, visible to all tenants (platform-wide)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -676,17 +679,37 @@ model FlashCardDeck {
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  isPublic    Boolean  @default(false) // Share with tenant so others can accept a copy
+  isPublic    Boolean  @default(false) // Share with all in tenant (others can accept a copy)
   cardIds      String[] @default([]) // FlashCard ids
   hiddenCardIds String[] @default([]) // Cards hidden from study in this deck
   categoryIds  String[] @default([]) // Optional helper for display
   createdAt    DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  deckShares FlashCardDeckShare[]
+
   @@index([tenantId])
   @@index([ownerId])
   @@index([tenantId, ownerId])
   @@map("flash_card_decks")
+}
+
+// Directed deck share: send deck(s) to specific user(s) within tenant
+model FlashCardDeckShare {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deckId    String   @db.ObjectId
+  deck      FlashCardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sharedBy  String   @db.ObjectId
+  sharedTo  String   @db.ObjectId
+  sharedAt  DateTime @default(now())
+
+  @@unique([deckId, sharedTo])
+  @@index([tenantId])
+  @@index([sharedTo])
+  @@index([tenantId, sharedTo])
+  @@map("flash_card_deck_shares")
 }
 
 model FlashCardAccess {

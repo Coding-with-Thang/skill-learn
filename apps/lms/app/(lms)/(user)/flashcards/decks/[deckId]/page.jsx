@@ -15,6 +15,7 @@ import { Button } from "@skill-learn/ui/components/button";
 import { Loader } from "@skill-learn/ui/components/loader";
 import { Eye, EyeOff, Share2, Trash2 } from "lucide-react";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
+import ShareDecksDialog from "@/components/flashcards/ShareDecksDialog";
 import { toast } from "sonner";
 
 export default function DeckSettingsPage() {
@@ -26,6 +27,7 @@ export default function DeckSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(null);
   const [sharing, setSharing] = useState(false);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!deckId) return;
@@ -129,16 +131,37 @@ export default function DeckSettingsPage() {
               Hide cards you don&apos;t want to study. Hidden cards won&apos;t appear in study sessions.
             </p>
           </div>
-          <Button
-            variant={deck.isPublic ? "default" : "outline"}
-            size="sm"
-            onClick={toggleShare}
-            disabled={sharing}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            {deck.isPublic ? "Shared" : "Share with workspace"}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShareDialogOpen(true)}
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Share to users
+            </Button>
+            <Button
+              variant={deck.isPublic ? "default" : "outline"}
+              size="sm"
+              onClick={toggleShare}
+              disabled={sharing}
+            >
+              {deck.isPublic ? "Shared with workspace" : "Share with workspace"}
+            </Button>
+          </div>
         </div>
+
+        <ShareDecksDialog
+          open={shareDialogOpen}
+          onOpenChange={setShareDialogOpen}
+          decks={[deck]}
+          onSuccess={() => {
+            api.get(`/flashcards/decks/${deckId}`).then((res) => {
+              const d = res.data?.data ?? res.data;
+              setDeck(d?.deck ?? deck);
+            });
+          }}
+        />
 
         <Card>
           <CardHeader>

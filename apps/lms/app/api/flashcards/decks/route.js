@@ -10,7 +10,21 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { flashCardDeckCreateSchema } from "@/lib/zodSchemas";
 import { getTenantId, getTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { requireAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { getFlashCardLimitsFromDb } from "@/lib/flashCardLimits.js";
+
+const FLASHCARD_READ_PERMS = [
+  PERMISSIONS.FLASHCARDS_READ,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+];
+
+const FLASHCARD_CREATE_PERMS = [
+  PERMISSIONS.FLASHCARDS_CREATE,
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+  PERMISSIONS.FLASHCARDS_MANAGE_TENANT,
+];
 
 export async function GET() {
   try {
@@ -20,10 +34,11 @@ export async function GET() {
 
     const tenantId = await getTenantId();
     if (!tenantId) {
-      throw new AppError("No tenant assigned", ErrorType.VALIDATION, {
-        status: 400,
-      });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
+
+    const permResult = await requireAnyPermission(FLASHCARD_READ_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
 
     const user = await prisma.user.findUnique({
       where: { clerkId },
@@ -55,6 +70,8 @@ export async function POST(req) {
     if (context instanceof NextResponse) return context;
 
     const { tenantId, tenant, user } = context;
+    const permResult = await requireAnyPermission(FLASHCARD_CREATE_PERMS, tenantId);
+    if (permResult instanceof NextResponse) return permResult;
     const tier = tenant?.subscriptionTier || "free";
     const limits = await getFlashCardLimitsFromDb(prisma, tier);
 

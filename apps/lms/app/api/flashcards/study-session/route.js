@@ -10,6 +10,7 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { flashCardStudySessionSchema } from "@/lib/zodSchemas";
 import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
+import { requireAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import {
   resolveCategoryPriority,
   applyMasteryWeight,
@@ -28,7 +29,7 @@ function weightedShuffle(items, weights) {
     item,
     weight: weights[i] ?? 1,
   }));
-  const totalWeight = combined.reduce((s, c) => s + c.weight, 0);
+  let totalWeight = combined.reduce((s, c) => s + c.weight, 0);
   const result = [];
   let remaining = [...combined];
 
@@ -53,15 +54,21 @@ export async function POST(req) {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const { deckId, categoryIds, virtualDeck, difficulties, limit = DEFAULT_LIMIT } =
-      await validateRequestBody(req, flashCardStudySessionSchema);
-
     const tenantId = await getTenantId();
     if (!tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, {
         status: 400,
       });
     }
+
+    const permResult = await requireAnyPermission(
+      [PERMISSIONS.FLASHCARDS_READ, PERMISSIONS.DASHBOARD_ADMIN, PERMISSIONS.DASHBOARD_MANAGER],
+      tenantId
+    );
+    if (permResult instanceof NextResponse) return permResult;
+
+    const { deckId, categoryIds, virtualDeck, difficulties, limit = DEFAULT_LIMIT } =
+      await validateRequestBody(req, flashCardStudySessionSchema);
 
     const user = await prisma.user.findUnique({
       where: { clerkId },
@@ -118,6 +125,18 @@ export async function POST(req) {
           cardIds.add(a.flashCardId);
         }
       });
+
+      // Global cards (visible to all tenants)
+      const global = await prisma.flashCard.findMany({
+        where: {
+          isGlobal: true,
+          ...(categoryIds?.length
+            ? { categoryId: { in: categoryIds } }
+            : {}),
+        },
+        select: { id: true },
+      });
+      global.forEach((c) => cardIds.add(c.id));
     }
 
     if (cardIds.size === 0) {

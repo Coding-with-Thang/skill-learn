@@ -44,13 +44,21 @@ export async function POST(req) {
       );
     }
 
+    // Deck must be either isPublic (shared to all) or shared to this user via FlashCardDeckShare
     const sourceDeck = await prisma.flashCardDeck.findFirst({
-      where: { id: deckId, tenantId, isPublic: true },
+      where: {
+        id: deckId,
+        tenantId,
+        OR: [
+          { isPublic: true },
+          { deckShares: { some: { sharedTo: userId } } },
+        ],
+      },
       include: { owner: { select: { id: true } } },
     });
 
     if (!sourceDeck) {
-      throw new AppError("Deck not found or not shared", ErrorType.NOT_FOUND, {
+      throw new AppError("Deck not found or not shared with you", ErrorType.NOT_FOUND, {
         status: 404,
       });
     }

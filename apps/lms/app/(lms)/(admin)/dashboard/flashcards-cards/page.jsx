@@ -197,7 +197,7 @@ export default function FlashCardsAdminCardsPage() {
                                   question: card.question,
                                   answer: card.answer,
                                   categoryId: card.categoryId ?? card.category?.id,
-                                  difficulty: card.difficulty ?? "",
+                                  difficulty: card.difficulty ?? "none",
                                 })
                               }
                             >
@@ -275,16 +275,16 @@ export default function FlashCardsAdminCardsPage() {
               <div>
                 <Label>Difficulty</Label>
                 <Select
-                  value={editCard.difficulty ?? ""}
+                  value={editCard.difficulty || "none"}
                   onValueChange={(v) =>
-                    setEditCard((p) => ({ ...p, difficulty: v || null }))
+                    setEditCard((p) => ({ ...p, difficulty: v === "none" ? null : v }))
                   }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="None (always show)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None (always show)</SelectItem>
+                    <SelectItem value="none">None (always show)</SelectItem>
                     <SelectItem value="easy">Easy</SelectItem>
                     <SelectItem value="good">Good</SelectItem>
                     <SelectItem value="hard">Hard</SelectItem>

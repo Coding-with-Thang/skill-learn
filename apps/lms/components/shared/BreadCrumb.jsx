@@ -28,7 +28,7 @@ export default function BreadCrumbCom({ crumbs, endtrail }) {
               <span key={crumb.name} className="flex gap-2 items-center justify-center">
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbLink href={`/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
+                  <BreadcrumbLink href={crumb.href.startsWith("/") ? crumb.href : `/${crumb.href}`}>{crumb.name}</BreadcrumbLink>
                 </BreadcrumbItem>
               </span>
             ))
