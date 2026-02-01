@@ -131,7 +131,6 @@ export default function OnboardingAccountPage() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        toast.success("Signed in successfully!");
         router.push(`/onboarding/workspace?session_id=${sessionId}`);
       }
     } catch (err) {

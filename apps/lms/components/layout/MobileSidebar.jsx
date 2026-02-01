@@ -10,7 +10,8 @@ import {
   Gamepad2,
   Trophy,
   ShieldCheck,
-  User
+  User,
+  Layers,
 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
 import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
@@ -42,6 +43,7 @@ export default function MobileSidebar() {
     { label: "Users", href: "/dashboard/users", icon: User },
     { label: "Courses", href: "/dashboard/courses", icon: GraduationCap, feature: "training_courses" },
     { label: "Quizzes", href: "/dashboard/quizzes", icon: ShieldCheck, feature: "course_quizzes" },
+    { label: "Flash Cards", href: "/dashboard/flashcards-analytics", icon: Layers, feature: "flash_cards" },
     { label: "Categories", href: "/dashboard/categories", icon: BarChart2, feature: "categories" },
     { label: "Rewards", href: "/dashboard/rewards", icon: Trophy, feature: "rewards_store" },
     { label: "Audit Logs", href: "/dashboard/audit-logs", icon: ShieldCheck, feature: "audit_logs" },
@@ -52,6 +54,7 @@ export default function MobileSidebar() {
   const userNavItems = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
     { label: "Training", href: "/training", icon: GraduationCap, feature: "training_courses" },
+    { label: "Flash Cards", href: "/flashcards", icon: Layers, feature: "flash_cards" },
     { label: "Report Card", href: "/user/stats", icon: BarChart2, feature: "user_stats" },
     { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
     { label: "Rewards", href: "/rewards", icon: Trophy, feature: "rewards_store" },

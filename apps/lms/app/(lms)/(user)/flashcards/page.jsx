@@ -21,6 +21,7 @@ import {
   Clock,
   AlertCircle,
   Target,
+  Sliders,
 } from "lucide-react";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 
@@ -135,7 +136,7 @@ export default function FlashCardsHomePage() {
         )}
 
         {/* Quick actions */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link href="/flashcards/create-card">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -146,6 +147,12 @@ export default function FlashCardsHomePage() {
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Create Category
+            </Button>
+          </Link>
+          <Link href="/flashcards/priorities">
+            <Button variant="outline">
+              <Sliders className="h-4 w-4 mr-2" />
+              My Priorities
             </Button>
           </Link>
         </div>

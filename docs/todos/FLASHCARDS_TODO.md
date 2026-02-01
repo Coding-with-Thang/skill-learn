@@ -16,24 +16,23 @@
 
 ## TODOs for future enhancements
 
-### 1. Admin analytics & auto-suggestions
+### 1. Admin analytics & auto-suggestions ✅ DONE
 
-- **Aggregation job**: Scheduled job to aggregate `FlashCardProgress` by category (avgExposure, avgMastery, stagnation signals)
-- **Suggestion rules**: e.g. high exposure + low mastery → increase priority; high mastery + high exposure → decrease priority
-- **Admin UI**: Endpoint and UI for admins to view suggestions and explicitly apply or dismiss (never auto-apply)
-- **Model**: `FlashCardCategoryPrioritySuggestion` exists; wire up generation and admin UI
+- **Aggregation job**: `POST /api/admin/flashcards/suggestions/generate` — aggregates `FlashCardProgress` by category (avgExposure, avgMastery)
+- **Suggestion rules**: high exposure + low mastery → increase priority; high mastery + high exposure → decrease priority
+- **Admin UI**: `/dashboard/flashcards-analytics` — view suggestions, apply or dismiss (never auto-apply)
+- **Model**: `FlashCardCategoryPrioritySuggestion` wired up
 
-### 2. Admin priority & override settings UI
+### 2. Admin priority & override settings UI ✅ DONE
 
-- API endpoints for `CategoryPriorityAdmin` CRUD
-- API for `FlashCardPrioritySettings` (override mode)
-- Admin dashboard section for flash card priorities and override mode
-- Category-level priority (1–10) management
+- **API**: `GET/POST /api/admin/flashcards/priorities` — list categories with admin priorities, upsert single
+- **API**: `GET/PATCH /api/admin/flashcards/settings` — FlashCardPrioritySettings (override mode)
+- **Admin UI**: `/dashboard/flashcards-priorities` — category priorities (1–10) and override mode
 
-### 3. User priority settings
+### 3. User priority settings ✅ DONE
 
-- API for `CategoryPriorityUser` CRUD
-- User-facing UI to set personal category priorities
+- **API**: `GET/POST /api/flashcards/priorities` — list categories with user priorities, upsert single
+- **User UI**: `/flashcards/priorities` — set personal category priorities (1–10), linked from home
 
 ### 4. Needs Attention / Company Focus filtering in study session
 

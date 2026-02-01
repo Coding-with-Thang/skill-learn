@@ -143,7 +143,6 @@ const SignInPage = () => {
         // If it works, great! Username authentication is enabled
         if (result.status === 'complete') {
           await setActive({ session: result.createdSessionId });
-          toast.success('Welcome back!');
           router.push('/home');
           setLoading(false);
           return;
@@ -271,7 +270,6 @@ const SignInPage = () => {
 
       if (result.status === 'complete') {
         await setActive({ session: result.createdSessionId });
-        toast.success('Welcome back!');
         router.push('/home');
       } else if (result.status === 'needs_second_factor') {
         // Check available second factor strategies
@@ -462,7 +460,6 @@ const SignInPage = () => {
 
           if (result.status === 'complete') {
             await setActive({ session: result.createdSessionId });
-            toast.success('Welcome back!');
             router.push('/home');
             return;
           }
@@ -478,7 +475,6 @@ const SignInPage = () => {
 
         if (result.status === 'complete') {
           await setActive({ session: result.createdSessionId });
-          toast.success('Welcome back!');
           router.push('/home');
           return;
         }

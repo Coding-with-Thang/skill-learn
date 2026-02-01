@@ -382,3 +382,24 @@ export const flashCardDeckCreateSchema = z.object({
 export const flashCardAcceptSchema = z.object({
   flashCardId: objectIdSchema,
 });
+
+// Admin flash card priority schemas
+export const categoryPriorityAdminSchema = z.object({
+  categoryId: objectIdSchema,
+  priority: z.number().int().min(1).max(10),
+});
+
+// User flash card priority schemas
+export const categoryPriorityUserSchema = z.object({
+  categoryId: objectIdSchema,
+  priority: z.number().int().min(1).max(10),
+});
+
+export const flashCardPrioritySettingsSchema = z.object({
+  overrideMode: z.enum([
+    "USER_OVERRIDES_ADMIN",
+    "ADMIN_OVERRIDES_USER",
+    "ADMIN_ONLY",
+    "USER_ONLY",
+  ]),
+});

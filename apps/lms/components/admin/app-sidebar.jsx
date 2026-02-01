@@ -10,6 +10,7 @@ import {
   Key,
   Layout,
   LayoutGrid,
+  Layers,
   Settings,
   Shield,
   ToggleLeft,
@@ -76,6 +77,22 @@ const getNavData = () => ({
             {
               title: "Quiz Creator",
               url: "/dashboard/quizzes/quiz-manager",
+            },
+          ],
+        },
+        {
+          title: "Flash Cards",
+          url: "/dashboard/flashcards-analytics",
+          icon: Layers,
+          feature: "flash_cards",
+          items: [
+            {
+              title: "Analytics & Suggestions",
+              url: "/dashboard/flashcards-analytics",
+            },
+            {
+              title: "Priorities & Settings",
+              url: "/dashboard/flashcards-priorities",
             },
           ],
         },

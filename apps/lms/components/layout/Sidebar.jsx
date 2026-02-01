@@ -9,7 +9,8 @@ import {
   Trophy,
   Gamepad2,
   ShieldCheck,
-  User
+  User,
+  Layers,
 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
 import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
@@ -35,6 +36,7 @@ export default function Sidebar({ isOperations }) {
   const userNavItems = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
     { label: "Training", href: "/training", icon: GraduationCap, feature: "training_courses" },
+    { label: "Flash Cards", href: "/flashcards", icon: Layers, feature: "flash_cards" },
     { label: "Report Card", href: "/user/stats", icon: BarChart2, feature: "user_stats" },
     { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
     { label: "Rewards", href: "/rewards", icon: Trophy, feature: "rewards_store" },
