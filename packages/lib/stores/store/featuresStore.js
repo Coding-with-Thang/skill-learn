@@ -130,4 +130,5 @@ export const FEATURE_KEYS = {
   USER_STATS: "user_stats",
   AUDIT_LOGS: "audit_logs",
   CUSTOM_ROLES: "custom_roles",
+  FLASHCARDS: "flash_cards",
 };

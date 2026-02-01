@@ -12,6 +12,8 @@ enum Role {
   MANAGER
   AGENT
   USER
+  OPERATIONS
+  OWNER
 }
 
 model User {
@@ -41,6 +43,10 @@ model User {
   systemSettings  SystemSetting[]
   quizzes         Quiz[]
   courses         Course[]
+  flashCardAccess FlashCardAccess[]
+  flashCardProgress FlashCardProgress[]
+  flashCardDecks  FlashCardDeck[]
+  categoryPriorityUser CategoryPriorityUser[]
   // Note: userRoles relation removed - UserRole.userId is Clerk ID (String), not User.id (ObjectId)
   // Query user roles by matching User.clerkId with UserRole.userId in application code
 
@@ -318,15 +324,6 @@ enum CourseStatus {
   Achieved
 }
 
-// Legacy role enum (used for backward compatibility with existing code)
-// Note: New role assignments should use TenantRole/UserRole through tenant infrastructure
-enum Role {
-  AGENT
-  MANAGER
-  OPERATIONS
-  OWNER
-}
-
 // ============================================
 // MULTI-TENANT RBAC MODELS
 // ============================================
@@ -367,6 +364,17 @@ model Tenant {
   quizzes           Quiz[]
   rewards           Reward[]
   games             Game[]
+
+  // Flash Cards (enterprise LMS)
+  flashCards            FlashCard[]
+  flashCardCategories   FlashCardCategory[]
+  flashCardAccess       FlashCardAccess[]
+  flashCardProgress     FlashCardProgress[]
+  categoryPriorityAdmin CategoryPriorityAdmin[]
+  categoryPriorityUser  CategoryPriorityUser[]
+  flashCardPrioritySettings FlashCardPrioritySettings[]
+  flashCardCategoryPrioritySuggestions FlashCardCategoryPrioritySuggestion[]
+  flashCardDecks        FlashCardDeck[]
 
   // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
   // Note: stripeCustomerId and stripeSubscriptionId have @unique, which creates indexes
@@ -605,5 +613,192 @@ model Changelog {
   @@index([releaseDate(sort: Desc)])
   @@index([published])
   @@map("changelogs")
+}
+
+// ============================================
+// FLASH CARDS (Enterprise LMS)
+// ============================================
+
+model FlashCard {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId   String   @db.ObjectId
+  category     FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  question     String
+  answer       String
+  fingerprint  String   // Hash of normalized question + answer for deduplication
+  createdBy    String   @db.ObjectId
+  createdRole  String   // "admin" | "user"
+  isPublic     Boolean  @default(false)
+  tags         String[] @default([])
+  difficulty   Int?     // Optional 1-5
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  access     FlashCardAccess[]
+  progress   FlashCardProgress[]
+
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([tenantId, categoryId])
+  @@index([createdBy])
+  @@index([fingerprint])
+  @@map("flash_cards")
+}
+
+model FlashCardCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  createdBy String   @db.ObjectId
+  isSystem  Boolean  @default(false) // Admin default categories
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  flashCards FlashCard[]
+  adminPriorities   CategoryPriorityAdmin[]
+  userPriorities    CategoryPriorityUser[]
+  suggestions       FlashCardCategoryPrioritySuggestion[]
+
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@map("flash_card_categories")
+}
+
+model FlashCardDeck {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ownerId     String   @db.ObjectId
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  cardIds     String[] @default([]) // FlashCard ids
+  categoryIds String[] @default([]) // Optional helper for display
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([ownerId])
+  @@index([tenantId, ownerId])
+  @@map("flash_card_decks")
+}
+
+model FlashCardAccess {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String    @db.ObjectId
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flashCardId String    @db.ObjectId
+  flashCard   FlashCard @relation(fields: [flashCardId], references: [id], onDelete: Cascade)
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acceptedAt  DateTime  @default(now())
+
+  @@unique([flashCardId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@map("flash_card_access")
+}
+
+model FlashCardProgress {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId      String    @db.ObjectId
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId        String    @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flashCardId   String    @db.ObjectId
+  flashCard     FlashCard @relation(fields: [flashCardId], references: [id], onDelete: Cascade)
+  exposureCount Int       @default(0)
+  correctCount  Int       @default(0)
+  incorrectCount Int      @default(0)
+  masteryScore  Float     @default(0) // 0-1, correctCount / exposureCount
+  repetitions   Int       @default(0)
+  intervalDays  Float     @default(0)
+  easeFactor    Float     @default(2.5)
+  nextReviewAt  DateTime?
+  lastSeenAt    DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, userId, flashCardId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@index([nextReviewAt])
+  @@index([tenantId, userId, nextReviewAt])
+  @@map("flash_card_progress")
+}
+
+model CategoryPriorityAdmin {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String  @db.ObjectId
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId String  @db.ObjectId
+  category   FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  priority   Int     // 1-10
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, categoryId])
+  @@index([tenantId])
+  @@map("category_priority_admin")
+}
+
+model CategoryPriorityUser {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String  @db.ObjectId
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String  @db.ObjectId
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String  @db.ObjectId
+  category   FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  priority   Int     // 1-10
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, userId, categoryId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@map("category_priority_user")
+}
+
+enum FlashCardOverrideMode {
+  USER_OVERRIDES_ADMIN
+  ADMIN_OVERRIDES_USER
+  ADMIN_ONLY
+  USER_ONLY
+}
+
+model FlashCardPrioritySettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  overrideMode FlashCardOverrideMode @default(USER_OVERRIDES_ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId])
+  @@map("flash_card_priority_settings")
+}
+
+model FlashCardCategoryPrioritySuggestion {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String   @db.ObjectId
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId       String   @db.ObjectId
+  category         FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  suggestedPriority Int
+  reason           String
+  generatedAt      DateTime @default(now())
+  appliedAt        DateTime?
+  dismissedAt      DateTime?
+
+  @@index([tenantId])
+  @@index([categoryId])
+  @@map("flash_card_category_priority_suggestions")
 }
 

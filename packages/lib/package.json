@@ -21,6 +21,8 @@
     "./stores/usersStore.js": "./stores/store/usersStore.js",
     "./stores/userRolesStore.js": "./stores/store/userRolesStore.js",
     "./stores/onboardingStore.js": "./stores/store/onboardingStore.js",
+    "./stores/flashCardStudyStore.js": "./stores/store/flashCardStudyStore.js",
+    "./stores/flashCardDeckBuilderStore.js": "./stores/store/flashCardDeckBuilderStore.js",
     "./hooks/useDebounce.js": "./hooks/hooks/useDebounce.js",
     "./hooks/useAppTheme.js": "./hooks/hooks/useAppTheme.js",
     "./hooks/useLocalStorage.js": "./hooks/hooks/useLocalStorage.js",
@@ -46,7 +48,10 @@
     "./utils/permissions.js": "./utils/utils/permissions.js",
     "./utils/tenant": "./utils/utils/tenant.js",
     "./utils/tenant.js": "./utils/utils/tenant.js",
-    "./utils/apiResponseParser.js": "./utils/utils/apiResponseParser.js"
+    "./utils/apiResponseParser.js": "./utils/utils/apiResponseParser.js",
+    "./utils/sm2.js": "./utils/utils/sm2.js",
+    "./utils/flashCardPriority.js": "./utils/utils/flashCardPriority.js",
+    "./utils/flashCardFingerprint.js": "./utils/utils/flashCardFingerprint.js"
   },
   "scripts": {},
   "dependencies": {

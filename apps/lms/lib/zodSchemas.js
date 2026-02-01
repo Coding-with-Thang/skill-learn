@@ -337,3 +337,41 @@ export const settingsFormSchema = z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean()])
 );
+
+// Flash Card schemas
+export const flashCardStudySessionSchema = z.object({
+  deckId: objectIdSchema.optional(),
+  categoryIds: z.array(objectIdSchema).optional(),
+  virtualDeck: z.enum(["due_today", "needs_attention", "company_focus"]).optional(),
+  limit: z.number().int().min(1).max(50).optional().default(25),
+});
+
+export const flashCardProgressSchema = z.object({
+  flashCardId: objectIdSchema,
+  feedback: z.enum(["needs_review", "got_it"]),
+});
+
+export const flashCardCreateSchema = z.object({
+  question: z.string().min(1, "Question is required").max(2000),
+  answer: z.string().min(1, "Answer is required").max(5000),
+  categoryId: objectIdSchema,
+  tags: z.array(z.string().max(50)).optional().default([]),
+  difficulty: z.number().int().min(1).max(5).optional(),
+  isPublic: z.boolean().optional().default(false),
+});
+
+export const flashCardCategoryCreateSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  isSystem: z.boolean().optional().default(false),
+});
+
+export const flashCardDeckCreateSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200),
+  description: z.string().optional(),
+  cardIds: z.array(objectIdSchema).optional().default([]),
+  categoryIds: z.array(objectIdSchema).optional().default([]),
+});
+
+export const flashCardAcceptSchema = z.object({
+  flashCardId: objectIdSchema,
+});
