@@ -194,8 +194,15 @@ export const quizFinishSchema = z.object({
   pointsBreakdown: z.record(z.any()).optional(),
 });
 
-// User schemas
-export const userRoleSchema = z.enum(["AGENT", "MANAGER", "OPERATIONS"]);
+// User schemas - must match Prisma Role enum
+export const userRoleSchema = z.enum([
+  "ADMIN",
+  "MANAGER",
+  "AGENT",
+  "USER",
+  "OPERATIONS",
+  "OWNER",
+]);
 
 export const userCreateSchema = z.object({
   username: z
