@@ -53,7 +53,7 @@ export async function POST(req) {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const { deckId, categoryIds, virtualDeck, limit = DEFAULT_LIMIT } =
+    const { deckId, categoryIds, virtualDeck, difficulties, limit = DEFAULT_LIMIT } =
       await validateRequestBody(req, flashCardStudySessionSchema);
 
     const tenantId = await getTenantId();
@@ -76,6 +76,8 @@ export async function POST(req) {
     // 1. Resolve accessible cards (owned + shared)
     let cardIds = new Set();
 
+    let hiddenInDeck = new Set();
+
     if (deckId) {
       const deck = await prisma.flashCardDeck.findFirst({
         where: { id: deckId, tenantId, ownerId: userId },
@@ -85,7 +87,10 @@ export async function POST(req) {
           status: 404,
         });
       }
-      deck.cardIds.forEach((id) => cardIds.add(id));
+      (deck.hiddenCardIds ?? []).forEach((id) => hiddenInDeck.add(id));
+      deck.cardIds.forEach((id) => {
+        if (!hiddenInDeck.has(id)) cardIds.add(id);
+      });
     } else {
       // Owned cards (createdBy = userId)
       const owned = await prisma.flashCard.findMany({
@@ -179,21 +184,39 @@ export async function POST(req) {
       where: { id: { in: candidateIds } },
       include: { category: { select: { id: true, name: true } } },
     });
-    const cardMap = new Map(cards.map((c) => [c.id, c]));
+
+    // 4b. Filter by difficulty: null cards always show; if difficulties filter, include matching + null
+    // Support legacy Int (1=easy, 2=good, 3=hard) and new String ("easy","good","hard")
+    const toDiff = (d) => {
+      if (d == null) return null;
+      if (d === "easy" || d === "good" || d === "hard") return d;
+      if (d === 1 || d === "1") return "easy";
+      if (d === 2 || d === "2") return "good";
+      return "hard";
+    };
+    let filteredCards = cards;
+    if (difficulties?.length) {
+      const diffSet = new Set(difficulties);
+      filteredCards = cards.filter((c) => {
+        const d = toDiff(c.difficulty);
+        return d == null || diffSet.has(d);
+      });
+    }
+    const cardMap = new Map(filteredCards.map((c) => [c.id, c]));
 
     // 5. Resolve category priorities
     const [adminPriorities, userPriorities, settings] = await Promise.all([
       prisma.categoryPriorityAdmin.findMany({
         where: {
           tenantId,
-          categoryId: { in: [...new Set(cards.map((c) => c.categoryId))] },
+          categoryId: { in: [...new Set(filteredCards.map((c) => c.categoryId))] },
         },
       }),
       prisma.categoryPriorityUser.findMany({
         where: {
           tenantId,
           userId,
-          categoryId: { in: [...new Set(cards.map((c) => c.categoryId))] },
+          categoryId: { in: [...new Set(filteredCards.map((c) => c.categoryId))] },
         },
       }),
       prisma.flashCardPrioritySettings.findUnique({
@@ -209,8 +232,9 @@ export async function POST(req) {
     );
     const overrideMode = settings?.overrideMode ?? "USER_OVERRIDES_ADMIN";
 
-    // 6. Build weighted list
-    const weighted = candidateIds
+    // 6. Build weighted list (use filtered card IDs for difficulty)
+    const filteredIds = filteredCards.map((c) => c.id);
+    const weighted = filteredIds
       .map((id) => {
         const card = cardMap.get(id);
         if (!card) return null;

@@ -9,14 +9,17 @@ import {
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestParams, validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { z } from "zod";
-import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
+import { getTenantId, getTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { getFlashCardLimitsFromDb } from "@/lib/flashCardLimits.js";
 
 const deckIdSchema = z.object({ deckId: z.string().regex(/^[0-9a-fA-F]{24}$/) });
 const deckUpdateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
   description: z.string().optional(),
   cardIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
+  hiddenCardIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
   categoryIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
+  isPublic: z.boolean().optional(),
 });
 
 export async function GET(req, { params }) {
@@ -103,11 +106,35 @@ export async function PATCH(req, { params }) {
       });
     }
 
+    if (data.cardIds != null) {
+      const context = await getTenantContext();
+      if (context instanceof NextResponse) return context;
+      const tier = context.tenant?.subscriptionTier || "free";
+      const limits = await getFlashCardLimitsFromDb(prisma, tier);
+      if (limits.maxCardsPerDeck >= 0 && data.cardIds.length > limits.maxCardsPerDeck) {
+        throw new AppError(
+          `Deck cannot exceed ${limits.maxCardsPerDeck} cards. Upgrade your plan for larger decks.`,
+          ErrorType.VALIDATION,
+          { status: 403 }
+        );
+      }
+    }
+
     const updateData = {};
     if (data.name != null) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
-    if (data.cardIds != null) updateData.cardIds = data.cardIds;
+    if (data.cardIds != null) {
+      updateData.cardIds = data.cardIds;
+      // Keep hiddenCardIds in sync: only ids still in cardIds
+      const cardSet = new Set(data.cardIds);
+      const filteredHidden = (deck.hiddenCardIds ?? []).filter((id) => cardSet.has(id));
+      if (filteredHidden.length !== (deck.hiddenCardIds ?? []).length) {
+        updateData.hiddenCardIds = filteredHidden;
+      }
+    }
+    if (data.hiddenCardIds != null) updateData.hiddenCardIds = data.hiddenCardIds;
     if (data.categoryIds != null) updateData.categoryIds = data.categoryIds;
+    if (data.isPublic !== undefined) updateData.isPublic = data.isPublic;
 
     const updated = await prisma.flashCardDeck.update({
       where: { id: deckId },

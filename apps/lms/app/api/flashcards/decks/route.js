@@ -9,7 +9,8 @@ import {
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { flashCardDeckCreateSchema } from "@/lib/zodSchemas";
-import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
+import { getTenantId, getTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { getFlashCardLimitsFromDb } from "@/lib/flashCardLimits.js";
 
 export async function GET() {
   try {
@@ -47,23 +48,34 @@ export async function POST(req) {
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
-    const clerkId = authResult;
 
     const data = await validateRequestBody(req, flashCardDeckCreateSchema);
 
-    const tenantId = await getTenantId();
-    if (!tenantId) {
-      throw new AppError("No tenant assigned", ErrorType.VALIDATION, {
-        status: 400,
-      });
+    const context = await getTenantContext();
+    if (context instanceof NextResponse) return context;
+
+    const { tenantId, tenant, user } = context;
+    const tier = tenant?.subscriptionTier || "free";
+    const limits = await getFlashCardLimitsFromDb(prisma, tier);
+
+    const deckCount = await prisma.flashCardDeck.count({
+      where: { tenantId, ownerId: user.id },
+    });
+    if (limits.maxDecks >= 0 && deckCount >= limits.maxDecks) {
+      throw new AppError(
+        `Deck limit reached (${limits.maxDecks} max). Upgrade your plan for more decks.`,
+        ErrorType.VALIDATION,
+        { status: 403 }
+      );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
-      select: { id: true },
-    });
-    if (!user) {
-      throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
+    const cardIds = data.cardIds ?? [];
+    if (limits.maxCardsPerDeck >= 0 && cardIds.length > limits.maxCardsPerDeck) {
+      throw new AppError(
+        `Deck cannot exceed ${limits.maxCardsPerDeck} cards. Upgrade your plan for larger decks.`,
+        ErrorType.VALIDATION,
+        { status: 403 }
+      );
     }
 
     const deck = await prisma.flashCardDeck.create({
@@ -72,8 +84,10 @@ export async function POST(req) {
         ownerId: user.id,
         name: data.name,
         description: data.description ?? null,
-        cardIds: data.cardIds ?? [],
+        cardIds,
+        hiddenCardIds: data.hiddenCardIds ?? [],
         categoryIds: data.categoryIds ?? [],
+        isPublic: data.isPublic ?? false,
       },
     });
 

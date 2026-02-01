@@ -346,10 +346,13 @@ export const settingsFormSchema = z.record(
 );
 
 // Flash Card schemas
+export const flashCardDifficultySchema = z.enum(["easy", "good", "hard"]).nullable();
+
 export const flashCardStudySessionSchema = z.object({
   deckId: objectIdSchema.optional(),
   categoryIds: z.array(objectIdSchema).optional(),
   virtualDeck: z.enum(["due_today", "needs_attention", "company_focus"]).optional(),
+  difficulties: z.array(z.enum(["easy", "good", "hard"])).optional(), // null cards always included
   limit: z.number().int().min(1).max(50).optional().default(25),
 });
 
@@ -363,8 +366,29 @@ export const flashCardCreateSchema = z.object({
   answer: z.string().min(1, "Answer is required").max(5000),
   categoryId: objectIdSchema,
   tags: z.array(z.string().max(50)).optional().default([]),
-  difficulty: z.number().int().min(1).max(5).optional(),
+  difficulty: z.enum(["easy", "good", "hard"]).nullable().optional(),
   isPublic: z.boolean().optional().default(false),
+});
+
+export const flashCardUpdateSchema = flashCardCreateSchema.partial().extend({
+  categoryId: objectIdSchema.optional(),
+});
+
+export const flashCardCategoryUpdateSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  isSystem: z.boolean().optional(),
+});
+
+export const flashCardBulkImportSchema = z.object({
+  categoryId: objectIdSchema,
+  cards: z.array(
+    z.object({
+      question: z.string().min(1).max(2000),
+      answer: z.string().min(1).max(5000),
+      tags: z.array(z.string().max(50)).optional().default([]),
+      difficulty: z.enum(["easy", "good", "hard"]).nullable().optional(),
+    })
+  ),
 });
 
 export const flashCardCategoryCreateSchema = z.object({
@@ -376,11 +400,22 @@ export const flashCardDeckCreateSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   description: z.string().optional(),
   cardIds: z.array(objectIdSchema).optional().default([]),
+  hiddenCardIds: z.array(objectIdSchema).optional().default([]),
   categoryIds: z.array(objectIdSchema).optional().default([]),
+  isPublic: z.boolean().optional().default(false),
+});
+
+export const flashCardDeckHideSchema = z.object({
+  cardId: objectIdSchema,
+  hidden: z.boolean(),
 });
 
 export const flashCardAcceptSchema = z.object({
   flashCardId: objectIdSchema,
+});
+
+export const flashCardDeckAcceptSchema = z.object({
+  deckId: objectIdSchema,
 });
 
 // Admin flash card priority schemas

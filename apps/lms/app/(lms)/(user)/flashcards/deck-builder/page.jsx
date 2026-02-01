@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import api from "@skill-learn/lib/utils/axios.js";
 import { useFlashCardDeckBuilderStore } from "@skill-learn/lib/stores/flashCardDeckBuilderStore.js";
 import {
@@ -22,6 +22,10 @@ import { toast } from "sonner";
 
 export default function DeckBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const deckId = searchParams.get("deckId");
+  const isEdit = !!deckId;
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState([]);
@@ -33,21 +37,39 @@ export default function DeckBuilderPage() {
     deckDescription,
     setDeckName,
     setDeckDescription,
+    setSelectedCards,
     toggleCard,
     isSelected,
     getSelectedIds,
     reset,
   } = useFlashCardDeckBuilderStore();
 
+  const [limits, setLimits] = useState({ maxDecks: -1, maxCardsPerDeck: -1, canCreateDeck: true });
+
   useEffect(() => {
-    Promise.all([
-      api.get("/flashcards/categories"),
-      api.get("/flashcards/cards"),
-    ])
-      .then(([catRes, cardRes]) => {
-        const cats = catRes.data?.data?.categories ?? catRes.data?.categories ?? [];
-        const cards = cardRes.data?.data?.cards ?? cardRes.data?.cards ?? [];
+    const load = async () => {
+      try {
+        const reqs = [
+          api.get("/flashcards/categories"),
+          api.get("/flashcards/cards"),
+          api.get("/flashcards/limits"),
+        ];
+        if (deckId) reqs.push(api.get(`/flashcards/decks/${deckId}`));
+        const results = await Promise.all(reqs);
+
+        const cats = results[0].data?.data?.categories ?? results[0].data?.categories ?? [];
+        const cards = results[1].data?.data?.cards ?? results[1].data?.cards ?? [];
+        const lim = results[2].data?.data ?? results[2].data ?? {};
+        const deckData = deckId && results[3]
+          ? (results[3].data?.data?.deck ?? results[3].data?.deck)
+          : null;
+
         setCategories(cats);
+        setLimits({
+          maxDecks: lim.limits?.maxDecks ?? -1,
+          maxCardsPerDeck: lim.limits?.maxCardsPerDeck ?? -1,
+          canCreateDeck: lim.canCreateDeck !== false,
+        });
 
         const byCat = {};
         cards.forEach((c) => {
@@ -57,37 +79,67 @@ export default function DeckBuilderPage() {
           byCat[catId].push(c);
         });
         setCardsByCategory(byCat);
-      })
-      .catch(() => toast.error("Failed to load data"))
-      .finally(() => setLoading(false));
-  }, []);
+
+        if (deckData) {
+          setDeckName(deckData.name);
+          setDeckDescription(deckData.description ?? "");
+          setSelectedCards(deckData.cardIds ?? []);
+        }
+      } catch (err) {
+        toast.error("Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [deckId]);
+
+  const maxCards = limits.maxCardsPerDeck < 0 ? Infinity : limits.maxCardsPerDeck;
+  const atCardLimit = getSelectedIds().length >= maxCards;
 
   const handleSave = async () => {
     if (!deckName.trim()) {
       toast.error("Deck name is required");
       return;
     }
+    if (!isEdit && !limits.canCreateDeck) {
+      toast.error("Deck limit reached. Upgrade your plan for more decks.");
+      return;
+    }
 
     setSaving(true);
     try {
-      await api.post("/flashcards/decks", {
-        name: deckName.trim(),
-        description: deckDescription.trim() || undefined,
-        cardIds: getSelectedIds(),
-        categoryIds: [...new Set(
-          getSelectedIds().flatMap((id) => {
-            const cat = Object.entries(cardsByCategory).find(([, arr]) =>
-              arr.some((c) => c.id === id)
-            );
-            return cat ? [cat[0]] : [];
-          })
-        )],
-      });
-      toast.success("Deck created");
+      const cardIds = getSelectedIds();
+      const categoryIds = [...new Set(
+        cardIds.flatMap((id) => {
+          const cat = Object.entries(cardsByCategory).find(([, arr]) =>
+            arr.some((c) => c.id === id)
+          );
+          return cat ? [cat[0]] : [];
+        })
+      )];
+
+      if (isEdit) {
+        await api.patch(`/flashcards/decks/${deckId}`, {
+          name: deckName.trim(),
+          description: deckDescription.trim() || undefined,
+          cardIds,
+          categoryIds,
+        });
+        toast.success("Deck updated");
+      } else {
+        await api.post("/flashcards/decks", {
+          name: deckName.trim(),
+          description: deckDescription.trim() || undefined,
+          cardIds,
+          categoryIds,
+        });
+        toast.success("Deck created");
+      }
       reset();
       router.push("/flashcards");
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to create deck");
+      toast.error(err.response?.data?.error || "Failed to save deck");
     } finally {
       setSaving(false);
     }
@@ -100,14 +152,16 @@ export default function DeckBuilderPage() {
       <BreadCrumbCom
         crumbs={[
           { name: "Flash Cards", href: "/flashcards" },
-          { name: "Deck Builder", href: "/flashcards/deck-builder" },
+          { name: isEdit ? "Edit Deck" : "Deck Builder", href: "/flashcards/deck-builder" },
         ]}
       />
       <div className="max-w-4xl mx-auto space-y-8 pb-8">
         <div>
-          <h1 className="text-3xl font-bold">Deck Builder</h1>
+          <h1 className="text-3xl font-bold">{isEdit ? "Edit Deck" : "Deck Builder"}</h1>
           <p className="text-muted-foreground mt-1">
-            Select cards across categories. Duplicates are prevented.
+            {isEdit
+              ? "Add or remove cards. Cards can be in multiple decks."
+              : "Select cards across categories. Categories are for organization — add any cards you want."}
           </p>
         </div>
 
@@ -145,7 +199,7 @@ export default function DeckBuilderPage() {
           <CardHeader>
             <CardTitle>Select cards</CardTitle>
             <CardDescription>
-              {getSelectedIds().length} selected · Owned, Shared, Already added
+              {getSelectedIds().length}{limits.maxCardsPerDeck >= 0 ? `/${limits.maxCardsPerDeck}` : ""} selected. Cards can be in multiple decks — add any that help you learn.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -164,12 +218,22 @@ export default function DeckBuilderPage() {
                         {cards.map((c) => (
                           <div
                             key={c.id}
-                            className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                              atCardLimit && !isSelected(c.id)
+                                ? "cursor-not-allowed opacity-60 border-border"
+                                : "cursor-pointer"
+                            } ${
                               isSelected(c.id)
                                 ? "border-primary bg-primary/5"
                                 : "border-border hover:bg-muted/50"
                             }`}
-                            onClick={() => toggleCard(c.id)}
+                            onClick={() => {
+                              if (atCardLimit && !isSelected(c.id)) {
+                                toast.error(`Deck limit: ${limits.maxCardsPerDeck} cards max. Upgrade your plan for larger decks.`);
+                                return;
+                              }
+                              toggleCard(c.id);
+                            }}
                           >
                             <div
                               className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
@@ -200,8 +264,21 @@ export default function DeckBuilderPage() {
         </Card>
 
         <div className="flex gap-3">
-          <Button onClick={handleSave} disabled={saving || getSelectedIds().length === 0}>
-            {saving ? "Saving..." : "Create deck"}
+          <Button
+            onClick={handleSave}
+            disabled={
+              saving ||
+              getSelectedIds().length === 0 ||
+              (!isEdit && !limits.canCreateDeck)
+            }
+          >
+            {saving
+              ? "Saving..."
+              : !isEdit && !limits.canCreateDeck
+                ? "Deck limit reached"
+                : isEdit
+                  ? "Save changes"
+                  : "Create deck"}
           </Button>
           <Button variant="outline" onClick={() => router.push("/flashcards")}>
             Cancel

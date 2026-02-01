@@ -34,32 +34,37 @@
 - **API**: `GET/POST /api/flashcards/priorities` — list categories with user priorities, upsert single
 - **User UI**: `/flashcards/priorities` — set personal category priorities (1–10), linked from home
 
-### 4. Needs Attention / Company Focus filtering in study session
+### 4. Needs Attention / Company Focus filtering in study session ✅ DONE
 
-- "Needs Attention" virtual deck: filter by `masteryScore < 0.4` and `exposureCount >= 2` in study-session logic
-- "Company Focus": already uses `categoryIds` from admin priorities; verify end-to-end
+- **Needs Attention**: study-session filters by `masteryScore < 0.4` and `exposureCount >= 2`
+- **Company Focus**: home API returns `categoryIds` from admin priorities (top categories with priority ≥7); study-session filters cards to those categories
 
-### 5. Sharing flow (share cards with users)
+### 5. Sharing flow (share cards with users) ✅ DONE
 
-- API to share a card (set `isPublic` or add a share mechanism)
-- UI to share cards and accept shared cards (accept API exists)
-- Optional: share entire decks
+- API to share a card: `isPublic` on FlashCard; accept API exists
+- Deck sharing: `isPublic` on FlashCardDeck; share toggle in Manage deck
+- UI: Shared decks appear in "Shared by Others" on home; Accept creates independent copy
+- Accept deck: `POST /api/flashcards/decks/accept` — creates **copy** owned by user; modifications don't affect original
+- Move cards: Remove from deck (Manage deck); Add/remove via Deck Builder (edit mode)
+- Cards in multiple decks: Supported (same cardId in multiple deck.cardIds)
+- Categories: Recommendation only — deck builder allows any cards; categories for organization
 
 ### 6. Fork card option
 
 - Spec mentions "optionally allow forking later" — add fork endpoint that duplicates a shared card into user's owned cards
 
-### 7. Feature flag
+### 7. Feature flag ✅ DONE
 
-- Add `flash_cards` to `Feature` table (seed/migration)
-- Add `feature: 'flash_cards'` to nav item in Navigation.jsx to gate by tenant
+- **Feature table**: `flash_cards` added to DEFAULT_FEATURES in CMS `/api/features/seed` — run seed (or POST to that endpoint as super admin) to create
+- **Nav gating**: Navigation.jsx, Sidebar, MobileSidebar, app-sidebar already use `feature: 'flash_cards'`
 
-### 8. Admin flash card management
+### 8. Admin flash card management ✅ DONE
 
-- Admin UI to create/edit/delete cards and categories
-- Bulk import cards (CSV/JSON)
+- **Admin UI**: `/dashboard/flashcards-cards` — list, edit, delete cards; filter by category
+- **Admin UI**: `/dashboard/flashcards-categories` — create, edit, delete categories
+- **Bulk import**: `/dashboard/flashcards-import` — CSV (question,answer) or JSON; duplicates skipped
 
-### 9. Learning analytics dashboard
+### 9. Learning analytics dashboard ✅ DONE
 
-- User-facing: exposure vs mastery charts
-- Admin-facing: aggregate analytics per category/tenant
+- **User**: `/flashcards/analytics` — exposure vs mastery by category, summary stats
+- **Admin**: `/dashboard/flashcards-learning-analytics` — aggregate by category (cards, users, avg exposure, avg mastery)

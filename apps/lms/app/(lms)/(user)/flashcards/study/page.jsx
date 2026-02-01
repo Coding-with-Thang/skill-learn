@@ -12,7 +12,7 @@ import {
 } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Loader } from "@skill-learn/ui/components/loader";
-import { ChevronLeft, ChevronRight, RotateCw, Frown, Smile } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCw, Frown, Smile, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import { toast } from "sonner";
@@ -39,10 +39,12 @@ export default function FlashCardStudyPage() {
     getCurrentCard,
     hasNext,
     hasPrev,
+    removeCurrentCard,
     reset,
   } = useFlashCardStudyStore();
 
   const [loading, setLoading] = useState(true);
+  const [hiding, setHiding] = useState(false);
 
   const fetchSession = useCallback(async () => {
     setLoading(true);
@@ -92,6 +94,29 @@ export default function FlashCardStudyPage() {
       toast.error(err.response?.data?.error || "Failed to save progress");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleHideFromDeck = async () => {
+    const card = getCurrentCard();
+    if (!card || !deckId || hiding) return;
+
+    setHiding(true);
+    try {
+      await api.post(`/flashcards/decks/${deckId}/hide-card`, {
+        cardId: card.id,
+        hidden: true,
+      });
+      toast.success("Card hidden from this deck");
+      removeCurrentCard();
+      if (cards.length <= 1) {
+        toast.success("Session complete!");
+        router.push("/flashcards");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to hide card");
+    } finally {
+      setHiding(false);
     }
   };
 
@@ -172,28 +197,45 @@ export default function FlashCardStudyPage() {
                   </p>
                 </CardContent>
                 {isFlipped && (
-                  <CardFooter className="flex gap-3 justify-center pb-6 pt-2 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFeedback("needs_review");
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      <Frown className="h-4 w-4 mr-2" />
-                      Needs Review
-                    </Button>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFeedback("got_it");
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      <Smile className="h-4 w-4 mr-2" />
-                      Got It
-                    </Button>
+                  <CardFooter className="flex flex-col gap-3 pb-6 pt-2 border-t">
+                    <div className="flex gap-3 justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFeedback("needs_review");
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        <Frown className="h-4 w-4 mr-2" />
+                        Needs Review
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFeedback("got_it");
+                        }}
+                        disabled={isSubmitting}
+                      >
+                        <Smile className="h-4 w-4 mr-2" />
+                        Got It
+                      </Button>
+                    </div>
+                    {deckId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleHideFromDeck();
+                        }}
+                        disabled={hiding}
+                      >
+                        <EyeOff className="h-4 w-4 mr-2" />
+                        {hiding ? "Hiding..." : "Hide from deck"}
+                      </Button>
+                    )}
                   </CardFooter>
                 )}
               </Card>

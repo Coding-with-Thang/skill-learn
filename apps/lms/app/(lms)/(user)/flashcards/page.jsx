@@ -22,8 +22,11 @@ import {
   AlertCircle,
   Target,
   Sliders,
+  BarChart3,
+  Download,
 } from "lucide-react";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
+import { toast } from "sonner";
 
 export default function FlashCardsHomePage() {
   const router = useRouter();
@@ -43,7 +46,28 @@ export default function FlashCardsHomePage() {
 
   if (loading) return <Loader variant="gif" />;
 
-  const { decks = [], categories = [], recommended = [], stats = {} } = data ?? {};
+  const { decks = [], sharedDecks = [], categories = [], recommended = [], stats = {}, limits = {} } = data ?? {};
+  const { maxDecks, maxCardsPerDeck, currentDeckCount = 0, canCreateDeck = true, subscriptionTier } = limits;
+  const maxDecksLabel = maxDecks < 0 ? "∞" : maxDecks;
+
+  const [acceptingDeckId, setAcceptingDeckId] = useState(null);
+
+  const handleAcceptDeck = async (deckId, e) => {
+    e?.stopPropagation?.();
+    setAcceptingDeckId(deckId);
+    try {
+      await api.post("/flashcards/decks/accept", { deckId });
+      toast.success("Deck added to your collection");
+      api.get("/flashcards/home").then((res) => {
+        const d = res.data?.data ?? res.data;
+        setData(d);
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to accept deck");
+    } finally {
+      setAcceptingDeckId(null);
+    }
+  };
 
   const startStudy = (params = {}) => {
     const q = new URLSearchParams();
@@ -155,47 +179,116 @@ export default function FlashCardsHomePage() {
               My Priorities
             </Button>
           </Link>
+          <Link href="/flashcards/analytics">
+            <Button variant="outline">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              My Analytics
+            </Button>
+          </Link>
         </div>
+
+        {/* Shared Decks (from others in tenant) */}
+        {sharedDecks.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold mb-4">Shared by Others</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Accept a deck to add a copy to your collection. Your copy is independent — changes won&apos;t affect the original.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {sharedDecks.map((deck) => (
+                <Card key={deck.id} className="border-dashed">
+                  <CardContent className="flex items-center justify-between py-4">
+                    <div>
+                      <p className="font-medium">{deck.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {deck.cardCount} cards · by {deck.ownerUsername}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => handleAcceptDeck(deck.id, e)}
+                      disabled={acceptingDeckId === deck.id || !canCreateDeck}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      {acceptingDeckId === deck.id ? "Adding…" : "Accept"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* My Decks */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">My Decks</h2>
-            <Link href="/flashcards/deck-builder">
-              <Button size="sm" variant="outline">
+            <h2 className="text-xl font-semibold">
+              My Decks
+              {maxDecks >= 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  ({currentDeckCount}/{maxDecksLabel})
+                </span>
+              )}
+            </h2>
+            {canCreateDeck ? (
+              <Link href="/flashcards/deck-builder">
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Deck
+                </Button>
+              </Link>
+            ) : (
+              <Button size="sm" variant="outline" disabled title="Deck limit reached. Upgrade your plan.">
                 <Plus className="h-4 w-4 mr-2" />
-                New Deck
+                New Deck (limit reached)
               </Button>
-            </Link>
+            )}
           </div>
           {decks.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 <p>No decks yet. Create one to get started.</p>
-                <Link href="/flashcards/deck-builder">
-                  <Button className="mt-4">Create Deck</Button>
-                </Link>
+                {canCreateDeck ? (
+                  <Link href="/flashcards/deck-builder">
+                    <Button className="mt-4">Create Deck</Button>
+                  </Link>
+                ) : (
+                  <p className="mt-4 text-sm">Deck limit reached. Upgrade your plan for more decks.</p>
+                )}
               </CardContent>
             </Card>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {decks.map((deck) => (
-                <Card
-                  key={deck.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => startStudy({ deckId: deck.id, limit: 25 })}
-                >
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div>
-                      <p className="font-medium">{deck.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {deck.cardIds?.length ?? 0} cards
-                      </p>
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-              ))}
+              {decks.map((deck) => {
+                const visibleCount = (deck.cardIds?.length ?? 0) - (deck.hiddenCardIds?.length ?? 0);
+                return (
+                  <Card
+                    key={deck.id}
+                    className="cursor-pointer hover:shadow-md transition-shadow group"
+                    onClick={() => startStudy({ deckId: deck.id, limit: 25 })}
+                  >
+                    <CardContent className="flex items-center justify-between py-4">
+                      <div>
+                        <p className="font-medium">{deck.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {visibleCount} of {deck.cardIds?.length ?? 0} cards visible
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href={`/flashcards/decks/${deck.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Manage
+                        </Link>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </section>

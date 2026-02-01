@@ -17,7 +17,8 @@
     "prisma:seed": "turbo run prisma:seed",
     "seed:permissions": "node --experimental-modules prisma/seeds/permissions.js",
     "seed:all": "npm run prisma:seed && npm run seed:permissions",
-    "fix:tenant-index": "node packages/database/scripts/fix-tenant-default-role-index.js"
+    "fix:tenant-index": "node packages/database/scripts/fix-tenant-default-role-index.js",
+    "db:push": "node packages/database/scripts/db-push.js"
   },
   "devDependencies": {
     "turbo": "^2.7.5"

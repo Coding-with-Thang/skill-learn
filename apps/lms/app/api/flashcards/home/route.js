@@ -7,7 +7,8 @@ import {
   ErrorType,
 } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
+import { getTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { getFlashCardLimitsFromDb } from "@/lib/flashCardLimits.js";
 
 /**
  * Flash Cards home: continue studying, my decks, browse categories, recommended
@@ -22,29 +23,33 @@ export async function GET() {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const tenantId = await getTenantId();
-    if (!tenantId) {
-      throw new AppError("No tenant assigned", ErrorType.VALIDATION, {
-        status: 400,
-      });
-    }
+    const context = await getTenantContext();
+    if (context instanceof NextResponse) return context;
 
-    const user = await prisma.user.findUnique({
-      where: { clerkId },
-      select: { id: true },
-    });
-    if (!user) {
-      throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
-    }
-
+    const { tenantId, tenant, user } = context;
     const userId = user.id;
+    const tier = tenant?.subscriptionTier || "free";
+    const limits = await getFlashCardLimitsFromDb(prisma, tier);
     const now = new Date();
 
-    const [decks, categories, progressList, adminPriorities] = await Promise.all([
+    const [decks, deckCount, sharedDecks, categories, progressList, adminPriorities] = await Promise.all([
       prisma.flashCardDeck.findMany({
         where: { tenantId, ownerId: userId },
         orderBy: { updatedAt: "desc" },
         take: 10,
+      }),
+      prisma.flashCardDeck.count({ where: { tenantId, ownerId: userId } }),
+      prisma.flashCardDeck.findMany({
+        where: {
+          tenantId,
+          isPublic: true,
+          ownerId: { not: userId },
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 10,
+        include: {
+          owner: { select: { id: true, username: true } },
+        },
       }),
       prisma.flashCardCategory.findMany({
         where: { tenantId },
@@ -121,6 +126,8 @@ export async function GET() {
       companyFocusCount = companyFocusCards.length;
     }
 
+    const companyFocusCategoryIds = Array.from(topAdminCategories);
+
     const recommended = [
       {
         id: "due-today",
@@ -134,9 +141,9 @@ export async function GET() {
         id: "needs-attention",
         type: "virtual",
         name: "Needs Attention",
-        description: "Low mastery cards",
+        description: "Low mastery, high exposure cards",
         cardCount: needsAttentionCount,
-        studyParams: { limit: 25 }, // Filtered by low mastery in study-session
+        studyParams: { virtualDeck: "needs_attention", limit: 25 },
       },
       {
         id: "company-focus",
@@ -144,18 +151,36 @@ export async function GET() {
         name: "Company Focus",
         description: "Admin-priority categories",
         cardCount: companyFocusCount,
-        studyParams: { categoryIds: topAdminCategories, limit: 25 },
+        studyParams: {
+          categoryIds: companyFocusCategoryIds,
+          virtualDeck: "company_focus",
+          limit: 25,
+        },
       },
     ];
 
     return successResponse({
       decks,
+      sharedDecks: sharedDecks.map((d) => ({
+        id: d.id,
+        name: d.name,
+        description: d.description,
+        cardCount: d.cardIds?.length ?? 0,
+        ownerUsername: d.owner?.username ?? "Unknown",
+      })),
       categories,
       recommended,
       stats: {
         dueToday: dueTodayCount,
         needsAttention: needsAttentionCount,
         companyFocus: companyFocusCount,
+      },
+      limits: {
+        maxDecks: limits.maxDecks,
+        maxCardsPerDeck: limits.maxCardsPerDeck,
+        currentDeckCount: deckCount,
+        canCreateDeck: limits.maxDecks < 0 || deckCount < limits.maxDecks,
+        subscriptionTier: tier,
       },
     });
   } catch (error) {

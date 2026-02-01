@@ -52,6 +52,21 @@ export const useFlashCardStudyStore = create((set, get) => ({
     return currentIndex > 0;
   },
 
+  removeCurrentCard: () =>
+    set((s) => {
+      if (s.cards.length === 0) return s;
+      const next = s.cards.filter((_, i) => i !== s.currentIndex);
+      const newIndex =
+        s.currentIndex >= next.length
+          ? Math.max(0, next.length - 1)
+          : s.currentIndex;
+      return {
+        cards: next,
+        currentIndex: newIndex,
+        isFlipped: false,
+      };
+    }),
+
   reset: () =>
     set({
       cards: [],

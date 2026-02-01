@@ -94,6 +94,22 @@ const getNavData = () => ({
               title: "Priorities & Settings",
               url: "/dashboard/flashcards-priorities",
             },
+            {
+              title: "Manage Cards",
+              url: "/dashboard/flashcards-cards",
+            },
+            {
+              title: "Manage Categories",
+              url: "/dashboard/flashcards-categories",
+            },
+            {
+              title: "Bulk Import",
+              url: "/dashboard/flashcards-import",
+            },
+            {
+              title: "Learning Analytics",
+              url: "/dashboard/flashcards-learning-analytics",
+            },
           ],
         },
       ],

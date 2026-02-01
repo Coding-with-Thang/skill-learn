@@ -34,6 +34,7 @@ export default function CreateFlashCardPage() {
   const [answer, setAnswer] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [tags, setTags] = useState("");
+  const [difficulty, setDifficulty] = useState("");
 
   useEffect(() => {
     api
@@ -66,6 +67,7 @@ export default function CreateFlashCardPage() {
               .map((t) => t.trim())
               .filter(Boolean)
           : [],
+        difficulty: difficulty || null,
       });
       toast.success("Card created");
       router.push("/flashcards");
@@ -152,6 +154,23 @@ export default function CreateFlashCardPage() {
                   rows={3}
                   required
                 />
+              </div>
+              <div>
+                <Label htmlFor="difficulty">Difficulty (optional)</Label>
+                <Select value={difficulty} onValueChange={setDifficulty}>
+                  <SelectTrigger id="difficulty" className="mt-1">
+                    <SelectValue placeholder="None (always show)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None (always show)</SelectItem>
+                    <SelectItem value="easy">Easy</SelectItem>
+                    <SelectItem value="good">Good</SelectItem>
+                    <SelectItem value="hard">Hard</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cards with no difficulty always appear in study. Set a level to filter by difficulty.
+                </p>
               </div>
               <div>
                 <Label htmlFor="tags">Tags (comma-separated, optional)</Label>

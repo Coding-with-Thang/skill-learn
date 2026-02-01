@@ -632,7 +632,7 @@ model FlashCard {
   createdRole  String   // "admin" | "user"
   isPublic     Boolean  @default(false)
   tags         String[] @default([])
-  difficulty   Int?     // Optional 1-5
+  difficulty   String?  // "easy" | "good" | "hard" | null; null = always show
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -676,9 +676,11 @@ model FlashCardDeck {
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   name        String
   description String?
-  cardIds     String[] @default([]) // FlashCard ids
-  categoryIds String[] @default([]) // Optional helper for display
-  createdAt   DateTime @default(now())
+  isPublic    Boolean  @default(false) // Share with tenant so others can accept a copy
+  cardIds      String[] @default([]) // FlashCard ids
+  hiddenCardIds String[] @default([]) // Cards hidden from study in this deck
+  categoryIds  String[] @default([]) // Optional helper for display
+  createdAt    DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([tenantId])
@@ -800,5 +802,16 @@ model FlashCardCategoryPrioritySuggestion {
   @@index([tenantId])
   @@index([categoryId])
   @@map("flash_card_category_priority_suggestions")
+}
+
+// Platform-wide flash card limits by subscription tier (super admin manages)
+model FlashCardTierLimit {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  tier            String   @unique // free, starter, pro, enterprise
+  maxDecks        Int      // -1 = unlimited
+  maxCardsPerDeck Int
+  updatedAt       DateTime @updatedAt
+
+  @@map("flash_card_tier_limits")
 }
 

@@ -124,6 +124,16 @@ const DEFAULT_FEATURES = [
     icon: "Shield",
     sortOrder: 12,
   },
+  {
+    key: "flash_cards",
+    name: "Flash Cards",
+    description: "Spaced repetition flash cards for learning",
+    category: "learning",
+    defaultEnabled: true,
+    isActive: true,
+    icon: "Layers",
+    sortOrder: 13,
+  },
 ];
 
 /**
