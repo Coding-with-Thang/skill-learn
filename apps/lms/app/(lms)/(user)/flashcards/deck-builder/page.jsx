@@ -59,16 +59,24 @@ export default function DeckBuilderPage() {
 
         const cats = results[0].data?.data?.categories ?? results[0].data?.categories ?? [];
         const cards = results[1].data?.data?.cards ?? results[1].data?.cards ?? [];
-        const lim = results[2].data?.data ?? results[2].data ?? {};
+        const raw = results[2].data?.data ?? results[2].data ?? {};
         const deckData = deckId && results[3]
           ? (results[3].data?.data?.deck ?? results[3].data?.deck)
           : null;
 
+        // Normalize: LMS /flashcards/limits returns limits as object; CMS /flashcard-tier-limits returns limits as array
+        const limitsArr = Array.isArray(raw.limits) ? raw.limits : null;
+        const limitsObj = limitsArr
+          ? limitsArr.find((l) => l.tier === (raw.subscriptionTier || "free")) ?? limitsArr[0]
+          : raw.limits;
+        const maxDecks = limitsObj?.maxDecks ?? -1;
+        const maxCardsPerDeck = limitsObj?.maxCardsPerDeck ?? -1;
+
         setCategories(cats);
         setLimits({
-          maxDecks: lim.limits?.maxDecks ?? -1,
-          maxCardsPerDeck: lim.limits?.maxCardsPerDeck ?? -1,
-          canCreateDeck: lim.canCreateDeck !== false,
+          maxDecks,
+          maxCardsPerDeck,
+          canCreateDeck: raw.canCreateDeck !== false,
         });
 
         const byCat = {};
@@ -218,15 +226,13 @@ export default function DeckBuilderPage() {
                         {cards.map((c) => (
                           <div
                             key={c.id}
-                            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                              atCardLimit && !isSelected(c.id)
+                            className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${atCardLimit && !isSelected(c.id)
                                 ? "cursor-not-allowed opacity-60 border-border"
                                 : "cursor-pointer"
-                            } ${
-                              isSelected(c.id)
+                              } ${isSelected(c.id)
                                 ? "border-primary bg-primary/5"
                                 : "border-border hover:bg-muted/50"
-                            }`}
+                              }`}
                             onClick={() => {
                               if (atCardLimit && !isSelected(c.id)) {
                                 toast.error(`Deck limit: ${limits.maxCardsPerDeck} cards max. Upgrade your plan for larger decks.`);
@@ -236,9 +242,8 @@ export default function DeckBuilderPage() {
                             }}
                           >
                             <div
-                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
-                                isSelected(c.id) ? "border-primary bg-primary" : "border-muted"
-                              }`}
+                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border ${isSelected(c.id) ? "border-primary bg-primary" : "border-muted"
+                                }`}
                             >
                               {isSelected(c.id) ? (
                                 <Check className="h-3 w-3 text-primary-foreground" />

@@ -72,10 +72,18 @@ export default function CreateFlashCardPage() {
         const cats = catRes.data?.data?.categories ?? catRes.data?.categories ?? [];
         setCategories(cats);
         if (cats.length && !categoryId) setCategoryId(cats[0].id);
-        const lim = limitRes.data?.data?.limits ?? limitRes.data?.limits;
-        const tier = limitRes.data?.data?.subscriptionTier ?? limitRes.data?.subscriptionTier ?? "";
+        const data = limitRes.data?.data ?? limitRes.data ?? {};
+        const tier = data.subscriptionTier ?? "";
         setSubscriptionTier(tier);
-        const batch = lim?.maxCardsPerBatch ?? (lim?.maxCardsPerDeck >= 0 ? lim.maxCardsPerDeck : 500);
+        // Normalize: LMS /flashcards/limits returns limits as object; CMS format returns limits as array
+        const rawLimits = data.limits;
+        const limitsObj = Array.isArray(rawLimits)
+          ? rawLimits.find((l) => l.tier === tier) ?? rawLimits[0]
+          : rawLimits;
+        const maxCardsPerDeck = limitsObj?.maxCardsPerDeck;
+        const batch =
+          limitsObj?.maxCardsPerBatch ??
+          (typeof maxCardsPerDeck === "number" && maxCardsPerDeck >= 0 ? maxCardsPerDeck : 500);
         if (batch != null && batch > 0) setBatchLimit(batch);
       })
       .catch(() => toast.error("Failed to load data"))
