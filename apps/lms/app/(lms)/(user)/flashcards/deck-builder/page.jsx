@@ -89,7 +89,7 @@ export default function DeckBuilderPage() {
         setCardsByCategory(byCat);
 
         if (deckData) {
-          setDeckName(deckData.name);
+          setDeckName(deckData.name ?? "");
           setDeckDescription(deckData.description ?? "");
           setSelectedCards(deckData.cardIds ?? []);
         }
@@ -106,7 +106,8 @@ export default function DeckBuilderPage() {
   const atCardLimit = getSelectedIds().length >= maxCards;
 
   const handleSave = async () => {
-    if (!deckName.trim()) {
+    const name = (deckName ?? "").trim();
+    if (!name) {
       toast.error("Deck name is required");
       return;
     }
@@ -129,16 +130,16 @@ export default function DeckBuilderPage() {
 
       if (isEdit) {
         await api.patch(`/flashcards/decks/${deckId}`, {
-          name: deckName.trim(),
-          description: deckDescription.trim() || undefined,
+          name,
+          description: (deckDescription ?? "").trim() || undefined,
           cardIds,
           categoryIds,
         });
         toast.success("Deck updated");
       } else {
         await api.post("/flashcards/decks", {
-          name: deckName.trim(),
-          description: deckDescription.trim() || undefined,
+          name,
+          description: (deckDescription ?? "").trim() || undefined,
           cardIds,
           categoryIds,
         });
@@ -227,8 +228,8 @@ export default function DeckBuilderPage() {
                           <div
                             key={c.id}
                             className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${atCardLimit && !isSelected(c.id)
-                                ? "cursor-not-allowed opacity-60 border-border"
-                                : "cursor-pointer"
+                              ? "cursor-not-allowed opacity-60 border-border"
+                              : "cursor-pointer"
                               } ${isSelected(c.id)
                                 ? "border-primary bg-primary/5"
                                 : "border-border hover:bg-muted/50"
