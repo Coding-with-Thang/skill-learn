@@ -17,7 +17,6 @@ import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/sto
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
 import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
-import { useUser } from '@clerk/nextjs'
 import { useEffect } from 'react'
 
 export default function TopBar() {
@@ -25,7 +24,6 @@ export default function TopBar() {
   const { theme, toggleTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
-  const { user } = useUser()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
 

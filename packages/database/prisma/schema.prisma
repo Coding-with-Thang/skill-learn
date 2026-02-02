@@ -12,6 +12,8 @@ enum Role {
   MANAGER
   AGENT
   USER
+  OPERATIONS
+  OWNER
 }
 
 model User {
@@ -316,15 +318,6 @@ enum CourseStatus {
   Published
   Draft
   Achieved
-}
-
-// Legacy role enum (used for backward compatibility with existing code)
-// Note: New role assignments should use TenantRole/UserRole through tenant infrastructure
-enum Role {
-  AGENT
-  MANAGER
-  OPERATIONS
-  OWNER
 }
 
 // ============================================
