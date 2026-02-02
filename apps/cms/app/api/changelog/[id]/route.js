@@ -9,7 +9,7 @@ import { slugify } from "@skill-learn/lib/utils/utils.js";
  */
 export async function GET(request, { params }) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const changelog = await prisma.changelog.findUnique({
       where: { id }
@@ -43,7 +43,7 @@ export async function PATCH(request, { params }) {
       return adminResult;
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     
     // Auto-update slug if title changes
@@ -87,7 +87,7 @@ export async function DELETE(request, { params }) {
       return adminResult;
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await prisma.changelog.delete({
       where: { id }
