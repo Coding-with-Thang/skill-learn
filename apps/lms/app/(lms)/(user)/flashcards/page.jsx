@@ -156,7 +156,7 @@ export default function FlashCardsHomePage() {
               <Link href="/flashcards/create-card">
                 <Button size="lg" className="h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 border-none px-10 font-bold text-white shadow-lg shadow-cyan-500/20 text-lg">
                   <Plus className="mr-2 h-5 w-5" />
-                  Create New Deck
+                  Create Cards
                 </Button>
               </Link>
               <Link href="/flashcards/decks">

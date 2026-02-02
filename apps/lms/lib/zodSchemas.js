@@ -350,10 +350,11 @@ export const flashCardDifficultySchema = z.enum(["easy", "good", "hard"]).nullab
 
 export const flashCardStudySessionSchema = z.object({
   deckId: objectIdSchema.optional(),
+  deckIds: z.array(objectIdSchema).optional(), // Multiple decks combined
   categoryIds: z.array(objectIdSchema).optional(),
   virtualDeck: z.enum(["due_today", "needs_attention", "company_focus"]).optional(),
   difficulties: z.array(z.enum(["easy", "good", "hard"])).optional(), // null cards always included
-  limit: z.number().int().min(1).max(50).optional().default(25),
+  limit: z.number().int().min(1).max(200).optional().default(25),
 });
 
 export const flashCardProgressSchema = z.object({

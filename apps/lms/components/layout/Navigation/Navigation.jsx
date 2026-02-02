@@ -36,9 +36,16 @@ export function Navigation({ isOperations, mobile }) {
         </NavLink>
       ))}
       {isOperations && (
-        <NavLink href="/dashboard" icon={LayoutDashboard} mobile={mobile}>
-          Dashboard
-        </NavLink>
+        <>
+          {mobile ? (
+            <div className="h-px w-full bg-border/50 my-2" />
+          ) : (
+            <div className="h-4 w-px bg-border/60 ml-2 mr-4" />
+          )}
+          <NavLink href="/dashboard" icon={LayoutDashboard} mobile={mobile} variant="primary">
+            Admin Dashboard
+          </NavLink>
+        </>
       )}
     </nav>
   );

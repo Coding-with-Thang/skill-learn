@@ -67,8 +67,9 @@ export async function POST(req) {
     );
     if (permResult instanceof NextResponse) return permResult;
 
-    const { deckId, categoryIds, virtualDeck, difficulties, limit = DEFAULT_LIMIT } =
-      await validateRequestBody(req, flashCardStudySessionSchema);
+    const body = await validateRequestBody(req, flashCardStudySessionSchema);
+    const { categoryIds, virtualDeck, difficulties, limit = DEFAULT_LIMIT } = body;
+    const deckIds = body.deckIds?.length ? body.deckIds : body.deckId ? [body.deckId] : null;
 
     const user = await prisma.user.findUnique({
       where: { clerkId },
@@ -85,19 +86,21 @@ export async function POST(req) {
 
     let hiddenInDeck = new Set();
 
-    if (deckId) {
-      const deck = await prisma.flashCardDeck.findFirst({
-        where: { id: deckId, tenantId, ownerId: userId },
+    if (deckIds?.length) {
+      const decks = await prisma.flashCardDeck.findMany({
+        where: { id: { in: deckIds }, tenantId, ownerId: userId },
       });
-      if (!deck) {
-        throw new AppError("Deck not found", ErrorType.NOT_FOUND, {
+      if (decks.length !== deckIds.length) {
+        throw new AppError("One or more decks not found", ErrorType.NOT_FOUND, {
           status: 404,
         });
       }
-      (deck.hiddenCardIds ?? []).forEach((id) => hiddenInDeck.add(id));
-      deck.cardIds.forEach((id) => {
-        if (!hiddenInDeck.has(id)) cardIds.add(id);
-      });
+      for (const deck of decks) {
+        (deck.hiddenCardIds ?? []).forEach((id) => hiddenInDeck.add(id));
+        deck.cardIds.forEach((id) => {
+          if (!hiddenInDeck.has(id)) cardIds.add(id);
+        });
+      }
     } else {
       // Owned cards (createdBy = userId)
       const owned = await prisma.flashCard.findMany({

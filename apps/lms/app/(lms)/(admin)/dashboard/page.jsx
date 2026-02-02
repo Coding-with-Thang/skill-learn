@@ -40,85 +40,85 @@ export default async function DashboardPage() {
   } = stats || {};
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Total Users */}
-        <Card className="shadow-sm border-none bg-card">
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all group">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-                <h3 className="text-3xl font-bold mt-2">{totalUsers.value.toLocaleString()}</h3>
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Total Users</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{totalUsers.value.toLocaleString()}</h3>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="p-3 bg-primary/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
-            <div className="flex items-center mt-4">
-              <TrendingUp className={`w-4 h-4 ${totalUsers.trend >= 0 ? 'text-green-500' : 'text-red-500'} mr-1`} />
-              <span className={`text-sm font-medium ${totalUsers.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="flex items-center mt-6">
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${totalUsers.trend >= 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                <TrendingUp className={`w-3 h-3 ${totalUsers.trend < 0 ? 'rotate-180' : ''}`} />
                 {Math.abs(totalUsers.trend).toFixed(1)}%
-              </span>
-              <span className="text-sm text-muted-foreground ml-2">increase from last month</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground ml-2 font-medium">vs last month</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Active Rewards */}
-        <Card className="shadow-sm border-none bg-card">
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-violet-500/30 transition-all group">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Active Rewards</p>
-                <h3 className="text-3xl font-bold mt-2">{activeRewards.value}</h3>
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Active Rewards</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{activeRewards.value}</h3>
               </div>
-              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
-                <Gift className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <div className="p-3 bg-violet-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                <Gift className="w-6 h-6 text-violet-500" />
               </div>
             </div>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-muted-foreground">Active in global catalog</span>
+            <div className="flex items-center mt-6">
+              <span className="text-[11px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Global Catalog</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Points Awarded */}
-        <Card className="shadow-sm border-none bg-card">
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-amber-500/30 transition-all group">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Points Awarded</p>
-                <h3 className="text-3xl font-bold mt-2">{totalPointsAwarded.value.toLocaleString()}</h3>
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Points Awarded</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{totalPointsAwarded.value.toLocaleString()}</h3>
               </div>
-              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
-                <Star className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              <div className="p-3 bg-amber-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                <Star className="w-6 h-6 text-amber-500" />
               </div>
             </div>
-            <div className="flex items-center mt-4">
-              <TrendingUp className={`w-4 h-4 ${totalPointsAwarded.trend >= 0 ? 'text-green-500' : 'text-red-500'} mr-1`} />
-              <span className={`text-sm font-medium ${totalPointsAwarded.trend >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <div className="flex items-center mt-6">
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold ${totalPointsAwarded.trend >= 0 ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                <TrendingUp className={`w-3 h-3 ${totalPointsAwarded.trend < 0 ? 'rotate-180' : ''}`} />
                 {Math.abs(totalPointsAwarded.trend).toFixed(1)}%
-              </span>
-              <span className="text-sm text-muted-foreground ml-2">more than last month</span>
+              </div>
+              <span className="text-[11px] text-muted-foreground ml-2 font-medium">Growth rate</span>
             </div>
           </CardContent>
         </Card>
 
         {/* Rewards Claimed */}
-        <Card className="shadow-sm border-none bg-card">
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-emerald-500/30 transition-all group">
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Rewards Claimed</p>
-                <h3 className="text-3xl font-bold mt-2">{rewardsClaimed.value}</h3>
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Rewards Claimed</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{rewardsClaimed.value}</h3>
               </div>
-              <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div className="p-3 bg-emerald-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="w-6 h-6 text-emerald-500" />
               </div>
             </div>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-muted-foreground">Last claim 2m ago</span>
+            <div className="flex items-center mt-6">
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-pulse">Live: 2m ago</span>
             </div>
           </CardContent>
         </Card>
@@ -129,33 +129,37 @@ export default async function DashboardPage() {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* User Activity - Takes up 2/3 */}
-        <Card className="lg:col-span-2 shadow-sm border-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div className="space-y-1">
-              <CardTitle>User Activity</CardTitle>
+        <Card className="lg:col-span-2 shadow-none border border-border/50 bg-card/30 backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
+            <div className="space-y-0.5">
+              <CardTitle className="text-lg font-bold">User Activity</CardTitle>
+              <CardDescription>Daily engagement metrics</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="h-8 gap-1">
-              Last 7 Days <ChevronDown className="h-3 w-3" />
+            <Button variant="outline" size="sm" className="h-9 rounded-xl gap-2 font-semibold">
+              Last 7 Days <ChevronDown className="h-4 w-4" />
             </Button>
           </CardHeader>
-          <CardContent className="pl-0">
-            <LineChart data={userActivity} />
+          <CardContent className="p-6 pt-4">
+            <div className="h-[300px] w-full">
+              <LineChart data={userActivity} />
+            </div>
           </CardContent>
         </Card>
 
-        {/* Points Distribution */}
-        <Card className="shadow-sm border-none">
-          <CardHeader>
-            <CardTitle>Points Distribution</CardTitle>
+        <Card className="shadow-none border border-border/50 bg-card/30 backdrop-blur-sm">
+          <CardHeader className="border-b border-border/30 pb-4">
+            <CardTitle className="text-lg font-bold">Points Distribution</CardTitle>
+            <CardDescription>Usage across categories</CardDescription>
           </CardHeader>
-          <CardContent>
-            <PieChart data={pointsDistribution} />
-            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+          <CardContent className="p-6">
+            <div className="h-[200px] w-full">
+              <PieChart data={pointsDistribution} />
+            </div>
+            <div className="mt-8 grid grid-cols-2 gap-3">
               {Array.isArray(pointsDistribution) && pointsDistribution.slice(0, 4).map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"][index % 4] }}></div>
-                  <span className="truncate text-muted-foreground">{item.category}</span>
+                <div key={index} className="flex items-center gap-3 p-2 rounded-xl bg-muted/30 border border-border/20">
+                  <div className={`w-2.5 h-2.5 rounded-full ring-2 ring-background`} style={{ backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"][index % 4] }}></div>
+                  <span className="text-[11px] font-bold text-muted-foreground truncate">{item.category}</span>
                 </div>
               ))}
             </div>
@@ -163,43 +167,45 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Category Performance */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold">Category Performance</h2>
-            <span className="text-sm text-muted-foreground">Course & Quiz Metrics</span>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-1">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold tracking-tight">Category Performance</h2>
+              <p className="text-sm text-muted-foreground">Course completion & scoring efficiency</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Array.isArray(categoryPerformance) && categoryPerformance.map((category) => (
-              <Card key={category.category} className="shadow-sm border-none">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <Card key={category.category} className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+                <div className={`h-1.5 w-full ${category.averageScore >= 80 ? 'bg-emerald-500' : category.averageScore >= 50 ? 'bg-amber-500' : 'bg-rose-500 opacity-50'}`} />
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-primary/5 rounded-2xl group-hover:bg-primary/10 transition-colors">
+                        <BookOpen className="h-5 w-5 text-primary" />
                       </div>
-                      <h3 className="font-semibold truncate max-w-[120px] sm:max-w-none">{category.category}</h3>
+                      <h3 className="font-bold text-base truncate tracking-tight">{category.category}</h3>
                     </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${category.averageScore >= 80 ? 'bg-green-100 text-green-700' :
-                      category.averageScore >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                      {category.averageScore >= 80 ? 'High Performing' : category.averageScore >= 50 ? 'Average' : 'Needs Attn.'}
-                    </span>
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-muted-foreground">Combined Completion</span>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Completion</span>
+                        <span className="text-sm font-black text-primary">{Math.round(category.completionRate)}%</span>
                       </div>
-                      <Progress value={category.completionRate} className="h-2" />
+                      <Progress value={category.completionRate} className="h-2 rounded-full bg-muted/50" indicatorClassName="bg-primary shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
                     </div>
 
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-sm text-muted-foreground">Avg. Quiz Score</span>
-                      <span className="text-lg font-bold">{category.averageScore.toFixed(1)}%</span>
+                    <div className="flex justify-between items-center pt-2 border-t border-border/30">
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Avg. Score</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black">{category.averageScore.toFixed(0)}</span>
+                        <span className="text-sm font-bold text-muted-foreground">%</span>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -209,31 +215,33 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Recent Activity</h2>
-          <Card className="shadow-sm border-none h-auto">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-base">Activity Log</CardTitle>
-              <Link href="/dashboard/audit-logs" className="text-sm text-blue-600 hover:underline">View All</Link>
-            </CardHeader>
-            <CardContent className="space-y-6">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xl font-bold tracking-tight">Activity</h2>
+            <Link href="/dashboard/audit-logs" className="text-xs font-bold text-primary hover:underline bg-primary/5 px-3 py-1.5 rounded-full">View Logs</Link>
+          </div>
+          <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardContent className="p-6 space-y-6">
               {Array.isArray(recentActivity) && recentActivity.map((activity, index) => (
-                <div key={activity.id} className="flex gap-3 sm:gap-4 overflow-hidden">
-                  <Avatar className="h-9 w-9 shrink-0">
+                <div key={activity.id} className="relative flex gap-4 last:mb-0 group cursor-default">
+                  {index !== recentActivity.length - 1 && (
+                    <div className="absolute left-4.5 top-10 bottom-0 w-px bg-border group-last:hidden" />
+                  )}
+                  <Avatar className="h-10 w-10 shrink-0 border-2 border-background ring-4 ring-muted/20">
                     {activity.userImage && <AvatarImage src={activity.userImage} alt={activity.user} />}
-                    <AvatarFallback>{activity.user.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    <AvatarFallback className="bg-primary/5 text-primary font-bold">{activity.user.substring(0, 2).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 space-y-1 min-w-0">
+                  <div className="flex-1 space-y-1.5 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium leading-none truncate">{activity.user}</p>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{activity.user}</p>
+                      <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap px-2 py-0.5 rounded-full bg-muted/50">
                         {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground uppercase">{activity.role}</p>
-                    <p className="text-sm text-muted-foreground wrap-break-word line-clamp-2">{activity.action}</p>
+                    <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{activity.role}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{activity.action}</p>
                     <div className="pt-1">
-                      <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold">COMPLETE</span>
+                      <span className="bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">COMPLETE</span>
                     </div>
                   </div>
                 </div>

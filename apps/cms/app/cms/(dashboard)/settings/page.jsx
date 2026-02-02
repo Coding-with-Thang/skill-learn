@@ -21,6 +21,11 @@ export default function SettingsPage() {
 
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
+      {/* Breadcrumb */}
+      <div className="text-sm text-muted-foreground">
+        Dashboard / <span className="text-foreground">System Configuration</span>
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -42,8 +47,8 @@ export default function SettingsPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id
-                    ? 'bg-primary/10 text-primary'
-                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary/10 text-primary'
+                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
                   }`}
               >
                 <Icon className="h-4 w-4" />

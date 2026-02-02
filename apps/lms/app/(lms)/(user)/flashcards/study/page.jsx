@@ -1,47 +1,40 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
 import api from "@skill-learn/lib/utils/axios.js";
 import { useFlashCardStudyStore } from "@skill-learn/lib/stores/flashCardStudyStore.js";
+import StudySetupView from "@/components/flashcards/StudySetupView";
+import StudyResultsView from "@/components/flashcards/StudyResultsView";
 import { Card } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Loader } from "@skill-learn/ui/components/loader";
-import { Progress } from "@skill-learn/ui/components/progress";
 import { Avatar, AvatarImage, AvatarFallback } from "@skill-learn/ui/components/avatar";
 import {
   ChevronLeft,
   RotateCw,
-  Frown,
-  Smile,
   EyeOff,
   Zap,
   GraduationCap,
   Lightbulb,
   CheckCircle2,
   Clock,
-  ExternalLink
+  Shuffle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 import { cn } from "@skill-learn/lib/utils.js";
 
 export default function FlashCardStudyPage() {
   const router = useRouter();
   const { user } = useUser();
   const searchParams = useSearchParams();
-  const deckId = searchParams.get("deckId");
-  const virtualDeck = searchParams.get("virtualDeck");
-  const limit = parseInt(searchParams.get("limit") || "25", 10);
 
   const {
     cards,
     currentIndex,
     isFlipped,
     isSubmitting,
-    totalDue,
     setCards,
     nextCard,
     prevCard,
@@ -52,63 +45,127 @@ export default function FlashCardStudyPage() {
     hasPrev,
     removeCurrentCard,
     reset,
+    loopToStart,
+    shuffleCards,
   } = useFlashCardStudyStore();
 
-  const [loading, setLoading] = useState(true);
+  const [sessionConfig, setSessionConfig] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [hiding, setHiding] = useState(false);
   const [deckName, setDeckName] = useState("Flash Cards Session");
   const [streak, setStreak] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState(null);
+  const timerRef = useRef(null);
+  const [showResults, setShowResults] = useState(false);
+  const [sessionStats, setSessionStats] = useState({ studied: 0, correct: 0 });
+  const [uniqueCardIdsShown, setUniqueCardIdsShown] = useState(new Set());
+  const [lastFeedback, setLastFeedback] = useState(null);
+  const [startError, setStartError] = useState(null);
+  const [hidingError, setHidingError] = useState(false);
 
-  const fetchSessionData = useCallback(async () => {
+  const handleStartSession = useCallback(async (config) => {
     setLoading(true);
+    setStartError(null);
+    setSessionConfig(config);
     try {
-      // 1. Fetch Session Cards
-      const body = { limit };
-      if (deckId) body.deckId = deckId;
-      if (virtualDeck) body.virtualDeck = virtualDeck;
-      const catIds = searchParams.get("categoryIds");
-      if (catIds) body.categoryIds = catIds.split(",").filter(Boolean);
+      const body = { limit: config.limit ?? 50 };
+      if (config.deckIds?.length) {
+        if (config.deckIds.length === 1) {
+          body.deckId = config.deckIds[0];
+        } else {
+          body.deckIds = config.deckIds;
+        }
+      }
+      if (config.virtualDeck) body.virtualDeck = config.virtualDeck;
+      if (config.categoryIds?.length) body.categoryIds = config.categoryIds;
 
       const sessionRes = await api.post("/flashcards/study-session", body);
       const sessionData = sessionRes.data?.data ?? sessionRes.data;
-      setCards(sessionData.cards ?? [], sessionData.totalDue ?? 0, sessionData.totalNew ?? 0);
+      const sessionCards = sessionData.cards ?? [];
+      setCards(sessionCards, sessionData.totalDue ?? 0, sessionData.totalNew ?? 0);
 
-      // 2. Fetch Deck Name if applicable
-      if (deckId) {
-        const deckRes = await api.get(`/flashcards/decks/${deckId}`);
-        setDeckName(deckRes.data?.data?.deck?.name || "Flash Cards Session");
-      } else if (virtualDeck) {
-        const labels = {
-          due_today: "Due Today",
-          needs_attention: "Needs Attention",
-          company_focus: "Company Focus"
-        };
-        setDeckName(labels[virtualDeck] || "Smart Session");
+      if (sessionCards.length === 0) {
+        setSessionConfig(null);
+        setStartError("No cards to study in the selected content.");
+        return;
       }
 
-      // 3. Fetch User Streak
+      setSessionStats({ studied: 0, correct: 0 });
+      setUniqueCardIdsShown(new Set());
+      setShowResults(false);
+
+      if (config.deckIds?.length === 1) {
+        const deckRes = await api.get(`/flashcards/decks/${config.deckIds[0]}`);
+        setDeckName(deckRes.data?.data?.deck?.name || "Flash Cards Session");
+      } else if (config.deckIds?.length > 1) {
+        setDeckName(`${config.deckIds.length} Decks`);
+      } else if (config.virtualDeck) {
+        const labels = { due_today: "Due Today", needs_attention: "Needs Attention", company_focus: "Company Focus" };
+        setDeckName(labels[config.virtualDeck] || "Smart Session");
+      }
+
       const userRes = await api.get("/user");
       setStreak(userRes.data?.data?.user?.currentStreak || 0);
 
+      if (config.mode === "time" && config.durationMinutes) {
+        setTimeLeftSeconds(config.durationMinutes * 60);
+      } else {
+        setTimeLeftSeconds(null);
+      }
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load study session");
-      router.push("/flashcards");
+      setSessionConfig(null);
+      setStartError(err.response?.data?.error || "Failed to load study session.");
     } finally {
       setLoading(false);
     }
-  }, [deckId, virtualDeck, searchParams, limit, setCards, router]);
+  }, [setCards]);
+
+  // Timer countdown for time-based mode
+  useEffect(() => {
+    if (sessionConfig?.mode !== "time" || timeLeftSeconds == null || timeLeftSeconds <= 0) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeftSeconds((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [sessionConfig?.mode, timeLeftSeconds]);
 
   useEffect(() => {
-    fetchSessionData();
+    if (sessionConfig?.mode === "time" && timeLeftSeconds === 0) {
+      setShowResults(true);
+    }
+  }, [sessionConfig?.mode, timeLeftSeconds]);
+
+  useEffect(() => {
     return () => reset();
-  }, [fetchSessionData, reset]);
+  }, [reset]);
+
+  // Track unique cards flipped to view answer
+  useEffect(() => {
+    if (isFlipped) {
+      const card = getCurrentCard();
+      if (card?.id) {
+        setUniqueCardIdsShown((prev) => {
+          if (prev.has(card.id)) return prev;
+          return new Set(prev).add(card.id);
+        });
+      }
+    }
+  }, [isFlipped, getCurrentCard]);
 
   const handleFeedback = useCallback(async (feedback) => {
     const card = getCurrentCard();
     if (!card || isSubmitting) return;
 
     setSubmitting(true);
+    const isCorrect = feedback === "got_it" || feedback === "mastered";
+    setSessionStats((s) => ({
+      studied: s.studied + 1,
+      correct: s.correct + (isCorrect ? 1 : 0),
+    }));
+
     try {
       await api.post("/flashcards/progress", {
         flashCardId: card.id,
@@ -126,19 +183,27 @@ export default function FlashCardStudyPage() {
       if (hasNext()) {
         setShowHint(false);
         nextCard();
+      } else if (sessionConfig?.mode === "infinite") {
+        setShowHint(false);
+        loopToStart();
       } else {
-        toast.success("Session complete!");
-        router.push("/flashcards");
+        setShowResults(true);
       }
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to save progress");
+      setSessionStats((s) => ({
+        studied: Math.max(0, s.studied - 1),
+        correct: Math.max(0, s.correct - (isCorrect ? 1 : 0)),
+      }));
+      setLastFeedback("error");
+      setTimeout(() => setLastFeedback(null), 2000);
     } finally {
       setSubmitting(false);
     }
-  }, [getCurrentCard, isSubmitting, setSubmitting, hasNext, nextCard, router]);
+  }, [getCurrentCard, isSubmitting, setSubmitting, hasNext, nextCard, loopToStart, sessionConfig?.mode]);
 
-  // Keyboard Shortcuts
+  // Keyboard Shortcuts (only active when sessionConfig is set)
   useEffect(() => {
+    if (!sessionConfig) return;
     const handleKeyDown = (e) => {
       if (loading || isSubmitting) return;
       if (e.code === "Space") {
@@ -152,7 +217,35 @@ export default function FlashCardStudyPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [loading, isSubmitting, isFlipped, flip, handleFeedback]);
+  }, [sessionConfig, loading, isSubmitting, isFlipped, flip, handleFeedback]);
+
+  if (!sessionConfig) {
+    return (
+      <StudySetupView
+        searchParams={Object.fromEntries(searchParams?.entries() ?? [])}
+        onStart={handleStartSession}
+        error={startError}
+        onClearError={() => setStartError(null)}
+      />
+    );
+  }
+
+  if (showResults) {
+    return (
+      <StudyResultsView
+        stats={{ ...sessionStats, uniqueShown: uniqueCardIdsShown.size }}
+        deckName={deckName}
+        streak={streak}
+        onReview={() => {
+          setShowResults(false);
+          setSessionStats({ studied: 0, correct: 0 });
+          setUniqueCardIdsShown(new Set());
+          reset();
+          handleStartSession(sessionConfig);
+        }}
+      />
+    );
+  }
 
   if (loading) return <Loader variant="gif" />;
 
@@ -161,18 +254,18 @@ export default function FlashCardStudyPage() {
 
   if (!card && cards.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-background">
-        <div className="text-center space-y-4 max-w-md">
-          <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-primary" />
-          </div>
-          <h2 className="text-3xl font-bold">Session Complete!</h2>
-          <p className="text-muted-foreground">You&apos;ve gone through all the selected cards. Great job on your learning progress!</p>
-          <Button onClick={() => router.push("/flashcards")} className="mt-8 rounded-2xl h-14 px-8 font-bold">
-            Return to Dashboard
-          </Button>
-        </div>
-      </div>
+      <StudyResultsView
+        stats={{ ...sessionStats, uniqueShown: uniqueCardIdsShown.size }}
+        deckName={deckName}
+        streak={streak}
+        onReview={() => {
+          setShowResults(false);
+          setSessionStats({ studied: 0, correct: 0 });
+          setUniqueCardIdsShown(new Set());
+          reset();
+          handleStartSession(sessionConfig);
+        }}
+      />
     );
   }
 
@@ -189,7 +282,7 @@ export default function FlashCardStudyPage() {
         <div className="flex-1 flex justify-start">
           <Button
             variant="outline"
-            onClick={() => router.push("/flashcards")}
+            onClick={() => setShowResults(true)}
             className="rounded-full h-11 px-5 border-border bg-card shadow-sm hover:shadow-md transition-all font-semibold"
           >
             <ChevronLeft className="w-5 h-5 mr-2" /> Exit Study
@@ -203,6 +296,20 @@ export default function FlashCardStudyPage() {
         </div>
 
         <div className="flex-1 flex justify-end items-center gap-4">
+          {cards.length > 1 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                shuffleCards();
+                toast.success("Deck shuffled");
+              }}
+              className="rounded-full h-9 px-4 gap-2"
+            >
+              <Shuffle className="w-4 h-4" />
+              <span className="hidden sm:inline">Shuffle</span>
+            </Button>
+          )}
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
             <Zap className="w-4 h-4 text-orange-500 fill-orange-500" />
             <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{streak} Day Streak</span>
@@ -340,8 +447,11 @@ export default function FlashCardStudyPage() {
               >
                 {/* Need Review */}
                 <Card
-                  onClick={() => handleFeedback("needs_review")}
-                  className="group cursor-pointer rounded-[24px] border-border bg-card hover:bg-rose-500/[0.02] hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden"
+                  onClick={() => !isSubmitting && handleFeedback("needs_review")}
+                  className={cn(
+                    "group rounded-[24px] border-border bg-card hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden",
+                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-rose-500/[0.02]"
+                  )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-rose-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                   <h3 className="text-lg font-bold text-rose-500">Need Review</h3>
@@ -360,8 +470,11 @@ export default function FlashCardStudyPage() {
 
                 {/* Mastered */}
                 <Card
-                  onClick={() => handleFeedback("mastered")}
-                  className="group cursor-pointer rounded-[24px] border-border bg-card hover:bg-indigo-500/[0.02] hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden"
+                  onClick={() => !isSubmitting && handleFeedback("mastered")}
+                  className={cn(
+                    "group rounded-[24px] border-border bg-card hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden",
+                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-indigo-500/[0.02]"
+                  )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                   <h3 className="text-lg font-bold text-indigo-500">Mastered</h3>
@@ -372,7 +485,7 @@ export default function FlashCardStudyPage() {
           </AnimatePresence>
         </div>
 
-        {/* 5. Shortcuts Indicators */}
+        {/* 6. Shortcuts Indicators */}
         <div className="flex flex-wrap justify-center gap-3 py-4">
           <ShortcutPill keyName="1" label="HARD" />
           <ShortcutPill keyName="2" label="GOOD" />
@@ -392,24 +505,33 @@ export default function FlashCardStudyPage() {
           <ChevronLeft className="w-5 h-5 mr-2" /> Previous
         </Button>
 
-        {deckId && (
-          <Button
-            variant="ghost"
-            onClick={handleHideFromDeck}
-            disabled={hiding}
-            className="rounded-xl h-12 px-6 text-muted-foreground hover:text-destructive font-bold"
-          >
-            <EyeOff className="w-4 h-4 mr-2" /> {hiding ? "Hiding..." : "Hide"}
-          </Button>
+        {sessionConfig?.deckIds?.length === 1 && (
+          <div className="flex flex-col items-center gap-1">
+            <Button
+              variant="ghost"
+              onClick={handleHideFromDeck}
+              disabled={hiding}
+              className="rounded-xl h-12 px-6 text-muted-foreground hover:text-destructive font-bold"
+            >
+              <EyeOff className="w-4 h-4 mr-2" /> {hiding ? "Hiding..." : "Hide"}
+            </Button>
+            {hidingError && (
+              <span className="text-xs text-destructive">Could not hide card</span>
+            )}
+          </div>
         )}
 
         <Button
           variant="ghost"
           onClick={() => {
-            if (isFlipped) nextCard();
-            else flip();
+            if (isFlipped) {
+              if (hasNext()) nextCard();
+              else if (sessionConfig?.mode === "infinite") loopToStart();
+            } else {
+              flip();
+            }
           }}
-          disabled={!hasNext() && isFlipped}
+          disabled={!hasNext() && isFlipped && sessionConfig?.mode !== "infinite"}
           className="rounded-xl h-12 px-6 font-bold"
         >
           {isFlipped ? "Next" : "Reveal"} <RotateCw className="w-4 h-4 ml-2" />
@@ -419,6 +541,7 @@ export default function FlashCardStudyPage() {
   );
 
   async function handleHideFromDeck() {
+    const deckId = sessionConfig?.deckIds?.[0];
     if (!card || !deckId || hiding) return;
     setHiding(true);
     try {
@@ -426,11 +549,12 @@ export default function FlashCardStudyPage() {
         cardId: card.id,
         hidden: true,
       });
-      toast.success("Card hidden from this deck");
+      setHidingError(false);
       removeCurrentCard();
-      if (cards.length <= 1) router.push("/flashcards");
+      if (cards.length <= 1) setShowResults(true);
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to hide card");
+      setHidingError(true);
+      setTimeout(() => setHidingError(false), 3000);
     } finally {
       setHiding(false);
     }

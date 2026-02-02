@@ -138,8 +138,8 @@ export default function CreateFlashCardPage() {
             crumbs={[
               { name: "Home", href: "/home" },
               { name: "Flash Cards", href: "/flashcards" },
-              { name: "Create", href: "/flashcards/create-card" },
             ]}
+            endtrail="Create Flash Cards"
           />
         </div>
 

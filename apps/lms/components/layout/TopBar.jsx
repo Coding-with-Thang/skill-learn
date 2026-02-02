@@ -5,10 +5,10 @@ import { Search, Bell } from "lucide-react";
 import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
 import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import { useUser } from "@clerk/nextjs";
-import { SidebarTrigger } from "@skill-learn/ui/components/sidebar";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
 import { SearchCommand } from "./SearchCommand";
 import { useState } from "react";
+import { Logo } from "@/components/shared/Logo";
 
 export default function TopBar({ adminMode }) {
   const { user } = useUser();
@@ -21,7 +21,11 @@ export default function TopBar({ adminMode }) {
   return (
     <header className="sticky top-0 z-20 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all">
       <div className="flex items-center gap-4">
-        {adminMode ? <SidebarTrigger /> : <MobileSidebar />}
+        {adminMode ? (
+          <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
+        ) : (
+          <MobileSidebar />
+        )}
       </div>
 
       <div className="flex items-center gap-8">
@@ -74,6 +78,6 @@ export default function TopBar({ adminMode }) {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   );
 }

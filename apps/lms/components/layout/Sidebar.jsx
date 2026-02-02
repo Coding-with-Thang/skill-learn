@@ -39,6 +39,7 @@ export default function Sidebar({ isOperations }) {
     { label: "Flash Cards", href: "/flashcards", icon: Layers, feature: "flash_cards" },
     { label: "Report Card", href: "/user/stats", icon: BarChart2, feature: "user_stats" },
     { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
+    { label: "Achievements", href: "/achievements", icon: Trophy },
     { label: "Rewards", href: "/rewards", icon: Trophy, feature: "rewards_store" },
   ];
 
@@ -56,6 +57,7 @@ export default function Sidebar({ isOperations }) {
       label: "Admin Dashboard",
       href: "/dashboard",
       icon: ShieldCheck,
+      special: true,
     });
   } else if (isAdminRoute) {
     items.push({
@@ -82,7 +84,9 @@ export default function Sidebar({ isOperations }) {
                 "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group",
                 isActive
                   ? "bg-primary/10 text-primary font-semibold shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  : item.special
+                    ? "bg-primary/5 text-primary border border-primary/20 hover:bg-primary/10"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <item.icon

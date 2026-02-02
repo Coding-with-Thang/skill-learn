@@ -27,6 +27,20 @@ export const useFlashCardStudyStore = create((set, get) => ({
       isFlipped: false,
     })),
 
+  loopToStart: () =>
+    set({ currentIndex: 0, isFlipped: false }),
+
+  shuffleCards: () =>
+    set((s) => {
+      if (s.cards.length < 2) return s;
+      const shuffled = [...s.cards];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return { cards: shuffled, currentIndex: 0, isFlipped: false };
+    }),
+
   prevCard: () =>
     set((s) => ({
       currentIndex: Math.max(s.currentIndex - 1, 0),

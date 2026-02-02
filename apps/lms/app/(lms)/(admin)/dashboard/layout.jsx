@@ -10,6 +10,7 @@ import {
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import Footer from "@/components/layout/Footer"
 import { PageErrorBoundary } from "@/components/layout/PageErrorBoundary"
+import TopBar from "@/components/layout/TopBar"
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname()
@@ -45,11 +46,9 @@ export default function DashboardLayout({ children }) {
                 <AppSidebar />
                 <SidebarInset>
                     <div className="flex flex-col min-h-screen w-full bg-background" style={{ backgroundColor: "var(--background)" }}>
-                        <header className="flex h-16 mb-3 shrink-0 items-center gap-2 px-2 sm:px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-                            <SidebarTrigger className="ml-2" />
+                        <TopBar adminMode={true} />
+                        <main className="flex-1 flex flex-col p-4 sm:p-8 w-full min-w-0 max-w-7xl mx-auto gap-6 overflow-y-auto">
                             <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
-                        </header>
-                        <main className="flex-1 flex flex-col p-2 sm:p-6 w-full min-w-0 max-w-6xl mx-auto gap-4">
                             <PageErrorBoundary pageName="Dashboard">
                                 {children}
                             </PageErrorBoundary>
