@@ -3,30 +3,20 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import {
-  Trophy,
   Target,
   Zap,
   BookOpen,
   GraduationCap,
   Lock,
-  Share2,
-  Calendar,
-  Filter,
-  Award,
   Gamepad2,
   Brain,
   Layout,
   Flame,
-  Star,
-  Clock,
-  CheckCircle2,
-  Medal,
   Info,
   Sparkles,
   Telescope,
   Rocket,
   ShieldCheck,
-  ZapOff
 } from 'lucide-react'
 import { Button } from "@skill-learn/ui/components/button"
 import {

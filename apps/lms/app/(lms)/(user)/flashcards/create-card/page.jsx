@@ -28,7 +28,6 @@ import {
   Tag,
   BarChart,
   Send,
-  X,
   LayoutGrid,
   Plus,
   Trash2,

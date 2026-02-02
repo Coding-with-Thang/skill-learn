@@ -57,7 +57,7 @@ export default function FlashcardLimitsPage() {
       const row = limits.find((l) => l.tier === tier)
       val = row?.[field] ?? (field === 'maxDecks' ? 3 : 30)
     }
-    if (field === 'maxDecks' && val === -1) return ''
+    if ((field === 'maxDecks' || field === 'maxCardsPerDeck') && val === -1) return ''
     return val
   }
 
@@ -137,7 +137,7 @@ export default function FlashcardLimitsPage() {
         <CardHeader>
           <CardTitle>Limits by tier</CardTitle>
           <CardDescription>
-            Max decks: -1 or empty = unlimited. Max cards per deck: number of cards allowed in each deck.
+            Max decks: -1 or empty = unlimited. Max cards per deck: positive number or -1/empty = unlimited.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -174,14 +174,19 @@ export default function FlashcardLimitsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <Input
-                        type="number"
-                        min={1}
-                        placeholder="e.g. 30"
-                        value={getValue(tier, 'maxCardsPerDeck')}
-                        onChange={(e) => handleChange(tier, 'maxCardsPerDeck', e.target.value)}
-                        className="font-mono max-w-[140px]"
-                      />
+                      <div className="flex items-center gap-2 max-w-[140px]">
+                        <Input
+                          type="number"
+                          min={-1}
+                          placeholder="-1 = unlimited"
+                          value={getValue(tier, 'maxCardsPerDeck')}
+                          onChange={(e) => handleChange(tier, 'maxCardsPerDeck', e.target.value)}
+                          className="font-mono"
+                        />
+                        {getValue(tier, 'maxCardsPerDeck') === '' ? (
+                          <span className="text-xs text-muted-foreground">∞</span>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))}

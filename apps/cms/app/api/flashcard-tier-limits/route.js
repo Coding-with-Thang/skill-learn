@@ -92,7 +92,11 @@ export async function PATCH(request) {
 
       const data = {};
       if (typeof u.maxDecks === "number" && u.maxDecks >= -1) data.maxDecks = u.maxDecks;
-      if (typeof u.maxCardsPerDeck === "number" && u.maxCardsPerDeck >= 1)
+      // -1 = unlimited; LMS treats maxCardsPerDeck < 0 as unlimited
+      if (
+        typeof u.maxCardsPerDeck === "number" &&
+        (u.maxCardsPerDeck >= 1 || u.maxCardsPerDeck === -1)
+      )
         data.maxCardsPerDeck = u.maxCardsPerDeck;
 
       if (Object.keys(data).length === 0) continue;

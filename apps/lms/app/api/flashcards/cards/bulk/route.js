@@ -99,38 +99,60 @@ export async function POST(req) {
       tenantId
     );
 
-    const existingFingerprints = new Set();
+    const existingFingerprints = new Set(
+      (
+        await prisma.flashCard.findMany({
+          where: { tenantId },
+          select: { fingerprint: true },
+        })
+      ).map((c) => c.fingerprint)
+    );
+
     const created = [];
+    let skipped = 0;
 
     for (const item of cardsToCreate) {
       const fingerprint = computeFingerprint(item.question, item.answer);
-      if (existingFingerprints.has(fingerprint)) continue;
-      existingFingerprints.add(fingerprint);
+      if (existingFingerprints.has(fingerprint)) {
+        skipped++;
+        continue;
+      }
 
-      const card = await prisma.flashCard.create({
-        data: {
-          tenantId,
-          categoryId: data.categoryId,
-          question: item.question.trim(),
-          answer: item.answer.trim(),
-          fingerprint,
-          createdBy: user.id,
-          createdRole: isAdmin ? "admin" : "user",
-          isPublic: false,
-          tags: item.tags ?? [],
-          difficulty: item.difficulty ?? null,
-        },
-        include: { category: { select: { id: true, name: true } } },
-      });
-      created.push(card);
+      try {
+        const card = await prisma.flashCard.create({
+          data: {
+            tenantId,
+            categoryId: data.categoryId,
+            question: item.question.trim(),
+            answer: item.answer.trim(),
+            fingerprint,
+            createdBy: user.id,
+            createdRole: isAdmin ? "admin" : "user",
+            isPublic: false,
+            tags: item.tags ?? [],
+            difficulty: item.difficulty ?? null,
+          },
+          include: { category: { select: { id: true, name: true } } },
+        });
+        existingFingerprints.add(fingerprint);
+        created.push(card);
+      } catch (err) {
+        if (err.code === "P2002") {
+          existingFingerprints.add(fingerprint);
+          skipped++;
+        } else throw err;
+      }
     }
+    const skippedTotal =
+      data.cards.length > batchLimit
+        ? skipped + (data.cards.length - batchLimit)
+        : skipped;
 
-    const skipped = cardsToCreate.length - created.length;
     if (data.cards.length > batchLimit) {
       return successResponse({
         cards: created,
         created: created.length,
-        skipped: skipped + (data.cards.length - batchLimit),
+        skipped: skippedTotal,
         message: `Created ${created.length} card(s). Limit is ${batchLimit} per batch.`,
       });
     }
@@ -138,7 +160,7 @@ export async function POST(req) {
     return successResponse({
       cards: created,
       created: created.length,
-      skipped,
+      skipped: skippedTotal,
     });
   } catch (error) {
     return handleApiError(error);

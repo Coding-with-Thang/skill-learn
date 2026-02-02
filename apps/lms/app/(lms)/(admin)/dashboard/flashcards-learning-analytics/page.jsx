@@ -16,27 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@skill-learn/ui/components/table";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@skill-learn/ui/components/chart";
 import { Loader } from "@skill-learn/ui/components/loader";
-import { BarChart3, Users, BookOpen } from "lucide-react";
+import { Users, BookOpen } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios.js";
-
-const chartConfig = {
-  avgExposure: {
-    label: "Avg Exposure",
-    color: "hsl(var(--chart-1))",
-  },
-  avgMastery: {
-    label: "Mastery %",
-    color: "hsl(var(--chart-2))",
-  },
-};
+import { ExposureMasteryBarChart } from "@/components/flashcards/ExposureMasteryBarChart.jsx";
 
 export default function FlashCardsLearningAnalyticsPage() {
   const [data, setData] = useState(null);
@@ -107,41 +90,10 @@ export default function FlashCardsLearningAnalyticsPage() {
       </div>
 
       {chartData.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Exposure vs Mastery by Category
-            </CardTitle>
-            <CardDescription>Aggregate across all users in tenant</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <BarChart data={chartData} layout="vertical" margin={{ left: 80 }}>
-                <XAxis type="number" allowDecimals={false} />
-                <YAxis
-                  type="category"
-                  dataKey="category"
-                  width={70}
-                  tickLine={false}
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar
-                  dataKey="avgExposure"
-                  fill="var(--color-avgExposure)"
-                  radius={4}
-                  name="Avg Exposure"
-                />
-                <Bar
-                  dataKey="avgMastery"
-                  fill="var(--color-avgMastery)"
-                  radius={4}
-                  name="Mastery %"
-                />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+        <ExposureMasteryBarChart
+          chartData={chartData}
+          description="Aggregate across all users in tenant"
+        />
       )}
 
       {byCategory.length > 0 && (

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react"
 import { format } from "date-fns"
-import { Download, History, Filter, RotateCcw, Search, User, Database, Activity } from "lucide-react"
+import { Download, History, Filter, RotateCcw, Database, Activity } from "lucide-react"
 import { useAuditLogStore } from "@skill-learn/lib/stores/auditLogStore.js"
 import { Button } from "@skill-learn/ui/components/button"
 import {
@@ -17,7 +17,6 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
 } from "@skill-learn/ui/components/card"
 import {
   Table,

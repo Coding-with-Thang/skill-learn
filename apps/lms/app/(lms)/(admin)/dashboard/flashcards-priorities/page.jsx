@@ -73,21 +73,26 @@ export default function FlashCardsPrioritiesPage() {
     }
   };
 
-  const handlePriorityChange = async (categoryId, priority) => {
+  const handlePriorityChange = async (categoryId, newPriority, previousPriority) => {
     try {
       setSavingPriority(categoryId);
       await api.post("/admin/flashcards/priorities", {
         categoryId,
-        priority,
+        priority: newPriority,
       });
       setCategories((prev) =>
         prev.map((c) =>
-          c.id === categoryId ? { ...c, priority } : c
+          c.id === categoryId ? { ...c, priority: newPriority } : c
         )
       );
       toast.success("Priority updated");
     } catch (err) {
       toast.error(err.response?.data?.error || "Failed to update priority");
+      setCategories((prev) =>
+        prev.map((c) =>
+          c.id === categoryId ? { ...c, priority: previousPriority } : c
+        )
+      );
     } finally {
       setSavingPriority(null);
     }
@@ -191,12 +196,13 @@ export default function FlashCardsPrioritiesPage() {
                     value={String(c.priority)}
                     onValueChange={(v) => {
                       const num = Number(v);
+                      const previousPriority = c.priority;
                       setCategories((prev) =>
                         prev.map((cat) =>
                           cat.id === c.id ? { ...cat, priority: num } : cat
                         )
                       );
-                      handlePriorityChange(c.id, num);
+                      handlePriorityChange(c.id, num, previousPriority);
                     }}
                     disabled={savingPriority === c.id}
                   >
