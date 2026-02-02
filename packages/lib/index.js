@@ -30,3 +30,5 @@ export * from "./stores/store/progressStore.js";
 export * from "./stores/store/quizStore.js";
 export * from "./stores/store/rewardStore.js";
 export * from "./stores/store/usersStore.js";
+export * from "./stores/store/flashCardStudyStore.js";
+export * from "./stores/store/flashCardDeckBuilderStore.js";

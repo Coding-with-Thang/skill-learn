@@ -1,6 +1,6 @@
 'use client';
 
-import { Star, BookOpenText, ChartColumnBig, LayoutDashboard, Gamepad2, Trophy } from 'lucide-react';
+import { Star, BookOpenText, ChartColumnBig, LayoutDashboard, Gamepad2, Trophy, Layers } from 'lucide-react';
 import { NavLink } from './NavLink';
 import { useFeatures } from '@skill-learn/lib/hooks/useFeatures.js';
 
@@ -10,6 +10,7 @@ export function Navigation({ isOperations, mobile }) {
   // Define navigation items with feature requirements
   const navItems = [
     { href: '/training', icon: BookOpenText, label: 'Training', feature: 'training_courses' },
+    { href: '/flashcards', icon: Layers, label: 'Flash Cards', feature: 'flash_cards' },
     { href: '/user/stats', icon: ChartColumnBig, label: 'My Stats', feature: 'user_stats' },
     { href: '/leaderboard', icon: Trophy, label: 'Leaderboard', feature: 'leaderboards' },
     { href: '/games', icon: Gamepad2, label: 'Games', feature: 'games' },
@@ -17,8 +18,8 @@ export function Navigation({ isOperations, mobile }) {
   ];
 
   // Filter items based on enabled features (only filter when not loading)
-  const visibleItems = isLoading 
-    ? navItems 
+  const visibleItems = isLoading
+    ? navItems
     : navItems.filter(item => !item.feature || isEnabled(item.feature));
 
   return (
@@ -35,9 +36,16 @@ export function Navigation({ isOperations, mobile }) {
         </NavLink>
       ))}
       {isOperations && (
-        <NavLink href="/dashboard" icon={LayoutDashboard} mobile={mobile}>
-          Dashboard
-        </NavLink>
+        <>
+          {mobile ? (
+            <div className="h-px w-full bg-border/50 my-2" />
+          ) : (
+            <div className="h-4 w-px bg-border/60 ml-2 mr-4" />
+          )}
+          <NavLink href="/dashboard" icon={LayoutDashboard} mobile={mobile} variant="primary">
+            Admin Dashboard
+          </NavLink>
+        </>
       )}
     </nav>
   );

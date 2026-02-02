@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Input } from '@/components/cms/ui/input'
 import { Button } from '@/components/cms/ui/button'
@@ -11,7 +11,10 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  User,
+  Settings,
+  LogOut,
 } from 'lucide-react'
 import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,12 +28,14 @@ export default function TopBar() {
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
 
-  // Initialize theme on mount to ensure it's applied
+  // Initialize theme on mount to ensure it's applied (SSR/hydration)
   useEffect(() => {
-    initializeTheme()
-  }, [initializeTheme])
+    const init = useThemeStore.getState().initializeTheme
+    if (typeof init === 'function') init()
+  }, [])
 
   const unreadCount = notifications.filter(n => !n.read).length
 

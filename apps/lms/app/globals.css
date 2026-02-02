@@ -185,6 +185,7 @@
 @layer base {
   * {
     border-color: var(--border);
+    outline-color: var(--ring); /* Fallback */
     outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
   }
   body {
@@ -263,14 +264,18 @@
   /* Glass effect for modern UI */
   .glass-effect {
     background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
   }
 
   /* Subtle pulse for badges */
   .animate-pulse-subtle {
     animation: pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  /* Perspective for 3D flips */
+  .perspective-1000 {
+    perspective: 1000px;
   }
 }
 

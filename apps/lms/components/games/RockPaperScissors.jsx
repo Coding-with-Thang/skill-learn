@@ -6,101 +6,105 @@ import { usePathname } from 'next/navigation';
 import { Button } from "@skill-learn/ui/components/button";
 import QuizModal from "@/components/quiz/QuizModal"
 
-const choices = ['Rock', 'Paper', 'Scissors'];
-export default function RockPaperScissors() {
+const choices = [
+  { name: 'Rock', emoji: '✊', beats: 'Scissors' },
+  { name: 'Paper', emoji: '✋', beats: 'Rock' },
+  { name: 'Scissors', emoji: '✌️', beats: 'Paper' }
+];
 
-  //Local Storage
+export default function RockPaperScissors() {
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (round >= 3) {
-      setIsOpen(true);
-      setSelectedCategory(""); // Reset category selection
-    }
-  }, [round, pathname]);
-
-  //Game Logic
   const [playerChoice, setPlayerChoice] = useState(null);
   const [computerChoice, setComputerChoice] = useState(null);
   const [result, setResult] = useState('');
+  const [gameOver, setGameOver] = useState(false);
+
+  useEffect(() => {
+    if (round >= 3) {
+      setIsOpen(true);
+      setSelectedCategory("");
+    }
+  }, [round, pathname]);
 
   const playGame = (choice) => {
+    if (gameOver) return;
+
     const computer = choices[Math.floor(Math.random() * 3)];
     setPlayerChoice(choice);
     setComputerChoice(computer);
 
-    if (choice === computer) {
-      setResult('It&apos;s a tie!');
-    } else if (
-      (choice === 'Rock' && computer === 'Scissors') ||
-      (choice === 'Paper' && computer === 'Rock') ||
-      (choice === 'Scissors' && computer === 'Paper')
-    ) {
-      setResult('You win!');
+    if (choice.name === computer.name) {
+      setResult("It's a Tie!");
+    } else if (choice.beats === computer.name) {
+      setResult('You Win!');
+      setScore(prev => prev + 100);
     } else {
-      setResult('You lose!');
+      setResult('AI Wins!');
     }
+    setGameOver(true);
   };
 
-  //
-  const resetGame = () => {
+  const nextRound = () => {
     setPlayerChoice(null);
     setComputerChoice(null);
     setResult('');
+    setGameOver(false);
     setRound((prev) => (prev >= 3 ? 3 : prev + 1));
-  }
+  };
 
   return (
-    <div className="text-center">
-      <h2 className="text-2xl font-bold mb-4">Rock-Paper-Scissors</h2>
+    <div className="flex flex-col items-center w-full max-w-xl">
+      {!gameOver ? (
+        <div className="grid grid-cols-3 gap-6 w-full">
+          {choices.map((choice) => (
+            <button
+              key={choice.name}
+              onClick={() => playGame(choice)}
+              className="group aspect-square bg-slate-100 hover:bg-white rounded-[2.5rem] shadow-inner hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-2"
+            >
+              <span className="text-5xl group-hover:scale-125 transition-transform duration-300">{choice.emoji}</span>
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{choice.name}</span>
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div className="w-full flex flex-col items-center">
+          <div className="flex justify-between items-center w-full gap-8 mb-12">
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">YOU</p>
+              <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center text-6xl">
+                {playerChoice.emoji}
+              </div>
+            </div>
 
-      <div className='my-5'>
-        <p className="text-xl font-semibold">Round: {round}</p>
-        <p className="text-xl font-semibold">Score: {score}</p>
-      </div>
-      <div className="space-x-4">
-        {choices.map((choice) => (
+            <div className="text-3xl font-black text-slate-200">VS</div>
+
+            <div className="flex flex-col items-center gap-4">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI</p>
+              <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center text-6xl">
+                {computerChoice.emoji}
+              </div>
+            </div>
+          </div>
+
+          <p className={`text-4xl font-black uppercase tracking-tighter mb-8 animate-scale-in ${result === 'You Win!' ? 'text-cyan-500' : result === 'AI Wins!' ? 'text-rose-400' : 'text-slate-400'
+            }`}>
+            {result}
+          </p>
+
           <Button
-            key={choice}
-            onClick={() => playGame(choice)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded"
-            disabled={playerChoice !== null} // Disable buttons after a choice is made
+            onClick={nextRound}
+            className="h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
           >
-            {choice}
+            NEXT MATCH
           </Button>
-        ))}
-      </div>
-      {playerChoice && (
-        <div className="mt-4">
-          <p>You chose: {playerChoice}</p>
-          <p>Computer chose: {computerChoice}</p>
-          <p className="font-bold">{result}</p>
         </div>
       )}
-
-      <div className="my-6 flex justify-center items-center">
-        <Button
-          onClick={() => resetGame()}
-          className="px-4 py-2 bg-secondary text-secondary-foreground rounded"
-
-        >
-          New Game
-        </Button>
-      </div>
-
-      <div className='mt-20 border rounded-xl py-4 px-8'>
-        <h3 className='text-lg font-semibold'>Rules: </h3>
-        <div>
-          <p>1. Pick one: ROCK, PAPER, SCISSORS</p>
-          <p>2. Oppenent will pick one as well</p>
-          <p>3. If you have the same choice as your opponent, it&apos;ll be a tie.</p>
-          <p>4. Otherwise, rock beats scissors. Scissors beats paper. Paper beats rock.</p>
-        </div>
-      </div>
 
       <QuizModal
         isOpen={isOpen}
@@ -113,4 +117,3 @@ export default function RockPaperScissors() {
     </div>
   );
 }
-

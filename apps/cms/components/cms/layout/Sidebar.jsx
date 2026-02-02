@@ -17,6 +17,7 @@ import {
   Shield,
   History,
   X,
+  Layers,
 } from 'lucide-react'
 import { Button } from '@/components/cms/ui/button'
 import { cn } from '@/lib/cms/utils'
@@ -34,6 +35,7 @@ const menuItems = [
   { icon: Activity, label: 'System Health', href: '/cms/system' },
   { icon: Users, label: 'Admin Users', href: '/cms/admins' },
   { icon: Zap, label: 'Features', href: '/cms/features' },
+  { icon: Layers, label: 'Flash Card Limits', href: '/cms/flashcard-limits' },
   { icon: MessageSquare, label: 'Support', href: '/cms/support' },
   { icon: History, label: 'Changelog', href: '/cms/changelog' },
   { icon: Megaphone, label: 'Announcements', href: '/cms/announcements' },

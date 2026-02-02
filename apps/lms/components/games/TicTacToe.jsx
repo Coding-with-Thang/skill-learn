@@ -2,9 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
-import { usePathname } from 'next/navigation';
-import { Button } from "@skill-learn/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import {
   Select,
   SelectContent,
@@ -12,29 +9,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@skill-learn/ui/components/select";
-import { AlertCircle, CheckCircle2, Trophy } from "lucide-react";
+import { X, Circle } from "lucide-react";
 import QuizModal from "@/components/quiz/QuizModal"
 
-// Pure functions moved outside component
 const calculateWinner = (squares) => {
   const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
   ];
 
   for (const line of lines) {
     const [a, b, c] = line;
-    if (
-      squares[a] &&
-      squares[a] === squares[b] &&
-      squares[a] === squares[c]
-    ) {
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return { winner: squares[a], line };
     }
   }
@@ -43,7 +30,6 @@ const calculateWinner = (squares) => {
 
 const minimax = (squares, depth, isMaximizing) => {
   const { winner } = calculateWinner(squares);
-
   if (winner === "O") return 10 - depth;
   if (winner === "X") return depth - 10;
   if (!squares.includes(null)) return 0;
@@ -78,283 +64,149 @@ const TicTacToe = () => {
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
   const [winningLine, setWinningLine] = useState([]);
-  const [gameHistory, setGameHistory] = useState({ xWins: 0, oWins: 0, draws: 0 });
   const [difficulty, setDifficulty] = useState('easy');
   const [isAIThinking, setIsAIThinking] = useState(false);
-  const [playerScore, setPlayerScore] = useState(0);
-  const [showScoreAnimation, setShowScoreAnimation] = useState(false);
-  const [lastScoreChange, setLastScoreChange] = useState(0);
 
-  //Local Storage
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const pathname = usePathname();
   const isAIMovingRef = useRef(false);
+  const difficultyRef = useRef(difficulty);
+  const winnerRef = useRef(winner);
+  const isXNextRef = useRef(isXNext);
+  difficultyRef.current = difficulty;
+  winnerRef.current = winner;
+  isXNextRef.current = isXNext;
 
   useEffect(() => {
     if (round >= 3) {
       setIsOpen(true);
-      setSelectedCategory(""); // Reset category selection
+      setSelectedCategory("");
     }
-  }, [round, pathname]);
-
-  // Define callbacks before useEffects that use them
-  const updatePlayerScore = useCallback((points) => {
-    setPlayerScore(prevScore => {
-      const newScore = prevScore + points;
-      localStorage.setItem('ticTacToeScore', newScore.toString());
-      return newScore;
-    });
-    setLastScoreChange(points);
-    setShowScoreAnimation(true);
-    setTimeout(() => setShowScoreAnimation(false), 1500);
-  }, []);
+  }, [round]);
 
   const resetBoard = useCallback(() => {
     setBoard(Array(9).fill(null));
     setIsXNext(true);
     setWinner(null);
     setWinningLine([]);
-    setRound((prev) => (prev >= 3 ? 3 : prev + 1))
+    setRound((prev) => (prev >= 3 ? 3 : prev + 1));
   }, [setRound]);
 
-  // Helper function
-  const getEmptySquares = (squares) => {
-    return squares
-      .map((square, index) => (square === null ? index : null))
-      .filter((index) => index !== null);
-  };
-
-  // Define handleMove before makeAIMove (since makeAIMove uses handleMove)
   const handleMove = useCallback((index) => {
     if (board[index] || winner || isAIThinking) return;
-
     const newBoard = [...board];
-    newBoard[index] = isXNext ? "X" : "O";
+    newBoard[index] = "X";
     setBoard(newBoard);
+    setIsXNext(false);
+  }, [board, winner, isAIThinking]);
 
-    const { winner: gameWinner, line } = calculateWinner(newBoard);
-    if (gameWinner) {
-      setWinner(gameWinner);
-      setWinningLine(line);
-    } else if (!newBoard.includes(null)) {
-      setWinner("draw");
-      setWinningLine([]);
-    } else {
-      setIsXNext(!isXNext);
-    }
-  }, [board, winner, isAIThinking, isXNext]);
-
-  // Define makeAIMove before useEffect that uses it
   const makeAIMove = useCallback(() => {
-    if (isAIMovingRef.current || winner) return;
+    if (winnerRef.current || isXNextRef.current) return;
     isAIMovingRef.current = true;
+    const currentDifficulty = difficultyRef.current;
 
-    setBoard((currentBoard) => {
-      const newBoard = [...currentBoard];
-      let moveIndex;
+    setTimeout(() => {
+      setBoard(currentBoard => {
+        const newBoard = [...currentBoard];
+        let moveIndex = -1;
 
-      if (difficulty === "easy") {
-        //Random move for easy AI
-        const emptySquares = getEmptySquares(newBoard);
-        if (emptySquares.length > 0) {
-          moveIndex = emptySquares[Math.floor(Math.random() * emptySquares.length)];
-        }
-      } else {
-        //Minimax for hard AI
-        let bestScore = -Infinity;
-        moveIndex = -1;
-
-        for (let i = 0; i < newBoard.length; i++) {
-          if (!newBoard[i]) {
-            newBoard[i] = "O";
-            const score = minimax(newBoard, 0, false);
-            newBoard[i] = null;
-            if (score > bestScore) {
-              bestScore = score;
-              moveIndex = i;
+        if (currentDifficulty === "easy") {
+          const empty = newBoard.map((s, i) => s === null ? i : null).filter(i => i !== null);
+          if (empty.length > 0) moveIndex = empty[Math.floor(Math.random() * empty.length)];
+        } else {
+          let bestScore = -Infinity;
+          for (let i = 0; i < newBoard.length; i++) {
+            if (!newBoard[i]) {
+              newBoard[i] = "O";
+              const score = minimax(newBoard, 0, false);
+              newBoard[i] = null;
+              if (score > bestScore) {
+                bestScore = score;
+                moveIndex = i;
+              }
             }
           }
         }
-      }
 
-      if (moveIndex !== -1 && moveIndex !== undefined) {
-        newBoard[moveIndex] = "O";
-      }
+        if (moveIndex !== -1) newBoard[moveIndex] = "O";
+        return newBoard;
+      });
+      setIsXNext(true);
+      setIsAIThinking(false);
+      isAIMovingRef.current = false;
+    }, 600);
+  }, []);
 
-      return newBoard;
-    });
-  }, [difficulty, winner]);
-
-  // Check for winner/draw after board changes
   useEffect(() => {
-    if (winner) return;
-    
+    if (!isXNext && !winner && !isAIThinking) {
+      setIsAIThinking(true);
+      makeAIMove();
+    }
+  }, [isXNext, winner, isAIThinking, makeAIMove]);
+
+  useEffect(() => {
     const { winner: gameWinner, line } = calculateWinner(board);
     if (gameWinner) {
       setWinner(gameWinner);
       setWinningLine(line);
-      if (isAIMovingRef.current) {
-        isAIMovingRef.current = false;
-        setIsAIThinking(false);
-      }
+      if (gameWinner === 'X') setScore(prev => prev + (difficulty === 'easy' ? 100 : 250));
     } else if (!board.includes(null)) {
       setWinner("draw");
-      setWinningLine([]);
-      if (isAIMovingRef.current) {
-        isAIMovingRef.current = false;
-        setIsAIThinking(false);
-      }
-    } else if (!isXNext && isAIMovingRef.current) {
-      // After AI move completes, switch back to player's turn
-      setIsXNext(true);
-      isAIMovingRef.current = false;
-      setIsAIThinking(false);
     }
-  }, [board, winner, isXNext]);
-
-  //Tic Tac Toe Logic
-  useEffect(() => {
-    const savedScore = localStorage.getItem('ticTacToeScore');
-    if (savedScore) {
-      setPlayerScore(parseInt(savedScore));
-    }
-  }, []);
-
-  useEffect(() => {
-    if (winner === 'X') {
-      const points = difficulty === 'easy' ? 1 : 2;
-      updatePlayerScore(points);
-    }
-    if (winner === 'O' || winner === 'draw') {
-      resetBoard()
-    }
-  }, [winner, difficulty, resetBoard, updatePlayerScore]);
-
-  // Trigger AI move when it's AI's turn
-  useEffect(() => {
-    if (!winner && !isXNext && !isAIThinking && !isAIMovingRef.current) {
-      setIsAIThinking(true);
-      const timer = setTimeout(() => {
-        makeAIMove();
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isXNext, winner, isAIThinking, makeAIMove]);
-
-  const handleDifficultyChange = (value) => {
-    setDifficulty(value);
-    resetBoard();
-  };
+  }, [board, difficulty, setScore]);
 
   const renderSquare = (index) => {
-    const isWinningSquare = winningLine.includes(index);
+    const value = board[index];
+    const isWinner = winningLine.includes(index);
 
     return (
       <button
-        className={`h-16 w-16 border border-gray-300 flex items-center justify-center text-2xl font-bold
-                          ${board[index] === "X" ? "text-primary" : "text-error"}
-                ${isWinningSquare ? "bg-success/20" : "hover:bg-accent"}
-          ${isAIThinking ? "cursor-not-allowed" : "cursor-pointer"}
-          transition-colors duration-200`}
+        key={index}
+        className={`w-24 h-24 md:w-32 md:h-32 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-inner group
+          ${value ? 'bg-white shadow-md' : 'bg-slate-50 hover:bg-white hover:shadow-lg'}
+          ${isWinner ? ' ring-4 ring-cyan-200 ring-offset-4' : ''}
+          ${isAIThinking ? 'cursor-wait' : ''}`}
         onClick={() => handleMove(index)}
-        disabled={winner || board[index] || !isXNext || isAIThinking}
+        disabled={winner || value || !isXNext || isAIThinking}
       >
-        {board[index]}
+        {value === 'X' && <X className="w-12 h-12 text-cyan-500 stroke-[4px] animate-scale-in" />}
+        {value === 'O' && <Circle className="w-10 h-10 text-slate-400 stroke-[4px] animate-scale-in" />}
       </button>
     );
   };
 
-  const getStatusMessage = () => {
-    if (isAIThinking) return "AI is thinking...";
-    if (winner === "draw") return "It's a draw!";
-    if (winner) return `Winner: ${winner}`;
-    return `${isXNext ? "Your turn (X)" : "AI turn (O)"}`;
-  };
-
-  //Add a score display component
-  const ScoreDisplay = () => (
-    <div className="relative flex items-center justify-center mb-4 text-center">
-      <div className="flex items-center gap-2 text-xl font-bold">
-        <Trophy className="h-6 w-6 text-yellow-500" />
-        <span>Score: {playerScore}</span>
-      </div>
-      {showScoreAnimation && (
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-green-500 font-bold animate-bounce">
-          +{lastScoreChange}
-        </div>
-      )}
-    </div>
-  );
-
   return (
-    <div className="space-y-6">
-      <div className='my-5'>
-        <p className="text-xl font-semibold">Round: {round}</p>
-        {/* <p className="text-xl font-semibold">Score: {score}</p> */}
+    <div className="flex flex-col items-center">
+      <div className="mb-8 flex items-center gap-4">
+        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Difficulty</span>
+        <Select value={difficulty} onValueChange={setDifficulty}>
+          <SelectTrigger className="w-32 rounded-xl border-none bg-slate-100 font-bold text-slate-600">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-none shadow-xl">
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl">Tic Tac Toe</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ScoreDisplay />
+      <div className="grid grid-cols-3 gap-4 md:gap-6 bg-slate-200/50 p-4 md:p-6 rounded-[2.5rem] shadow-inner">
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderSquare)}
+      </div>
 
-          <div className="mb-4">
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">AI Difficulty:</label>
-              <Select value={difficulty} onValueChange={handleDifficultyChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select difficulty" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="easy">Easy (1 point per win)</SelectItem>
-                  <SelectItem value="hard">Hard (2 points per win)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className={`text-center text-xl font-bold mb-2 
-              ${winner === 'X' ? 'text-primary' :
-                winner === 'O' ? 'text-error' :
-                  winner === 'draw' ? 'text-muted-foreground' : ''}`}>
-              {getStatusMessage()}
-            </div>
-            <div className="text-sm text-muted-foreground text-center">
-              <p>Player (X) Wins: {gameHistory.xWins}</p>
-              <p>AI (O) Wins: {gameHistory.oWins}</p>
-              <p>Draws: {gameHistory.draws}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-1 mb-4">
-            {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((index) =>
-              renderSquare(index))}
-          </div>
-
-          <div className="text-center">
-            <Button
-              onClick={resetBoard}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-sm hover:bg-primary-hover"
-            >
-              New Game
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-5">
-        <CardHeader>
-          <CardTitle>Rules:</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>You are X player. You want to get 3 X in a line in any direction.</p>
-          <p>If no player gets 3 in a line, game is a draw.</p>
-        </CardContent>
-      </Card>
+      <div className="mt-8 text-center min-h-[2rem]">
+        {winner ? (
+          <p className={`text-xl font-black uppercase tracking-widest animate-bounce ${winner === 'X' ? 'text-cyan-500' : winner === 'O' ? 'text-rose-400' : 'text-slate-400'}`}>
+            {winner === 'draw' ? "It's a Draw!" : winner === 'X' ? "You Won!" : "AI Won!"}
+          </p>
+        ) : isAIThinking ? (
+          <p className="text-slate-300 font-bold animate-pulse uppercase tracking-widest text-sm">AI is thinking...</p>
+        ) : (
+          <p className="text-cyan-500/50 font-bold uppercase tracking-widest text-sm">Your Turn</p>
+        )}
+      </div>
 
       <QuizModal
         isOpen={isOpen}
@@ -365,8 +217,7 @@ const TicTacToe = () => {
         setSelectedCategory={setSelectedCategory}
       />
     </div>
-  )
-}
+  );
+};
 
 export default TicTacToe;
-

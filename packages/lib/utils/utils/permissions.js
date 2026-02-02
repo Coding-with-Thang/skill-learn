@@ -364,6 +364,14 @@ export const PERMISSIONS = {
   // Dashboard
   DASHBOARD_ADMIN: "dashboard.admin",
   DASHBOARD_MANAGER: "dashboard.manager",
+
+  // Flash Cards
+  FLASHCARDS_CREATE: "flashcards.create",
+  FLASHCARDS_READ: "flashcards.read",
+  FLASHCARDS_UPDATE: "flashcards.update",
+  FLASHCARDS_DELETE: "flashcards.delete",
+  FLASHCARDS_MANAGE_TENANT: "flashcards.manage_tenant", // Admin: manage all tenant cards
+  FLASHCARDS_MANAGE_GLOBAL: "flashcards.manage_global", // Super admin: manage global cards
 };
 
 export default {

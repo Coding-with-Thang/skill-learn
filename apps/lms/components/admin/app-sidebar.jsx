@@ -10,6 +10,7 @@ import {
   Key,
   Layout,
   LayoutGrid,
+  Layers,
   Settings,
   Shield,
   ToggleLeft,
@@ -27,6 +28,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarTrigger,
+  SidebarSeparator,
 } from "@skill-learn/ui/components/sidebar";
 import { Logo } from "@/components/shared/Logo";
 import Link from "next/link";
@@ -76,6 +79,38 @@ const getNavData = () => ({
             {
               title: "Quiz Creator",
               url: "/dashboard/quizzes/quiz-manager",
+            },
+          ],
+        },
+        {
+          title: "Flash Cards",
+          url: "/dashboard/flashcards-analytics",
+          icon: Layers,
+          feature: "flash_cards",
+          items: [
+            {
+              title: "Analytics & Suggestions",
+              url: "/dashboard/flashcards-analytics",
+            },
+            {
+              title: "Priorities & Settings",
+              url: "/dashboard/flashcards-priorities",
+            },
+            {
+              title: "Manage Cards",
+              url: "/dashboard/flashcards-cards",
+            },
+            {
+              title: "Manage Categories",
+              url: "/dashboard/flashcards-categories",
+            },
+            {
+              title: "Bulk Import",
+              url: "/dashboard/flashcards-import",
+            },
+            {
+              title: "Learning Analytics",
+              url: "/dashboard/flashcards-learning-analytics",
             },
           ],
         },
@@ -137,7 +172,7 @@ const getNavData = () => ({
           icon: Settings,
           items: [
             {
-              title: "Default Values",
+              title: "General",
               url: "/dashboard/settings",
             },
             {
@@ -175,31 +210,29 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <div className="flex items-center justify-center py-2 group-data-[collapsible=icon]:p-0">
-          <Logo
-            className="group-data-[collapsible=icon]:!gap-0 transition-all duration-200"
-            textClassName="group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0 transition-all duration-200"
-            imageClassName="group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8 transition-all duration-200"
-          />
+      <SidebarHeader className="border-b border-border/10 bg-muted/5">
+        <div className="flex items-center justify-center p-3">
+          <SidebarTrigger className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all rounded-xl" />
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="pt-6">
         {filteredNavGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
         ))}
       </SidebarContent>
-      <SidebarFooter>
+      <div className="flex-1" />
+      <SidebarSeparator />
+      <SidebarFooter className="py-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild>
+            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:p-0">
               <Link href="/home">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <LayoutGrid className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold">Back to Home</span>
-                  <span className="truncate text-xs">Main Dashboard</span>
+                  <span className="truncate font-semibold uppercase tracking-tight text-[11px]">Back to Home</span>
+                  <span className="truncate text-[10px] text-muted-foreground uppercase font-black">Main Dashboard</span>
                 </div>
               </Link>
             </SidebarMenuButton>

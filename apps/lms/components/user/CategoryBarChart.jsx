@@ -12,7 +12,6 @@ import {
 } from "@skill-learn/ui/components/card";
 
 import {
-  ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,

@@ -57,7 +57,6 @@ export async function requireAdmin(tenantId = null) {
   const effectiveTenantId = tenantId || user.tenantId;
 
   // Check for admin permissions
-  // Admin permissions include: users.create, users.update, dashboard.admin, roles.assign, etc.
   const adminPermissions = [
     'users.create',
     'users.update',
@@ -66,7 +65,8 @@ export async function requireAdmin(tenantId = null) {
     'dashboard.manager',
     'roles.assign',
     'roles.create',
-    'settings.update'
+    'settings.update',
+    'flashcards.manage_tenant',
   ];
 
   const hasAdminPermission = await hasAnyPermission(userId, adminPermissions, effectiveTenantId);
