@@ -38,6 +38,7 @@ import {
   Banknote,
   Sparkles,
   Share2,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -360,6 +361,14 @@ export default function FlashCardsHomePage() {
                     <div className="absolute top-4 left-4 p-2 rounded-lg bg-white/20 backdrop-blur-md">
                       <Icon className="w-5 h-5 text-white" />
                     </div>
+                    <Link
+                      href={`/flashcards/decks/${deck.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-4 right-4 p-2 rounded-lg bg-white/20 backdrop-blur-md hover:bg-white/30 transition-colors z-10"
+                      title="Edit deck"
+                    >
+                      <Pencil className="w-5 h-5 text-white" />
+                    </Link>
                     <Icon className="w-20 h-20 text-white/20 absolute -bottom-4 -right-4 rotate-12" />
                     <div className="z-10 text-center space-y-1">
                       <span className="text-[10px] font-black tracking-widest text-white/60 uppercase">{theme.label}</span>
