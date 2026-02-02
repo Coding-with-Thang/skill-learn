@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { Input } from '@/components/cms/ui/input'
 import { Button } from '@/components/cms/ui/button'
@@ -11,22 +11,23 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  User,
+  Settings,
+  LogOut,
 } from 'lucide-react'
 import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
 import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
-import { useUser } from '@clerk/nextjs'
-import { useEffect } from 'react'
 
 export default function TopBar() {
   const { user } = useUser()
-  const { theme, toggleTheme } = useThemeStore()
+  const { theme, toggleTheme, initializeTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
-  const { user } = useUser()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
 
   // Initialize theme on mount to ensure it's applied
