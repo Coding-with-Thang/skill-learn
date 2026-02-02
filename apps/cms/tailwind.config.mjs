@@ -1,6 +1,7 @@
-import { fontFamily } from "tailwindcss/defaultTheme";
-
 /** @type {import('tailwindcss').Config} */
+const defaultFontSans = ["ui-sans-serif", "system-ui", "sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"];
+const defaultFontMono = ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", "Courier New", "monospace"];
+
 export default {
   darkMode: "class",
   content: [
@@ -11,9 +12,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
-        mono: ["var(--font-mono)", ...fontFamily.mono],
-        display: ["var(--font-display)", ...fontFamily.sans],
+        sans: ["var(--font-sans)", ...defaultFontSans],
+        mono: ["var(--font-mono)", ...defaultFontMono],
+        display: ["var(--font-display)", ...defaultFontSans],
       },
       borderRadius: {
         sm: "var(--radius-sm)",

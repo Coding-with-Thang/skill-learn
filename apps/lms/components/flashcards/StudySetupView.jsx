@@ -116,6 +116,11 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
   const hasVirtual = virtualSource != null;
   const canStart = hasDecks || hasVirtual;
 
+  const breadcrumbTrail =
+    data?.decks?.[0] != null
+      ? `Study Session ${data.decks[0].name ?? "..."} - ${data.decks[0].cardIds?.length ?? 0} cards`
+      : "Study Session";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
@@ -127,8 +132,8 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
         <BreadCrumbCom
           crumbs={[
             { name: "Flash Cards", href: "/flashcards" },
-            { name: "Study Session", href: "/flashcards/study" },
           ]}
+          endtrail={breadcrumbTrail}
         />
         {error && (
           <motion.div
@@ -136,7 +141,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
             animate={{ opacity: 1, y: 0 }}
             className="flex items-center gap-3 p-4 rounded-2xl bg-destructive/10 border border-destructive/20"
           >
-            <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
             <p className="flex-1 text-sm font-medium text-destructive">{error}</p>
             {onClearError && (
               <Button variant="ghost" size="sm" onClick={onClearError} className="text-destructive hover:bg-destructive/10">

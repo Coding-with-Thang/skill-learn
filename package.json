@@ -24,6 +24,9 @@
   "devDependencies": {
     "turbo": "^2.7.5"
   },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
