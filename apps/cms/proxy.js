@@ -1,10 +1,10 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-export default clerkMiddleware(async (auth, req) => {
+const proxy = clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
 
-  // Skip middleware for static assets and API routes that don't need auth
+  // Skip proxy for static assets and API routes that don't need auth
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/_static") ||
@@ -75,7 +75,7 @@ export default clerkMiddleware(async (auth, req) => {
   } catch (error) {
     // If authentication fails (e.g., missing Clerk env vars), log the error
     // and allow public routes to pass through, but redirect protected routes
-    console.error("Middleware authentication error:", error);
+    console.error("Proxy authentication error:", error);
 
     // If it's a CMS route and not public, redirect to sign-in
     if (pathname.startsWith("/cms") && !isPublicRoute) {
@@ -88,6 +88,8 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 });
+
+export default proxy;
 
 export const config = {
   matcher: [

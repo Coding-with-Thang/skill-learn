@@ -23,17 +23,18 @@ import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
 
 export default function TopBar() {
   const { user } = useUser()
-  const { theme, toggleTheme, initializeTheme } = useThemeStore()
+  const { theme, toggleTheme } = useThemeStore()
   const { notifications, markNotificationRead, markAllNotificationsRead } = useDashboardStore()
   const { toggleMobileSidebar } = useSidebarStore()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [showSearch, setShowSearch] = useState(false)
 
-  // Initialize theme on mount to ensure it's applied
+  // Initialize theme on mount to ensure it's applied (SSR/hydration)
   useEffect(() => {
-    initializeTheme()
-  }, [initializeTheme])
+    const init = useThemeStore.getState().initializeTheme
+    if (typeof init === 'function') init()
+  }, [])
 
   const unreadCount = notifications.filter(n => !n.read).length
 

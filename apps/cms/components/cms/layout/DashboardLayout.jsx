@@ -7,13 +7,14 @@ import { useSidebarStore, useThemeStore } from '@/lib/cms/store'
 
 export default function DashboardLayout({ children }) {
   const { isCollapsed } = useSidebarStore()
-  const { theme, initializeTheme } = useThemeStore()
+  const { theme } = useThemeStore()
   const [marginLeft, setMarginLeft] = useState('0')
 
   // Initialize theme from localStorage on mount
   useEffect(() => {
-    initializeTheme()
-  }, [initializeTheme])
+    const init = useThemeStore.getState().initializeTheme
+    if (typeof init === 'function') init()
+  }, [])
 
   // Apply theme changes to document
   useEffect(() => {

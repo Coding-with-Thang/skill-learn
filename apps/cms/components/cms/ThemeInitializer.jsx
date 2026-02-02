@@ -8,11 +8,10 @@ import { useThemeStore } from '@/lib/cms/store'
  * This ensures theme persists across page reloads
  */
 export function ThemeInitializer() {
-  const { initializeTheme } = useThemeStore()
-
   useEffect(() => {
-    initializeTheme()
-  }, [initializeTheme])
+    const init = useThemeStore.getState().initializeTheme
+    if (typeof init === 'function') init()
+  }, [])
 
   return null
 }

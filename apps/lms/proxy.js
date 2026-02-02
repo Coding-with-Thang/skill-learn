@@ -33,7 +33,7 @@ function isPublicDirectoryRoute(pathname) {
   return publicDirectoryPatterns.some((pattern) => pattern.test(pathname));
 }
 
-export default clerkMiddleware(async (auth, req) => {
+const proxy = clerkMiddleware(async (auth, req) => {
   try {
     const { userId } = await auth();
     const { pathname } = req.nextUrl;
@@ -52,7 +52,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // Get IP address from headers (Edge runtime compatible)
-    // req.ip is not available in Next.js middleware Edge runtime
+    // req.ip is not available in Next.js proxy Edge runtime
     const forwardedFor = req.headers.get("x-forwarded-for");
     const ip =
       forwardedFor?.split(",")[0]?.trim() ||
@@ -105,7 +105,7 @@ export default clerkMiddleware(async (auth, req) => {
       throw error;
     }
 
-    console.error("Middleware error:", {
+    console.error("Proxy error:", {
       message: error.message,
       stack: error.stack,
       type: error.constructor.name,
@@ -118,8 +118,10 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 // Note: withAudit function has been moved to src/utils/withAudit.js
-// It cannot be in middleware because it uses Prisma (Node.js runtime only)
+// It cannot run in proxy because it uses Prisma (Node.js runtime only)
 // Use it in API routes instead
+
+export default proxy;
 
 export const config = {
   matcher: [
