@@ -71,8 +71,7 @@ export default function AuditLogsPage() {
   }, [])
 
   const handleExport = () => {
-    //TODO: Implement CSV export functionality
-    console.log("Exporting logs...")
+    // TODO: Implement CSV export functionality
   }
 
   const resetFilters = () => {

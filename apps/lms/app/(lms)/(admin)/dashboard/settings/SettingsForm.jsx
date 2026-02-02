@@ -19,6 +19,13 @@ import {
 import { motion, AnimatePresence } from "framer-motion"
 import { Coins, GraduationCap, Zap, Settings2, Loader2, Sparkles, Save, RotateCcw } from "lucide-react"
 
+// Static Tailwind class per color so JIT can generate them (no dynamic class names)
+const CATEGORY_BG_CLASS = {
+  amber: "bg-amber-500/10",
+  blue: "bg-blue-500/10",
+  violet: "bg-violet-500/10",
+}
+
 const SETTING_CATEGORIES = {
   "Points System": {
     icon: <Coins className="w-5 h-5 text-amber-500" />,
@@ -176,7 +183,7 @@ export default function SettingsForm({ initialSettings }) {
                 <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden group">
                   <CardHeader className="border-b border-border/30 bg-muted/20 pb-4">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg bg-${info.color}-500/10 group-hover:scale-110 transition-transform`}>
+                      <div className={`p-2 rounded-lg ${CATEGORY_BG_CLASS[info.color] ?? "bg-muted/20"} group-hover:scale-110 transition-transform`}>
                         {info.icon}
                       </div>
                       <div>
