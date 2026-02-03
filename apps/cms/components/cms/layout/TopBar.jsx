@@ -20,7 +20,6 @@ import { useThemeStore, useDashboardStore, useSidebarStore } from '@/lib/cms/sto
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/cms/utils'
 import { UserButtonWrapper } from '@/components/cms/auth/UserButtonWrapper'
-import { useEffect } from 'react'
 
 export default function TopBar() {
   const { user } = useUser()
