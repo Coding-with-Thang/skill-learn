@@ -1,19 +1,41 @@
-import { fontFamily } from "tailwindcss/defaultTheme";
-
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: "class",
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", ...fontFamily.sans],
-        mono: ["var(--font-mono)", ...fontFamily.mono],
-        display: ["var(--font-display)", ...fontFamily.sans],
+        sans: [
+          "var(--font-sans)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol",
+          "Noto Color Emoji",
+        ],
+        mono: [
+          "var(--font-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Monaco",
+          "Consolas",
+          "Liberation Mono",
+          "Courier New",
+          "monospace",
+        ],
+        display: [
+          "var(--font-display)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
       },
       borderRadius: {
         sm: "var(--radius-sm)",
@@ -23,10 +45,10 @@ export default {
       },
       colors: {
         // Brand colors
-        'brand-teal': '#155d59',
-        'brand-teal-dark': '#124a47',
-        'brand-dark-blue': '#1B1B53',
-        
+        "brand-teal": "#155d59",
+        "brand-teal-dark": "#124a47",
+        "brand-dark-blue": "#1B1B53",
+
         // Core semantic colors
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -173,72 +195,72 @@ export default {
         slow: "var(--transition-slow)",
       },
       animation: {
-        'fade-in-up': 'fadeInUp 0.8s ease-out',
-        'slide-in-right': 'slideInRight 0.8s ease-out',
-        'float': 'float 3s ease-in-out infinite',
-        'float-delayed': 'floatDelayed 3s ease-in-out infinite',
-        'progress': 'progress 1.5s ease-out',
-        'fade-in': 'fadeIn 0.3s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
+        "fade-in-up": "fadeInUp 0.8s ease-out",
+        "slide-in-right": "slideInRight 0.8s ease-out",
+        float: "float 3s ease-in-out infinite",
+        "float-delayed": "floatDelayed 3s ease-in-out infinite",
+        progress: "progress 1.5s ease-out",
+        "fade-in": "fadeIn 0.3s ease-out",
+        "scale-in": "scaleIn 0.3s ease-out",
       },
       keyframes: {
         fadeInUp: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateY(20px)',
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'translateY(0)',
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
           },
         },
         slideInRight: {
-          '0%': {
-            opacity: '0',
-            transform: 'translateX(50px)',
+          "0%": {
+            opacity: "0",
+            transform: "translateX(50px)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'translateX(0)',
+          "100%": {
+            opacity: "1",
+            transform: "translateX(0)",
           },
         },
         float: {
-          '0%, 100%': {
-            transform: 'translateY(0px)',
+          "0%, 100%": {
+            transform: "translateY(0px)",
           },
-          '50%': {
-            transform: 'translateY(-20px)',
+          "50%": {
+            transform: "translateY(-20px)",
           },
         },
         floatDelayed: {
-          '0%, 100%': {
-            transform: 'translateY(0px)',
+          "0%, 100%": {
+            transform: "translateY(0px)",
           },
-          '50%': {
-            transform: 'translateY(-15px)',
+          "50%": {
+            transform: "translateY(-15px)",
           },
         },
         progress: {
-          '0%': {
-            width: '0',
+          "0%": {
+            width: "0",
           },
         },
         fadeIn: {
-          '0%': {
-            opacity: '0',
+          "0%": {
+            opacity: "0",
           },
-          '100%': {
-            opacity: '1',
+          "100%": {
+            opacity: "1",
           },
         },
         scaleIn: {
-          '0%': {
-            opacity: '0',
-            transform: 'scale(0.95)',
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)",
           },
-          '100%': {
-            opacity: '1',
-            transform: 'scale(1)',
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
           },
         },
       },

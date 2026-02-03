@@ -1,15 +1,18 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: path.join(__dirname, "../.."),
+  transpilePackages: [
+    "@skill-learn/ui",
+    "@skill-learn/lib",
+    "@skill-learn/database",
+  ],
   turbopack: {},
-  outputFileTracingRoot: path.join(__dirname, '../..'),
-  transpilePackages: ['@skill-learn/ui', '@skill-learn/lib', '@skill-learn/database'],
-  eslint: { ignoreDuringBuilds: true },
   images: {
     remotePatterns: [
       {
@@ -88,18 +91,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-  // Optimize webpack cache for large strings
-  webpack: (config, { isServer }) => {
-    // Optimize cache serialization for large strings
-    if (config.cache) {
-      config.cache = {
-        ...config.cache,
-        compression: 'gzip',
-        maxMemoryGenerations: 1,
-      };
-    }
-    return config;
   },
 };
 
