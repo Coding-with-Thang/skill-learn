@@ -6,7 +6,6 @@ import { Card, CardContent } from "@skill-learn/ui/components/card"
 import { RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState } from "./RenderState"
 import { cn } from "@skill-learn/lib/utils.js";
 import { toast } from "sonner"
-import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 // Minimal, clean uploader implementation to avoid syntax issues.
@@ -65,6 +64,21 @@ export function Uploader({ value, onChange, onUploadComplete, uploadEndpoint = '
     if (f) uploadFile(f)
   }, [uploadFile])
 
+  const rejectedFiles = useCallback((fileRejections) => {
+    if (fileRejections?.length) {
+      const tooManyFiles = fileRejections.find(r => r.errors.some(e => e.code === 'too-many-files'))
+      const fileTooLarge = fileRejections.find(r => r.errors.some(e => e.code === 'file-too-large'))
+
+      if (tooManyFiles) {
+        toast.error('You can only upload one file at a time')
+      }
+
+      if (fileTooLarge) {
+        toast.error('File is too large. Maximum size is 10 MB')
+      }
+    }
+  }, [])
+
   const handleRemoveFile = async () => {
     if (!url || isDeleting) return
     setIsDeleting(true)
@@ -83,7 +97,15 @@ export function Uploader({ value, onChange, onUploadComplete, uploadEndpoint = '
     }
   }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, maxFiles: 1, accept: { 'image/*': [] }, disabled: uploading || !!url })
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    maxFiles: 1,
+    multiple: false,
+    maxSize: 10 * 1024 * 1024, // 10 MB
+    onDropRejected: rejectedFiles,
+    accept: { 'image/*': [] },
+    disabled: uploading || !!url
+  })
 
   return (
     <Card {...getRootProps()} className={cn('relative border-2 border-dashed w-full h-64', isDragActive ? 'border-primary bg-primary/10' : 'border-border')}>
