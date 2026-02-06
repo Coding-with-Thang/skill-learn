@@ -29,7 +29,7 @@ async function getCourse(courseId) {
 }
 
 export default async function PreviewCoursePage({ params }) {
-    const { courseId } = params;
+    const { courseId } = await params;
     const course = await getCourse(courseId);
 
     if (!course) {

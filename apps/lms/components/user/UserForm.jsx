@@ -58,9 +58,7 @@ export default function UserForm({ user = null, onSuccess }) {
             username: user?.username || "",
             password: "",
             tenantRoleId: user?.tenantRoleId || defaultRoleId || "",
-            // Legacy fields for backward compatibility
-            role: user?.role || "",
-            manager: user?.manager || "",
+            reportsToUserId: user?.reportsToUserId ?? "",
         },
     })
 
@@ -86,30 +84,30 @@ export default function UserForm({ user = null, onSuccess }) {
         }))
     }, [roles])
 
+    // Reports-to: same-tenant users, exclude self when editing
+    const reportsToOptions = useMemo(() => {
+        const list = (users || []).filter((u) => !user || u.id !== user.id)
+        const options = [{ value: "", label: "None" }]
+        list.forEach((u) => {
+            options.push({
+                value: u.id,
+                label: `${u.firstName} ${u.lastName} (${u.username})`,
+            })
+        })
+        return options
+    }, [users, user])
+
     const onSubmit = async (data) => {
         try {
-            // Prepare submit data
             const submitData = { ...data }
-            
-            // Use defaultRoleId if tenantRoleId is not provided and creating new user
             if (!user && !submitData.tenantRoleId && defaultRoleId) {
                 submitData.tenantRoleId = defaultRoleId
             }
-            
-            // Remove password if empty (for updates)
             if (user && !submitData.password) {
                 delete submitData.password
             }
-
-            // Legacy fields: keep role for backward compatibility but prefer tenantRoleId
-            if (submitData.tenantRoleId) {
-                // tenantRoleId takes precedence
-                if (!submitData.role) {
-                    delete submitData.role
-                }
-                if (!submitData.manager) {
-                    delete submitData.manager
-                }
+            if (submitData.reportsToUserId === "") {
+                submitData.reportsToUserId = null
             }
 
             if (user) {
@@ -182,6 +180,12 @@ export default function UserForm({ user = null, onSuccess }) {
                                 No roles available. Please configure roles for this tenant first.
                             </div>
                         )}
+
+                        <FormSelect
+                            name="reportsToUserId"
+                            label="Reports to"
+                            options={reportsToOptions}
+                        />
 
                         <Button type="submit" disabled={isLoading} className="w-full">
                             {isLoading ? "Loading..." : user ? "Update User" : "Create User"}

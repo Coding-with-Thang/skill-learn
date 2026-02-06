@@ -47,13 +47,20 @@ export async function GET(request, { params }) {
                 username: true,
                 firstName: true,
                 lastName: true,
-                role: true,
-                manager: true,
                 imageUrl: true,
                 points: true,
                 lifetimePoints: true,
                 createdAt: true,
-                tenantId: true, // Include tenantId for verification
+                tenantId: true,
+                reportsToUserId: true,
+                reportsTo: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true,
+                    },
+                },
             },
         });
 
@@ -94,7 +101,9 @@ export async function PUT(request, { params }) {
             return permResult;
         }
         
-        const { username, firstName, lastName, role, manager } = await validateRequestBody(request, userUpdateSchema);
+        const body = await request.json();
+        const validated = await validateRequestBody(request, userUpdateSchema);
+        const { username, firstName, lastName, tenantRoleId, reportsToUserId } = validated;
 
         const resolvedParams = await params;
         const { userId } = await validateRequestParams(
@@ -111,14 +120,13 @@ export async function PUT(request, { params }) {
             );
         }
 
-        // Get user to update with current role and tenantId
         const userToUpdate = await prisma.user.findUnique({
             where: { id: userId },
-            select: { 
+            select: {
                 clerkId: true,
-                role: true,
-                tenantId: true, // Include tenantId for verification
-            }
+                tenantId: true,
+                reportsToUserId: true,
+            },
         });
 
         if (!userToUpdate) {
@@ -127,7 +135,6 @@ export async function PUT(request, { params }) {
             });
         }
 
-        // CRITICAL: Verify user belongs to the current tenant
         if (userToUpdate.tenantId !== tenantId) {
             throw new AppError(
                 "Access denied: User does not belong to your organization",
@@ -137,117 +144,144 @@ export async function PUT(request, { params }) {
         }
 
         // Check if username exists for another user (usernames are globally unique)
-        const existingUser = await prisma.user.findUnique({
-            where: {
-                username,
-            },
-        });
-
-        if (existingUser && existingUser.id !== userId) {
-            throw new AppError("Username already exists", ErrorType.VALIDATION, {
-                status: 400,
+        if (username !== undefined) {
+            const existingUser = await prisma.user.findUnique({
+                where: { username },
             });
+            if (existingUser && existingUser.id !== userId) {
+                throw new AppError("Username already exists", ErrorType.VALIDATION, {
+                    status: 400,
+                });
+            }
         }
 
-        // Check if user can change roles - requires roles.assign permission
-        const canAssignRoles = await hasPermission(currentUserId, 'roles.assign', tenantId);
-        
-        // Enforce role change restrictions
-        // Users without roles.assign permission cannot change roles
-        if (role && role !== userToUpdate.role && !canAssignRoles) {
-            throw new AppError("You do not have permission to change user roles", ErrorType.FORBIDDEN, {
-                status: 403,
+        // Tenant role change: requires roles.assign permission
+        if (tenantRoleId !== undefined) {
+            const canAssignRoles = await hasPermission(currentUserId, 'roles.assign', tenantId);
+            if (!canAssignRoles) {
+                throw new AppError("You do not have permission to change user roles", ErrorType.FORBIDDEN, {
+                    status: 403,
+                });
+            }
+            const roleExists = await prisma.tenantRole.findFirst({
+                where: { id: tenantRoleId, tenantId, isActive: true },
             });
-        }
-        
-        // Legacy role-based restriction for backward compatibility
-        // If no permission system, fall back to role check
-        if (!canAssignRoles && currentUser.role === "MANAGER" && userToUpdate.role === "AGENT" && role && role !== userToUpdate.role) {
-            throw new AppError("Managers cannot change agent roles", ErrorType.FORBIDDEN, {
-                status: 403,
-            });
-        }
-
-        // Validate manager assignment
-        // Manager field can be set for AGENT or MANAGER roles
-        const targetRole = role || userToUpdate.role;
-        if (manager && manager !== "" && targetRole !== "AGENT" && targetRole !== "MANAGER") {
-            throw new AppError("Manager can only be assigned to agents or managers", ErrorType.VALIDATION, {
-                status: 400,
-            });
-        }
-
-        // Validate manager exists if provided
-        // - AGENT role: manager can be MANAGER or OPERATIONS
-        // - MANAGER role: manager must be OPERATIONS only
-        // NOTE: Manager lookup is scoped to tenant for security (ensures manager is in same tenant)
-        if (manager && manager !== "") {
-            const managerUser = await prisma.user.findFirst({
-                where: { 
-                    username: manager,
-                    tenantId: tenantId, // Only find managers within the same tenant (security check)
-                },
-                select: { id: true, role: true }
-            });
-
-            if (!managerUser) {
-                throw new AppError("Manager not found", ErrorType.NOT_FOUND, {
+            if (!roleExists) {
+                throw new AppError("Tenant role not found or inactive", ErrorType.NOT_FOUND, {
                     status: 404,
                 });
             }
+        }
 
-            // If target role is MANAGER, manager must be OPERATIONS
-            if (targetRole === "MANAGER") {
-                if (managerUser.role !== "OPERATIONS") {
-                    throw new AppError("Users with MANAGER role can only be assigned a manager with OPERATIONS role", ErrorType.VALIDATION, {
-                        status: 400,
-                    });
+        // Validate and apply reportsToUserId (same tenant, no self, no cycle)
+        const newReportsTo = reportsToUserId === undefined ? undefined : (reportsToUserId === null || reportsToUserId === "" ? null : reportsToUserId);
+        if (newReportsTo !== undefined) {
+            if (newReportsTo === userId) {
+                throw new AppError("User cannot report to themselves", ErrorType.VALIDATION, { status: 400 });
+            }
+            if (newReportsTo !== null) {
+                const managerUser = await prisma.user.findUnique({
+                    where: { id: newReportsTo },
+                    select: { id: true, tenantId: true, reportsToUserId: true },
+                });
+                if (!managerUser || managerUser.tenantId !== tenantId) {
+                    throw new AppError("Reports-to must be a user in the same organization", ErrorType.VALIDATION, { status: 400 });
                 }
-            } else if (targetRole === "AGENT") {
-                // Agents can have MANAGER or OPERATIONS as manager
-                if (managerUser.role !== "MANAGER" && managerUser.role !== "OPERATIONS") {
-                    throw new AppError("Assigned manager must have MANAGER or OPERATIONS role", ErrorType.VALIDATION, {
-                        status: 400,
+                // Cycle check: walking up from manager must not reach the user being updated
+                let currentId = managerUser.reportsToUserId;
+                while (currentId) {
+                    if (currentId === userId) {
+                        throw new AppError("This assignment would create a circular reporting chain", ErrorType.VALIDATION, { status: 400 });
+                    }
+                    const next = await prisma.user.findUnique({
+                        where: { id: currentId },
+                        select: { reportsToUserId: true },
                     });
+                    currentId = next?.reportsToUserId ?? null;
                 }
             }
         }
 
-        // Prepare update data
-        const updateData = {
-            username,
-            firstName,
-            lastName,
-        };
+        // Build user update payload (profile + reportsTo)
+        const updateData = {};
+        if (username !== undefined) updateData.username = username;
+        if (firstName !== undefined) updateData.firstName = firstName;
+        if (lastName !== undefined) updateData.lastName = lastName;
+        if (newReportsTo !== undefined) updateData.reportsToUserId = newReportsTo;
 
-        // Only include role if it's being changed and user has permission
-        if (role !== undefined) {
-            updateData.role = role;
+        if (Object.keys(updateData).length > 0) {
+            await prisma.user.update({
+                where: { id: userId },
+                data: updateData,
+            });
         }
 
-        // Only include manager if target role is AGENT or MANAGER
-        if (targetRole === "AGENT" || targetRole === "MANAGER") {
-            // Handle manager assignment: undefined/null -> empty string, "none" -> empty string, otherwise use the value
-            if (manager === undefined || manager === null || manager === "none" || manager === "") {
-                updateData.manager = "";
-            } else {
-                updateData.manager = manager;
-            }
-        } else {
-            // Clear manager if role is not AGENT or MANAGER
-            updateData.manager = "";
+        // Audit log when reports-to changed (Option 3)
+        if (newReportsTo !== undefined && String(userToUpdate.reportsToUserId || "") !== String(newReportsTo || "")) {
+            await prisma.auditLog.create({
+                data: {
+                    userId: adminResult.user.id,
+                    action: "user.reports_to_changed",
+                    resource: "user",
+                    resourceId: userId,
+                    details: JSON.stringify({
+                        previousReportsToUserId: userToUpdate.reportsToUserId ?? null,
+                        newReportsToUserId: newReportsTo ?? null,
+                    }),
+                },
+            });
         }
 
-        // Update database first, then update Clerk (non-blocking)
-        const updatedUser = await prisma.user.update({
+        // Update tenant role assignment if tenantRoleId provided
+        if (tenantRoleId !== undefined) {
+            await prisma.userRole.deleteMany({
+                where: { userId: userToUpdate.clerkId, tenantId },
+            });
+            await prisma.userRole.create({
+                data: {
+                    userId: userToUpdate.clerkId,
+                    tenantId,
+                    tenantRoleId,
+                    assignedBy: currentUserId,
+                },
+            });
+        }
+
+        // Fetch updated user for response
+        const updatedUser = await prisma.user.findUnique({
             where: { id: userId },
-            data: updateData,
+            select: {
+                id: true,
+                username: true,
+                firstName: true,
+                lastName: true,
+                imageUrl: true,
+                points: true,
+                lifetimePoints: true,
+                createdAt: true,
+                tenantId: true,
+                reportsToUserId: true,
+                reportsTo: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        username: true,
+                    },
+                },
+            },
         });
 
-        // Update Clerk user (non-blocking - won't fail the request if Clerk fails)
-        updateClerkUser(userToUpdate.clerkId, { firstName, lastName, username }).catch(err => {
-            console.error("Failed to update Clerk user, but database update succeeded:", err);
-        });
+        // Update Clerk profile when name/username changed
+        if (Object.keys(updateData).length > 0) {
+            updateClerkUser(userToUpdate.clerkId, {
+                ...(firstName !== undefined && { firstName }),
+                ...(lastName !== undefined && { lastName }),
+                ...(username !== undefined && { username }),
+            }).catch(err => {
+                console.error("Failed to update Clerk user, but database update succeeded:", err);
+            });
+        }
 
         return successResponse({ user: updatedUser });
     } catch (error) {
@@ -310,7 +344,11 @@ export async function DELETE(request, { params }) {
             );
         }
 
-        // Delete from both Clerk and database in parallel
+        // Clear any "reports to" references to this user, then delete
+        await prisma.user.updateMany({
+            where: { reportsToUserId: userId },
+            data: { reportsToUserId: null },
+        });
         await Promise.all([
             prisma.user.delete({
                 where: { id: userId },

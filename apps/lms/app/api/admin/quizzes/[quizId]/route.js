@@ -117,6 +117,9 @@ export async function PUT(request, { params }) {
       params
     );
 
+    const tenantId = await getTenantId();
+    const whereClause = buildTenantContentFilter(tenantId);
+
     // Verify quiz belongs to tenant before updating
     const existingQuiz = await prisma.quiz.findFirst({
       where: { 

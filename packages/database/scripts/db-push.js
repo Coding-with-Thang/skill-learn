@@ -25,5 +25,5 @@ if (!process.env.MONGODB_URI) {
 
 execSync(`npx prisma db push --schema="${schemaPath}"`, {
   stdio: "inherit",
-  cwd: resolve(__dirname, ".."),
+  cwd: rootDir,
 });

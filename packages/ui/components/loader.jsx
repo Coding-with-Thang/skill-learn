@@ -218,7 +218,7 @@ const FullScreenLoader = ({ text }) => {
             transition={{ delay: 0.3 }}
             className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase mb-12"
           >
-            People-First AI
+            People-First
           </motion.p>
 
 

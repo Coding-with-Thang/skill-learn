@@ -64,6 +64,11 @@ export function handleApiError(error, customMessage = null, defaultStatus = null
     timestamp: error instanceof AppError ? error.timestamp : new Date().toISOString(),
   };
 
+  // Always include fieldErrors for validation errors so clients can show inline field errors
+  if (error instanceof AppError && error.details?.fieldErrors) {
+    errorResponse.fieldErrors = error.details.fieldErrors;
+  }
+
   // Add details in development mode
   if (process.env.NODE_ENV === "development") {
     errorResponse.details = error instanceof AppError 

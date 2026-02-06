@@ -194,16 +194,7 @@ export const quizFinishSchema = z.object({
   pointsBreakdown: z.record(z.any()).optional(),
 });
 
-// User schemas - must match Prisma Role enum
-export const userRoleSchema = z.enum([
-  "ADMIN",
-  "MANAGER",
-  "AGENT",
-  "USER",
-  "OPERATIONS",
-  "OWNER",
-]);
-
+// User schemas - tenant-only; roles are TenantRole via UserRole
 export const userCreateSchema = z.object({
   username: z
     .string()
@@ -225,52 +216,46 @@ export const userCreateSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(100, "Password must be less than 100 characters"),
-  role: userRoleSchema.optional().default("AGENT"),
-  manager: z.string().optional(),
+  tenantRoleId: objectIdSchema.optional(),
+  reportsToUserId: z
+    .union([objectIdSchema, z.literal("")])
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? null : v)),
 });
 
-export const userUpdateSchema = z
-  .object({
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(20, "Username must be less than 20 characters")
-      .regex(
-        /^[a-zA-Z0-9_]+$/,
-        "Username can only contain letters, numbers, and underscores"
-      )
-      .optional(),
-    firstName: z
-      .string()
-      .min(1, "First name is required")
-      .max(50, "First name must be less than 50 characters")
-      .optional(),
-    lastName: z
-      .string()
-      .min(1, "Last name is required")
-      .max(50, "Last name must be less than 50 characters")
-      .optional(),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters")
-      .max(100, "Password must be less than 100 characters")
-      .optional(),
-    role: userRoleSchema.optional(),
-    manager: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      // Manager can only be set for AGENT or MANAGER roles
-      if (data.manager && data.manager !== "" && data.role) {
-        return data.role === "AGENT" || data.role === "MANAGER";
-      }
-      return true;
-    },
-    {
-      message: "Manager can only be assigned to AGENT or MANAGER roles",
-      path: ["manager"],
-    }
-  );
+export const userUpdateSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must be less than 20 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores"
+    )
+    .optional(),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .max(50, "First name must be less than 50 characters")
+    .optional(),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .max(50, "Last name must be less than 50 characters")
+    .optional(),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(100, "Password must be less than 100 characters")
+    .optional(),
+  tenantRoleId: objectIdSchema.optional(),
+  reportsToUserId: z
+    .union([objectIdSchema, z.literal("")])
+    .optional()
+    .nullable()
+    .transform((v) => (v === "" ? null : v)),
+});
 
 // Reward schemas
 export const rewardRedeemSchema = z.object({

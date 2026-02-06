@@ -45,11 +45,13 @@ export async function validateRequestBody(request, schema) {
 
 /**
  * Validate request params (URL parameters)
+ * Next.js 16: params is a Promise and must be awaited
  * @param {z.ZodSchema} schema - Zod schema to validate against
- * @param {any} params - Params object from Next.js route
+ * @param {Promise<any>|any} params - Params from Next.js route (Promise in Next 16+)
  * @returns {Promise<any>} Validated and parsed params
  */
 export async function validateRequestParams(schema, params) {
-  return validateRequest(schema, params);
+  const resolved = params && typeof params.then === "function" ? await params : params;
+  return validateRequest(schema, resolved);
 }
 

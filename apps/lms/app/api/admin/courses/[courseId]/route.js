@@ -2,34 +2,28 @@ import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { courseSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
-import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";
+import { getCourseWithChaptersAndLessons } from "@/lib/courses.js";
 import { z } from "zod";
 
-// Get a specific course
+// Get a specific course (with chapters and lessons)
 export async function GET(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
-    }
-
     const { courseId } = await params;
-
     if (!courseId) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
       });
     }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
-    const course = await prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        category: true,
-      },
-    });
+    const course = await getCourseWithChaptersAndLessons(courseId);
 
     if (!course) {
       throw new AppError("Course not found", ErrorType.NOT_FOUND, {
@@ -50,7 +44,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Return course with optional imageUrl for client-side preview
+    // Return course with chapters, lessons, and optional imageUrl for client-side preview
     return successResponse({ course: { ...course, imageUrl } });
   } catch (error) {
     return handleApiError(error);
@@ -60,19 +54,18 @@ export async function GET(request, { params }) {
 // Update a course
 export async function PUT(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
-    }
-
     const { courseId } = await params;
-    const data = await request.json();
-
     if (!courseId) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
       });
     }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const data = await request.json();
 
     // Validate the data
     const validation = courseSchema.safeParse(data);
@@ -125,17 +118,15 @@ export async function PUT(request, { params }) {
 // Delete a course
 export async function DELETE(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
-    }
-
     const { courseId } = await params;
-
     if (!courseId) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
       });
+    }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
     // Check if course exists

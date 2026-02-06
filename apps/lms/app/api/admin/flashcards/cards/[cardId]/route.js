@@ -13,11 +13,7 @@ import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
 import { computeFingerprint } from "@skill-learn/lib/utils/flashCardFingerprint.js";
 
 async function getParams(context) {
-  const params =
-    typeof context.params?.then === "function"
-      ? await context.params
-      : context.params;
-  return params;
+  return await context.params;
 }
 
 /**

@@ -8,6 +8,7 @@ datasource db {
   url      = env("MONGODB_URI")
 }
 
+// Legacy enum: authorization is tenant-based (TenantRole/UserRole). Only AGENT/USER/OWNER used for defaults/display.
 enum Role {
   ADMIN
   MANAGER
@@ -21,14 +22,16 @@ model User {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   clerkId         String          @unique
   username        String          @unique // Globally unique username
-  email           String? // Added for multi-tenant RBAC (optional for migration)
+  email           String?
   firstName       String
   lastName        String
   imageUrl        String?
-  manager         String?         @default("")
-  role            Role            @default(AGENT) // Legacy role enum (can be deprecated later)
+  role            Role            @default(AGENT) // Display/default only; auth is TenantRole via UserRole
   tenantId        String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
   tenant          Tenant?         @relation(fields: [tenantId], references: [id])
+  reportsToUserId String?         @db.ObjectId // Reports-to (same tenant); null = none
+  reportsTo       User?           @relation("UserReportsTo", fields: [reportsToUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directReports   User[]          @relation("UserReportsTo")
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   points          Int             @default(0)
@@ -60,6 +63,7 @@ model User {
   // TEXT SEARCH INDEXES (if you need name-based search)
   @@index([firstName, lastName]) // Full name search
   @@index([username, firstName, lastName]) // Comprehensive user search
+  @@index([tenantId, reportsToUserId]) // Reporting hierarchy per tenant
   @@map("users")
 }
 
@@ -317,12 +321,45 @@ model Course {
   updatedAt          DateTime     @updatedAt
   userId             String?      @db.ObjectId
   user               User?        @relation(fields: [userId], references: [id])
+  chapters           CourseChapter[]
 }
 
 enum CourseStatus {
   Published
   Draft
   Achieved
+}
+
+model CourseChapter {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  position    Int
+  description String?
+  courseId    String        @db.ObjectId
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     CourseLesson[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  @@index([courseId])
+  @@index([position])
+  @@map("course_chapters")
+}
+
+model CourseLesson {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  position         Int
+  description      String?
+  thumbnailUrl     String?
+  videoUrl         String?
+  fileKey          String?
+  courseChapterId  String       @db.ObjectId
+  courseChapter    CourseChapter @relation(fields: [courseChapterId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  @@index([courseChapterId])
+  @@index([position])
+  @@map("course_lessons")
 }
 
 // ============================================

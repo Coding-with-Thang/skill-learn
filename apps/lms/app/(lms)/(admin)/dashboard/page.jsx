@@ -178,8 +178,8 @@ export default async function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Array.isArray(categoryPerformance) && categoryPerformance.map((category) => (
-              <Card key={category.category} className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
+            {Array.isArray(categoryPerformance) && categoryPerformance.map((category, index) => (
+              <Card key={category.categoryId ?? `category-${index}`} className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm group hover:scale-[1.02] transition-all duration-300 overflow-hidden">
                 <div className={`h-1.5 w-full ${category.averageScore >= 80 ? 'bg-emerald-500' : category.averageScore >= 50 ? 'bg-amber-500' : 'bg-rose-500 opacity-50'}`} />
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center mb-6">

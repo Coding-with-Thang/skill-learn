@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { hasAnyPermission, getUserPermissions } from './permissions.js';
+import { hasAnyPermission, getUserPermissions, isUserInTenant } from './permissions.js';
 
 /**
  * Require authentication for API routes
@@ -39,10 +39,9 @@ export async function requireAdmin(tenantId = null) {
   // Get user with tenant info
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
-    select: { 
-      id: true, 
-      role: true, // Keep for legacy fallback
-      tenantId: true 
+    select: {
+      id: true,
+      tenantId: true,
     },
   });
 
@@ -56,7 +55,7 @@ export async function requireAdmin(tenantId = null) {
   // Use tenantId from user if not provided
   const effectiveTenantId = tenantId || user.tenantId;
 
-  // Check for admin permissions
+  // Check for admin permissions (tenant-based RBAC only)
   const adminPermissions = [
     'users.create',
     'users.update',
@@ -71,11 +70,7 @@ export async function requireAdmin(tenantId = null) {
 
   const hasAdminPermission = await hasAnyPermission(userId, adminPermissions, effectiveTenantId);
 
-  // Legacy fallback: if no permissions found and user has OPERATIONS or MANAGER role, allow access
-  // This ensures backward compatibility during migration
-  const isLegacyAdmin = !hasAdminPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
-
-  if (!hasAdminPermission && !isLegacyAdmin) {
+  if (!hasAdminPermission) {
     return NextResponse.json(
       { error: "Unauthorized - Admin permissions required" },
       { status: 403 }
@@ -105,10 +100,9 @@ export async function requireAdminForAction(tenantId = null) {
 
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
-    select: { 
-      id: true, 
-      role: true, // Keep for legacy fallback
-      tenantId: true 
+    select: {
+      id: true,
+      tenantId: true,
     },
   });
 
@@ -119,7 +113,7 @@ export async function requireAdminForAction(tenantId = null) {
   // Use tenantId from user if not provided
   const effectiveTenantId = tenantId || user.tenantId;
 
-  // Check for admin permissions
+  // Check for admin permissions (tenant-based RBAC only)
   const adminPermissions = [
     'users.create',
     'users.update',
@@ -128,15 +122,13 @@ export async function requireAdminForAction(tenantId = null) {
     'dashboard.manager',
     'roles.assign',
     'roles.create',
-    'settings.update'
+    'settings.update',
+    'flashcards.manage_tenant',
   ];
 
   const hasAdminPermission = await hasAnyPermission(userId, adminPermissions, effectiveTenantId);
 
-  // Legacy fallback: if no permissions found and user has OPERATIONS or MANAGER role, allow access
-  const isLegacyAdmin = !hasAdminPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
-
-  if (!hasAdminPermission && !isLegacyAdmin) {
+  if (!hasAdminPermission) {
     throw new Error("Unauthorized - Admin permissions required");
   }
 
@@ -194,5 +186,87 @@ export async function requireSuperAdmin() {
   }
 
   return { userId };
+}
+
+/**
+ * Require permission to edit a course (and thus its chapters and lessons).
+ * Use this for all course/chapter/lesson admin routes. If the user can edit the course,
+ * they can edit its chapters and lessons; no separate permission check for chapters/lessons.
+ * @param {string} courseId - Course ID from route params
+ * @returns {Promise<{userId: string, user: object, course: object, tenantId?: string}|NextResponse>}
+ */
+export async function requireCanEditCourse(courseId) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+  const userId = authResult;
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true, tenantId: true },
+  });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, tenantId: true },
+  });
+  if (!course) {
+    return NextResponse.json({ error: "Course not found" }, { status: 404 });
+  }
+
+  const courseEditPermissions = ['courses.update', 'courses.create', 'courses.delete'];
+  const adminPermissions = [
+    'users.create', 'users.update', 'users.delete',
+    'dashboard.admin', 'dashboard.manager',
+    'roles.assign', 'roles.create', 'settings.update',
+    'flashcards.manage_tenant',
+  ];
+
+  if (course.tenantId) {
+    const inTenant = await isUserInTenant(userId, course.tenantId);
+    if (!inTenant) {
+      return NextResponse.json(
+        { error: "You do not have access to edit this course" },
+        { status: 403 }
+      );
+    }
+    const canEdit = await hasAnyPermission(
+      userId,
+      [...courseEditPermissions, ...adminPermissions],
+      course.tenantId
+    );
+    if (!canEdit) {
+      return NextResponse.json(
+        { error: "You need permission to edit courses" },
+        { status: 403 }
+      );
+    }
+  } else {
+    const effectiveTenantId = user.tenantId;
+    const canEdit = effectiveTenantId
+      ? await hasAnyPermission(
+          userId,
+          [...courseEditPermissions, ...adminPermissions],
+          effectiveTenantId
+        )
+      : false;
+    if (!canEdit) {
+      return NextResponse.json(
+        { error: "You need permission to edit courses" },
+        { status: 403 }
+      );
+    }
+  }
+
+  return {
+    userId,
+    user,
+    course,
+    ...(course.tenantId && { tenantId: course.tenantId }),
+  };
 }
 

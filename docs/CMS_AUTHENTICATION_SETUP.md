@@ -5,29 +5,28 @@ This guide explains the complete authentication flow for the CMS (Super Admin Po
 ## Overview
 
 The CMS uses Clerk for authentication with the following security model:
+
 - **Only super admins** can access CMS routes
 - **No self-registration** as super admin - only existing super admins can promote users
 - **Webhook sync** ensures Clerk and database stay in sync
 
 ## Authentication Flow
 
-### 1. User Signs Up
+### 1. User Signs In (Existing Super Admin Only)
 
 ```
-User visits /cms/sign-up
+User visits /cms/sign-in
   ↓
-Clerk SignUp component
+Clerk SignIn component
   ↓
-User account created in Clerk (NO super_admin role)
+Must have super_admin role (set by another super admin from within CMS)
   ↓
-Webhook fires: user.created
-  ↓
-User created in database (regular user, no super admin access)
-  ↓
-Redirected to /cms/pending-approval
+Access granted to CMS
 ```
 
-### 2. User Signs In
+**Note:** There is no sign-up option for CMS. New super admins are created from within the CMS by an existing super admin (see section 3).
+
+### 2. User Signs In (Flow)
 
 ```
 User visits /cms/sign-in
@@ -42,56 +41,35 @@ If no super_admin → Redirected to home page
 If super_admin → Access granted to CMS
 ```
 
-### 3. Super Admin Approves User
+### 3. Creating New Super Admins (From Within CMS)
 
 ```
-Existing super admin:
-  1. Uses /api/admin/approve-user endpoint
-  2. OR uses Clerk Dashboard to set publicMetadata.role = "super_admin"
+Existing super admin (signed in to CMS):
+  1. Goes to /cms/admins
+  2. Clicks "Add Super Admin"
+  3. Enters email of user who already has an account (e.g. from LMS sign-up)
+  4. Clicks "Promote to Super Admin"
   ↓
-Clerk metadata updated
+API updates Clerk metadata (role: super_admin)
   ↓
-Webhook fires: user.updated
-  ↓
-Database synced (user already exists)
-  ↓
-User can now sign in to CMS
+User signs out and back in → can now access CMS
 ```
+
+The promoted user must already have a Clerk account (e.g. from signing up on the LMS).
 
 ## Files Created
 
 ### 1. CMS Sign-In Page
-- **Location:** `apps/cms/app/sign-in/[[...sign-in]]/page.jsx`
+
+- **Location:** `apps/cms/app/cms/sign-in/[[...sign-in]]/page.jsx`
 - **Purpose:** Clerk sign-in component for CMS
 - **Features:**
   - Only allows existing super admins to sign in
   - Redirects to `/cms/tenants` after successful sign-in
-  - Links to sign-up page for new users
+  - No sign-up link (super admins are created from within CMS)
 
-### 2. CMS Sign-Up Page
-- **Location:** `apps/cms/app/sign-up/[[...sign-up]]/page.jsx`
-- **Purpose:** Allow users to create accounts (but not as super admin)
-- **Features:**
-  - Creates account in Clerk
-  - Does NOT grant super admin access
-  - Redirects to pending approval page
+### 2. Updated Webhook
 
-### 3. Pending Approval Page
-- **Location:** `apps/cms/app/pending-approval/page.jsx`
-- **Purpose:** Inform users they need approval
-- **Features:**
-  - Shows account details
-  - Explains approval process
-  - Links back to sign-in
-
-### 4. User Approval API
-- **Location:** `apps/cms/app/api/admin/approve-user/route.js`
-- **Purpose:** Allow super admins to approve users
-- **Endpoints:**
-  - `POST /api/admin/approve-user` - Approve a user (requires userId or email)
-  - `GET /api/admin/approve-user` - List users pending approval
-
-### 5. Updated Webhook
 - **Location:** `apps/lms/app/api/webhooks/route.js`
 - **Changes:**
   - Handles `user.created` and `user.updated` events
@@ -104,11 +82,13 @@ User can now sign in to CMS
 ### ✅ Multi-Layer Protection
 
 1. **Middleware Level** (First Line)
+
    - Checks authentication
    - Checks `publicMetadata.role === 'super_admin'`
    - Redirects unauthorized users
 
 2. **API Route Level** (Second Line)
+
    - All tenant API routes use `requireSuperAdmin()`
    - Double-checks super admin status
    - Returns 401/403 if unauthorized
@@ -120,11 +100,8 @@ User can now sign in to CMS
 
 ### ✅ No Self-Registration
 
-- Users can sign up, but they **cannot** grant themselves super admin access
-- Only existing super admins can:
-  - Use the approval API endpoint
-  - Update Clerk metadata via Dashboard
-  - Use the setup script
+- No self-registration for CMS; `/cms/sign-up` redirects to sign-in
+- Only existing super admins can create new super admins (via CMS Admins page or Clerk Dashboard)
 
 ## Setup Steps
 
@@ -137,6 +114,7 @@ node scripts/setup-super-admin.js <your-email>
 ```
 
 This will:
+
 - Find your user in Clerk
 - Set `publicMetadata.role = "super_admin"`
 - Allow you to sign in to CMS
@@ -147,31 +125,29 @@ This will:
 2. Sign in with your super admin account
 3. You should be redirected to `/cms/tenants`
 
-### Step 3: Approve Additional Users (Optional)
+### Step 3: Add Additional Super Admins (Optional)
 
-**Option A: Via API**
-```javascript
-// As a super admin, call:
-POST /api/admin/approve-user
-{
-  "email": "newadmin@example.com"
-}
-```
+**From within CMS (recommended):**
 
-**Option B: Via Clerk Dashboard**
-1. Go to Clerk Dashboard → Users
-2. Find the user
-3. Set `publicMetadata.role = "super_admin"`
-4. User must sign out and back in
+1. Sign in to CMS → Go to **Admins**
+2. Click **Add Super Admin**
+3. Enter the user's email (they must already have an account, e.g. from LMS)
+4. Click **Promote to Super Admin**
+5. User signs out and back in to access CMS
+
+**Or via Clerk Dashboard:**
+
+1. Go to Clerk Dashboard → Users → Find the user
+2. Set `publicMetadata.role = "super_admin"` (and `appRole` if used)
+3. User must sign out and sign back in
 
 ## Route Structure
 
 ```
 /cms
-  ├── /sign-in          → CMS sign-in page (public)
-  ├── /sign-up          → CMS sign-up page (public)
-  ├── /pending-approval → Pending approval page (public)
+  ├── /sign-in          → CMS sign-in page (public; /sign-up redirects here)
   └── /(dashboard)      → Protected dashboard routes
+      ├── /admins       → Manage super admins (add new super admins)
       ├── /             → Dashboard home (redirects to /tenants)
       ├── /tenants      → Tenant management
       └── /billing      → Billing management
@@ -180,11 +156,13 @@ POST /api/admin/approve-user
 ## Webhook Configuration
 
 Make sure your Clerk webhook is configured to send events to:
+
 ```
 https://yourdomain.com/api/webhooks
 ```
 
 **Required Events:**
+
 - `user.created`
 - `user.updated`
 - `user.deleted`
@@ -194,9 +172,7 @@ https://yourdomain.com/api/webhooks
 ### Test Sign-Up Flow
 
 1. Visit `/cms/sign-up`
-2. Create a new account
-3. Should redirect to `/cms/pending-approval`
-4. User should NOT be able to access `/cms/tenants`
+2. Should redirect to `/cms/sign-in` (no sign-up option)
 
 ### Test Sign-In Flow (Non-Admin)
 
@@ -215,6 +191,7 @@ https://yourdomain.com/api/webhooks
 ### Issue: "Unauthorized" after setting super admin
 
 **Solution:**
+
 - User must sign out and sign back in
 - Clerk caches session claims
 - New session will include updated metadata
@@ -222,6 +199,7 @@ https://yourdomain.com/api/webhooks
 ### Issue: User can't sign up
 
 **Check:**
+
 - Clerk is properly configured
 - Sign-up is enabled in Clerk Dashboard
 - Webhook is receiving events
@@ -229,6 +207,7 @@ https://yourdomain.com/api/webhooks
 ### Issue: Webhook not creating users
 
 **Check:**
+
 - Webhook secret is configured
 - Webhook URL is correct in Clerk Dashboard
 - Check server logs for webhook errors
@@ -238,9 +217,8 @@ https://yourdomain.com/api/webhooks
 1. ✅ Set up your first super admin using the script
 2. ✅ Test sign-in to CMS
 3. ✅ Configure webhook in Clerk Dashboard
-4. ✅ Test user approval flow
-5. ✅ Set up additional super admins as needed
+4. ✅ Add additional super admins via Clerk Dashboard as needed
 
 ---
 
-**Security Note:** Always use the approval API or Clerk Dashboard to promote users. Never allow self-registration as super admin.
+**Security Note:** Grant super admin only via Clerk Dashboard (public metadata). Never allow self-registration as super admin.

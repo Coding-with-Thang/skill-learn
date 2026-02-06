@@ -17,6 +17,11 @@ import {
   Telescope,
   Rocket,
   ShieldCheck,
+  Filter,
+  Award,
+  Star,
+  Share2,
+  Calendar,
 } from 'lucide-react'
 import { Button } from "@skill-learn/ui/components/button"
 import {

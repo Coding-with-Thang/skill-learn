@@ -47,7 +47,7 @@ async function requireTenantAdmin() {
     },
   });
 
-  // Check if user has features.manage permission or is an admin
+  // Check if user has features.manage permission or is an admin (tenant RBAC only)
   const hasPermission = userRoles.some((ur) => {
     return ur.tenantRole.tenantRolePermissions.some(
       (trp) =>
@@ -57,11 +57,7 @@ async function requireTenantAdmin() {
     );
   });
 
-  // Legacy fallback: check role if permission system not set up
-  // This ensures backward compatibility during migration
-  const isLegacyAdmin = !hasPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
-
-  if (!hasPermission && !isLegacyAdmin) {
+  if (!hasPermission) {
     return { error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }) };
   }
 

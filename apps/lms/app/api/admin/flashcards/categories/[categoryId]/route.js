@@ -12,11 +12,7 @@ import { flashCardCategoryUpdateSchema } from "@/lib/zodSchemas";
 import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
 
 async function getParams(context) {
-  const params =
-    typeof context.params?.then === "function"
-      ? await context.params
-      : context.params;
-  return params;
+  return await context.params;
 }
 
 /**

@@ -5,16 +5,18 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
-    "build": "prisma generate --schema=./prisma/schema.prisma",
-    "prisma:generate": "prisma generate --schema=./prisma/schema.prisma",
+    "build": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
+    "prisma:generate": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js",
-    "prisma:migrate": "prisma migrate dev --schema=./prisma/schema.prisma",
-    "prisma:studio": "prisma studio --schema=./prisma/schema.prisma",
+    "prisma:migrate": "node ../../node_modules/prisma/build/index.js migrate dev --schema=./prisma/schema.prisma",
+    "prisma:studio": "node ../../node_modules/prisma/build/index.js studio --schema=./prisma/schema.prisma",
     "prisma:push": "node scripts/db-push.js",
-    "migrate:games-global": "node prisma/migrations/make_games_global.js"
+    "migrate:games-global": "node prisma/migrations/make_games_global.js",
+    "db:validate": "node scripts/validate-mongo-schema.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
+    "bson": "^5.0.0",
     "dotenv": "^16.6.1"
   },
   "devDependencies": {

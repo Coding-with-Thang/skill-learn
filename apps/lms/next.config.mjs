@@ -1,5 +1,5 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -7,9 +7,12 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {},
-  outputFileTracingRoot: path.join(__dirname, '../..'),
-  transpilePackages: ['@skill-learn/ui', '@skill-learn/lib', '@skill-learn/database'],
-  eslint: { ignoreDuringBuilds: true },
+  outputFileTracingRoot: path.join(__dirname, "../.."),
+  transpilePackages: [
+    "@skill-learn/ui",
+    "@skill-learn/lib",
+    "@skill-learn/database",
+  ],
   images: {
     remotePatterns: [
       {
@@ -95,7 +98,7 @@ const nextConfig = {
     if (config.cache) {
       config.cache = {
         ...config.cache,
-        compression: 'gzip',
+        compression: "gzip",
         maxMemoryGenerations: 1,
       };
     }
