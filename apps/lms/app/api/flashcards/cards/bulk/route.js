@@ -16,21 +16,7 @@ import {
   hasAnyPermission,
   PERMISSIONS,
 } from "@skill-learn/lib/utils/permissions.js";
-import { z } from "zod";
-
-const flashCardUserBulkCreateSchema = z.object({
-  categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/),
-  cards: z
-    .array(
-      z.object({
-        question: z.string().min(1).max(2000),
-        answer: z.string().min(1).max(5000),
-        tags: z.array(z.string().max(50)).optional().default([]),
-        difficulty: z.enum(["easy", "good", "hard"]).nullable().optional(),
-      })
-    )
-    .min(1, "At least one card is required"),
-});
+import { flashCardUserBulkCreateSchema } from "@/lib/zodSchemas.js";
 
 const FLASHCARD_CREATE_PERMS = [
   PERMISSIONS.FLASHCARDS_CREATE,

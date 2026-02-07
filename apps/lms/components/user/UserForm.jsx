@@ -11,7 +11,7 @@ import { FormSelect } from "@skill-learn/ui/components/form-select"
 import { FormDescription } from "@skill-learn/ui/components/form"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
 import { useRolesStore } from "@skill-learn/lib/stores/rolesStore.js"
-import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js"
+import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js"
 import { toast } from "sonner"
 import { userCreateSchema, userUpdateSchema } from "@/lib/zodSchemas"
 import api from "@skill-learn/lib/utils/axios.js"
@@ -19,10 +19,14 @@ import api from "@skill-learn/lib/utils/axios.js"
 export default function UserForm({ user = null, onSuccess }) {
     const { createUser, updateUser, isLoading, users } = useUsersStore()
     const { roles, tenant, fetchRoles } = useRolesStore()
-    const { hasPermission } = usePermissions()
+    const hasPermission = usePermissionsStore((s) => s.hasPermission)
+    const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions)
     const [defaultRoleId, setDefaultRoleId] = useState(null)
 
-    // Fetch users if not already loaded
+    useEffect(() => {
+        fetchPermissions();
+    }, [fetchPermissions]);
+
     useEffect(() => {
         if (users.length === 0) {
             useUsersStore.getState().fetchUsers()

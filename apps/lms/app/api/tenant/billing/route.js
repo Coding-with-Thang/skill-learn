@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { requireTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/tenant/billing
@@ -42,7 +43,7 @@ export async function GET() {
     });
 
     if (!tenant) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
+      throw new AppError("Tenant not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // Calculate billing info
@@ -191,10 +192,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching billing:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch billing information" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/tenant
@@ -11,7 +12,7 @@ export async function GET() {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
 
     // Get user with tenant
@@ -42,7 +43,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     if (!user.tenant) {
@@ -79,10 +80,6 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Error fetching tenant:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tenant" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

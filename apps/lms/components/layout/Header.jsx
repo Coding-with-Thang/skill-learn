@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from "next/link";
 import { SignedIn, SignedOut, useUser } from '@clerk/nextjs';
 import { LoadingSpinner } from "@skill-learn/ui/components/loading";
 import { LoadingHeader } from "@skill-learn/ui/components/loading";
 import { ErrorCard } from "@skill-learn/ui/components/error-boundary";
-import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
+import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js";
 import { Navigation } from './Navigation/Navigation';
 import { Logo } from '../shared/Logo';
 import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
@@ -14,7 +14,14 @@ import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
 
 export default function Header() {
   const { isLoaded: clerkLoaded } = useUser();
-  const { hasPermission, hasAnyPermission, loading: permissionsLoading } = usePermissions();
+  const hasPermission = usePermissionsStore((s) => s.hasPermission);
+  const hasAnyPermission = usePermissionsStore((s) => s.hasAnyPermission);
+  const permissionsLoading = usePermissionsStore((s) => s.isLoading);
+  const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
+
+  useEffect(() => {
+    fetchPermissions();
+  }, [fetchPermissions]);
   const [error, setError] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

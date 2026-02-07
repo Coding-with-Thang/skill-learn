@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import {
   requirePermission,
   requireAnyPermission,
@@ -16,22 +17,16 @@ import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
 export async function GET() {
   try {
     const { userId } = await auth();
-
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_READ, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -101,11 +96,7 @@ export async function GET() {
       availableSlots: tenant.maxRoleSlots - formattedRoles.length,
     });
   } catch (error) {
-    console.error("Error fetching roles:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch roles" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -119,25 +110,19 @@ export async function POST(request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_CREATE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
-
     const body = await request.json();
     const { roleAlias, description, slotPosition, templateId, permissionIds } = body;
 
@@ -153,30 +138,16 @@ export async function POST(request) {
     });
 
     if (existingRolesCount >= tenant.maxRoleSlots) {
-      return NextResponse.json(
-        { error: `Maximum ${tenant.maxRoleSlots} roles reached. Upgrade your plan for more.` },
-        { status: 400 }
-      );
+      throw new AppError(`Maximum ${tenant.maxRoleSlots} roles reached. Upgrade your plan for more.`, ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Validate required fields
     if (!roleAlias) {
-      return NextResponse.json(
-        { error: "Role name is required" },
-        { status: 400 }
-      );
+      throw new AppError("Role name is required", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check for duplicate
     const existingRole = await prisma.tenantRole.findFirst({
       where: { tenantId: user.tenantId, roleAlias },
     });
-
     if (existingRole) {
-      return NextResponse.json(
-        { error: `A role with name "${roleAlias}" already exists` },
-        { status: 400 }
-      );
+      throw new AppError(`A role with name "${roleAlias}" already exists`, ErrorType.VALIDATION, { status: 400 });
     }
 
     // Get template permissions if using template
@@ -253,11 +224,7 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating role:", error);
-    return NextResponse.json(
-      { error: "Failed to create role" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -271,25 +238,19 @@ export async function PUT(request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_CREATE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
-
     const body = await request.json();
     const { templateSetName = "generic" } = body;
 
@@ -303,10 +264,7 @@ export async function PUT(request) {
 
     // Check if tenant already has roles
     if (tenant._count.tenantRoles > 0) {
-      return NextResponse.json(
-        { error: "Tenant already has roles. Delete existing roles first or add roles individually." },
-        { status: 400 }
-      );
+      throw new AppError("Tenant already has roles. Delete existing roles first or add roles individually.", ErrorType.VALIDATION, { status: 400 });
     }
 
     // Get templates
@@ -321,10 +279,7 @@ export async function PUT(request) {
     });
 
     if (templates.length === 0) {
-      return NextResponse.json(
-        { error: `No templates found for set "${templateSetName}"` },
-        { status: 404 }
-      );
+      throw new AppError(`No templates found for set "${templateSetName}"`, ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // Create roles
@@ -371,10 +326,6 @@ export async function PUT(request) {
       roles: createdRoles,
     });
   } catch (error) {
-    console.error("Error initializing roles:", error);
-    return NextResponse.json(
-      { error: "Failed to initialize roles" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

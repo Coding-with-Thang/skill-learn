@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@skill-learn/lib/utils/auth.js";
 import { prisma } from '@skill-learn/database';
-import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/user/progress
@@ -22,7 +22,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // Fetch user's quiz attempts to calculate stats (using database user ID)

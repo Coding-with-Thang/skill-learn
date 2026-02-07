@@ -12,13 +12,20 @@ import {
   User,
   Layers,
 } from "lucide-react";
+import { useEffect } from "react";
 import { cn } from "@skill-learn/lib/utils.js";
-import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
+import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore.js";
 import { Logo } from "@/components/shared/Logo";
 
 export default function Sidebar({ isOperations }) {
   const pathname = usePathname();
-  const { isEnabled, isLoading } = useFeatures();
+  const isEnabled = useFeaturesStore((s) => s.isEnabled);
+  const isLoading = useFeaturesStore((s) => s.isLoading);
+  const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
+
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
 
   // Admin Navigation Items
   const adminNavItems = [

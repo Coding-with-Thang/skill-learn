@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
 
@@ -12,27 +13,20 @@ export async function GET(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_READ, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
-
     const role = await prisma.tenantRole.findFirst({
       where: { id: roleId, tenantId: user.tenantId },
       include: {
@@ -58,7 +52,7 @@ export async function GET(request, { params }) {
     });
 
     if (!role) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // Group permissions by category
@@ -85,8 +79,7 @@ export async function GET(request, { params }) {
       },
     });
   } catch (error) {
-    console.error("Error fetching role:", error);
-    return NextResponse.json({ error: "Failed to fetch role" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -98,22 +91,16 @@ export async function PUT(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_UPDATE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -128,19 +115,14 @@ export async function PUT(request, { params }) {
     });
 
     if (!existingRole) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
-
-    // Check for duplicate name
     if (roleAlias && roleAlias !== existingRole.roleAlias) {
       const duplicate = await prisma.tenantRole.findFirst({
         where: { tenantId: user.tenantId, roleAlias, id: { not: roleId } },
       });
       if (duplicate) {
-        return NextResponse.json(
-          { error: `A role with name "${roleAlias}" already exists` },
-          { status: 400 }
-        );
+        throw new AppError(`A role with name "${roleAlias}" already exists`, ErrorType.VALIDATION, { status: 400 });
       }
     }
 
@@ -209,8 +191,7 @@ export async function PUT(request, { params }) {
       },
     });
   } catch (error) {
-    console.error("Error updating role:", error);
-    return NextResponse.json({ error: "Failed to update role" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -222,22 +203,16 @@ export async function DELETE(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_DELETE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -250,14 +225,10 @@ export async function DELETE(request, { params }) {
     });
 
     if (!role) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
-
     if (role._count.userRoles > 0) {
-      return NextResponse.json(
-        { error: `Cannot delete role with ${role._count.userRoles} user(s). Remove users first.` },
-        { status: 400 }
-      );
+      throw new AppError(`Cannot delete role with ${role._count.userRoles} user(s). Remove users first.`, ErrorType.VALIDATION, { status: 400 });
     }
 
     // Delete role (cascade removes permissions)
@@ -270,7 +241,6 @@ export async function DELETE(request, { params }) {
       message: "Role deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting role:", error);
-    return NextResponse.json({ error: "Failed to delete role" }, { status: 500 });
+    return handleApiError(error);
   }
 }

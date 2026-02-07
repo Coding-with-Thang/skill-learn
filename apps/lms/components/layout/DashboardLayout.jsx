@@ -1,16 +1,23 @@
 "use client";
 
+import { useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
-import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
+import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js";
 import { LoadingPage } from "@skill-learn/ui/components/loading";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SidebarProvider } from "@skill-learn/ui/components/sidebar";
 import { usePathname } from "next/navigation";
 
 export default function DashboardLayout({ children }) {
-  const { hasAnyPermission, loading } = usePermissions();
+  const hasAnyPermission = usePermissionsStore((s) => s.hasAnyPermission);
+  const loading = usePermissionsStore((s) => s.isLoading);
+  const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
   const pathname = usePathname();
+
+  useEffect(() => {
+    fetchPermissions();
+  }, [fetchPermissions]);
 
   if (loading) {
     return <LoadingPage />;

@@ -69,10 +69,20 @@ export function handleApiError(error, customMessage = null, defaultStatus = null
     errorResponse.fieldErrors = error.details.fieldErrors;
   }
 
-  // Add details in development mode
+  // Copy safe extra keys from AppError.details (e.g. redirectToSignup, contactSales) to the response
+  if (error instanceof AppError && error.details && typeof error.details === "object" && !Array.isArray(error.details)) {
+    const reserved = ["status", "fieldErrors"];
+    for (const [key, value] of Object.entries(error.details)) {
+      if (!reserved.includes(key) && errorResponse[key] === undefined) {
+        errorResponse[key] = value;
+      }
+    }
+  }
+
+  // Add details in development mode (stack, etc.)
   if (process.env.NODE_ENV === "development") {
-    errorResponse.details = error instanceof AppError 
-      ? error.details 
+    errorResponse.details = error instanceof AppError
+      ? error.details
       : error.details || error.stack;
   }
 

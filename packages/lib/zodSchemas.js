@@ -321,3 +321,16 @@ export const settingsFormSchema = z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean()])
 );
+
+// Path param schema factory - for route params validation (e.g. userId, quizId, deckId)
+export function pathParamSchema(paramName) {
+  return z.object({ [paramName]: objectIdSchema });
+}
+
+// File upload metadata (for multipart/upload validation)
+export const fileUploadSchema = z.object({
+  fileName: z.string().min(1, { message: "Filename is required" }),
+  contentType: z.string().min(1, { message: "Content type is required" }),
+  size: z.number().min(1, { message: "Size is required" }),
+  isImage: z.boolean(),
+});

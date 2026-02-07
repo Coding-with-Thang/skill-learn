@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import {
   stripe,
   PRICING_PLANS,
@@ -30,23 +31,14 @@ export async function POST(request) {
     // Validate plan
     const plan = PRICING_PLANS[planId];
     if (!plan) {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+      throw new AppError("Invalid plan", ErrorType.VALIDATION, { status: 400 });
     }
     
-    // Free plan doesn't need checkout
     if (planId === "free") {
-      return NextResponse.json({ 
-        error: "Free plan doesn't require payment",
-        redirectToSignup: true,
-      }, { status: 400 });
+      throw new AppError("Free plan doesn't require payment", ErrorType.VALIDATION, { status: 400, redirectToSignup: true });
     }
-    
-    // Enterprise plan needs contact sales
     if (planId === "enterprise" && !plan.priceId?.[interval]) {
-      return NextResponse.json({ 
-        error: "Enterprise plan requires contacting sales",
-        contactSales: true 
-      }, { status: 400 });
+      throw new AppError("Enterprise plan requires contacting sales", ErrorType.VALIDATION, { status: 400, contactSales: true });
     }
     
     // Get price ID for the selected interval
@@ -103,12 +95,8 @@ export async function POST(request) {
         },
       });
       
-      // Check if user already has an active subscription
       if (dbUser?.tenant?.stripeSubscriptionId) {
-        return NextResponse.json({
-          error: "You already have an active subscription. Please manage it from the billing portal.",
-          redirectToPortal: true,
-        }, { status: 400 });
+        throw new AppError("You already have an active subscription. Please manage it from the billing portal.", ErrorType.VALIDATION, { status: 400, redirectToPortal: true });
       }
       
       customerId = dbUser?.tenant?.stripeCustomerId;
@@ -148,10 +136,6 @@ export async function POST(request) {
       url: session.url,
     });
   } catch (error) {
-    console.error("Error creating checkout session:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create checkout session" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

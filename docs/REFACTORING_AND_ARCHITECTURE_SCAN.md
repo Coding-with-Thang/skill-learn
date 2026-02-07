@@ -87,30 +87,29 @@
 - **Current usage:** Many LMS/CMS pages use raw `<Loader2 className="... animate-spin" />` from lucide-react instead of the shared Loader.
 
 **Refactor:**  
-- Prefer `import { Loader } from "@skill-learn/ui/components/loader"` and use `<Loader variant="spinner" size="md" />` (and other variants) for consistency and less repeated class names.
+- Prefer `import { Loader } from "@skill-learn/ui/components/loader"` and use `<Loader variant="spinner" size="md" />` (and other variants) for consistency.
+- **Custom text:** Loader supports an optional `text` prop on all variants. Use it for contextual messages (e.g. `<Loader variant="spinner" text="Deleting..." />`, `<Loader variant="spinner" text="Saving..." />`). Spinner shows text beside the icon; page/fullscreen use it as the subtitle.
 
 | Priority | Pros | Cons |
 |----------|------|------|
-| **Low** | Consistent loading UX; one place to change behavior/style | Many files to touch; some places may need custom text (e.g. "Deleting...") – Loader supports `text` prop |
+| **Low** | Consistent loading UX; one place to change behavior/style; optional custom text per loading state | Many files to touch to migrate from raw Loader2 |
 
 ---
 
 ## 2. Refactoring Opportunities (functionality, security, best practices)
 
-### 2.1 Standardize API error responses
+### 2.1 Standardize API error responses ✅ Done (listed routes)
 
-**Current:** Many routes use `handleApiError` and `AppError` (see `docs/API_ERROR_HANDLING.md`), but several routes still return ad-hoc:
+**Completed for:**  
+`api/user/progress`, `api/user-permissions`, `api/tenant`, `api/tenant/features`, `api/tenant/billing`, `api/tenant/roles`, `api/tenant/roles/[roleId]`, `api/features`, `api/stripe/subscription`, `api/stripe/portal`, `api/stripe/checkout`.
 
-- `NextResponse.json({ error: "Unauthorized" }, { status: 401 })`
-- `NextResponse.json({ error: "User not found" }, { status: 404 })`
+**Changes:**  
+- All listed routes now import `handleApiError`, `AppError`, `ErrorType` from `@skill-learn/lib/utils/errorHandler.js`.  
+- Known cases (unauthorized, not found, validation) throw `new AppError(message, ErrorType.*, { status })`; catch blocks return `handleApiError(error)`.  
+- `packages/lib/utils/errorHandler.js`: extra keys on `AppError.details` (e.g. `redirectToSignup`, `contactSales`, `redirectToPortal`) are copied onto the JSON response so clients can keep using them.
 
-**Examples:**  
-`apps/lms/app/api/user/progress/route.js`, `api/tenant/route.js`, `api/tenant/features/route.js`, `api/user-permissions/route.js`, `api/stripe/subscription/route.js`, `api/tenant/billing/route.js`, `api/tenant/roles/route.js`, etc.
-
-**Refactor:**  
-- Use `handleApiError(error)` in catch blocks.  
-- For known cases (e.g. not found, unauthorized), throw `new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 })` (or equivalent) and let `handleApiError` format the response.  
-- Aligns with existing standard and improves consistency and security (no leaking details in ad-hoc bodies).
+**Still ad-hoc (migrate when touching):**  
+`api/users`, `api/categories/[categoryId]`, `api/onboarding/*`, `api/users/lookup`, `api/tenant/user-roles`, `api/stripe/webhook`, `api/tenant/templates`, `api/tenant/permissions`, `api/subscription/status`, `api/onboarding/validate-session`, `api/webhooks`. Use the same pattern: throw `AppError`, catch with `handleApiError`.
 
 | Priority | Pros | Cons |
 |----------|------|------|
@@ -134,12 +133,17 @@
 
 ---
 
-### 2.3 Migrate remaining usePermissions / useFeatures call sites to stores
+### 2.3 Migrate remaining usePermissions / useFeatures call sites to stores ✅ Done
 
-**Current:** REFACTORING_OPPORTUNITIES.md states hooks wrap stores and are backward compatible; some components still use the hooks.
+**Completed:** All LMS components that used `usePermissions` or `useFeatures` now use the stores directly with selectors and fetch-on-mount where needed.
 
-**Refactor:**  
-- Where it makes sense, use stores directly with selectors (e.g. `usePermissionsStore((s) => s.permissions)`) for better performance and consistency with other admin pages already refactored.
+**Migrated to usePermissionsStore:**  
+`dashboard/users/page.jsx`, `UserForm.jsx`, `Header.jsx`, `DashboardLayout.jsx`, `MobileSidebar.jsx`. Each uses selectors (e.g. `(s) => s.hasPermission`, `(s) => s.hasAnyPermission`, `(s) => s.isLoading`, `(s) => s.fetchPermissions`) and a `useEffect` to call `fetchPermissions()` on mount.
+
+**Migrated to useFeaturesStore:**  
+`Sidebar.jsx`, `Navigation.jsx`, `MobileSidebar.jsx`, `app-sidebar.jsx`. Each uses selectors (`(s) => s.isEnabled`, `(s) => s.isLoading`, `(s) => s.fetchFeatures`) and a `useEffect` to call `fetchFeatures()` on mount.
+
+**Note:** CMS and LMS features page already used the stores. The hooks `usePermissions` and `useFeatures` remain in the package for backward compatibility but are no longer used in the apps.
 
 | Priority | Pros | Cons |
 |----------|------|------|
@@ -149,9 +153,27 @@
 
 ## 3. Simplification & Design / Architecture
 
-### 3.1 Single source of schemas (extend package, LMS keeps only app-specific)
+### 3.1 Single source of schemas (extend package, LMS keeps only app-specific) ✅ Done
 
 **Idea:** All shared validation (courses, users, categories, points, rewards, quizzes, settings) lives in `packages/lib/zodSchemas.js`. LMS only keeps flashcard-related and any other LMS-only schemas in `apps/lms/lib/zodSchemas.js` and re-exports or composes with package schemas if needed.
+
+**Assessment & implementation (completed):**
+
+- **Package (`packages/lib/zodSchemas.js`):**
+  - Added `pathParamSchema(paramName)` – factory for route params like `{ [paramName]: objectIdSchema }`.
+  - Added `fileUploadSchema` – `{ fileName, contentType, size, isImage }` for upload metadata validation.
+
+- **LMS (`apps/lms/lib/zodSchemas.js`):**
+  - Re-exports `pathParamSchema` and `fileUploadSchema` from `@skill-learn/lib`.
+  - Added `flashCardDeckUpdateSchema` = `flashCardDeckCreateSchema.partial()` for PATCH deck.
+  - Added `deckIdParamSchema` = `pathParamSchema("deckId")`.
+  - Extracted `flashCardBulkCardSchema` and added `flashCardUserBulkCreateSchema` (same shape as bulk import but `cards.min(1)`).
+
+- **Refactored to use shared/LMS schemas:**
+  - **Upload routes (5):** `api/admin/upload`, `rewards/upload`, `questions/upload`, `quizzes/upload`, `courses/upload` – removed local `fileUploadSchema`; import from `@skill-learn/lib`.
+  - **Flashcard deck:** `api/flashcards/decks/[deckId]/route.js` – uses `deckIdParamSchema` and `flashCardDeckUpdateSchema` from `@/lib/zodSchemas`.
+  - **Hide card:** `api/flashcards/decks/[deckId]/hide-card/route.js` – uses `deckIdParamSchema` and `flashCardDeckHideSchema` from `@/lib/zodSchemas`.
+  - **Bulk cards:** `api/flashcards/cards/bulk/route.js` – uses `flashCardUserBulkCreateSchema` from `@/lib/zodSchemas`.
 
 | Priority | Pros | Cons |
 |----------|------|------|

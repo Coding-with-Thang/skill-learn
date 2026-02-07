@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { auth } from "@clerk/nextjs/server";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/user-permissions
@@ -12,7 +13,7 @@ export async function GET(request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -113,10 +114,6 @@ export async function GET(request) {
       permissionsByCategory,
     });
   } catch (error) {
-    console.error("Error fetching user permissions:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user permissions" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

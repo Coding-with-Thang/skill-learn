@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 /**
  * GET /api/features
@@ -38,7 +39,7 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // If no tenant, return all features as enabled (default behavior)
@@ -103,14 +104,6 @@ export async function GET() {
       tenantId: user.tenant.id,
     });
   } catch (error) {
-    console.error("Error fetching features:", error);
-    return NextResponse.json(
-      { 
-        error: "Failed to fetch features",
-        message: error.message || "An unexpected error occurred",
-        features: {} // Return empty features object for graceful degradation
-      },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

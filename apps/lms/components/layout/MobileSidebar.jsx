@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,19 +15,29 @@ import {
   Layers,
 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
-import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
+import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore.js";
+import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js";
 import { Logo } from "@/components/shared/Logo";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@skill-learn/ui/components/sheet";
-import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js";
 
 export default function MobileSidebar() {
   const pathname = usePathname();
-  const { hasAnyPermission } = usePermissions();
-  const { isEnabled, isLoading } = useFeatures();
+  const hasAnyPermission = usePermissionsStore((s) => s.hasAnyPermission);
+  const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
+  const isEnabled = useFeaturesStore((s) => s.isEnabled);
+  const isLoading = useFeaturesStore((s) => s.isLoading);
+  const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
+
+  useEffect(() => {
+    fetchPermissions();
+  }, [fetchPermissions]);
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
 
   // Check for admin permissions instead of roles
   const isOperations = hasAnyPermission([

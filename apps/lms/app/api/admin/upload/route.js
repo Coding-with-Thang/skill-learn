@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import admin from "firebase-admin";
-import { z } from "zod";
+import { fileUploadSchema } from "@skill-learn/lib";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-
-export const fileUploadSchema = z.object({
-  fileName: z.string().min(1, { message: "Filename is required" }),
-  contentType: z.string().min(1, { message: "Content type is required" }),
-  size: z.number().min(1, { message: "Size is required" }),
-  isImage: z.boolean(),
-});
 
 // Initialize Firebase Admin SDK using service account credentials supplied via env vars.
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;

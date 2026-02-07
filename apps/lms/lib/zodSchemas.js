@@ -23,6 +23,8 @@ import {
   categoryUpdateSchema,
   settingUpdateSchema,
   settingsFormSchema,
+  pathParamSchema,
+  fileUploadSchema,
 } from "@skill-learn/lib";
 
 // Re-export all shared schemas from the package
@@ -44,6 +46,8 @@ export {
   categoryUpdateSchema,
   settingUpdateSchema,
   settingsFormSchema,
+  pathParamSchema,
+  fileUploadSchema,
 };
 
 // LMS form override: reportsToUserId accepts empty string from select and transforms to null
@@ -100,16 +104,21 @@ export const flashCardCategoryUpdateSchema = z.object({
   isSystem: z.boolean().optional(),
 });
 
+const flashCardBulkCardSchema = z.object({
+  question: z.string().min(1).max(2000),
+  answer: z.string().min(1).max(5000),
+  tags: z.array(z.string().max(50)).optional().default([]),
+  difficulty: z.enum(["easy", "good", "hard"]).nullable().optional(),
+});
+
 export const flashCardBulkImportSchema = z.object({
   categoryId: objectIdSchema,
-  cards: z.array(
-    z.object({
-      question: z.string().min(1).max(2000),
-      answer: z.string().min(1).max(5000),
-      tags: z.array(z.string().max(50)).optional().default([]),
-      difficulty: z.enum(["easy", "good", "hard"]).nullable().optional(),
-    })
-  ),
+  cards: z.array(flashCardBulkCardSchema),
+});
+
+export const flashCardUserBulkCreateSchema = z.object({
+  categoryId: objectIdSchema,
+  cards: z.array(flashCardBulkCardSchema).min(1, "At least one card is required"),
 });
 
 export const flashCardCategoryCreateSchema = z.object({
@@ -125,6 +134,10 @@ export const flashCardDeckCreateSchema = z.object({
   categoryIds: z.array(objectIdSchema).optional().default([]),
   isPublic: z.boolean().optional().default(false),
 });
+
+export const flashCardDeckUpdateSchema = flashCardDeckCreateSchema.partial();
+
+export const deckIdParamSchema = pathParamSchema("deckId");
 
 export const flashCardDeckHideSchema = z.object({
   cardId: objectIdSchema,

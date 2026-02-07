@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import {
   stripe,
   getSubscription,
@@ -21,7 +22,7 @@ export async function GET() {
     const { userId } = await auth();
     
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
     
     // Get user's tenant
@@ -112,11 +113,7 @@ export async function GET() {
     
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching subscription:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscription details" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -129,7 +126,7 @@ export async function PATCH(request) {
     const { userId } = await auth();
     
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
     
     const { action, newPlanId, interval } = await request.json();
@@ -148,10 +145,7 @@ export async function PATCH(request) {
     });
     
     if (!user?.tenant?.stripeSubscriptionId) {
-      return NextResponse.json(
-        { error: "No active subscription found" },
-        { status: 400 }
-      );
+      throw new AppError("No active subscription found", ErrorType.VALIDATION, { status: 400 });
     }
     
     const subscriptionId = user.tenant.stripeSubscriptionId;
@@ -174,24 +168,17 @@ export async function PATCH(request) {
         });
         
       case "change_plan":
-        // Change to a new plan
         if (!newPlanId) {
-          return NextResponse.json({ error: "New plan ID required" }, { status: 400 });
+          throw new AppError("New plan ID required", ErrorType.VALIDATION, { status: 400 });
         }
-        
         const newPlan = PRICING_PLANS[newPlanId];
         if (!newPlan || newPlanId === "free") {
-          return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+          throw new AppError("Invalid plan", ErrorType.VALIDATION, { status: 400 });
         }
-        
         const billingInterval = interval || "monthly";
         const newPriceId = newPlan.priceId?.[billingInterval];
-        
         if (!newPriceId) {
-          return NextResponse.json(
-            { error: "Price not configured for selected plan" },
-            { status: 400 }
-          );
+          throw new AppError("Price not configured for selected plan", ErrorType.VALIDATION, { status: 400 });
         }
         
         result = await updateSubscription(subscriptionId, newPriceId);
@@ -200,13 +187,9 @@ export async function PATCH(request) {
         });
         
       default:
-        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+        throw new AppError("Invalid action", ErrorType.VALIDATION, { status: 400 });
     }
   } catch (error) {
-    console.error("Error updating subscription:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to update subscription" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

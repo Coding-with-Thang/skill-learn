@@ -24,12 +24,19 @@ const sizeClasses = {
 
 /**
  * Unified Loader Component
- * 
+ *
+ * Use for consistent loading UX; prefer over raw Loader2 from lucide-react.
+ *
  * @param {string} variant - 'spinner', 'page', 'card', 'gif', 'fullscreen'
  * @param {string} size - 'sm', 'md', 'lg', 'xl', 'icon'
- * @param {string} className - Additional classes
- * @param {string} text - Optional text to display
+ * @param {string} [className] - Additional classes
+ * @param {string} [text] - Optional custom text (e.g. "Deleting...", "Saving..."). Shown beside spinner; for gif/page/fullscreen used as subtitle.
  * @param {object} props - Additional props
+ *
+ * @example
+ * <Loader variant="spinner" size="md" />
+ * <Loader variant="spinner" text="Deleting..." />
+ * <Loader variant="page" text="Unlocking awesome insights..." />
  */
 export function Loader({
   variant = "spinner",
@@ -38,8 +45,30 @@ export function Loader({
   text,
   ...props
 }) {
-  // Default Spinner
+  // Default Spinner (optional custom text e.g. "Deleting...", "Saving...")
   if (variant === "spinner") {
+    const icon = (
+      <Loader2
+        className={cn(
+          "animate-spin text-muted-foreground shrink-0",
+          sizeClasses[size] || sizeClasses.md
+        )}
+        aria-hidden={!!text}
+      />
+    )
+    if (text) {
+      return (
+        <div
+          className={cn("flex items-center justify-center gap-2", className)}
+          role="status"
+          aria-live="polite"
+          {...props}
+        >
+          {icon}
+          <span className="text-sm text-muted-foreground">{text}</span>
+        </div>
+      )
+    }
     return (
       <Loader2
         className={cn(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   BookOpen,
   CreditCard,
@@ -16,7 +16,7 @@ import {
   ToggleLeft,
   Users,
 } from "lucide-react";
-import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
+import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore.js";
 
 import { NavMain } from "./nav-main";
 import {
@@ -188,9 +188,14 @@ const getNavData = () => ({
 });
 
 export function AppSidebar({ ...props }) {
-  const { isEnabled, isLoading } = useFeatures();
+  const isEnabled = useFeaturesStore((s) => s.isEnabled);
+  const isLoading = useFeaturesStore((s) => s.isLoading);
+  const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
 
-  // Filter navigation items based on enabled features
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
+
   const filteredNavGroups = useMemo(() => {
     if (isLoading) {
       return getNavData().navGroups;
