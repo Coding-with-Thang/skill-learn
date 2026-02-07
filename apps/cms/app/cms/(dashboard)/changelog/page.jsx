@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { Plus, History, Calendar, Eye, Edit2, Trash2, Search, Filter, ExternalLink } from 'lucide-react'
 import api from '@skill-learn/lib/utils/axios.js'
 import { format } from 'date-fns'

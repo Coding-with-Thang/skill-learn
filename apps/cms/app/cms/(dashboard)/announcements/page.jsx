@@ -1,9 +1,9 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { Megaphone, Plus, Bell, Calendar, Eye } from 'lucide-react'
 
 // Mock Data

@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Input } from '@/components/cms/ui/input'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Input } from "@skill-learn/ui/components/input"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { Search, MoreVertical, Eye, Edit, Ban, ChevronLeft, ChevronRight } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn, getStatusColor, getPlanColor, formatTimeAgo } from '@/lib/cms/utils'

@@ -181,12 +181,14 @@
 
 ---
 
-### 3.2 CMS UI alignment with shared UI package
+### 3.2 CMS UI alignment with shared UI package ✅ Done
 
-**Current:** CMS has its own primitives under `apps/cms/components/cms/ui/` (e.g. button, card, input, progress, badge) using `@/lib/cms/utils` (cn). LMS uses `@skill-learn/ui` (e.g. Button, Card, Form) with a more complete API (e.g. cva, Radix Slot).
+**Current:** CMS had its own primitives under `apps/cms/components/cms/ui/` (button, card, input, progress, badge) using `@/lib/cms/utils` (cn). LMS uses `@skill-learn/ui` with a more complete API (cva, Radix Slot).
 
-**Refactor:**  
-- Prefer `@skill-learn/ui` in CMS for button, card, input, etc., and remove or thin out `apps/cms/components/cms/ui/` to only overrides/theming if needed.
+**Refactor (completed):**  
+- All CMS imports of Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Input, Badge, Progress now use `@skill-learn/ui/components/*` (same as LMS).
+- Removed `apps/cms/components/cms/ui/` primitives: `badge.jsx`, `button.jsx`, `card.jsx`, `input.jsx`, `progress.jsx`.
+- Updated 22 files across dashboard pages, layout (TopBar, Sidebar), changelog, sign-in, and dashboard components (TenantActivityTable, SystemHealthPanel, RecentAlertsPanel, SubscriptionDistribution, RevenueChart, QuickActions, HeroStatsCard). No app-local UI primitives remain; CMS uses the shared design system.
 
 | Priority | Pros | Cons |
 |----------|------|------|
@@ -194,16 +196,18 @@
 
 ---
 
-### 3.3 Centralize Uploader in packages/ui
+### 3.3 Centralize Uploader in packages/ui ✅ Done
 
 **Idea:** One file-uploader component in `packages/ui` (with optional RenderState or slots), used by both CMS and LMS. Same API: `value`, `onChange`, `onUploadComplete`, `uploadEndpoint`.
+
+**Status:** Same work as **1.4 Duplicate file Uploader (CMS vs LMS)** – already completed. Single shared component: `packages/ui/components/file-uploader.jsx` (Uploader + RenderEmptyState, RenderErrorState, RenderUploadedState, RenderUploadingState). CMS (ChangelogForm) and LMS (RewardForm, course create/edit) import from `@skill-learn/ui/components/file-uploader`. No app-local Uploader or file-uploader components remain in apps.
 
 | Priority | Pros | Cons |
 |----------|------|------|
 | **Medium** | Single component; consistent upload behavior and errors | May require moving RenderState or making it configurable (e.g. slots or props) |
 
 ---
-
+ 
 ### 3.4 Explicit package exports for hooks
 
 **Current:** `packages/lib/package.json` exports specific hooks (e.g. useDebounce, usePermissions, useSubscription) but not useAuditLog or useWelcomeContext from the main entry. They exist in `hooks/hooks/` but are not in `index.js`.

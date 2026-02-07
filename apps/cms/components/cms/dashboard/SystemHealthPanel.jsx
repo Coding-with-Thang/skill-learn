@@ -1,7 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Progress } from '@/components/cms/ui/progress'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Progress } from "@skill-learn/ui/components/progress"
 import { motion } from 'framer-motion'
 import { cn, getProgressColor } from '@/lib/cms/utils'
 import { Activity, Database, HardDrive, Mail, CreditCard, Server } from 'lucide-react'

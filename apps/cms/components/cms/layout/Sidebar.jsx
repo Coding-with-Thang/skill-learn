@@ -19,7 +19,7 @@ import {
   X,
   Layers,
 } from 'lucide-react'
-import { Button } from '@/components/cms/ui/button'
+import { Button } from "@skill-learn/ui/components/button"
 import { cn } from '@/lib/cms/utils'
 import { useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
 import {
   Dialog,
   DialogContent,

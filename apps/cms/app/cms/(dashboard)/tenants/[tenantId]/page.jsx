@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
-import { Badge } from '@/components/cms/ui/badge'
-import { Progress } from '@/components/cms/ui/progress'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Progress } from "@skill-learn/ui/components/progress"
 import {
   Dialog,
   DialogContent,

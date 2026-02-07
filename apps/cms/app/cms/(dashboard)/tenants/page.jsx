@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/cms/ui/card'
-import { Input } from '@/components/cms/ui/input'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
-import { Progress } from '@/components/cms/ui/progress'
+import { Card, CardContent } from "@skill-learn/ui/components/card"
+import { Input } from "@skill-learn/ui/components/input"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Progress } from "@skill-learn/ui/components/progress"
 import {
   Dialog,
   DialogContent,

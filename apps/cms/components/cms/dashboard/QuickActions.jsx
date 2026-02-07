@@ -1,7 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
 import {
   Plus,
   FileText,

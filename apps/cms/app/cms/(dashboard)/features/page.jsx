@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card"
 import api from '@skill-learn/lib/utils/axios.js'
 import { slugify } from '@skill-learn/lib/utils/utils.js'
-import { Badge } from '@/components/cms/ui/badge'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
 import {
   Dialog,
   DialogContent,

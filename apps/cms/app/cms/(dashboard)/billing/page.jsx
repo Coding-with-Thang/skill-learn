@@ -1,8 +1,8 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Download, Calendar } from 'lucide-react'

@@ -1,8 +1,8 @@
 "use client"
 
 import { useUser, SignOutButton, SignedIn } from '@clerk/nextjs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
 import { CheckCircle, AlertCircle, Lock } from 'lucide-react'
 import Link from 'next/link'
 

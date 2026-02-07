@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 import { motion } from 'framer-motion'
 

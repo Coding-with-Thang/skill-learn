@@ -4,7 +4,7 @@ import { SignIn, SignedIn, SignOutButton, useUser } from '@clerk/nextjs'
 import { dark, light } from '@clerk/themes'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/cms/ui/button'
+import { Button } from "@skill-learn/ui/components/button"
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function CMSSignInPage() {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/cms/ui/card'
+import { Card, CardContent } from "@skill-learn/ui/components/card"
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn, formatPercentage } from '@/lib/cms/utils'

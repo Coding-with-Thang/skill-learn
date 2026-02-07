@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card, CardContent } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { Save, X, Image as ImageIcon, Plus, Trash2, Layout, Calendar as CalendarIcon, Tag, Terminal, ExternalLink, Bug, Sparkles, HelpCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import api from '@skill-learn/lib/utils/axios.js'

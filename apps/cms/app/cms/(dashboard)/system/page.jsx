@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import SystemHealthPanel from '@/components/cms/dashboard/SystemHealthPanel'
 import RecentAlertsPanel from '@/components/cms/dashboard/RecentAlertsPanel'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import { Server, Database, Globe, Shield, Wifi, HardDrive } from 'lucide-react'
 
 // Mock Data
