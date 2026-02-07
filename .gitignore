@@ -227,6 +227,9 @@ storybook-static/
 # ============================================
 # Misc
 # ============================================
+# npm pack output (e.g. skill-learn@0.0.4 or skill-learn@0.0.4.tgz)
+skill-learn@*
+
 notes.md
 /archive
 /docs/audits

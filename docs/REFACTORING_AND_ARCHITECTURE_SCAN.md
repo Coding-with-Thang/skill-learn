@@ -208,12 +208,13 @@
 
 ---
  
-### 3.4 Explicit package exports for hooks
+### 3.4 Explicit package exports for hooks ✅ Done
 
 **Current:** `packages/lib/package.json` exports specific hooks (e.g. useDebounce, usePermissions, useSubscription) but not useAuditLog or useWelcomeContext from the main entry. They exist in `hooks/hooks/` but are not in `index.js`.
 
-**Refactor:**  
-- Export useAuditLog and useWelcomeContext (e.g. from `index.js` and/or package.json exports) so apps never need local copies.
+**Refactor (completed):**  
+- `index.js` already exported useAuditLog and useWelcomeContext (aligned with 1.3 Duplicate hooks). useSubscription was in package.json subpath only; added to `index.js` so all hooks are available from the main entry.
+- Apps import useAuditLog and useWelcomeContext from `@skill-learn/lib` (e.g. quiz results page, WelcomeBanner). No local copies in apps.
 
 | Priority | Pros | Cons |
 |----------|------|------|
@@ -221,16 +222,17 @@
 
 ---
 
-### 3.5 Remove stray / obsolete artifacts
+### 3.5 Remove stray / obsolete artifacts ✅ Done
 
 **Observed:**  
 - Git status shows `?? nul` (Windows nul device accidentally added).  
 - Deleted scripts: `db-push.js`, `fix-tenant-default-role-index.js`, `seed-flashcard-permissions.js`, etc. – already removed from tree.  
 - `docs/PURPOSE.md` describes an "Achieve" directory for archived files – ensure no critical code lives only there.
 
-**Refactor:**  
-- Remove or ignore `nul` from the repo.  
-- Keep only scripts that are still in use; document any required seed/migration in README or docs.
+**Refactor (completed):**  
+- **nul:** `.gitignore` already has `/nul`, `/con`, `/prn`, `/aux` under Windows reserved names; `nul` is not tracked by git. No further action.  
+- **Scripts:** Obsolete scripts are already removed from the tree; only doc references remain.  
+- **PURPOSE.md:** Updated to name the archive path explicitly (`archive/` at repo root, ignored via `/archive` in `.gitignore`) and to state that critical code must not live only in archive.
 
 | Priority | Pros | Cons |
 |----------|------|------|

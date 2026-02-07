@@ -20,6 +20,7 @@ export { usePageTracking } from "./hooks/usePageTracking.js";
 export { useUserRole } from "./hooks/useUserRole.js";
 export { usePermissions, PERMISSIONS } from "./hooks/usePermissions.js";
 export { useFeatures, FEATURE_KEYS } from "./hooks/useFeatures.js";
+export { useSubscription } from "./hooks/useSubscription.js";
 export { useAuditLog } from "./hooks/useAuditLog.js";
 export { useWelcomeContext } from "./hooks/useWelcomeContext.js";
 
