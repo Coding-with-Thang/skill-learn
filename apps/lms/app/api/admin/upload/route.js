@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import admin from "firebase-admin";
-import { fileUploadSchema } from "@skill-learn/lib";
+import { fileUploadSchema } from "@skill-learn/lib/zodSchemas.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 

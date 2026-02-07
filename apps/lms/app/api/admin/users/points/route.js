@@ -11,8 +11,14 @@ export async function GET() {
       return adminResult;
     }
 
-    //Get users in the db
-    const users = await prisma.user.findMany();
+    const { tenantId } = adminResult;
+    if (!tenantId) {
+      return successResponse({ users: [] });
+    }
+
+    const users = await prisma.user.findMany({
+      where: { tenantId },
+    });
 
     return successResponse({ users });
   } catch (error) {

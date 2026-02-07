@@ -53,14 +53,15 @@ export async function POST(request) {
         // Get current user's tenantId using standardized utility
         const tenantId = await getTenantId();
 
-        // Create new category (assigned to current tenant)
+        // Create new category (assigned to current tenant, not global)
         const category = await prisma.category.create({
             data: {
                 name: data.name,
                 description: data.description,
                 imageUrl: data.imageUrl,
                 isActive: data.isActive ?? true,
-                tenantId: tenantId, // Assign to current tenant
+                tenantId: tenantId ?? undefined,
+                isGlobal: tenantId ? false : true,
             },
         });
 

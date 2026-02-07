@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { handleApiError, AppError, ErrorType } from "./errorHandler";
+import { handleApiError, AppError, ErrorType } from "./errorHandler.js";
 
 /**
  * API Route Wrapper for consistent error handling

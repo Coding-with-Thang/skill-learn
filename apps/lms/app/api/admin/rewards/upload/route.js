@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
 import admin from "firebase-admin";
-import { fileUploadSchema } from "@skill-learn/lib";
+import { fileUploadSchema } from "@skill-learn/lib/zodSchemas.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 
 // Initialize Firebase Admin SDK using service account credentials supplied via env vars.

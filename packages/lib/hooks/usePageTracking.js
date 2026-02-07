@@ -1,6 +1,7 @@
+"use client";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useAuditLog } from "./useAuditLog";
+import { useAuditLog } from "./useAuditLog.js";
 
 export function usePageTracking() {
   const router = useRouter();

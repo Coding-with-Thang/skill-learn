@@ -48,7 +48,7 @@ import slugify from 'slugify';
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@skill-learn/ui/components/file-uploader";
 import { toast } from "sonner";
-import axios from "axios";
+import api from "@skill-learn/lib/utils/axios.js";
 import { useCoursesStore } from '@skill-learn/lib/stores/coursesStore.js'
 import CourseStructure from '@/components/courses/CourseStructure'
 
@@ -120,7 +120,7 @@ export default function EditCoursePage() {
             if (!courseId) return;
 
             try {
-                const response = await axios.get(`/api/admin/courses/${courseId}`);
+                const response = await api.get(`/admin/courses/${courseId}`);
                 // API returns { success: true, data: { course: {...} } }
                 const responseData = response.data;
                 const course = responseData?.data?.course || responseData?.course || responseData;
@@ -195,7 +195,7 @@ export default function EditCoursePage() {
     const refreshCourse = async (options = {}) => {
         const { silent } = options;
         try {
-            const res = await axios.get(`/api/admin/courses/${courseId}`);
+            const res = await api.get(`/admin/courses/${courseId}`);
             const d = res.data?.data?.course || res.data?.course || res.data;
             if (d) setCourse(d);
         } catch (e) {
@@ -208,7 +208,7 @@ export default function EditCoursePage() {
         setDeleteChapterPending(true);
         setStructureMutationPending(true);
         try {
-            await axios.delete(`/api/admin/courses/${courseId}/chapters/${chapterToDelete.id}`);
+            await api.delete(`/admin/courses/${courseId}/chapters/${chapterToDelete.id}`);
             toast.success('Chapter deleted');
             setChapterToDelete(null);
             setStructureRefreshing(true);
@@ -249,7 +249,7 @@ export default function EditCoursePage() {
         }
         setStructureMutationPending(true);
         try {
-            await axios.post(`/api/admin/courses/${courseId}/chapters`, { title });
+            await api.post(`/admin/courses/${courseId}/chapters`, { title });
             toast.success('Chapter added');
             setAddChapterDialogOpen(false);
             setStructureRefreshing(true);
@@ -290,7 +290,7 @@ export default function EditCoursePage() {
         }
         setStructureMutationPending(true);
         try {
-            await axios.post(`/api/admin/courses/${courseId}/chapters/${addLessonChapterId}/lessons`, { title });
+            await api.post(`/admin/courses/${courseId}/chapters/${addLessonChapterId}/lessons`, { title });
             toast.success('Lesson added');
             setAddLessonDialogOpen(false);
             setAddLessonChapterId(null);
@@ -315,7 +315,7 @@ export default function EditCoursePage() {
         setDeleteLessonPending(true);
         setStructureMutationPending(true);
         try {
-            await axios.delete(`/api/admin/courses/${courseId}/chapters/${lessonToDelete.chapterId}/lessons/${lessonToDelete.lesson.id}`);
+            await api.delete(`/admin/courses/${courseId}/chapters/${lessonToDelete.chapterId}/lessons/${lessonToDelete.lesson.id}`);
             toast.success('Lesson deleted');
             setLessonToDelete(null);
             setStructureRefreshing(true);
@@ -336,7 +336,7 @@ export default function EditCoursePage() {
     const onSubmit = (values) => {
         startTransition(async () => {
             try {
-                const response = await axios.put(`/api/admin/courses/${courseId}`, values);
+                const response = await api.put(`/admin/courses/${courseId}`, values);
                 const data = response?.data;
                 // API returns { success: true, data: { ... } }
                 const isSuccess = data?.success === true || data?.data?.status === 'success';
@@ -651,7 +651,7 @@ export default function EditCoursePage() {
                                 if (structureMutationPending) return;
                                 setStructureMutationPending(true);
                                 try {
-                                    await axios.put(`/api/admin/courses/${courseId}/chapters/reorder`, { chapterIds });
+                                    await api.put(`/admin/courses/${courseId}/chapters/reorder`, { chapterIds });
                                     toast.success('Chapters reordered');
                                     setStructureRefreshing(true);
                                     try {
@@ -672,7 +672,7 @@ export default function EditCoursePage() {
                                 if (structureMutationPending) return;
                                 setStructureMutationPending(true);
                                 try {
-                                    await axios.put(`/api/admin/courses/${courseId}/chapters/${chapterId}/lessons/reorder`, { lessonIds });
+                                    await api.put(`/admin/courses/${courseId}/chapters/${chapterId}/lessons/reorder`, { lessonIds });
                                     toast.success('Lessons reordered');
                                     setStructureRefreshing(true);
                                     try {

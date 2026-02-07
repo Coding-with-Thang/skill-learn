@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppError, ErrorType } from "./errorHandler";
+import { AppError, ErrorType } from "./errorHandler.js";
 
 /**
  * Validate request body against a Zod schema

@@ -4,13 +4,14 @@ import { courseSchema } from "@/lib/zodSchemas";
 import { prisma } from '@skill-learn/database';
 
 /**
- * Create a new course
- * Note: Admin check should be performed at route level before calling this function
+ * Create a new course (tenant-scoped).
+ * Route must enforce auth and courses.create permission before calling.
  * @param {object} data - Course data to validate
- * @param {string} userId - Database user ID (from requireAdmin result)
+ * @param {string} userId - Database user ID
+ * @param {string} [tenantId] - Tenant ID to assign the course to (required for tenant isolation)
  * @returns {Promise<object>} Result object with status, message, and course data
  */
-export async function createCourse(data, userId) {
+export async function createCourse(data, userId, tenantId = null) {
     try {
         const validation = courseSchema.safeParse(data);
 
@@ -35,7 +36,6 @@ export async function createCourse(data, userId) {
         const payload = {
             title: validation.data.title,
             description: validation.data.description,
-            // fileKey is optional in the schema, but Prisma requires the field
             fileKey: validation.data.fileKey ?? "",
             duration: validation.data.duration,
             categoryId: validation.data.category,
@@ -43,9 +43,10 @@ export async function createCourse(data, userId) {
             slug: validation.data.slug,
             status: validation.data.status,
             userId: userId,
-        }
+            ...(tenantId && { tenantId, isGlobal: false }),
+        };
 
-        const createdCourse = await prisma.course.create({ data: payload })
+        const createdCourse = await prisma.course.create({ data: payload });
 
         return {
             status: "success",

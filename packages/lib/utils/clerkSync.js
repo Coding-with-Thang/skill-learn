@@ -118,6 +118,15 @@ export async function syncUserMetadataToClerk(userId, tenantId = null) {
 
     return { roles, permissions };
   } catch (error) {
+    // User may have been deleted from Clerk but still exists in DB (e.g. different env or stale data)
+    const isNotFound =
+      error?.status === 404 ||
+      error?.statusCode === 404 ||
+      (error?.code === "api_response_error" && String(error?.message || "").includes("Not Found"));
+    if (isNotFound) {
+      console.warn(`[ClerkSync] Skipping sync for user ${userId}: not found in Clerk (404)`);
+      return null;
+    }
     console.error(`[ClerkSync] Failed to sync metadata for user ${userId}:`, error.message);
     throw error;
   }

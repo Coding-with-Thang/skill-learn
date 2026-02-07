@@ -83,14 +83,14 @@ export default function SettingsPage() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Platform Name</label>
-                      <Input defaultValue="EduCore LMS Enterprise" />
+                      <Input defaultValue="Skill-Learn.ca" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Support Email Address</label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input defaultValue="support@educore.io" className="pl-9" />
+                          <Input defaultValue="support@skill-learn.ca" className="pl-9" />
                         </div>
                       </div>
                       <div className="space-y-2">

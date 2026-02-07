@@ -25,51 +25,44 @@ export async function GET() {
       throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    // Fetch user's quiz attempts to calculate stats (using database user ID)
-    const quizAttempts = await prisma.quizAttempt.findMany({
+    // Progress is tracked via CategoryStat (per user per category), not QuizAttempt
+    const categoryStats = await prisma.categoryStat.findMany({
       where: { userId: user.id },
       include: {
-        quiz: {
-          include: {
-            category: true,
-          },
-        },
+        category: true,
       },
       orderBy: {
-        createdAt: "desc",
+        lastAttempt: "desc",
       },
     });
 
-    // Calculate completed count (passed quizzes)
-    const completed = quizAttempts.filter((attempt) => attempt.passed).length;
-
-    // Calculate in-progress count (attempted but not passed)
-    const uniqueInProgressQuizzes = new Set(
-      quizAttempts
-        .filter((attempt) => !attempt.passed)
-        .map((attempt) => attempt.quizId)
+    // Completed = sum of category completions (passed quizzes per category)
+    const completed = categoryStats.reduce(
+      (sum, stat) => sum + (stat.completed || 0),
+      0
     );
-    const inProgress = uniqueInProgressQuizzes.size;
 
-    // Get the most recent incomplete quiz for "Continue Where You Left Off"
-    const lastIncompleteAttempt = quizAttempts.find(
-      (attempt) => !attempt.passed
+    // In-progress = categories with attempts but not all completed
+    const inProgress = categoryStats.filter(
+      (stat) => (stat.attempts || 0) > (stat.completed || 0)
+    ).length;
+
+    // Most recent in-progress category for "Continue Where You Left Off"
+    const lastInProgress = categoryStats.find(
+      (stat) => (stat.attempts || 0) > (stat.completed || 0)
     );
 
     let currentModule = null;
-    if (lastIncompleteAttempt) {
-      const quiz = lastIncompleteAttempt.quiz;
-      const progress = lastIncompleteAttempt.score || 0;
-
-      // Estimate time remaining (mock calculation)
+    if (lastInProgress?.category) {
+      const progress = Math.round(lastInProgress.bestScore ?? 0);
       const estimatedMinutes = Math.max(5, Math.round((100 - progress) / 10));
 
       currentModule = {
-        id: quiz.id,
-        title: quiz.title,
-        category: quiz.category?.name || "Training",
-        categoryId: quiz.categoryId,
-        progress: progress,
+        id: lastInProgress.categoryId,
+        title: lastInProgress.category.name,
+        category: lastInProgress.category.name,
+        categoryId: lastInProgress.categoryId,
+        progress,
         timeRemaining: `${estimatedMinutes} mins`,
         type: "quiz",
       };

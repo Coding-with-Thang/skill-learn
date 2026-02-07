@@ -142,6 +142,22 @@ export async function PUT(request, { params }) {
       );
     }
 
+    // Require at least one active role per tenant
+    if (isActive === false && existingRole.isActive) {
+      const activeCount = await prisma.tenantRole.count({
+        where: { tenantId, isActive: true },
+      });
+      if (activeCount <= 1) {
+        return NextResponse.json(
+          {
+            error:
+              "Tenant must have at least one active role. Add or activate another role before deactivating this one.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // If changing role alias, check for duplicates
     if (roleAlias && roleAlias !== existingRole.roleAlias) {
       const duplicateName = await prisma.tenantRole.findFirst({

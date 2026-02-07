@@ -106,24 +106,20 @@ export async function GET(request) {
       take: 5
     });
 
-    // Get current user's tenantId using standardized utility
+    // Get current user's tenantId for category list filtering (used later)
     const tenantId = await getTenantId();
-    const quizWhereClause = buildTenantContentFilter(tenantId);
 
-    // Enrich logs with quiz titles
+    // Enrich logs with quiz titles (look up quiz by id only – user already earned points for it, we just need display names)
     const recentActivity = await Promise.all(recentLogs.map(async (log) => {
       const quizId = log.reason.replace("quiz_completed_", "");
-      const quiz = await prisma.quiz.findFirst({
-        where: { 
-          id: quizId,
-          ...quizWhereClause,
-        },
-        select: { title: true, category: { select: { name: true } } }
+      const quiz = await prisma.quiz.findUnique({
+        where: { id: quizId },
+        select: { title: true, category: { select: { name: true } } },
       });
       return {
         id: log.id,
-        quizTitle: quiz?.title || "Unknown Quiz",
-        categoryName: quiz?.category?.name || "Unknown Category",
+        quizTitle: quiz?.title ?? "Unknown Quiz",
+        categoryName: quiz?.category?.name ?? "Unknown Category",
         date: log.createdAt,
         type: "Quiz Completion",
         points: log.amount

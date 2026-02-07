@@ -216,7 +216,7 @@ export async function DELETE(request, { params }) {
     if (tenant._count.users > 0) {
       return NextResponse.json(
         {
-          error: `Cannot delete tenant with ${tenant._count.users} user(s). Please reassign or remove users first.`,
+          error: `Cannot delete tenant with ${tenant._count.users} user(s). Please remove users first.`,
         },
         { status: 400 }
       );

@@ -49,6 +49,9 @@ const cacheDurations = {
   "/api/categories": CACHE_DURATIONS.CATEGORIES,
   "/api/user/rewards": CACHE_DURATIONS.REWARDS,
   "/api/user/points": CACHE_DURATIONS.POINTS,
+  // Do not cache courses/quizzes - they depend on auth/tenant; avoid stale empty lists
+  "/api/courses": 0,
+  "/api/quizzes": 0,
 };
 
 // Remove any double /api prefixes from URLs
@@ -120,9 +123,15 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const { config, response } = error; // Return cached responses
+    const { config, response } = error;
+    // 304 = served from cache; normalize to 200 so consumers treat as success
     if (response?.status === 304) {
-      return Promise.resolve(response);
+      return Promise.resolve({
+        ...response,
+        status: 200,
+        statusText: "OK",
+        data: response.data,
+      });
     }
 
     // Handle auth errors

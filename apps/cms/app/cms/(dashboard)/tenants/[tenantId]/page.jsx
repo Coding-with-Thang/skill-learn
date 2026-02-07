@@ -29,11 +29,9 @@ import { parseApiResponse } from '@skill-learn/lib/utils/apiResponseParser.js'
 import {
   ArrowLeft,
   Users,
-  ArrowRight,
   Loader2,
   CheckCircle2,
   AlertCircle,
-  UserCheck,
   Shield,
   Key,
   Eye,
@@ -128,7 +126,6 @@ export default function TenantDetailPage() {
   const fetchRoles = useTenantsStore((state) => state.fetchRoles);
   const fetchUserRoles = useTenantsStore((state) => state.fetchUserRoles);
   const fetchFeatures = useTenantsStore((state) => state.fetchFeatures);
-  const fetchTenants = useTenantsStore((state) => state.fetchTenants);
 
   const roleTemplates = useRoleTemplatesStore((state) => state.roleTemplates);
   const fetchRoleTemplates = useRoleTemplatesStore((state) => state.fetchRoleTemplates);
@@ -140,23 +137,19 @@ export default function TenantDetailPage() {
   const [activeTab, setActiveTab] = useState('users')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedUsers, setSelectedUsers] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState('')
-  const [successMessage, setSuccessMessage] = useState(null)
 
   // For permissions (can be fetched separately since it's not tenant-specific)
   const [permissions, setPermissions] = useState([])
   const [groupedPermissions, setGroupedPermissions] = useState({})
 
   // Dialog states
-  const [moveDialogOpen, setMoveDialogOpen] = useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [assignRoleDialogOpen, setAssignRoleDialogOpen] = useState(false)
   const [rolePermissionsDialogOpen, setRolePermissionsDialogOpen] = useState(false)
   const [deleteRoleDialogOpen, setDeleteRoleDialogOpen] = useState(false)
   const [initializeRolesDialogOpen, setInitializeRolesDialogOpen] = useState(false)
 
-  const [targetTenantId, setTargetTenantId] = useState('')
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedUserForRole, setSelectedUserForRole] = useState('')
   const [selectedRoleForAssignment, setSelectedRoleForAssignment] = useState('')
@@ -167,6 +160,9 @@ export default function TenantDetailPage() {
   const [rolesViewMode, setRolesViewMode] = useState('cards') // 'cards' or 'table'
   const [roleDetailsDialogOpen, setRoleDetailsDialogOpen] = useState(false)
   const [roleSearchQuery, setRoleSearchQuery] = useState('')
+  const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
+  const [userRoleToReassign, setUserRoleToReassign] = useState(null)
+  const [reassignTargetRoleId, setReassignTargetRoleId] = useState('')
 
   // Role form
   const [roleForm, setRoleForm] = useState({
@@ -201,7 +197,6 @@ export default function TenantDetailPage() {
       Promise.all([
         fetchTenant(tenantId),
         fetchUsers(tenantId),
-        fetchTenants(),
         fetchRoles(tenantId),
         fetchUserRoles(tenantId),
         fetchRoleTemplates(),
@@ -213,57 +208,7 @@ export default function TenantDetailPage() {
         })
         .finally(() => setLoading(false))
     }
-  }, [tenantId, fetchTenant, fetchUsers, fetchRoles, fetchUserRoles, fetchFeatures, fetchTenants, fetchRoleTemplates, fetchPermissions])
-
-  // Get filtered allTenants (exclude current tenant) - use selector or getState
-  const allTenantsFromStore = useTenantsStore((state) => state.tenants);
-  const filteredAllTenants = allTenantsFromStore.filter(t => t.id !== tenantId)
-
-  // Handle user selection for move
-  const toggleUserSelection = (userId) => {
-    const newSelected = new Set(selectedUsers)
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId)
-    } else {
-      newSelected.add(userId)
-    }
-    setSelectedUsers(newSelected)
-  }
-
-  // Handle single user move
-  const handleSingleUserMove = (userId) => {
-    setSelectedUsers(new Set([userId]))
-    setMoveDialogOpen(true)
-  }
-
-  // Handle move users
-  const handleMoveUsers = async () => {
-    if (!targetTenantId || selectedUsers.size === 0) return
-
-    setFormLoading(true)
-    setFormError(null)
-
-    try {
-      const response = await api.post(`/tenants/${tenantId}/users`, {
-        userIds: Array.from(selectedUsers),
-        targetTenantId,
-      })
-
-      setSuccessMessage(response.data.message || `Successfully moved ${selectedUsers.size} user(s)`)
-      await Promise.all([fetchTenant(tenantId), fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
-      setSelectedUsers(new Set())
-      setTargetTenantId('')
-
-      setTimeout(() => {
-        setMoveDialogOpen(false)
-        setSuccessMessage(null)
-      }, 1500)
-    } catch (err) {
-      setFormError(err.message)
-    } finally {
-      setFormLoading(false)
-    }
-  }
+  }, [tenantId, fetchTenant, fetchUsers, fetchRoles, fetchUserRoles, fetchFeatures, fetchRoleTemplates, fetchPermissions])
 
   // Handle role create/update
   const handleRoleSubmit = async (e) => {
@@ -340,18 +285,24 @@ export default function TenantDetailPage() {
     }
   }
 
-  // Handle remove user role
-  const handleRemoveUserRole = async (userRoleId) => {
+  const handleReassignUserRole = async () => {
+    if (!userRoleToReassign || !reassignTargetRoleId) return
+    setFormLoading(true)
+    setFormError(null)
     try {
-      const response = await api.delete(`/tenants/${tenantId}/user-roles`, {
-        params: { userRoleId },
+      const response = await api.put(`/tenants/${tenantId}/user-roles`, {
+        userRoleId: userRoleToReassign.id,
+        tenantRoleId: reassignTargetRoleId,
       })
-
-      if (response.data.error) throw new Error(response.data.error || 'Failed to remove role')
-
+      if (response.data.error) throw new Error(response.data.error || 'Failed to reassign role')
+      setReassignDialogOpen(false)
+      setUserRoleToReassign(null)
+      setReassignTargetRoleId('')
       await fetchUserRoles(tenantId, true)
     } catch (err) {
-      setError(err.message)
+      setFormError(err.response?.data?.error || err.message || 'Failed to reassign role')
+    } finally {
+      setFormLoading(false)
     }
   }
 
@@ -418,9 +369,12 @@ export default function TenantDetailPage() {
         setSelectedRole(updatedRole)
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update role')
+      setFormError(err.response?.data?.error || err.message || 'Failed to update role')
     }
   }
+
+  const activeRoleCount = roles.filter((r) => r.isActive).length
+  const cannotDeactivateRole = (role) => role.isActive && activeRoleCount <= 1
 
   // Handle view role details
   const handleViewRoleDetails = async (role) => {
@@ -519,33 +473,33 @@ export default function TenantDetailPage() {
   // Handle feature toggle (super admin controls superAdminEnabled)
   const handleFeatureToggle = async (featureId, superAdminEnabled) => {
     setFeatureLoading(true)
-    
+
     // Optimistic update: immediately update the store for instant UI feedback
     const previousFeatures = [...features]
     const previousGroupedFeatures = { ...groupedFeatures }
-    
-    const updatedFeatures = features.map(f => 
-      f.id === featureId 
-        ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+
+    const updatedFeatures = features.map(f =>
+      f.id === featureId
+        ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive }
         : f
     )
-    
+
     // Update grouped features as well
     const updatedGroupedFeatures = Object.entries(groupedFeatures).reduce((acc, [category, categoryFeatures]) => {
-      acc[category] = categoryFeatures.map(f => 
-        f.id === featureId 
-          ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+      acc[category] = categoryFeatures.map(f =>
+        f.id === featureId
+          ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive }
           : f
       )
       return acc
     }, {})
-    
+
     // Apply optimistic update to store using Zustand's setState
     useTenantsStore.setState({
       features: updatedFeatures,
       featuresByCategory: updatedGroupedFeatures,
     })
-    
+
     try {
       const response = await api.put(`/tenants/${tenantId}/features`, { featureId, superAdminEnabled })
 
@@ -758,20 +712,10 @@ export default function TenantDetailPage() {
       {activeTab === 'users' && (
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Users ({users.length})</CardTitle>
-                <CardDescription>
-                  Select users to move them to another tenant
-                </CardDescription>
-              </div>
-              {selectedUsers.size > 0 && (
-                <Button onClick={() => setMoveDialogOpen(true)} className="gap-2">
-                  <UserCheck className="h-4 w-4" />
-                  Move {selectedUsers.size} User{selectedUsers.size > 1 ? 's' : ''}
-                </Button>
-              )}
-            </div>
+            <CardTitle>Users ({users.length})</CardTitle>
+            <CardDescription>
+              Users belonging to this tenant
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
@@ -790,76 +734,44 @@ export default function TenantDetailPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 pb-2 border-b">
-                  <Checkbox
-                    checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedUsers(new Set(filteredUsers.map(u => u.id)))
-                      } else {
-                        setSelectedUsers(new Set())
-                      }
-                    }}
-                  />
-                  <Label className="text-sm font-medium cursor-pointer">
-                    Select All ({filteredUsers.length})
-                  </Label>
-                </div>
-
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                   >
-                    <Checkbox
-                      checked={selectedUsers.has(user.id)}
-                      onCheckedChange={() => toggleUserSelection(user.id)}
-                    />
-                    <div className="flex-1 flex items-center gap-3">
-                      {user.imageUrl ? (
-                        <Image
-                          src={user.imageUrl}
-                          alt={user.username}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
-                          {user.firstName?.[0] || user.username?.[0] || 'U'}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          @{user.username}
-                        </p>
+                    {user.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt={user.username}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
+                        {user.firstName?.[0] || user.username?.[0] || 'U'}
                       </div>
-                      {(() => {
-                        const userRole = getUserRole(user)
-                        return userRole ? (
-                          <Badge variant="outline">
-                            {userRole}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
-                            No role
-                          </Badge>
-                        )
-                      })()}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleSingleUserMove(user.id)}
-                        className="gap-2"
-                        title="Move user to another tenant"
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                        Move
-                      </Button>
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        @{user.username}
+                      </p>
                     </div>
+                    {(() => {
+                      const userRole = getUserRole(user)
+                      return userRole ? (
+                        <Badge variant="outline">
+                          {userRole}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          No role
+                        </Badge>
+                      )
+                    })()}
                   </div>
                 ))}
               </div>
@@ -1018,13 +930,14 @@ export default function TenantDetailPage() {
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-medium">{role.roleAlias}</p>
-                              {role.createdFromTemplate ? (
-                                <Badge variant="default" className="text-xs bg-blue-500">
-                                  Template
-                                </Badge>
-                              ) : (
+                              {role.modifiedFromTemplate && (
                                 <Badge variant="outline" className="text-xs">
                                   Custom
+                                </Badge>
+                              )}
+                              {role.createdFromTemplate && !role.modifiedFromTemplate && (
+                                <Badge variant="default" className="text-xs bg-blue-500">
+                                  Template
                                 </Badge>
                               )}
                             </div>
@@ -1037,7 +950,7 @@ export default function TenantDetailPage() {
                           <Badge variant="secondary">Slot {role.slotPosition}</Badge>
                         </td>
                         <td className="p-4">
-                          <Badge variant={role.isActive ? 'default' : 'destructive'}>
+                          <Badge variant={role.isActive ? 'success' : 'destructive'}>
                             {role.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
@@ -1088,7 +1001,14 @@ export default function TenantDetailPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleToggleRoleActive(role)}
-                              title={role.isActive ? 'Deactivate' : 'Activate'}
+                              disabled={cannotDeactivateRole(role)}
+                              title={
+                                role.isActive
+                                  ? cannotDeactivateRole(role)
+                                    ? 'Tenant must have at least one active role'
+                                    : 'Deactivate'
+                                  : 'Activate'
+                              }
                             >
                               {role.isActive ? (
                                 <ToggleRight className="h-4 w-4 text-green-600" />
@@ -1128,13 +1048,14 @@ export default function TenantDetailPage() {
                           <Badge variant="secondary" className="text-xs">
                             Slot {role.slotPosition}
                           </Badge>
-                          {role.createdFromTemplate ? (
-                            <Badge variant="default" className="text-xs bg-blue-500">
-                              Template
-                            </Badge>
-                          ) : (
+                          {role.modifiedFromTemplate && (
                             <Badge variant="outline" className="text-xs">
                               Custom
+                            </Badge>
+                          )}
+                          {role.createdFromTemplate && !role.modifiedFromTemplate && (
+                            <Badge variant="default" className="text-xs bg-blue-500">
+                              Template
                             </Badge>
                           )}
                           {!role.isActive && (
@@ -1220,7 +1141,14 @@ export default function TenantDetailPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleRoleActive(role)}
-                          title={role.isActive ? 'Deactivate' : 'Activate'}
+                          disabled={cannotDeactivateRole(role)}
+                          title={
+                            role.isActive
+                              ? cannotDeactivateRole(role)
+                                ? 'Tenant must have at least one active role'
+                                : 'Deactivate'
+                              : 'Activate'
+                          }
                         >
                           {role.isActive ? (
                             <ToggleRight className="h-4 w-4 text-green-600" />
@@ -1324,15 +1252,24 @@ export default function TenantDetailPage() {
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{ur.role?.roleAlias}</Badge>
-                            {ur.role?.createdFromTemplate ? (
-                              <Badge variant="secondary" className="text-xs">
-                                Template
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">
-                                Custom
-                              </Badge>
-                            )}
+                            {(() => {
+                              const roleMeta = roles.find((r) => r.id === ur.role?.id)
+                              if (roleMeta?.modifiedFromTemplate) {
+                                return (
+                                  <Badge variant="outline" className="text-xs">
+                                    Custom
+                                  </Badge>
+                                )
+                              }
+                              if (roleMeta?.createdFromTemplate && !roleMeta?.modifiedFromTemplate) {
+                                return (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Template
+                                  </Badge>
+                                )
+                              }
+                              return null
+                            })()}
                           </div>
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
@@ -1342,10 +1279,14 @@ export default function TenantDetailPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleRemoveUserRole(ur.id)}
+                            onClick={() => {
+                              setUserRoleToReassign(ur)
+                              setReassignTargetRoleId('')
+                              setReassignDialogOpen(true)
+                            }}
+                            title="Change role"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </td>
                       </tr>
@@ -1491,79 +1432,6 @@ export default function TenantDetailPage() {
         </div>
       )}
 
-      {/* Move Users Dialog */}
-      <Dialog open={moveDialogOpen} onOpenChange={(open) => {
-        setMoveDialogOpen(open)
-        if (!open) {
-          // Reset state when dialog closes
-          setTargetTenantId('')
-          setFormError(null)
-          setSuccessMessage(null)
-        }
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Move User{selectedUsers.size > 1 ? 's' : ''} to Another Tenant</DialogTitle>
-            <DialogDescription>
-              Move {selectedUsers.size} selected user{selectedUsers.size > 1 ? 's' : ''} to a different tenant.
-              {selectedUsers.size === 1 && ' This feature will be deprecated in the future.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {successMessage ? (
-              <div className="rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-3 text-sm flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                {successMessage}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 p-3 text-sm flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-medium">Deprecation Notice</p>
-                    <p className="text-xs mt-1">
-                      This feature is temporary and will be deprecated in the future. Use only when necessary.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Target Tenant</Label>
-                  <select
-                    value={targetTenantId}
-                    onChange={(e) => setTargetTenantId(e.target.value)}
-                    className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-                    disabled={formLoading}
-                  >
-                    <option value="">Select a tenant...</option>
-                    {filteredAllTenants.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({t.activeUsers} users)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-            {formError && (
-              <div className="mt-4 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
-                {formError}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMoveDialogOpen(false)} disabled={formLoading}>
-              {successMessage ? 'Close' : 'Cancel'}
-            </Button>
-            {!successMessage && (
-              <Button onClick={handleMoveUsers} disabled={!targetTenantId || formLoading}>
-                {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Move Users
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Role Dialog */}
       <Dialog open={roleDialogOpen} onOpenChange={(open) => {
         console.log('Dialog onOpenChange called with:', open)
@@ -1706,6 +1574,70 @@ export default function TenantDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Reassign User Role Dialog */}
+      <Dialog open={reassignDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setUserRoleToReassign(null)
+          setReassignTargetRoleId('')
+          setFormError(null)
+        }
+        setReassignDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change role</DialogTitle>
+            <DialogDescription>
+              Assign this user to a different role. Users must have a role; use this to change it.
+            </DialogDescription>
+          </DialogHeader>
+          {userRoleToReassign && (
+            <div className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label className="text-sm text-muted-foreground">User</Label>
+                <p className="font-medium">
+                  {userRoleToReassign.user?.fullName || userRoleToReassign.user?.username || userRoleToReassign.userId}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label>New role *</Label>
+                <select
+                  value={reassignTargetRoleId}
+                  onChange={(e) => setReassignTargetRoleId(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                  disabled={formLoading}
+                >
+                  <option value="">Select a role...</option>
+                  {roles
+                    .filter((r) => r.isActive && r.id !== userRoleToReassign.role?.id)
+                    .map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.roleAlias}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              {formError && (
+                <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                  {formError}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReassignDialogOpen(false)} disabled={formLoading}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReassignUserRole}
+              disabled={!reassignTargetRoleId || formLoading}
+            >
+              {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Change role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Role Permissions Dialog */}
       <Dialog open={rolePermissionsDialogOpen} onOpenChange={setRolePermissionsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -1822,7 +1754,7 @@ export default function TenantDetailPage() {
                   <div>
                     <Label className="text-sm text-muted-foreground">Status</Label>
                     <div>
-                      <Badge variant={selectedRole.isActive ? 'default' : 'destructive'}>
+                      <Badge variant={selectedRole.isActive ? 'success' : 'destructive'}>
                         {selectedRole.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>

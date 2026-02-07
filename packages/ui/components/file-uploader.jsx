@@ -4,10 +4,11 @@ import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Card, CardContent } from "./card";
 import { Button } from "./button";
+import { Input } from "./input";
 import { cn } from "@skill-learn/lib/utils.js";
 import { toast } from "sonner";
 import axios from "axios";
-import { CloudUpload, FileImage, X, Loader2 } from "lucide-react";
+import { CloudUpload, FileImage, X, Loader2, Link2 } from "lucide-react";
 
 // --- Render states (exported for customization if needed) ---
 
@@ -88,9 +89,12 @@ export function RenderUploadingState({ progress, file }) {
 
 // --- Main Uploader ---
 
+const IMAGE_URL_PATTERN = /^https?:\/\/.+/i;
+
 /**
  * Shared file uploader for LMS and CMS.
  * API: value (url string), onChange(url), onUploadComplete({ url, path }?), uploadEndpoint, optional className, name (for forms).
+ * Users can either upload an image or provide an image URL.
  */
 export function Uploader({
   value,
@@ -101,10 +105,27 @@ export function Uploader({
   name,
 }) {
   const [url, setUrl] = useState(value ?? undefined);
+  const [mode, setMode] = useState("upload"); // "upload" | "url"
+  const [urlInput, setUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
+
+  const applyUrlFromInput = useCallback(() => {
+    const trimmed = urlInput?.trim();
+    if (!trimmed) {
+      toast.error("Please enter an image URL");
+      return;
+    }
+    if (!IMAGE_URL_PATTERN.test(trimmed)) {
+      toast.error("Please enter a valid URL (e.g. https://example.com/image.png)");
+      return;
+    }
+    setUrl(trimmed);
+    onChange?.(trimmed);
+    onUploadComplete?.({ url: trimmed });
+  }, [urlInput, onChange, onUploadComplete]);
 
   const uploadFile = useCallback(
     async (file) => {
@@ -180,16 +201,18 @@ export function Uploader({
     disabled: uploading || !!url,
   });
 
+  const isUploadMode = mode === "upload";
+
   return (
     <Card
-      {...getRootProps()}
+      {...(isUploadMode && !url ? getRootProps() : {})}
       className={cn(
         "relative border-2 border-dashed w-full min-h-[200px]",
-        isDragActive ? "border-primary bg-primary/10" : "border-border",
+        isUploadMode && !url && isDragActive ? "border-primary bg-primary/10" : "border-border",
         className
       )}
     >
-      <CardContent className="flex items-center justify-center w-full h-full min-h-[200px] p-4">
+      <CardContent className="flex flex-col items-center justify-center w-full h-full min-h-[200px] p-4">
         <input {...getInputProps()} name={name} id={name} />
         {uploading ? (
           <RenderUploadingState progress={progress} file={currentFile} />
@@ -200,7 +223,48 @@ export function Uploader({
             isDeleting={isDeleting}
           />
         ) : (
-          <RenderEmptyState isDragActive={isDragActive} />
+          <>
+            <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
+              <Button
+                type="button"
+                variant={isUploadMode ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setMode("upload")}
+              >
+                <CloudUpload className="size-4 mr-1.5" />
+                Upload
+              </Button>
+              <Button
+                type="button"
+                variant={!isUploadMode ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setMode("url")}
+              >
+                <Link2 className="size-4 mr-1.5" />
+                URL
+              </Button>
+            </div>
+            {isUploadMode ? (
+              <RenderEmptyState isDragActive={isDragActive} />
+            ) : (
+              <div
+                className="w-full max-w-sm space-y-2"
+                onClick={(e) => e.stopPropagation()}
+                onDragOver={(e) => e.stopPropagation()}
+              >
+                <Input
+                  type="url"
+                  placeholder="https://example.com/image.png"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyUrlFromInput())}
+                />
+                <Button type="button" onClick={applyUrlFromInput} className="w-full">
+                  Use image URL
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

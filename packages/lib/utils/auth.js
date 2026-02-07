@@ -19,12 +19,12 @@ export async function requireAuth() {
 }
 
 /**
- * Require admin permissions for API routes
- * Checks for admin-level permissions like users.create, users.update, dashboard.admin, etc.
- * Falls back to legacy role check if permission system is not set up
- * @param {string} tenantId - Optional tenant ID to check permissions against
- * @returns {Promise<{userId: string, user: object, tenantId?: string}|null>} The authenticated user's Clerk ID and user record, or null if not authorized
- * @returns {NextResponse|null} Returns 401 Unauthorized or 403 Forbidden response if not authorized, null if authorized
+ * Require admin permissions for API routes (tenant-based RBAC only).
+ * User must have at least one of: users.create, users.update, users.delete, dashboard.admin,
+ * dashboard.manager, roles.assign, roles.create, settings.update, flashcards.manage_tenant.
+ * @param {string} tenantId - Optional tenant ID to check permissions against (defaults to user's tenant)
+ * @returns {Promise<{userId: string, user: object, tenantId?: string}>} The authenticated user and tenant
+ * @returns {NextResponse} Returns 401 Unauthorized or 403 Forbidden if not authorized
  */
 export async function requireAdmin(tenantId = null) {
   const authResult = await requireAuth();
@@ -85,11 +85,11 @@ export async function requireAdmin(tenantId = null) {
 }
 
 /**
- * Require admin permissions for server actions
- * Throws Error if not authorized (for server actions that can't return NextResponse)
- * @param {string} tenantId - Optional tenant ID to check permissions against
- * @returns {Promise<{userId: string, user: object, tenantId?: string}>} The authenticated user's Clerk ID and user record
- * @throws {Error} If not authenticated or not admin
+ * Require admin permissions for server actions (tenant-based RBAC only).
+ * Same permission set as requireAdmin; throws instead of returning NextResponse.
+ * @param {string} tenantId - Optional tenant ID to check permissions against (defaults to user's tenant)
+ * @returns {Promise<{userId: string, user: object, tenantId?: string}>} The authenticated user and tenant
+ * @throws {Error} If not authenticated or missing required permission
  */
 export async function requireAdminForAction(tenantId = null) {
   const { userId } = await auth();
@@ -267,6 +267,87 @@ export async function requireCanEditCourse(courseId) {
     user,
     course,
     ...(course.tenantId && { tenantId: course.tenantId }),
+  };
+}
+
+/**
+ * Require permission to edit a quiz (and thus its questions).
+ * Use for quiz admin routes. Uses tenant-based RBAC only (UserRole + TenantRole permissions).
+ * @param {string} quizId - Quiz ID from route params
+ * @returns {Promise<{userId: string, user: object, quiz: object, tenantId?: string}|NextResponse>}
+ */
+export async function requireCanEditQuiz(quizId) {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+  const userId = authResult;
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true, tenantId: true },
+  });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { id: quizId },
+    select: { id: true, tenantId: true },
+  });
+  if (!quiz) {
+    return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+  }
+
+  const quizEditPermissions = ['quizzes.update', 'quizzes.create', 'quizzes.delete'];
+  const adminPermissions = [
+    'users.create', 'users.update', 'users.delete',
+    'dashboard.admin', 'dashboard.manager',
+    'roles.assign', 'roles.create', 'settings.update',
+    'flashcards.manage_tenant',
+  ];
+
+  if (quiz.tenantId) {
+    const inTenant = await isUserInTenant(userId, quiz.tenantId);
+    if (!inTenant) {
+      return NextResponse.json(
+        { error: "You do not have access to edit this quiz" },
+        { status: 403 }
+      );
+    }
+    const canEdit = await hasAnyPermission(
+      userId,
+      [...quizEditPermissions, ...adminPermissions],
+      quiz.tenantId
+    );
+    if (!canEdit) {
+      return NextResponse.json(
+        { error: "You need permission to edit quizzes" },
+        { status: 403 }
+      );
+    }
+  } else {
+    const effectiveTenantId = user.tenantId;
+    const canEdit = effectiveTenantId
+      ? await hasAnyPermission(
+          userId,
+          [...quizEditPermissions, ...adminPermissions],
+          effectiveTenantId
+        )
+      : false;
+    if (!canEdit) {
+      return NextResponse.json(
+        { error: "You need permission to edit quizzes" },
+        { status: 403 }
+      );
+    }
+  }
+
+  return {
+    userId,
+    user,
+    quiz,
+    ...(quiz.tenantId && { tenantId: quiz.tenantId }),
   };
 }
 

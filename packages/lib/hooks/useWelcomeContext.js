@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useUserRole } from "./useUserRole.js";
-import { usePointsStore } from "../../stores/store/pointsStore.js";
+import { usePointsStore } from "../stores/store/pointsStore.js";
 import api from "../utils/axios.js";
 
 /**

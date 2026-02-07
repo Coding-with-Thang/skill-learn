@@ -57,19 +57,52 @@ export async function GET(request, { params }) {
       orderBy: { slotPosition: "asc" },
     });
 
-    const formattedRoles = roles.map((role) => ({
-      id: role.id,
-      roleAlias: role.roleAlias,
-      description: role.description,
-      slotPosition: role.slotPosition,
-      isActive: role.isActive,
-      createdFromTemplate: role.createdFromTemplate,
-      permissions: role.tenantRolePermissions.map((trp) => trp.permission),
-      permissionCount: role.tenantRolePermissions.length,
-      userCount: role._count.userRoles,
-      createdAt: role.createdAt,
-      updatedAt: role.updatedAt,
-    }));
+    // Load template permission IDs for roles created from a template (to compute modifiedFromTemplate)
+    const templateIds = [...new Set(roles.map((r) => r.createdFromTemplateId).filter(Boolean))];
+    const templatePermissions = await prisma.roleTemplatePermission.findMany({
+      where: { roleTemplateId: { in: templateIds } },
+      select: { roleTemplateId: true, permissionId: true },
+    });
+    const templatePermIdsByTemplateId = new Map();
+    for (const tp of templatePermissions) {
+      if (!templatePermIdsByTemplateId.has(tp.roleTemplateId)) {
+        templatePermIdsByTemplateId.set(tp.roleTemplateId, new Set());
+      }
+      templatePermIdsByTemplateId.get(tp.roleTemplateId).add(tp.permissionId);
+    }
+
+    const formattedRoles = roles.map((role) => {
+      const rolePermIds = new Set(role.tenantRolePermissions.map((trp) => trp.permissionId));
+      const templatePermIds = role.createdFromTemplateId
+        ? templatePermIdsByTemplateId.get(role.createdFromTemplateId)
+        : null;
+      const nameMatchesTemplate =
+        role.createdFromTemplate?.roleName != null &&
+        role.roleAlias === role.createdFromTemplate.roleName;
+      const permsMatchTemplate =
+        templatePermIds != null &&
+        rolePermIds.size === templatePermIds.size &&
+        [...rolePermIds].every((id) => templatePermIds.has(id));
+      const modifiedFromTemplate =
+        !role.createdFromTemplate
+          ? true
+          : !nameMatchesTemplate || !permsMatchTemplate;
+
+      return {
+        id: role.id,
+        roleAlias: role.roleAlias,
+        description: role.description,
+        slotPosition: role.slotPosition,
+        isActive: role.isActive,
+        createdFromTemplate: role.createdFromTemplate,
+        modifiedFromTemplate,
+        permissions: role.tenantRolePermissions.map((trp) => trp.permission),
+        permissionCount: role.tenantRolePermissions.length,
+        userCount: role._count.userRoles,
+        createdAt: role.createdAt,
+        updatedAt: role.updatedAt,
+      };
+    });
 
     return NextResponse.json({
       tenant: {

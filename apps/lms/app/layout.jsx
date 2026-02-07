@@ -29,6 +29,9 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: "Skill-Learn",
   description: "Gamify your knowledge - have a blast learning",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 import { CookieConsent } from "@/components/shared/CookieConsent";

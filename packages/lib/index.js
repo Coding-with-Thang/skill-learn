@@ -1,14 +1,12 @@
 // Export utilities
-export { cn } from "./utils.js";
+export { cn, extractTextFromProseMirror } from "./utils.js";
 export * from "./zodSchemas.js";
 
-// Export commonly used utils
+// Export commonly used utils (exclude server-only: auth, permissions, clerkSync, tenant - use @skill-learn/lib/utils/*.js in API routes)
 export * from "./utils/axios.js";
 export * from "./utils/utils.js";
 export * from "./utils/errorHandler.js";
 export * from "./utils/apiWrapper.js";
-export * from "./utils/permissions.js";
-export * from "./utils/clerkSync.js";
 
 // Export hooks (re-export from hooks directory)
 export { useAppTheme } from "./hooks/useAppTheme.js";

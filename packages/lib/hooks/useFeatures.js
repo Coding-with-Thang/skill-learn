@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useFeaturesStore, FEATURE_KEYS as FEATURE_KEYS_EXPORT } from '../../stores/store/featuresStore.js'
+import { useFeaturesStore, FEATURE_KEYS as FEATURE_KEYS_EXPORT } from '../stores/store/featuresStore.js'
 
 /**
  * Hook to check if features are enabled for the current user's tenant

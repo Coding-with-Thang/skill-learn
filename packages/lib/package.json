@@ -5,6 +5,7 @@
   "main": "./index.js",
   "exports": {
     ".": "./index.js",
+    "./zodSchemas.js": "./zodSchemas.js",
     "./stores/auditLogStore.js": "./stores/store/auditLogStore.js",
     "./stores/billingStore.js": "./stores/store/billingStore.js",
     "./stores/categoryStore.js": "./stores/store/categoryStore.js",

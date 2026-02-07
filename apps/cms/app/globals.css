@@ -202,6 +202,14 @@
   .bg-popover {
     background-color: var(--popover) !important;
   }
+
+  .badge-success {
+    background-color: #16a34a; /* green-600 */
+    color: white;
+  }
+  .badge-success:hover {
+    background-color: #15803d; /* green-700 */
+  }
 }
 
 @layer utilities {

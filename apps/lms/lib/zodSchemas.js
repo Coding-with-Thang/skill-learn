@@ -25,7 +25,7 @@ import {
   settingsFormSchema,
   pathParamSchema,
   fileUploadSchema,
-} from "@skill-learn/lib";
+} from "@skill-learn/lib/zodSchemas.js";
 
 // Re-export all shared schemas from the package
 export {

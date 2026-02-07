@@ -4,6 +4,14 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import { Button } from "@skill-learn/ui/components/button"
 import { Progress } from "@skill-learn/ui/components/progress"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@skill-learn/ui/components/table"
 import { SCORE_THRESHOLDS } from "@/config/constants"
 import {
   Clock,
@@ -12,12 +20,10 @@ import {
   FileQuestion,
   Download,
   Calendar,
-  Trophy,
-  MoreHorizontal,
   School,
   BookOpen
 } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import api from '@skill-learn/lib/utils/axios.js'
 import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications.js"
 
@@ -83,14 +89,40 @@ export default function UserStats({ user }) {
         </Section>
       )}
 
-      {/* 4. Quiz Performance Section (Using Recent Activity) */}
+      {/* 4. Recent Quiz Performance (Table) */}
       {recentActivity.length > 0 && (
         <Section title="Recent Quiz Performance" icon={FileQuestion}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recentActivity.map((activity) => (
-              <QuizCard key={activity.id} activity={activity} />
-            ))}
-          </div>
+          <Card className="border-none shadow-sm overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="hover:bg-transparent border-b">
+                  <TableHead className="font-semibold px-4 py-3">Quiz</TableHead>
+                  <TableHead className="font-semibold px-4 py-3">Category</TableHead>
+                  <TableHead className="font-semibold px-4 py-3">Type</TableHead>
+                  <TableHead className="font-semibold text-right px-4 py-3">Points</TableHead>
+                  <TableHead className="font-semibold text-right px-4 py-3">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentActivity.map((activity) => (
+                  <TableRow key={activity.id}>
+                    <TableCell className="font-medium px-4 py-3">{activity.quizTitle}</TableCell>
+                    <TableCell className="text-muted-foreground px-4 py-3">{activity.categoryName}</TableCell>
+                    <TableCell className="text-muted-foreground px-4 py-3">{activity.type}</TableCell>
+                    <TableCell className="text-right font-semibold text-green-600 dark:text-green-400 px-4 py-3">
+                      +{activity.points}
+                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground px-4 py-3">
+                      {format(new Date(activity.date), "MMM d, yyyy")}
+                      <span className="block text-xs">
+                        {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </Section>
       )}
 
@@ -238,44 +270,11 @@ function CourseCard({ category }) {
   )
 }
 
-function QuizCard({ activity }) {
-  return (
-    <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group">
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className={`p-2 rounded-lg bg-secondary/50`}>
-            <Trophy className="h-5 w-5 text-yellow-500" />
-          </div>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300`}>
-            Passed
-          </span>
-        </div>
-        <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition-colors">{activity.quizTitle}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{activity.categoryName}</p>
-        <div className="space-y-2">
-          <div className="flex items-end gap-1">
-            <span className="text-2xl font-bold text-green-600 dark:text-green-400">
-              +{activity.points}
-            </span>
-            <span className="text-sm text-muted-foreground mb-1">pts</span>
-          </div>
-          <Progress
-            value={100}
-            className="h-2"
-            indicatorClassName="bg-green-500"
-          />
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
 function CategoryPerformanceCard({ categoryStats }) {
   return (
     <Card className="border-none shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="flex items-center gap-2">
-          <MoreHorizontal className="h-5 w-5 text-blue-500 rotate-90" />
           <CardTitle className="text-xl font-bold">Category Performance</CardTitle>
         </div>
         <Button variant="ghost" className="text-primary hover:text-primary/80 p-0 h-auto font-medium">
@@ -299,7 +298,7 @@ function CategoryPerformanceCard({ categoryStats }) {
                   value={category.averageScore || 0}
                   className="h-2.5 bg-secondary"
                   indicatorClassName={`${(category.averageScore || 0) >= SCORE_THRESHOLDS.GOOD ? "bg-green-500" :
-                      (category.averageScore || 0) >= SCORE_THRESHOLDS.WARNING ? "bg-yellow-500" : "bg-red-500"
+                    (category.averageScore || 0) >= SCORE_THRESHOLDS.WARNING ? "bg-yellow-500" : "bg-red-500"
                     }`}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">

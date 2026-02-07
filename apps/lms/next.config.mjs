@@ -8,6 +8,10 @@ const __dirname = path.dirname(__filename);
 const nextConfig = {
   turbopack: {},
   outputFileTracingRoot: path.join(__dirname, "../.."),
+  // Reduce dev terminal noise (compile/proxy/render lines); set to true or use ignore: [] to restore
+  logging: {
+    incomingRequests: false,
+  },
   transpilePackages: [
     "@skill-learn/ui",
     "@skill-learn/lib",

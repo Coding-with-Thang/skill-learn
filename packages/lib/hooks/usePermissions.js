@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePermissionsStore } from "../../stores/store/permissionsStore.js";
+import { usePermissionsStore } from "../stores/store/permissionsStore.js";
 
 /**
  * React hook for managing user permissions in the frontend
