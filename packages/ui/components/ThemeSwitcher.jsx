@@ -10,8 +10,6 @@ import { Palette } from "lucide-react";
 const THEMES = [
     { label: "Light", value: "light" },
     { label: "Dark", value: "dark" },
-    { label: "Ocean", value: "ocean" },
-    { label: "Sunset", value: "sunset" },
 ];
 
 export default function ThemeSwitcher() {

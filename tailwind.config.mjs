@@ -22,11 +22,6 @@ export default {
         xl: "var(--radius-xl)",
       },
       colors: {
-        // Brand colors
-        'brand-teal': '#155d59',
-        'brand-teal-dark': '#124a47',
-        'brand-dark-blue': '#1B1B53',
-        
         // Core semantic colors
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -35,13 +30,19 @@ export default {
         popover: "var(--popover)",
         "popover-foreground": "var(--popover-foreground)",
 
+        // Brand colors - theme-aware
+        "brand-teal": "var(--brand-teal)",
+        "brand-teal-light": "var(--brand-teal-light)",
+        "brand-teal-dark": "var(--brand-teal-dark)",
+        "brand-dark-blue": "var(--brand-dark-blue)",
+        "brand-cyan": "var(--brand-cyan)",
+
         // Primary brand colors
         primary: {
           DEFAULT: "var(--primary)",
           foreground: "var(--primary-foreground)",
           hover: "var(--primary-hover)",
           active: "var(--primary-active)",
-          disabled: "var(--primary-disabled)",
         },
 
         // Secondary colors
@@ -137,6 +138,7 @@ export default {
           primary: "var(--game-primary)",
           secondary: "var(--game-secondary)",
           accent: "var(--game-accent)",
+          background: "var(--game-background)",
         },
 
         // Reward and points colors
@@ -148,17 +150,6 @@ export default {
         points: {
           primary: "var(--points-primary)",
           secondary: "var(--points-secondary)",
-        },
-
-        // Legacy color mappings for backward compatibility
-        green: {
-          400: "var(--success)",
-        },
-        blue: {
-          400: "var(--info)",
-        },
-        teal: {
-          400: "var(--game-primary)",
         },
       },
       boxShadow: {
