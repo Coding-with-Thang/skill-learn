@@ -1,6 +1,15 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # ============================================
+# Windows reserved names (avoid "failed to index" on add)
+# ============================================
+/nul
+/con
+/prn
+/aux
+/node
+
+# ============================================
 # Dependencies
 # ============================================
 node_modules/

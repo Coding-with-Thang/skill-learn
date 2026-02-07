@@ -16,7 +16,7 @@ import { LoadingSpinner } from "@skill-learn/ui/components/loading"
 import { Plus, X, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import api from "@skill-learn/lib/utils/axios.js"
-import { handleErrorWithNotification } from "@/lib/utils/notifications"
+import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications.js"
 import { QUIZ_CONFIG } from "@/config/constants"
 import { quizCreateSchema, quizUpdateSchema } from "@/lib/zodSchemas"
 import {

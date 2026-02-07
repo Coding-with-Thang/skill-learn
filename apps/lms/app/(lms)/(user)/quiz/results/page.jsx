@@ -6,7 +6,7 @@ import { Button } from "@skill-learn/ui/components/button"
 import { RotateCcw, LayoutDashboard, Eye, Trophy, Timer, CheckCircle, XCircle, ListChecks, Calendar, Star, ArrowRight, ChevronDown, ChevronUp, Crown, PartyPopper, Coins } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@skill-learn/ui/components/card"
-import { useAuditLog } from '@/lib/hooks/useAuditLog';
+import { useAuditLog } from "@skill-learn/lib";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { cn } from "@skill-learn/lib/utils.js"
 import { toast } from "sonner"

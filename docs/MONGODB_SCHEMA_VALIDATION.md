@@ -1,5 +1,7 @@
 # MongoDB Schema Validation & Data Cleanup
 
+> **Note:** The `db:validate` script was removed to keep only Vercel-essential scripts. Use manual validation (Option B or C below) or restore the script from git history if needed.
+
 Prisma with MongoDB does **not** enforce schema at the database level. Unlike SQL databases, MongoDB does not validate documents against your Prisma schema. This doc explains how to validate, update, and clean data.
 
 ## What Prisma Provides
@@ -13,19 +15,15 @@ Prisma with MongoDB does **not** enforce schema at the database level. Unlike SQ
 
 ## 1. Validation Strategy
 
-### Option A: Run the validation script (recommended)
+### Option A: Validation script (removed)
 
-```bash
-npm run db:validate
-```
-
-This script (`packages/database/scripts/validate-mongo-schema.js`):
+A validation script was previously available at `packages/database/scripts/validate-mongo-schema.js`. It:
 
 - **Validates** required fields exist and types are correct
 - **Detects orphans**: records whose parent IDs no longer exist (e.g., PointLog for deleted User)
 - **Reports** missing fields, invalid ObjectIds, enum mismatches
 
-Use `--dry-run` (default) to see issues without making changes. Omit it to apply fixes when using `--fix` mode.
+Restore from git history if needed.
 
 ### Option B: Manual validation via Prisma Client
 
@@ -97,15 +95,14 @@ Optional fields (`String?`, `Int?`) work without updates. Prisma returns `null` 
 ## 4. Recommended Workflow
 
 1. **Before schema changes**  
-   Run `npm run db:validate` to establish a baseline.
+   Use manual validation (Option B or C) to establish a baseline.
 
 2. **After schema changes**  
-   - Run `db push` to sync indexes  
-   - Run `npm run db:validate` again  
+   - Run `npx prisma db push` to sync indexes  
    - Write and run data migration scripts for new required fields or renames
 
 3. **Periodic maintenance**  
-   Run `npm run db:validate` (and optionally `--fix --remove-orphans`) to keep data aligned with the schema.
+   Use manual validation or restore the validation script from git history.
 
 ## 5. Data Migration Strategies (from Prisma docs)
 

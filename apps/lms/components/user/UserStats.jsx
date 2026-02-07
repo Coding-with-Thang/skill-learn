@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import api from '@skill-learn/lib/utils/axios.js'
-import { handleErrorWithNotification } from '@/lib/utils/notifications'
+import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications.js"
 
 export default function UserStats({ user }) {
   const [stats, setStats] = useState(null)

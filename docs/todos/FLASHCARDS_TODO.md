@@ -54,7 +54,7 @@
 - **Permissions**: flashcards.create, flashcards.read, flashcards.update, flashcards.delete, flashcards.manage_tenant, flashcards.manage_global
 - **Schema**: isGlobal on FlashCard and FlashCardCategory for platform-wide content
 - **API**: Permission checks on cards, categories, home, study-session, decks; include global cards in queries
-- **Seed**: `npm run seed:flashcard-permissions` to add permissions to Permission table. Then assign flashcards.create and flashcards.read to Member/User role in role templates so users can create and study.
+- **Seed**: Flashcard permissions can be added via a one-time script (see git history for `seed-flashcard-permissions.js`) or manually in the Permission table. Then assign flashcards.create and flashcards.read to Member/User role in role templates so users can create and study.
 - **Feature**: flash_cards feature defaulted on (tenant architecture)
 
 ### 7. Fork card option

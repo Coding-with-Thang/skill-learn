@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useWelcomeContext } from "@/lib/hooks/useWelcomeContext";
-import { generateGreeting } from "@/lib/utils/greetingGenerator";
+import { useWelcomeContext } from "@skill-learn/lib";
+import { generateGreeting } from "@skill-learn/lib/utils/greetingGenerator.js";
 import { Sparkles, TrendingUp, Award, Flame } from "lucide-react";
 
 export default function WelcomeBanner() {

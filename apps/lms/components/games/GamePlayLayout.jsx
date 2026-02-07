@@ -66,40 +66,14 @@ const GamePlayLayout = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button className="p-2 text-[#155d59]/70 hover:text-[#155d59] transition-colors">
-            <Settings className="h-5 w-5" />
-          </button>
-          <button className="p-2 text-[#155d59]/70 hover:text-[#155d59] transition-colors relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
-          </button>
-          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-md p-1 pr-4 rounded-full border border-white/30 ml-2">
-            <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-              {user?.imageUrl ? (
-                <Image src={user.imageUrl} alt="Profile" fill className="object-cover" />
-              ) : (
-                <div className="w-full h-full bg-[#5DA39F] flex items-center justify-center text-white">
-                  <User className="h-6 w-6" />
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-[#155d59] leading-tight">{user?.fullName || "Guest User"}</span>
-              <span className="text-[10px] font-bold text-cyan-600 bg-cyan-100/50 px-2 py-0.5 rounded-full inline-block">LEVEL 14 MAGE</span>
-            </div>
-          </div>
-        </div>
+
       </header>
 
       {/* Top Stats Cards */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Current Score */}
         <Card className="bg-white/90 backdrop-blur-sm border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden relative">
-          <div className="absolute right-[-10%] top-[-10%] opacity-5">
-            <TrendingUp size={120} strokeWidth={3} className="text-teal-900" />
-            <span className="text-4xl font-black tracking-tighter block mt-[-40px] ml-10">analytics</span>
-          </div>
+
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">CURRENT SCORE</p>
             <div className="flex items-baseline gap-2">
@@ -111,10 +85,7 @@ const GamePlayLayout = ({
 
         {/* Game Progress */}
         <Card className="bg-white/90 backdrop-blur-sm border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden relative">
-          <div className="absolute right-[-5%] top-[-10%] opacity-5">
-            <Calendar size={120} strokeWidth={3} className="text-teal-900" />
-            <span className="text-4xl font-black tracking-tighter block mt-[-40px] ml-10">speed</span>
-          </div>
+
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">GAME PROGRESS</p>
             <div>
@@ -131,10 +102,7 @@ const GamePlayLayout = ({
 
         {/* Personal Best */}
         <Card className="bg-gradient-to-r from-cyan-400 to-cyan-500 border-none rounded-[2rem] shadow-xl shadow-cyan-600/20 overflow-hidden relative text-white">
-          <div className="absolute right-[-10%] top-[-10%] opacity-10">
-            <Trophy size={140} strokeWidth={3} className="text-white" />
-            <span className="text-4xl font-black tracking-tighter block mt-[-50px] ml-10">events</span>
-          </div>
+
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-white/70">PERSONAL BEST</p>
             <div>

@@ -8,7 +8,7 @@ import { Save, X, Image as ImageIcon, Plus, Trash2, Layout, Calendar as Calendar
 import { useRouter } from 'next/navigation'
 import api from '@skill-learn/lib/utils/axios.js'
 import { toast } from 'sonner'
-import { Uploader } from '@/components/cms/file-uploader/Uploader'
+import { Uploader } from "@skill-learn/ui/components/file-uploader"
 import {
   Dialog,
   DialogContent,

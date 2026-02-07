@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import api from "../../utils/utils/axios.js";
+import api from "../utils/axios.js";
 
 /**
  * React hook for checking subscription status on the client

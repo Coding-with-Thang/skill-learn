@@ -12,7 +12,7 @@ import { FormSwitch } from "@skill-learn/ui/components/form-switch"
 import { Label } from "@skill-learn/ui/components/label"
 import { toast } from "sonner"
 import { useRewardStore } from "@skill-learn/lib/stores/rewardStore.js"
-import { Uploader } from "@/components/file-uploader/Uploader"
+import { Uploader } from "@skill-learn/ui/components/file-uploader"
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()

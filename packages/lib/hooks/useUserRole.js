@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
-import api from "../../utils/utils/axios.js";
-import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
+import api from "../utils/axios.js";
+import { handleErrorWithNotification } from "../utils/notifications.js";
 
 // Retry configuration
 const RETRY_CONFIG = {

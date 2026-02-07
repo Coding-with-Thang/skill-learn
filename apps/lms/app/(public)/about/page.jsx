@@ -16,7 +16,7 @@ const dancingScript = Dancing_Script({
 const teamMembers = [
     {
         name: 'Thang Nguyen',
-        role: 'CEO & Founder',
+        role: 'Founder',
         image: 'https://images.unsplash.com/photo-1708531375354-484e4ac78453?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGFzaWFuJTIwbWFsZSUyMHByb2ZpbGV8ZW58MHx8MHx8fDA%3D'
     },
     // {

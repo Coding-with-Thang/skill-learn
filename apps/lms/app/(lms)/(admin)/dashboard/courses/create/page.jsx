@@ -29,7 +29,7 @@ import {
 import { ArrowLeft, Loader2, Plus, Sparkles, Clock } from "lucide-react";
 import slugify from 'slugify';
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
-import { Uploader } from "@/components/file-uploader/Uploader";
+import { Uploader } from "@skill-learn/ui/components/file-uploader";
 import { toast } from "sonner";
 import axios from "axios";
 

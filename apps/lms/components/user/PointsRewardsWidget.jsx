@@ -5,11 +5,11 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { usePointsStore } from "@skill-learn/lib/stores/pointsStore.js";
 import api from "@skill-learn/lib/utils/axios.js";
-import { parseApiResponse } from "@/lib/utils/apiResponseParser";
+import { parseApiResponse } from "@skill-learn/lib/utils/apiResponseParser.js";
 import { Trophy, Star, Gift, TrendingUp, Sparkles } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
 import { ANIMATION, UI } from "@/config/constants";
-import { handleErrorWithNotification } from "@/lib/utils/notifications";
+import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications.js";
 
 export default function PointsRewardsWidget() {
   const { points, lifetimePoints, dailyStatus, fetchUserData, isLoading } = usePointsStore();

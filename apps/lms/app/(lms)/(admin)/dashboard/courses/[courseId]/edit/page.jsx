@@ -46,7 +46,7 @@ import {
 import { ArrowLeft, Loader2, Save, Sparkles, Clock, AlertTriangle } from "lucide-react";
 import slugify from 'slugify';
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
-import { Uploader } from "@/components/file-uploader/Uploader";
+import { Uploader } from "@skill-learn/ui/components/file-uploader";
 import { toast } from "sonner";
 import axios from "axios";
 import { useCoursesStore } from '@skill-learn/lib/stores/coursesStore.js'

@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import api from "../../utils/utils/axios.js";
-import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
-import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
-import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
-import { retryWithBackoff } from "../../utils/utils/retry.js";
+import api from "../../utils/axios.js";
+import { handleErrorWithNotification } from "../../utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/apiResponseParser.js";
+import { retryWithBackoff } from "../../utils/retry.js";
 
 // STORE constants
 const STORE = {
