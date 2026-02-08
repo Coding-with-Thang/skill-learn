@@ -61,6 +61,7 @@ export default function UserForm({ user = null, onSuccess }) {
             lastName: user?.lastName || "",
             username: user?.username || "",
             password: "",
+            confirmPassword: "",
             tenantRoleId: user?.tenantRoleId || defaultRoleId || "",
             reportsToUserId: user?.reportsToUserId ?? "",
         },
@@ -110,6 +111,7 @@ export default function UserForm({ user = null, onSuccess }) {
             if (user && !submitData.password) {
                 delete submitData.password
             }
+            delete submitData.confirmPassword
             if (submitData.reportsToUserId === "") {
                 submitData.reportsToUserId = null
             }
@@ -158,6 +160,14 @@ export default function UserForm({ user = null, onSuccess }) {
                             label="Password"
                             type="password"
                             placeholder={user ? "Leave blank to keep current password" : "Enter password"}
+                            autoComplete="new-password"
+                        />
+                        <FormInput
+                            name="confirmPassword"
+                            label="Confirm password"
+                            type="password"
+                            placeholder={user ? "Re-enter new password (if changing)" : "Re-enter password"}
+                            autoComplete="new-password"
                         />
 
                         {roleOptions.length > 0 ? (

@@ -14,8 +14,8 @@ import {
   quizCreateSchema,
   quizUpdateSchema,
   quizFinishSchema,
-  userCreateSchema as libUserCreateSchema,
-  userUpdateSchema as libUserUpdateSchema,
+  userCreateSchemaBase as libUserCreateSchemaBase,
+  userUpdateSchemaBase as libUserUpdateSchemaBase,
   rewardRedeemSchema,
   rewardCreateSchema,
   rewardUpdateSchema,
@@ -51,21 +51,31 @@ export {
 };
 
 // LMS form override: reportsToUserId accepts empty string from select and transforms to null
-export const userCreateSchema = libUserCreateSchema.extend({
+export const userCreateSchema = libUserCreateSchemaBase.extend({
   reportsToUserId: z
     .union([objectIdSchema, z.literal("")])
     .optional()
     .nullable()
     .transform((v) => (v === "" ? null : v)),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
-export const userUpdateSchema = libUserUpdateSchema.extend({
+export const userUpdateSchema = libUserUpdateSchemaBase.extend({
   reportsToUserId: z
     .union([objectIdSchema, z.literal("")])
     .optional()
     .nullable()
     .transform((v) => (v === "" ? null : v)),
-});
+}).refine(
+  (data) => {
+    const p = data.password?.trim?.() ?? data.password ?? "";
+    if (p.length === 0) return true;
+    return data.confirmPassword === data.password;
+  },
+  { message: "Passwords do not match", path: ["confirmPassword"] }
+);
 
 // ============== Flash Card schemas (LMS-only) ==============
 

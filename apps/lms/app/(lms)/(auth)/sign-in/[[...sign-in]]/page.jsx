@@ -90,6 +90,7 @@ const SignInPage = () => {
   const [resetEmail, setResetEmail] = useState(''); // Email for password reset
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState(''); // 2FA code
   const [twoFactorStrategy, setTwoFactorStrategy] = useState(null); // Store which 2FA strategy we're using
   const [error, setError] = useState(''); // Error message for sign-in
@@ -410,6 +411,12 @@ const SignInPage = () => {
     e.preventDefault();
 
     if (!signInLoaded) return;
+
+    if (newPassword !== confirmNewPassword) {
+      setResetError('Passwords must match');
+      return;
+    }
+    setResetError('');
 
     try {
       setLoading(true);
@@ -799,11 +806,15 @@ const SignInPage = () => {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password"
+                        onChange={(e) => {
+                          setNewPassword(e.target.value);
+                          setResetError('');
+                        }}
+                        placeholder="Enter new password (min 8 characters)"
                         required
                         minLength={8}
-                        className="w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200"
+                        autoComplete="new-password"
+                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
                       />
                       <button
                         type="button"
@@ -813,6 +824,29 @@ const SignInPage = () => {
                         {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                       </button>
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Confirm new password</label>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmNewPassword}
+                        onChange={(e) => {
+                          setConfirmNewPassword(e.target.value);
+                          setResetError('');
+                        }}
+                        placeholder="Re-enter new password"
+                        required
+                        minLength={8}
+                        autoComplete="new-password"
+                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
+                      />
+                    </div>
+                    {resetError && (
+                      <p className="text-sm text-red-600 ml-1">{resetError}</p>
+                    )}
                   </div>
 
                   <motion.button
@@ -838,7 +872,9 @@ const SignInPage = () => {
                       setMode('signin');
                       setResetCode('');
                       setNewPassword('');
+                      setConfirmNewPassword('');
                       setResetEmail('');
+                      setResetError('');
                     }}
                     className="w-full text-sm text-indigo-600 font-bold hover:text-indigo-700 hover:underline transition-colors"
                   >

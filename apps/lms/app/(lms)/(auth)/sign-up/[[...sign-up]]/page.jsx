@@ -35,8 +35,10 @@ export default function SignUpPage() {
     email: '',
     username: '',
     password: '',
+    confirmPassword: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState(''); // e.g. "Passwords must match"
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState('signup'); // signup, verify
   const [verificationCode, setVerificationCode] = useState('');
@@ -66,12 +68,19 @@ export default function SignUpPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError(''); // Clear error when user types
+    if (name === 'password' || name === 'confirmPassword') setPasswordError('');
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
 
     if (!signUpLoaded) return;
+
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords must match');
+      return;
+    }
+    setPasswordError('');
 
     try {
       setLoading(true);
@@ -102,6 +111,12 @@ export default function SignUpPage() {
   const handleSignUpWithUsername = async (e) => {
     e.preventDefault();
     if (!signUpLoaded) return;
+
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords must match');
+      return;
+    }
+    setPasswordError('');
 
     try {
       setLoading(true);
@@ -397,10 +412,11 @@ export default function SignUpPage() {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    placeholder="Create a strong password"
+                    placeholder="Create a strong password (min 8 characters)"
                     required
                     minLength={8}
-                    className="w-full h-12 pl-10 pr-12 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-all"
+                    autoComplete="new-password"
+                    className={`w-full h-12 pl-10 pr-12 border-2 rounded-xl focus:outline-none focus:border-indigo-500 transition-all ${passwordError ? 'border-red-300' : 'border-slate-200'}`}
                   />
                   <button
                     type="button"
@@ -410,6 +426,28 @@ export default function SignUpPage() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+              </div>
+
+              {/* Confirm Password */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Confirm password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    placeholder="Re-enter password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                    className={`w-full h-12 pl-10 pr-12 border-2 rounded-xl focus:outline-none focus:border-indigo-500 transition-all ${passwordError ? 'border-red-300' : 'border-slate-200'}`}
+                  />
+                </div>
+                {passwordError && (
+                  <p className="mt-1 text-sm text-red-600">{passwordError}</p>
+                )}
               </div>
 
               {/* Sign Up Button */}

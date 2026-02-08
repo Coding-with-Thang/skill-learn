@@ -9,27 +9,26 @@ import { AppError, ErrorType } from "./errorHandler.js";
  * @throws {AppError} If validation fails
  */
 export async function validateRequest(schema, data) {
-  try {
-    return await schema.parseAsync(data);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      // Format Zod errors into a readable message
-      const errorMessages = error.errors.map((err) => {
-        const path = err.path.join(".");
-        return path ? `${path}: ${err.message}` : err.message;
-      });
-
-      throw new AppError(
-        `Validation failed: ${errorMessages.join(", ")}`,
-        ErrorType.VALIDATION,
-        {
-          status: 400,
-          details: error.errors,
-        }
-      );
-    }
-    throw error;
+  const result = await schema.safeParseAsync(data);
+  if (result.success) {
+    return result.data;
   }
+  const error = result.error;
+  if (error instanceof z.ZodError) {
+    const errorMessages = error.errors.map((err) => {
+      const path = err.path.join(".");
+      return path ? `${path}: ${err.message}` : err.message;
+    });
+    throw new AppError(
+      `Validation failed: ${errorMessages.join(", ")}`,
+      ErrorType.VALIDATION,
+      {
+        status: 400,
+        details: error.errors,
+      }
+    );
+  }
+  throw error;
 }
 
 /**

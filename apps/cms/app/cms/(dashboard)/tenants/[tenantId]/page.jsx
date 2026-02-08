@@ -92,6 +92,7 @@ const createUserDefaultValues = {
   firstName: '',
   lastName: '',
   password: '',
+  confirmPassword: '',
   email: '',
   tenantRoleId: '',
 }
@@ -192,7 +193,7 @@ export default function TenantDetailPage() {
   const {
     register: registerCreateUser,
     handleSubmit: handleCreateUserSubmit,
-    formState: { errors: createUserErrors, isValid: createUserIsValid },
+    formState: { errors: createUserErrors },
     reset: resetCreateUser,
   } = createUserForm
 
@@ -355,6 +356,7 @@ export default function TenantDetailPage() {
         firstName: data.firstName,
         lastName: data.lastName,
         password: data.password,
+        confirmPassword: data.confirmPassword,
         tenantRoleId: data.tenantRoleId,
       }
       if (data.email) payload.email = data.email
@@ -1885,11 +1887,27 @@ export default function TenantDetailPage() {
                   type="password"
                   placeholder="Min 8 characters"
                   maxLength={128}
+                  autoComplete="new-password"
                   {...registerCreateUser('password')}
                   className={createUserErrors.password ? 'border-red-500' : ''}
                 />
                 {createUserErrors.password && (
                   <p className="text-sm text-red-600">{createUserErrors.password.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-confirm-password">Confirm password *</Label>
+                <Input
+                  id="create-confirm-password"
+                  type="password"
+                  placeholder="Re-enter password"
+                  maxLength={128}
+                  autoComplete="new-password"
+                  {...registerCreateUser('confirmPassword')}
+                  className={createUserErrors.confirmPassword ? 'border-red-500' : ''}
+                />
+                {createUserErrors.confirmPassword && (
+                  <p className="text-sm text-red-600">{createUserErrors.confirmPassword.message}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1936,7 +1954,7 @@ export default function TenantDetailPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={formLoading || !createUserIsValid}
+                disabled={formLoading}
               >
                 {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create user

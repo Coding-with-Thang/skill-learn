@@ -195,7 +195,8 @@ export const quizFinishSchema = z.object({
 });
 
 // User schemas - tenant-only; roles are TenantRole via UserRole
-export const userCreateSchema = z.object({
+// Base schemas (no refine) so consumers can .extend() then add refine
+export const userCreateSchemaBase = z.object({
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")
@@ -216,11 +217,17 @@ export const userCreateSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(100, "Password must be less than 100 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
   tenantRoleId: objectIdSchema.optional(),
   reportsToUserId: objectIdSchema.optional().nullable(),
 });
 
-export const userUpdateSchema = z.object({
+export const userCreateSchema = userCreateSchemaBase.refine(
+  (data) => data.password === data.confirmPassword,
+  { message: "Passwords do not match", path: ["confirmPassword"] }
+);
+
+export const userUpdateSchemaBase = z.object({
   username: z
     .string()
     .min(3, "Username must be at least 3 characters")
@@ -245,9 +252,19 @@ export const userUpdateSchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .max(100, "Password must be less than 100 characters")
     .optional(),
+  confirmPassword: z.string().optional(),
   tenantRoleId: objectIdSchema.optional(),
   reportsToUserId: objectIdSchema.optional().nullable(),
 });
+
+export const userUpdateSchema = userUpdateSchemaBase.refine(
+  (data) => {
+    const p = data.password?.trim?.() ?? data.password ?? "";
+    if (p.length === 0) return true;
+    return data.confirmPassword === data.password;
+  },
+  { message: "Passwords do not match", path: ["confirmPassword"] }
+);
 
 // Reward schemas
 export const rewardRedeemSchema = z.object({
@@ -354,6 +371,9 @@ export const tenantUserCreateSchema = z.object({
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must be at most 128 characters"),
+  confirmPassword: z
+    .string()
+    .min(1, "Please confirm your password"),
   email: z
     .union([
       z.string().trim().min(1).max(254).email("Please provide a valid email address"),
@@ -367,6 +387,9 @@ export const tenantUserCreateSchema = z.object({
     .min(1, "A role is required. Please select a role for the user.")
     .transform((s) => s.trim())
     .pipe(objectIdSchema),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 // File upload metadata (for multipart/upload validation)
