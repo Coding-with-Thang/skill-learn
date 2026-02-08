@@ -494,9 +494,10 @@ model TenantRole {
   tenant                Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   roleAlias             String // Custom name like "Teacher", "Manager"
   description           String?
-  slotPosition          Int
-  isActive              Boolean       @default(true)
-  createdFromTemplateId String?       @db.ObjectId
+  slotPosition               Int
+  isActive                   Boolean       @default(true)
+  doesNotCountTowardSlotLimit Boolean      @default(false) // Built-in Guest role; excluded from maxRoleSlots
+  createdFromTemplateId      String?       @db.ObjectId
   createdFromTemplate   RoleTemplate? @relation(fields: [createdFromTemplateId], references: [id])
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt

@@ -25,6 +25,7 @@ import { useTenantsStore } from '@skill-learn/lib/stores/tenantsStore.js'
 import { useRoleTemplatesStore } from '@skill-learn/lib/stores/roleTemplatesStore.js'
 import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore.js'
 import { parseApiResponse } from '@skill-learn/lib/utils/apiResponseParser.js'
+import { toast } from 'sonner'
 
 import {
   ArrowLeft,
@@ -163,6 +164,27 @@ export default function TenantDetailPage() {
   const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
   const [userRoleToReassign, setUserRoleToReassign] = useState(null)
   const [reassignTargetRoleId, setReassignTargetRoleId] = useState('')
+
+  // User create/edit/delete (super admin)
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false)
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false)
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null)
+  const [selectedUserForDelete, setSelectedUserForDelete] = useState(null)
+  const [createUserForm, setCreateUserForm] = useState({
+    username: '',
+    firstName: '',
+    lastName: '',
+    password: '',
+    email: '',
+    tenantRoleId: '',
+  })
+  const [editUserForm, setEditUserForm] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    tenantRoleId: '',
+  })
 
   // Role form
   const [roleForm, setRoleForm] = useState({
@@ -306,6 +328,133 @@ export default function TenantDetailPage() {
     }
   }
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault()
+    const username = createUserForm.username.trim()
+    const firstName = createUserForm.firstName.trim()
+    const lastName = createUserForm.lastName.trim()
+    const password = createUserForm.password
+    const tenantRoleId = createUserForm.tenantRoleId
+
+    if (!username || !firstName || !lastName || !password) {
+      setFormError('Please fill in all required fields: first name, last name, username, and password.')
+      toast.error('Missing required fields')
+      return
+    }
+    if (password.length < 8) {
+      setFormError('Password must be at least 8 characters.')
+      toast.error('Password too short')
+      return
+    }
+    if (!tenantRoleId) {
+      setFormError('Please select a role for the user. A role is required.')
+      toast.error('Please select a role')
+      return
+    }
+
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const payload = {
+        username,
+        firstName,
+        lastName,
+        password,
+        tenantRoleId,
+      }
+      if (createUserForm.email?.trim()) payload.email = createUserForm.email.trim()
+      const response = await api.post(`/tenants/${tenantId}/users`, payload)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to create user')
+      toast.success('User created successfully. They will appear in the list shortly.')
+      setCreateUserDialogOpen(false)
+      setCreateUserForm({ username: '', firstName: '', lastName: '', password: '', email: '', tenantRoleId: '' })
+      await fetchUsers(tenantId, true)
+      await fetchUserRoles(tenantId, true)
+      setTimeout(() => {
+        fetchUsers(tenantId, true)
+        fetchUserRoles(tenantId, true)
+      }, 2500)
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to create user'
+      setFormError(msg)
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const openEditUser = (user) => {
+    const roleEntry = userRoles.find(ur => ur.userId === user.clerkId)
+    setSelectedUserForEdit(user)
+    setEditUserForm({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      username: user.username || '',
+      tenantRoleId: roleEntry?.role?.id || '',
+    })
+    setEditUserDialogOpen(true)
+    setFormError(null)
+  }
+
+  const handleEditUser = async (e) => {
+    e.preventDefault()
+    if (!selectedUserForEdit?.clerkId) return
+
+    const firstName = editUserForm.firstName?.trim()
+    const lastName = editUserForm.lastName?.trim()
+    const username = editUserForm.username?.trim()
+    const tenantRoleId = editUserForm.tenantRoleId
+
+    if (!firstName || !lastName || !username) {
+      setFormError('First name, last name, and username are required.')
+      toast.error('Please fill in all required fields')
+      return
+    }
+    if (!tenantRoleId) {
+      setFormError('Please select a role for the user. A role is required.')
+      toast.error('Please select a role')
+      return
+    }
+
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const payload = { firstName, lastName, username, tenantRoleId }
+      const response = await api.put(`/tenants/${tenantId}/users/${selectedUserForEdit.clerkId}`, payload)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to update user')
+      toast.success('User updated successfully.')
+      setEditUserDialogOpen(false)
+      setSelectedUserForEdit(null)
+      await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to update user'
+      setFormError(msg)
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!selectedUserForDelete?.clerkId) return
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const response = await api.delete(`/tenants/${tenantId}/users/${selectedUserForDelete.clerkId}`)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to delete user')
+      toast.success('User deleted successfully.')
+      setDeleteUserDialogOpen(false)
+      setSelectedUserForDelete(null)
+      await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to delete user'
+      setFormError(msg)
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
   // Handle initialize roles from template
   const handleInitializeRoles = async () => {
     setFormLoading(true)
@@ -375,6 +524,9 @@ export default function TenantDetailPage() {
 
   const activeRoleCount = roles.filter((r) => r.isActive).length
   const cannotDeactivateRole = (role) => role.isActive && activeRoleCount <= 1
+  const rolesCountingTowardLimit = roles.filter((r) => !r.doesNotCountTowardSlotLimit)
+  const usedRoleSlots = rolesCountingTowardLimit.length
+  const canAddMoreRoles = usedRoleSlots < (tenant?.maxRoleSlots || 5)
 
   // Handle view role details
   const handleViewRoleDetails = async (role) => {
@@ -645,13 +797,13 @@ export default function TenantDetailPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Role Slots</p>
                 <p className="text-2xl font-bold">
-                  {roles.length} / {tenant?.maxRoleSlots || 0}
+                  {usedRoleSlots} / {tenant?.maxRoleSlots || 0}
                 </p>
               </div>
               <Shield className="h-8 w-8 text-muted-foreground" />
             </div>
             <Progress
-              value={(roles.length / (tenant?.maxRoleSlots || 1)) * 100}
+              value={tenant?.maxRoleSlots ? (usedRoleSlots / tenant.maxRoleSlots) * 100 : 0}
               className="mt-2"
             />
           </CardContent>
@@ -712,10 +864,33 @@ export default function TenantDetailPage() {
       {activeTab === 'users' && (
         <Card>
           <CardHeader>
-            <CardTitle>Users ({users.length})</CardTitle>
-            <CardDescription>
-              Users belonging to this tenant
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Users ({users.length})</CardTitle>
+                <CardDescription>
+                  Users belonging to this tenant. Create, edit, or remove users; changes sync via Clerk webhook.
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => {
+                  setCreateUserForm({
+                    username: '',
+                    firstName: '',
+                    lastName: '',
+                    password: '',
+                    email: '',
+                    tenantRoleId: tenant?.defaultRoleId || '',
+                  })
+                  setFormError(null)
+                  setCreateUserDialogOpen(true)
+                }}
+                disabled={roles.filter(r => r.isActive).length === 0}
+                title={roles.filter(r => r.isActive).length === 0 ? 'Create at least one role for this tenant first' : undefined}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add user
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
@@ -772,6 +947,29 @@ export default function TenantDetailPage() {
                         </Badge>
                       )
                     })()}
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditUser(user)}
+                        title="Edit user"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          setSelectedUserForDelete(user)
+                          setFormError(null)
+                          setDeleteUserDialogOpen(true)
+                        }}
+                        title="Delete user"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -787,7 +985,7 @@ export default function TenantDetailPage() {
             <div>
               <h2 className="text-xl font-semibold">Tenant Roles</h2>
               <p className="text-sm text-muted-foreground">
-                {roles.length} of {tenant?.maxRoleSlots || 5} role slots used
+                {usedRoleSlots} of {tenant?.maxRoleSlots || 5} role slots used (Guest role does not count)
               </p>
             </div>
             <div className="flex gap-2">
@@ -798,12 +996,10 @@ export default function TenantDetailPage() {
               )}
               <Button
                 onClick={() => {
-                  console.log('Add Role button clicked')
                   resetRoleForm()
                   setRoleDialogOpen(true)
-                  console.log('roleDialogOpen set to:', true)
                 }}
-                disabled={roles.length >= (tenant?.maxRoleSlots || 5)}
+                disabled={!canAddMoreRoles}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Role
@@ -1468,7 +1664,7 @@ export default function TenantDetailPage() {
                 <Input
                   type="number"
                   min="1"
-                  max={tenant?.maxRoleSlots || 5}
+                  max={Math.max(1, (tenant?.maxRoleSlots || 5))}
                   value={roleForm.slotPosition}
                   onChange={(e) => setRoleForm({ ...roleForm, slotPosition: parseInt(e.target.value) || 1 })}
                 />
@@ -1633,6 +1829,232 @@ export default function TenantDetailPage() {
             >
               {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Change role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createUserDialogOpen} onOpenChange={(open) => {
+        if (!open) setFormError(null)
+        setCreateUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create tenant user</DialogTitle>
+            <DialogDescription>
+              User is created in Clerk; webhook will sync to the database and assign the selected role.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label>First name *</Label>
+                  <Input
+                    value={createUserForm.firstName}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, firstName: e.target.value })}
+                    placeholder="Jane"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Last name *</Label>
+                  <Input
+                    value={createUserForm.lastName}
+                    onChange={(e) => setCreateUserForm({ ...createUserForm, lastName: e.target.value })}
+                    placeholder="Doe"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label>Username *</Label>
+                <Input
+                  value={createUserForm.username}
+                  onChange={(e) => setCreateUserForm({ ...createUserForm, username: e.target.value })}
+                  placeholder="janedoe"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Password *</Label>
+                <Input
+                  type="password"
+                  value={createUserForm.password}
+                  onChange={(e) => setCreateUserForm({ ...createUserForm, password: e.target.value })}
+                  placeholder="Min 8 characters"
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Email (optional)</Label>
+                <Input
+                  type="email"
+                  value={createUserForm.email}
+                  onChange={(e) => setCreateUserForm({ ...createUserForm, email: e.target.value })}
+                  placeholder="jane@example.com"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-user-role">Role *</Label>
+                <select
+                  id="create-user-role"
+                  value={createUserForm.tenantRoleId}
+                  onChange={(e) => setCreateUserForm({ ...createUserForm, tenantRoleId: e.target.value })}
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                  required
+                  aria-required="true"
+                >
+                  <option value="">Select a role (required)</option>
+                  {roles.filter(r => r.isActive).map((r) => (
+                    <option key={r.id} value={r.id}>{r.roleAlias}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
+              </div>
+              {formError && (
+                <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                  {formError}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateUserDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  formLoading ||
+                  !createUserForm.username?.trim() ||
+                  !createUserForm.firstName?.trim() ||
+                  !createUserForm.lastName?.trim() ||
+                  !createUserForm.password ||
+                  createUserForm.password.length < 8 ||
+                  !createUserForm.tenantRoleId
+                }
+              >
+                {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create user
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserDialogOpen} onOpenChange={(open) => {
+        if (!open) { setSelectedUserForEdit(null); setFormError(null) }
+        setEditUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit user</DialogTitle>
+            <DialogDescription>
+              Profile changes sync to Clerk; role changes update the database and Clerk metadata.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUserForEdit && (
+            <form onSubmit={handleEditUser}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>First name *</Label>
+                    <Input
+                      value={editUserForm.firstName}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, firstName: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Last name *</Label>
+                    <Input
+                      value={editUserForm.lastName}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, lastName: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Username *</Label>
+                  <Input
+                    value={editUserForm.username}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-user-role">Role *</Label>
+                  <select
+                    id="edit-user-role"
+                    value={editUserForm.tenantRoleId}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, tenantRoleId: e.target.value })}
+                    className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                    required
+                    aria-required="true"
+                  >
+                    <option value="">Select a role (required)</option>
+                    {roles.filter(r => r.isActive).map((r) => (
+                      <option key={r.id} value={r.id}>{r.roleAlias}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">User must have an assigned role.</p>
+                </div>
+                {formError && (
+                  <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                    {formError}
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditUserDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    formLoading ||
+                    !editUserForm.firstName?.trim() ||
+                    !editUserForm.lastName?.trim() ||
+                    !editUserForm.username?.trim() ||
+                    !editUserForm.tenantRoleId
+                  }
+                >
+                  {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Update user
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={deleteUserDialogOpen} onOpenChange={(open) => {
+        if (!open) { setSelectedUserForDelete(null); setFormError(null) }
+        setDeleteUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete user</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{selectedUserForDelete?.firstName} {selectedUserForDelete?.lastName}</strong> (@{selectedUserForDelete?.username})? They will be removed from Clerk and the database (via webhook).
+            </DialogDescription>
+          </DialogHeader>
+          {formError && (
+            <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+              {formError}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteUserDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={formLoading}>
+              {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete user
             </Button>
           </DialogFooter>
         </DialogContent>

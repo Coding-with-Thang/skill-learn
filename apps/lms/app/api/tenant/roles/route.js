@@ -8,6 +8,7 @@ import {
   PERMISSIONS,
 } from "@skill-learn/lib/utils/permissions.js";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
+import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * GET /api/tenant/roles
@@ -71,12 +72,17 @@ export async function GET() {
       orderBy: { slotPosition: "asc" },
     });
 
+    const rolesCountingTowardLimit = roles.filter((r) => !r.doesNotCountTowardSlotLimit);
+    const usedSlots = rolesCountingTowardLimit.length;
+    const availableSlots = Math.max(0, tenant.maxRoleSlots - usedSlots);
+
     const formattedRoles = roles.map((role) => ({
       id: role.id,
       roleAlias: role.roleAlias,
       description: role.description,
       slotPosition: role.slotPosition,
       isActive: role.isActive,
+      doesNotCountTowardSlotLimit: role.doesNotCountTowardSlotLimit,
       createdFromTemplate: role.createdFromTemplate,
       permissions: role.tenantRolePermissions.map((trp) => trp.permission),
       permissionCount: role.tenantRolePermissions.length,
@@ -92,8 +98,8 @@ export async function GET() {
         maxRoleSlots: tenant.maxRoleSlots,
       },
       roles: formattedRoles,
-      usedSlots: formattedRoles.length,
-      availableSlots: tenant.maxRoleSlots - formattedRoles.length,
+      usedSlots,
+      availableSlots,
     });
   } catch (error) {
     return handleApiError(error);
@@ -132,9 +138,8 @@ export async function POST(request) {
       select: { id: true, maxRoleSlots: true },
     });
 
-    // Check slot limits
     const existingRolesCount = await prisma.tenantRole.count({
-      where: { tenantId: user.tenantId },
+      where: { tenantId: user.tenantId, doesNotCountTowardSlotLimit: false },
     });
 
     if (existingRolesCount >= tenant.maxRoleSlots) {
@@ -287,6 +292,7 @@ export async function PUT(request) {
       const roles = [];
 
       for (const template of templates) {
+        if (template.roleName?.toLowerCase() === GUEST_ROLE_ALIAS.toLowerCase()) continue;
         if (template.slotPosition > tenant.maxRoleSlots) continue;
 
         const role = await tx.tenantRole.create({

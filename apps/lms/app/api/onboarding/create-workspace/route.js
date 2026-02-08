@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { slugify } from "@skill-learn/lib/utils/utils.js";
+import { ensureTenantHasGuestRole } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * POST /api/onboarding/create-workspace
@@ -114,7 +115,6 @@ export async function POST(request) {
       }
     }
 
-    // Create the tenant/workspace
     const tenant = await prisma.tenant.create({
       data: {
         name: organizationName,
@@ -123,17 +123,25 @@ export async function POST(request) {
         subscriptionStatus: subscriptionData.subscriptionStatus,
         stripeCustomerId: subscriptionData.stripeCustomerId,
         stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
-        // Store additional info in a way compatible with schema
-        // Industry and teamSize could be stored in SystemSettings later
       },
     });
 
-    // Update the user to link to the tenant and make them owner
+    const guestRole = await ensureTenantHasGuestRole(tenant.id);
+
     await prisma.user.update({
       where: { id: dbUser.id },
       data: {
         tenantId: tenant.id,
         role: "OWNER",
+      },
+    });
+
+    await prisma.userRole.create({
+      data: {
+        userId: dbUser.clerkId,
+        tenantId: tenant.id,
+        tenantRoleId: guestRole.id,
+        assignedBy: "system",
       },
     });
 

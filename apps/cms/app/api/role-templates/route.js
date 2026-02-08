@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * GET /api/role-templates
@@ -26,7 +27,7 @@ export async function GET(request) {
       where.isDefaultSet = isDefaultSet === "true";
     }
 
-    const roleTemplates = await prisma.roleTemplate.findMany({
+    const allRoleTemplates = await prisma.roleTemplate.findMany({
       where,
       include: {
         roleTemplatePermissions: {
@@ -50,6 +51,10 @@ export async function GET(request) {
       },
       orderBy: [{ templateSetName: "asc" }, { slotPosition: "asc" }],
     });
+    // Exclude Guest - built-in default for all tenants, not counted toward role slots
+    const roleTemplates = allRoleTemplates.filter(
+      (t) => t.roleName?.toLowerCase() !== GUEST_ROLE_ALIAS.toLowerCase()
+    );
 
     // Format response
     const formattedTemplates = roleTemplates.map((template) => ({

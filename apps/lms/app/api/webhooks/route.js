@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { prisma } from "@skill-learn/database";
 import { NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
+import { getTenantDefaultRoleId } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * Clerk Webhook Handler
@@ -130,13 +131,16 @@ export async function POST(req) {
         },
       });
 
-      // If tenant assigned and default role specified, assign the role
-      if (resolvedTenantId && defaultRoleAlias) {
-        await assignDefaultRole(id, resolvedTenantId, defaultRoleAlias);
-      }
-
-      // Sync tenant info back to Clerk metadata
       if (resolvedTenantId) {
+        if (defaultRoleAlias) {
+          await assignDefaultRole(id, resolvedTenantId, defaultRoleAlias);
+        } else {
+          const defaultRoleId = await getTenantDefaultRoleId(resolvedTenantId);
+          if (defaultRoleId) {
+            await createUserRoleAssignment(id, resolvedTenantId, defaultRoleId);
+            console.log(`[Webhook] Assigned tenant default role to user ${id}`);
+          }
+        }
         await syncTenantMetadataToClerk(id, resolvedTenantId);
       }
 
@@ -387,21 +391,11 @@ async function assignDefaultRole(userId, tenantId, roleAlias) {
     });
 
     if (!role) {
-      // Try to find a generic "Member" or lowest slot position role
-      const fallbackRole = await prisma.tenantRole.findFirst({
-        where: {
-          tenantId,
-          isActive: true,
-        },
-        orderBy: {
-          slotPosition: "desc", // Highest slot = lowest privilege
-        },
-      });
-
-      if (fallbackRole) {
-        await createUserRoleAssignment(userId, tenantId, fallbackRole.id);
+      const defaultRoleId = await getTenantDefaultRoleId(tenantId);
+      if (defaultRoleId) {
+        await createUserRoleAssignment(userId, tenantId, defaultRoleId);
         console.log(
-          `[Webhook] Assigned fallback role ${fallbackRole.roleAlias} to user ${userId}`
+          `[Webhook] Role "${roleAlias}" not found; assigned tenant default role to user ${userId}`
         );
       }
       return;

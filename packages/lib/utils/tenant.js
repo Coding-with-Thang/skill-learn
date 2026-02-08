@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
+import { ensureUserHasDefaultRole } from "./tenantDefaultRole.js";
 
 /**
  * Tenant context utilities for multi-tenant applications
@@ -60,6 +61,8 @@ export async function getTenantContext() {
     );
   }
 
+  await ensureUserHasDefaultRole(userId, user.tenantId);
+
   return {
     userId,
     tenantId: user.tenantId,
@@ -111,6 +114,8 @@ export async function getTenantContextForAction() {
   if (!user.tenantId) {
     throw new Error("No tenant assigned. Please complete onboarding.");
   }
+
+  await ensureUserHasDefaultRole(userId, user.tenantId);
 
   return {
     userId,

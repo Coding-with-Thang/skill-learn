@@ -37,6 +37,8 @@ export default function RolesPage() {
   // Use selectors to only re-render when specific state changes
   const roles = useRolesStore((state) => state.roles);
   const tenant = useRolesStore((state) => state.tenant);
+  const usedSlots = useRolesStore((state) => state.usedSlots);
+  const availableSlots = useRolesStore((state) => state.availableSlots);
   const permissions = useRolesStore((state) => state.permissions);
   const groupedPermissions = useRolesStore((state) => state.permissionsByCategory);
   const templates = useRolesStore((state) => state.templates);
@@ -279,7 +281,7 @@ export default function RolesPage() {
               resetRoleForm();
               setRoleDialogOpen(true);
             }}
-            disabled={roles.length >= (tenant?.maxRoleSlots || 5)}
+            disabled={availableSlots <= 0}
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Role
@@ -294,11 +296,11 @@ export default function RolesPage() {
             <div>
               <p className="text-sm text-muted-foreground">Role Slots Used</p>
               <p className="text-2xl font-bold">
-                {roles.length} / {tenant?.maxRoleSlots || 5}
+                {usedSlots} / {tenant?.maxRoleSlots || 5}
               </p>
             </div>
             <Progress
-              value={(roles.length / (tenant?.maxRoleSlots || 5)) * 100}
+              value={tenant?.maxRoleSlots ? (usedSlots / tenant.maxRoleSlots) * 100 : 0}
               className="w-1/2"
             />
           </div>

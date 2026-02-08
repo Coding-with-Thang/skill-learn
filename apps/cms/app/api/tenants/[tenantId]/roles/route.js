@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * GET /api/tenants/[tenantId]/roles
@@ -94,6 +95,7 @@ export async function GET(request, { params }) {
         description: role.description,
         slotPosition: role.slotPosition,
         isActive: role.isActive,
+        doesNotCountTowardSlotLimit: role.doesNotCountTowardSlotLimit,
         createdFromTemplate: role.createdFromTemplate,
         modifiedFromTemplate,
         permissions: role.tenantRolePermissions.map((trp) => trp.permission),
@@ -104,6 +106,10 @@ export async function GET(request, { params }) {
       };
     });
 
+    const rolesCountingTowardLimit = roles.filter((r) => !r.doesNotCountTowardSlotLimit);
+    const usedSlots = rolesCountingTowardLimit.length;
+    const availableSlots = Math.max(0, tenant.maxRoleSlots - usedSlots);
+
     return NextResponse.json({
       tenant: {
         id: tenant.id,
@@ -111,8 +117,8 @@ export async function GET(request, { params }) {
         maxRoleSlots: tenant.maxRoleSlots,
       },
       roles: formattedRoles,
-      usedSlots: formattedRoles.length,
-      availableSlots: tenant.maxRoleSlots - formattedRoles.length,
+      usedSlots,
+      availableSlots,
     });
   } catch (error) {
     console.error("Error fetching tenant roles:", error);
@@ -149,9 +155,8 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    // Check slot limits
     const existingRolesCount = await prisma.tenantRole.count({
-      where: { tenantId },
+      where: { tenantId, doesNotCountTowardSlotLimit: false },
     });
 
     if (existingRolesCount >= tenant.maxRoleSlots) {
@@ -394,7 +399,7 @@ export async function PUT(request, { params }) {
       const roles = [];
 
       for (const template of templates) {
-        // Skip if would exceed max slots
+        if (template.roleName?.toLowerCase() === GUEST_ROLE_ALIAS.toLowerCase()) continue;
         if (template.slotPosition > tenant.maxRoleSlots) {
           continue;
         }
