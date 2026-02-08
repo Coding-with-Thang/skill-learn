@@ -387,6 +387,9 @@ model Tenant {
   subscriptionEndsAt   DateTime? // When current period ends
   cancelAtPeriodEnd    Boolean   @default(false)
 
+  // Auth: when false, sign-up uses username + password only (no email)
+  requireEmailForRegistration Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

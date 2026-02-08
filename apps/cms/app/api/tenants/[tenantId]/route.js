@@ -51,6 +51,7 @@ export async function GET(request, { params }) {
         purchasedRoleSlots: tenant.purchasedRoleSlots,
         defaultRoleId: tenant.defaultRoleId,
         defaultRole: tenant.defaultRole,
+        requireEmailForRegistration: tenant.requireEmailForRegistration,
         activeUsers: tenant._count.users,
         roleCount: tenant._count.tenantRoles,
         quizCount: tenant._count.quizzes,
@@ -81,7 +82,7 @@ export async function PUT(request, { params }) {
 
     const { tenantId } = await params;
     const body = await request.json();
-    const { name, slug, subscriptionTier, maxRoleSlots, defaultRoleId } = body;
+    const { name, slug, subscriptionTier, maxRoleSlots, defaultRoleId, requireEmailForRegistration } = body;
 
     // Check if tenant exists
     const existingTenant = await prisma.tenant.findUnique({
@@ -139,6 +140,7 @@ export async function PUT(request, { params }) {
         ...(subscriptionTier && { subscriptionTier }),
         ...(maxRoleSlots !== undefined && { maxRoleSlots }),
         ...(defaultRoleId !== undefined && { defaultRoleId: defaultRoleId || null }),
+        ...(requireEmailForRegistration !== undefined && { requireEmailForRegistration: !!requireEmailForRegistration }),
       },
       include: {
         defaultRole: {

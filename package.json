@@ -8,7 +8,8 @@
     "build": "turbo run build",
     "start": "turbo run start",
     "lint": "turbo run lint",
-    "prisma:generate": "turbo run prisma:generate"
+    "prisma:generate": "turbo run prisma:generate",
+    "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
     "baseline-browser-mapping": "^2.9.19",

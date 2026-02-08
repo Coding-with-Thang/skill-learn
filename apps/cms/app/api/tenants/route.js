@@ -32,6 +32,7 @@ export async function GET(request) {
       maxRoleSlots: tenant.maxRoleSlots,
       baseRoleSlots: tenant.baseRoleSlots,
       purchasedRoleSlots: tenant.purchasedRoleSlots,
+      requireEmailForRegistration: tenant.requireEmailForRegistration,
       activeUsers: tenant._count.users,
       roleCount: tenant._count.tenantRoles,
       createdAt: tenant.createdAt,

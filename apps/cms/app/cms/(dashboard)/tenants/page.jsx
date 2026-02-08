@@ -43,6 +43,7 @@ export default function TenantsPage() {
     slug: '',
     subscriptionTier: 'free',
     maxRoleSlots: 5,
+    requireEmailForRegistration: true,
   })
   const [formLoading, setFormLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -122,7 +123,7 @@ export default function TenantsPage() {
 
       setEditDialogOpen(false)
       setSelectedTenant(null)
-      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
+      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5, requireEmailForRegistration: true })
       fetchTenants()
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to update tenant')
@@ -165,6 +166,7 @@ export default function TenantsPage() {
       slug: tenant.slug,
       subscriptionTier: tenant.subscriptionTier,
       maxRoleSlots: tenant.maxRoleSlots,
+      requireEmailForRegistration: tenant.requireEmailForRegistration !== false,
     })
     setEditDialogOpen(true)
   }
@@ -558,6 +560,21 @@ export default function TenantsPage() {
                   required
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <input
+                  id="edit-requireEmail"
+                  type="checkbox"
+                  checked={formData.requireEmailForRegistration}
+                  onChange={(e) => setFormData({ ...formData, requireEmailForRegistration: e.target.checked })}
+                  className="h-4 w-4 rounded border-input"
+                />
+                <Label htmlFor="edit-requireEmail" className="cursor-pointer">
+                  Require email for LMS sign-up
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                When unchecked, users can register with username + password only (no email). Use for tenants that do not want to collect email.
+              </p>
               {error && (
                 <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
                   {error}
@@ -571,7 +588,7 @@ export default function TenantsPage() {
                 onClick={() => {
                   setEditDialogOpen(false)
                   setSelectedTenant(null)
-                  setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
+                  setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5, requireEmailForRegistration: true })
                   setError(null)
                 }}
               >
