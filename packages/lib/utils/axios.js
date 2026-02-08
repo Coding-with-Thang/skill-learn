@@ -79,12 +79,14 @@ api.interceptors.request.use(
       });
     }
 
-    // Check cache for GET requests
+    // Check cache for GET requests (skip cache for mutable tenant/CMS data so UI refreshes after create/update/delete)
     if (config.method === "get") {
       const key = `${config.url}${JSON.stringify(config.params || {})}`;
       const cachedResponse = cache.get(key);
-      const cacheDuration =
-        cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
+      const isTenantPath = config.url && String(config.url).startsWith("/tenants");
+      const cacheDuration = isTenantPath
+        ? 0
+        : cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
 
       if (
         cachedResponse &&
@@ -106,15 +108,18 @@ api.interceptors.request.use(
 // Handle responses
 api.interceptors.response.use(
   (response) => {
-    // Cache successful GET responses
+    // Cache successful GET responses (skip tenant paths so CMS UI refreshes after mutations)
     if (response.config.method === "get") {
-      const key = `${response.config.url}${JSON.stringify(
-        response.config.params || {}
-      )}`;
-      cache.set(key, {
-        data: response.data,
-        timestamp: Date.now(),
-      });
+      const url = response.config.url && String(response.config.url);
+      if (!url || !url.startsWith("/tenants")) {
+        const key = `${url}${JSON.stringify(
+          response.config.params || {}
+        )}`;
+        cache.set(key, {
+          data: response.data,
+          timestamp: Date.now(),
+        });
+      }
     }
 
     // Clear rate limiting delay if request succeeded

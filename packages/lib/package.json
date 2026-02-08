@@ -51,6 +51,7 @@
     "./utils/permissions.js": "./utils/permissions.js",
     "./utils/tenant": "./utils/tenant.js",
     "./utils/tenant.js": "./utils/tenant.js",
+    "./utils/tenantDefaultRole.js": "./utils/tenantDefaultRole.js",
     "./utils/apiResponseParser.js": "./utils/apiResponseParser.js",
     "./utils/greetingGenerator.js": "./utils/greetingGenerator.js",
     "./utils/notifications.js": "./utils/notifications.js",

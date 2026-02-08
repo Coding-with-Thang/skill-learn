@@ -437,7 +437,10 @@ export default function SignUpPage() {
 
           <p className="text-center text-slate-600 mt-6">
             Already have an account?{' '}
-            <Link href="/sign-in" className="text-indigo-600 font-semibold hover:underline">
+            <Link
+              href={tenantSlug ? `/sign-in?tenant=${encodeURIComponent(tenantSlug)}` : '/sign-in'}
+              className="text-indigo-600 font-semibold hover:underline"
+            >
               Sign in
             </Link>
           </p>

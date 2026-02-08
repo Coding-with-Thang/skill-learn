@@ -29,9 +29,8 @@ export async function GET(request) {
       return NextResponse.json({ requireEmail: true });
     }
 
-    return NextResponse.json({
-      requireEmail: tenant.requireEmailForRegistration,
-    });
+    const requireEmail = tenant.requireEmailForRegistration !== false;
+    return NextResponse.json({ requireEmail });
   } catch (error) {
     console.error("[auth-settings]", error);
     return NextResponse.json(

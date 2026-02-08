@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
+import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
+import { tenantUserCreateSchema } from "@skill-learn/lib/zodSchemas.js";
 
 // Get all users for a tenant
 export async function GET(request, { params }) {
@@ -58,7 +61,7 @@ export async function GET(request, { params }) {
 /**
  * POST /api/tenants/[tenantId]/users
  * Create a tenant user via Clerk. Webhook (user.created) will create User in DB and assign role.
- * Body: { username, firstName, lastName, password, email?, tenantRoleId? }
+ * Body: { username, firstName, lastName, password, email?, tenantRoleId } — validated with tenantUserCreateSchema.
  */
 export async function POST(request, { params }) {
   try {
@@ -68,36 +71,18 @@ export async function POST(request, { params }) {
     }
 
     const { tenantId } = await params;
-    const body = await request.json();
-    const {
-      username,
-      firstName,
-      lastName,
-      password,
-      email,
-      tenantRoleId,
-    } = body;
 
-    if (!username?.trim() || !firstName?.trim() || !lastName?.trim() || !password) {
-      return NextResponse.json(
-        { error: "Username, first name, last name, and password are required." },
-        { status: 400 }
-      );
+    let data;
+    try {
+      data = await validateRequestBody(request, tenantUserCreateSchema);
+    } catch (err) {
+      if (err instanceof SyntaxError || (err.message && err.message.toLowerCase().includes("json"))) {
+        return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+      }
+      throw err;
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Password must be at least 8 characters." },
-        { status: 400 }
-      );
-    }
-
-    if (!tenantRoleId || !String(tenantRoleId).trim()) {
-      return NextResponse.json(
-        { error: "A role is required. Please select a role for the user." },
-        { status: 400 }
-      );
-    }
+    const { username, firstName, lastName, password, email, tenantRoleId } = data;
 
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
@@ -123,7 +108,7 @@ export async function POST(request, { params }) {
     const roleAlias = role.roleAlias;
 
     const existingDb = await prisma.user.findUnique({
-      where: { username: username.trim() },
+      where: { username },
     });
     if (existingDb) {
       return NextResponse.json(
@@ -134,7 +119,7 @@ export async function POST(request, { params }) {
 
     const client = typeof clerkClient === "function" ? await clerkClient() : clerkClient;
     const existingClerk = await client.users.getUserList({
-      username: [username.trim()],
+      username: [username],
       limit: 1,
     });
     const clerkList = Array.isArray(existingClerk) ? existingClerk : existingClerk?.data || [];
@@ -152,13 +137,13 @@ export async function POST(request, { params }) {
     };
 
     const createParams = {
-      username: username.trim(),
-      firstName: firstName.trim(),
-      lastName: lastName.trim(),
+      username,
+      firstName,
+      lastName,
       password,
     };
-    if (email?.trim()) {
-      createParams.emailAddress = [email.trim()];
+    if (email) {
+      createParams.emailAddress = [email];
     }
 
     const clerkUser = await client.users.createUser(createParams);
@@ -178,11 +163,6 @@ export async function POST(request, { params }) {
       },
     });
   } catch (error) {
-    console.error("Error creating tenant user:", error);
-    const message = error.message || "Failed to create user. Please try again.";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return handleApiError(error, null, 500);
   }
 }

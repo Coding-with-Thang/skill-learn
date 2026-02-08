@@ -25,6 +25,9 @@ import { useTenantsStore } from '@skill-learn/lib/stores/tenantsStore.js'
 import { useRoleTemplatesStore } from '@skill-learn/lib/stores/roleTemplatesStore.js'
 import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore.js'
 import { parseApiResponse } from '@skill-learn/lib/utils/apiResponseParser.js'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { tenantUserCreateSchema } from '@skill-learn/lib/zodSchemas.js'
 import { toast } from 'sonner'
 
 import {
@@ -82,6 +85,15 @@ const featureIcons = {
   BarChart3,
   ScrollText,
   Shield,
+}
+
+const createUserDefaultValues = {
+  username: '',
+  firstName: '',
+  lastName: '',
+  password: '',
+  email: '',
+  tenantRoleId: '',
 }
 
 // Custom Switch Component
@@ -171,14 +183,19 @@ export default function TenantDetailPage() {
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
   const [selectedUserForEdit, setSelectedUserForEdit] = useState(null)
   const [selectedUserForDelete, setSelectedUserForDelete] = useState(null)
-  const [createUserForm, setCreateUserForm] = useState({
-    username: '',
-    firstName: '',
-    lastName: '',
-    password: '',
-    email: '',
-    tenantRoleId: '',
+
+  const createUserForm = useForm({
+    defaultValues: createUserDefaultValues,
+    resolver: zodResolver(tenantUserCreateSchema),
+    mode: 'onChange',
   })
+  const {
+    register: registerCreateUser,
+    handleSubmit: handleCreateUserSubmit,
+    formState: { errors: createUserErrors, isValid: createUserIsValid },
+    reset: resetCreateUser,
+  } = createUserForm
+
   const [editUserForm, setEditUserForm] = useState({
     firstName: '',
     lastName: '',
@@ -328,46 +345,24 @@ export default function TenantDetailPage() {
     }
   }
 
-  const handleCreateUser = async (e) => {
-    e.preventDefault()
-    const username = createUserForm.username.trim()
-    const firstName = createUserForm.firstName.trim()
-    const lastName = createUserForm.lastName.trim()
-    const password = createUserForm.password
-    const tenantRoleId = createUserForm.tenantRoleId
-
-    if (!username || !firstName || !lastName || !password) {
-      setFormError('Please fill in all required fields: first name, last name, username, and password.')
-      toast.error('Missing required fields')
-      return
-    }
-    if (password.length < 8) {
-      setFormError('Password must be at least 8 characters.')
-      toast.error('Password too short')
-      return
-    }
-    if (!tenantRoleId) {
-      setFormError('Please select a role for the user. A role is required.')
-      toast.error('Please select a role')
-      return
-    }
-
+  const onCreateUserSubmit = async (data) => {
+    if (formLoading) return
     setFormLoading(true)
     setFormError(null)
     try {
       const payload = {
-        username,
-        firstName,
-        lastName,
-        password,
-        tenantRoleId,
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        password: data.password,
+        tenantRoleId: data.tenantRoleId,
       }
-      if (createUserForm.email?.trim()) payload.email = createUserForm.email.trim()
+      if (data.email) payload.email = data.email
       const response = await api.post(`/tenants/${tenantId}/users`, payload)
       if (response.data.error) throw new Error(response.data.error || 'Failed to create user')
       toast.success('User created successfully. They will appear in the list shortly.')
       setCreateUserDialogOpen(false)
-      setCreateUserForm({ username: '', firstName: '', lastName: '', password: '', email: '', tenantRoleId: '' })
+      resetCreateUser(createUserDefaultValues)
       await fetchUsers(tenantId, true)
       await fetchUserRoles(tenantId, true)
       setTimeout(() => {
@@ -873,14 +868,7 @@ export default function TenantDetailPage() {
               </div>
               <Button
                 onClick={() => {
-                  setCreateUserForm({
-                    username: '',
-                    firstName: '',
-                    lastName: '',
-                    password: '',
-                    email: '',
-                    tenantRoleId: tenant?.defaultRoleId || '',
-                  })
+                  resetCreateUser({ ...createUserDefaultValues, tenantRoleId: tenant?.defaultRoleId || '' })
                   setFormError(null)
                   setCreateUserDialogOpen(true)
                 }}
@@ -1836,7 +1824,8 @@ export default function TenantDetailPage() {
 
       {/* Create User Dialog */}
       <Dialog open={createUserDialogOpen} onOpenChange={(open) => {
-        if (!open) setFormError(null)
+        setFormError(null)
+        if (!open) resetCreateUser(createUserDefaultValues)
         setCreateUserDialogOpen(open)
       }}>
         <DialogContent>
@@ -1846,72 +1835,93 @@ export default function TenantDetailPage() {
               User is created in Clerk; webhook will sync to the database and assign the selected role.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleCreateUser}>
+          <form onSubmit={handleCreateUserSubmit(onCreateUserSubmit)}>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label>First name *</Label>
+                  <Label htmlFor="create-firstName">First name *</Label>
                   <Input
-                    value={createUserForm.firstName}
-                    onChange={(e) => setCreateUserForm({ ...createUserForm, firstName: e.target.value })}
+                    id="create-firstName"
                     placeholder="Jane"
-                    required
+                    maxLength={100}
+                    {...registerCreateUser('firstName')}
+                    className={createUserErrors.firstName ? 'border-red-500' : ''}
                   />
+                  {createUserErrors.firstName && (
+                    <p className="text-sm text-red-600">{createUserErrors.firstName.message}</p>
+                  )}
                 </div>
                 <div className="grid gap-2">
-                  <Label>Last name *</Label>
+                  <Label htmlFor="create-lastName">Last name *</Label>
                   <Input
-                    value={createUserForm.lastName}
-                    onChange={(e) => setCreateUserForm({ ...createUserForm, lastName: e.target.value })}
+                    id="create-lastName"
                     placeholder="Doe"
-                    required
+                    maxLength={100}
+                    {...registerCreateUser('lastName')}
+                    className={createUserErrors.lastName ? 'border-red-500' : ''}
                   />
+                  {createUserErrors.lastName && (
+                    <p className="text-sm text-red-600">{createUserErrors.lastName.message}</p>
+                  )}
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label>Username *</Label>
+                <Label htmlFor="create-username">Username * (letters, numbers, underscores; 3–128 chars)</Label>
                 <Input
-                  value={createUserForm.username}
-                  onChange={(e) => setCreateUserForm({ ...createUserForm, username: e.target.value })}
+                  id="create-username"
                   placeholder="janedoe"
-                  required
+                  maxLength={128}
+                  {...registerCreateUser('username')}
+                  className={createUserErrors.username ? 'border-red-500' : ''}
                 />
+                {createUserErrors.username && (
+                  <p className="text-sm text-red-600">{createUserErrors.username.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
-                <Label>Password *</Label>
+                <Label htmlFor="create-password">Password * (8–128 characters)</Label>
                 <Input
+                  id="create-password"
                   type="password"
-                  value={createUserForm.password}
-                  onChange={(e) => setCreateUserForm({ ...createUserForm, password: e.target.value })}
                   placeholder="Min 8 characters"
-                  required
-                  minLength={8}
+                  maxLength={128}
+                  {...registerCreateUser('password')}
+                  className={createUserErrors.password ? 'border-red-500' : ''}
                 />
+                {createUserErrors.password && (
+                  <p className="text-sm text-red-600">{createUserErrors.password.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
-                <Label>Email (optional)</Label>
+                <Label htmlFor="create-email">Email (optional)</Label>
                 <Input
+                  id="create-email"
                   type="email"
-                  value={createUserForm.email}
-                  onChange={(e) => setCreateUserForm({ ...createUserForm, email: e.target.value })}
                   placeholder="jane@example.com"
+                  maxLength={254}
+                  {...registerCreateUser('email')}
+                  className={createUserErrors.email ? 'border-red-500' : ''}
                 />
+                {createUserErrors.email && (
+                  <p className="text-sm text-red-600">{createUserErrors.email.message}</p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="create-user-role">Role *</Label>
                 <select
                   id="create-user-role"
-                  value={createUserForm.tenantRoleId}
-                  onChange={(e) => setCreateUserForm({ ...createUserForm, tenantRoleId: e.target.value })}
-                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-                  required
+                  className={cn('w-full h-10 rounded-lg border border-input bg-background px-3 text-sm', createUserErrors.tenantRoleId && 'border-red-500')}
                   aria-required="true"
+                  {...registerCreateUser('tenantRoleId')}
                 >
                   <option value="">Select a role (required)</option>
                   {roles.filter(r => r.isActive).map((r) => (
                     <option key={r.id} value={r.id}>{r.roleAlias}</option>
                   ))}
                 </select>
+                {createUserErrors.tenantRoleId && (
+                  <p className="text-sm text-red-600">{createUserErrors.tenantRoleId.message}</p>
+                )}
                 <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
               </div>
               {formError && (
@@ -1926,15 +1936,7 @@ export default function TenantDetailPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={
-                  formLoading ||
-                  !createUserForm.username?.trim() ||
-                  !createUserForm.firstName?.trim() ||
-                  !createUserForm.lastName?.trim() ||
-                  !createUserForm.password ||
-                  createUserForm.password.length < 8 ||
-                  !createUserForm.tenantRoleId
-                }
+                disabled={formLoading || !createUserIsValid}
               >
                 {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Create user
