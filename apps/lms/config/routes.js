@@ -22,6 +22,7 @@ export const publicRoutes = [
   "/api/onboarding/(.*)", // Onboarding API routes
   "/discover(.*)", // Discover page (public access)
   "/onboarding/start", // Onboarding start (validates payment)
+  "/cms(.*)", // CMS app – redirects to CMS URL; do not protect (separate app)
   
   // Routes in app/(public)/ - automatically public via middleware
   // Listed here for documentation only:
