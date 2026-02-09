@@ -15,7 +15,7 @@ export default function DailyActivitiesWidget() {
       <CardContent className="flex flex-col gap-6">
 
         {/* Daily Questions */}
-        <div className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-4">
+        <div className="bg-gray-50 rounded-4xl p-4 flex flex-col gap-4">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
               <HelpCircle className="w-5 h-5" />

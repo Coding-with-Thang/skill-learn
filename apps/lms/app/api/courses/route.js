@@ -2,15 +2,17 @@ import { prisma } from '@skill-learn/database';
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
-import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
+import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    // Get current user's tenantId using standardized utility
-    const tenantId = await getTenantId();
+    const context = await getTenantContext();
+    if (context instanceof Response) return context;
+    const { tenantId } = context;
 
-    // CRITICAL: Filter courses by tenant or global content using standardized utility
-    // Pattern: (tenantId = userTenantId OR (isGlobal = true AND tenantId IS NULL))
+    // CRITICAL: Filter courses by tenant or global content
     const whereClause = buildTenantContentFilter(tenantId, {
       status: "Published", // Only return published courses
     });
@@ -49,7 +51,9 @@ export async function GET() {
       })
     );
 
-    return successResponse({ courses: coursesWithImages || [] });
+    const res = successResponse({ courses: coursesWithImages || [] }, 200);
+    res.headers.set("Cache-Control", "no-store, must-revalidate");
+    return res;
   } catch (error) {
     console.error("[courses API] Error:", error);
     console.error("[courses API] Error stack:", error.stack);

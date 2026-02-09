@@ -8,6 +8,7 @@ datasource db {
   url      = env("MONGODB_URI")
 }
 
+// Legacy enum: authorization is tenant-based (TenantRole/UserRole). Only AGENT/USER/OWNER used for defaults/display.
 enum Role {
   ADMIN
   MANAGER
@@ -21,14 +22,16 @@ model User {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   clerkId         String          @unique
   username        String          @unique // Globally unique username
-  email           String? // Added for multi-tenant RBAC (optional for migration)
+  email           String?
   firstName       String
   lastName        String
   imageUrl        String?
-  manager         String?         @default("")
-  role            Role            @default(AGENT) // Legacy role enum (can be deprecated later)
+  role            Role            @default(AGENT) // Display/default only; auth is TenantRole via UserRole
   tenantId        String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
   tenant          Tenant?         @relation(fields: [tenantId], references: [id])
+  reportsToUserId String?         @db.ObjectId // Reports-to (same tenant); null = none
+  reportsTo       User?           @relation("UserReportsTo", fields: [reportsToUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directReports   User[]          @relation("UserReportsTo")
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   points          Int             @default(0)
@@ -48,6 +51,8 @@ model User {
   flashCardProgress FlashCardProgress[]
   flashCardDecks  FlashCardDeck[]
   categoryPriorityUser CategoryPriorityUser[]
+  courseProgress  CourseProgress[]
+  lessonProgress  LessonProgress[]
   // Note: userRoles relation removed - UserRole.userId is Clerk ID (String), not User.id (ObjectId)
   // Query user roles by matching User.clerkId with UserRole.userId in application code
 
@@ -60,14 +65,16 @@ model User {
   // TEXT SEARCH INDEXES (if you need name-based search)
   @@index([firstName, lastName]) // Full name search
   @@index([username, firstName, lastName]) // Comprehensive user search
+  @@index([tenantId, reportsToUserId]) // Reporting hierarchy per tenant
   @@map("users")
 }
 
 model Category {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  name          String         @unique
+  name          String
   description   String?
   imageUrl      String?
+  fileKey       String?        // Storage path for uploaded image (tenant-scoped); signed URL resolved when serving
   isActive      Boolean        @default(true)
   tenantId      String?        @db.ObjectId // Multi-tenant: category belongs to ONE tenant (null = global)
   tenant        Tenant?        @relation(fields: [tenantId], references: [id])
@@ -78,6 +85,8 @@ model Category {
   categoryStats CategoryStat[]
   courses       Course[]
 
+  // Name unique per tenant (and per global when tenantId is null)
+  @@unique([tenantId, name])
   // INDEXES FOR CATEGORY QUERIES
   @@index([isActive]) // Filter active categories
   @@index([isActive, name]) // Active categories sorted by name
@@ -317,12 +326,112 @@ model Course {
   updatedAt          DateTime     @updatedAt
   userId             String?      @db.ObjectId
   user               User?        @relation(fields: [userId], references: [id])
+  chapters           Chapter[]
+  courseChapters     CourseChapter[]
+  courseProgress     CourseProgress[]
+}
+
+model Chapter {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  position     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lessons   Lesson[]
+
+  @@index([courseId])
+  @@index([courseId, position])
+  @@map("chapters")
+}
+
+model Lesson {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chapterId String   @db.ObjectId
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @default("") // HTML or markdown content
+  videoUrl  String?  // Video URL for lesson (e.g. hosted or YouTube)
+  position     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lessonProgress LessonProgress[]
+
+  @@index([chapterId])
+  @@index([chapterId, position])
+  @@map("lessons")
 }
 
 enum CourseStatus {
   Published
   Draft
   Achieved
+}
+
+model CourseChapter {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  position    Int
+  description String?
+  courseId    String        @db.ObjectId
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     CourseLesson[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  @@index([courseId])
+  @@index([position])
+  @@map("course_chapters")
+}
+
+model CourseLesson {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  position         Int
+  description      String?
+  thumbnailUrl     String?
+  videoUrl         String?
+  fileKey          String?
+  courseChapterId  String       @db.ObjectId
+  courseChapter    CourseChapter @relation(fields: [courseChapterId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  @@index([courseChapterId])
+  @@index([position])
+  @@map("course_lessons")
+}
+
+// User progress for courses (learner-facing)
+model CourseProgress {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String    @db.ObjectId
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedAt DateTime? // Set when user clicks "Complete course"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("course_progress")
+}
+
+model LessonProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String   @db.ObjectId
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@map("lesson_progress")
 }
 
 // ============================================
@@ -349,6 +458,9 @@ model Tenant {
   trialEndsAt          DateTime?
   subscriptionEndsAt   DateTime? // When current period ends
   cancelAtPeriodEnd    Boolean   @default(false)
+
+  // Auth: when false, sign-up uses username + password only (no email)
+  requireEmailForRegistration Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -454,9 +566,10 @@ model TenantRole {
   tenant                Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   roleAlias             String // Custom name like "Teacher", "Manager"
   description           String?
-  slotPosition          Int
-  isActive              Boolean       @default(true)
-  createdFromTemplateId String?       @db.ObjectId
+  slotPosition               Int
+  isActive                   Boolean       @default(true)
+  doesNotCountTowardSlotLimit Boolean      @default(false) // Built-in Guest role; excluded from maxRoleSlots
+  createdFromTemplateId      String?       @db.ObjectId
   createdFromTemplate   RoleTemplate? @relation(fields: [createdFromTemplateId], references: [id])
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt

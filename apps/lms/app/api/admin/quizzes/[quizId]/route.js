@@ -1,39 +1,28 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from '@skill-learn/database';
-import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { requireCanEditQuiz } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";
 import { quizUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
-import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
 // Get a single quiz with all details
 export async function GET(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
-    }
-
     const { quizId } = await validateRequestParams(
       z.object({ quizId: objectIdSchema }),
       params
     );
-
-    // Get current user's tenantId using standardized utility
-    const tenantId = await getTenantId();
-
-    // CRITICAL: Filter quiz by tenant or global content
-    const whereClause = buildTenantContentFilter(tenantId);
+    const authResult = await requireCanEditQuiz(quizId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
 
     const quiz = await prisma.quiz.findFirst({
-      where: { 
-        id: quizId,
-        ...whereClause,
-      },
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -102,27 +91,23 @@ export async function GET(request, { params }) {
 // Update a quiz
 export async function PUT(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
+    const { quizId } = await validateRequestParams(
+      z.object({ quizId: objectIdSchema }),
+      params
+    );
+    const authResult = await requireCanEditQuiz(quizId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { tenantId } = authResult;
 
     const data = await validateRequestBody(request, quizUpdateSchema);
 
     // Get default passing score from settings
     const defaultPassingScore = parseInt(await getSystemSetting("DEFAULT_PASSING_SCORE"), 10);
 
-    const { quizId } = await validateRequestParams(
-      z.object({ quizId: objectIdSchema }),
-      params
-    );
-
-    // Verify quiz belongs to tenant before updating
-    const existingQuiz = await prisma.quiz.findFirst({
-      where: { 
-        id: quizId,
-        ...whereClause,
-      },
+    const existingQuiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
     });
 
     if (!existingQuiz) {
@@ -193,11 +178,8 @@ export async function PUT(request, { params }) {
     }
 
     // Return updated quiz with all relations
-    quiz = await prisma.quiz.findFirst({
-      where: { 
-        id: quizId,
-        ...whereClause,
-      },
+    quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
       include: {
         category: {
           select: {
@@ -259,37 +241,16 @@ export async function PUT(request, { params }) {
 // Delete a quiz
 export async function DELETE(request, { params }) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
-    }
-
     const { quizId } = await validateRequestParams(
       z.object({ quizId: objectIdSchema }),
       params
     );
-
-    // Get current user's tenantId using standardized utility
-    const tenantId = await getTenantId();
-
-    // CRITICAL: Filter quiz by tenant or global content
-    const whereClause = buildTenantContentFilter(tenantId);
-
-    // Verify quiz belongs to tenant before deleting
-    const existingQuiz = await prisma.quiz.findFirst({
-      where: { 
-        id: quizId,
-        ...whereClause,
-      },
-    });
-
-    if (!existingQuiz) {
-      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
-        status: 404,
-      });
+    const authResult = await requireCanEditQuiz(quizId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
 
-    // Delete quiz and all related data (questions and options will be deleted automatically due to cascade)
+    // Delete quiz and all related data (questions and options cascade)
     await prisma.quiz.delete({
       where: { id: quizId },
     });

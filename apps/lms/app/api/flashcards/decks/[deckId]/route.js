@@ -8,19 +8,9 @@ import {
 } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestParams, validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
-import { z } from "zod";
+import { deckIdParamSchema, flashCardDeckUpdateSchema } from "@/lib/zodSchemas.js";
 import { getTenantId, getTenantContext } from "@skill-learn/lib/utils/tenant.js";
 import { getFlashCardLimitsFromDb } from "@/lib/flashCardLimits.js";
-
-const deckIdSchema = z.object({ deckId: z.string().regex(/^[0-9a-fA-F]{24}$/) });
-const deckUpdateSchema = z.object({
-  name: z.string().min(1).max(200).optional(),
-  description: z.string().optional(),
-  cardIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
-  hiddenCardIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
-  categoryIds: z.array(z.string().regex(/^[0-9a-fA-F]{24}$/)).optional(),
-  isPublic: z.boolean().optional(),
-});
 
 export async function GET(req, { params }) {
   try {
@@ -28,7 +18,7 @@ export async function GET(req, { params }) {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const { deckId } = await validateRequestParams(deckIdSchema, params);
+    const { deckId } = await validateRequestParams(deckIdParamSchema, params);
 
     const tenantId = await getTenantId();
     if (!tenantId) {
@@ -78,8 +68,8 @@ export async function PATCH(req, { params }) {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const { deckId } = await validateRequestParams(deckIdSchema, params);
-    const data = await validateRequestBody(req, deckUpdateSchema);
+    const { deckId } = await validateRequestParams(deckIdParamSchema, params);
+    const data = await validateRequestBody(req, flashCardDeckUpdateSchema);
 
     const tenantId = await getTenantId();
     if (!tenantId) {
@@ -153,7 +143,7 @@ export async function DELETE(req, { params }) {
     if (authResult instanceof NextResponse) return authResult;
     const clerkId = authResult;
 
-    const { deckId } = await validateRequestParams(deckIdSchema, params);
+    const { deckId } = await validateRequestParams(deckIdParamSchema, params);
 
     const tenantId = await getTenantId();
     if (!tenantId) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   BookOpen,
   CreditCard,
@@ -15,8 +15,9 @@ import {
   Shield,
   ToggleLeft,
   Users,
+  ChartBarStacked,
 } from "lucide-react";
-import { useFeatures } from "@skill-learn/lib/hooks/useFeatures.js";
+import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore.js";
 
 import { NavMain } from "./nav-main";
 import {
@@ -47,6 +48,18 @@ const getNavData = () => ({
           isActive: true,
         },
         {
+          title: "Categories",
+          url: "/dashboard/categories",
+          icon: ChartBarStacked,
+          feature: "categories",
+          items: [
+            {
+              title: "Manage Categories",
+              url: "/dashboard/categories",
+            },
+          ],
+        },
+        {
           title: "Courses",
           url: "/dashboard/courses",
           icon: BookOpen,
@@ -68,10 +81,6 @@ const getNavData = () => ({
           icon: FileQuestion,
           feature: "course_quizzes",
           items: [
-            {
-              title: "Categories",
-              url: "/dashboard/categories",
-            },
             {
               title: "Manage Quizzes",
               url: "/dashboard/quizzes",
@@ -188,9 +197,14 @@ const getNavData = () => ({
 });
 
 export function AppSidebar({ ...props }) {
-  const { isEnabled, isLoading } = useFeatures();
+  const isEnabled = useFeaturesStore((s) => s.isEnabled);
+  const isLoading = useFeaturesStore((s) => s.isLoading);
+  const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
 
-  // Filter navigation items based on enabled features
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
+
   const filteredNavGroups = useMemo(() => {
     if (isLoading) {
       return getNavData().navGroups;

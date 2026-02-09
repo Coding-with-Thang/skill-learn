@@ -19,7 +19,7 @@ import {
   X,
   Layers,
 } from 'lucide-react'
-import { Button } from '@/components/cms/ui/button'
+import { Button } from "@skill-learn/ui/components/button"
 import { cn } from '@/lib/cms/utils'
 import { useSidebarStore } from '@/lib/cms/store'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -81,10 +81,10 @@ export default function Sidebar() {
                 transition={{ duration: 0.2 }}
                 className="flex items-center gap-2"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-white font-bold">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/70 text-white font-bold">
                   E
                 </div>
-                <span className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <span className="text-lg font-bold bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Skill-Learn
                 </span>
               </motion.div>
@@ -95,7 +95,7 @@ export default function Sidebar() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-white font-bold mx-auto"
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/70 text-white font-bold mx-auto"
               >
                 E
               </motion.div>

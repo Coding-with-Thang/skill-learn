@@ -20,26 +20,10 @@
         "NODE_ENV"
       ]
     },
-    "dev": {
-      "cache": false,
-      "persistent": true
-    },
-    "lint": {
-      "dependsOn": ["^build"]
-    },
-    "start": {
-      "cache": false,
-      "persistent": true
-    },
-    "clean": {
-      "cache": false
-    },
-    "prisma:generate": {
-      "cache": false
-    },
-    "prisma:seed": {
-      "dependsOn": ["prisma:generate"],
-      "cache": false
-    }
+    "dev": {"cache": false, "persistent": true},
+    "lint": {"dependsOn": ["^build"]},
+    "start": {"cache": false, "persistent": true},
+    "clean": {"cache": false},
+    "prisma:generate": {"cache": false}
   }
 }

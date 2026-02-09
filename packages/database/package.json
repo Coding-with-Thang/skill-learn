@@ -5,13 +5,12 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "scripts": {
-    "build": "npx prisma@6.19.2 generate --schema=./prisma/schema.prisma",
-    "prisma:generate": "npx prisma@6.19.2 generate --schema=./prisma/schema.prisma",
+    "build": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
+    "prisma:generate": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
     "prisma:seed": "node prisma/seed.js",
     "prisma:migrate": "npx prisma@6.19.2 migrate dev --schema=./prisma/schema.prisma",
     "prisma:studio": "npx prisma@6.19.2 studio --schema=./prisma/schema.prisma",
-    "prisma:push": "node scripts/db-push.js",
-    "migrate:games-global": "node prisma/migrations/make_games_global.js"
+    "prisma:push": "node scripts/db-push.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",

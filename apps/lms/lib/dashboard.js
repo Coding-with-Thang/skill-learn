@@ -330,6 +330,7 @@ export async function getDashboardStats() {
               select: { name: true },
             });
             return {
+              categoryId: stat.categoryId,
               category: category?.name || "Unknown",
               completionRate:
                 (stat._sum.completed / (stat._sum.attempts || 1)) * 100,

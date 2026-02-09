@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from '@skill-learn/database';
+import { prisma } from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { ensureTenantHasGuestRole } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 // Get all tenants with user counts
 export async function GET(request) {
@@ -32,6 +33,7 @@ export async function GET(request) {
       maxRoleSlots: tenant.maxRoleSlots,
       baseRoleSlots: tenant.baseRoleSlots,
       purchasedRoleSlots: tenant.purchasedRoleSlots,
+      requireEmailForRegistration: tenant.requireEmailForRegistration,
       activeUsers: tenant._count.users,
       roleCount: tenant._count.tenantRoles,
       createdAt: tenant.createdAt,
@@ -81,7 +83,6 @@ export async function POST(request) {
       );
     }
 
-    // Create tenant
     const tenant = await prisma.tenant.create({
       data: {
         name,
@@ -101,19 +102,31 @@ export async function POST(request) {
       },
     });
 
+    await ensureTenantHasGuestRole(tenant.id);
+
+    const tenantWithDefault = await prisma.tenant.findUnique({
+      where: { id: tenant.id },
+      include: {
+        _count: { select: { users: true, tenantRoles: true } },
+        defaultRole: { select: { id: true, roleAlias: true } },
+      },
+    });
+
     return NextResponse.json({
       tenant: {
-        id: tenant.id,
-        name: tenant.name,
-        slug: tenant.slug,
-        subscriptionTier: tenant.subscriptionTier,
-        maxRoleSlots: tenant.maxRoleSlots,
-        baseRoleSlots: tenant.baseRoleSlots,
-        purchasedRoleSlots: tenant.purchasedRoleSlots,
-        activeUsers: tenant._count.users,
-        roleCount: tenant._count.tenantRoles,
-        createdAt: tenant.createdAt,
-        updatedAt: tenant.updatedAt,
+        id: tenantWithDefault.id,
+        name: tenantWithDefault.name,
+        slug: tenantWithDefault.slug,
+        subscriptionTier: tenantWithDefault.subscriptionTier,
+        maxRoleSlots: tenantWithDefault.maxRoleSlots,
+        baseRoleSlots: tenantWithDefault.baseRoleSlots,
+        purchasedRoleSlots: tenantWithDefault.purchasedRoleSlots,
+        defaultRoleId: tenantWithDefault.defaultRoleId,
+        defaultRole: tenantWithDefault.defaultRole,
+        activeUsers: tenantWithDefault._count.users,
+        roleCount: tenantWithDefault._count.tenantRoles,
+        createdAt: tenantWithDefault.createdAt,
+        updatedAt: tenantWithDefault.updatedAt,
       },
     });
   } catch (error) {

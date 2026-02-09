@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * GET /api/tenants/[tenantId]/roles
@@ -57,19 +58,57 @@ export async function GET(request, { params }) {
       orderBy: { slotPosition: "asc" },
     });
 
-    const formattedRoles = roles.map((role) => ({
-      id: role.id,
-      roleAlias: role.roleAlias,
-      description: role.description,
-      slotPosition: role.slotPosition,
-      isActive: role.isActive,
-      createdFromTemplate: role.createdFromTemplate,
-      permissions: role.tenantRolePermissions.map((trp) => trp.permission),
-      permissionCount: role.tenantRolePermissions.length,
-      userCount: role._count.userRoles,
-      createdAt: role.createdAt,
-      updatedAt: role.updatedAt,
-    }));
+    // Load template permission IDs for roles created from a template (to compute modifiedFromTemplate)
+    const templateIds = [...new Set(roles.map((r) => r.createdFromTemplateId).filter(Boolean))];
+    const templatePermissions = await prisma.roleTemplatePermission.findMany({
+      where: { roleTemplateId: { in: templateIds } },
+      select: { roleTemplateId: true, permissionId: true },
+    });
+    const templatePermIdsByTemplateId = new Map();
+    for (const tp of templatePermissions) {
+      if (!templatePermIdsByTemplateId.has(tp.roleTemplateId)) {
+        templatePermIdsByTemplateId.set(tp.roleTemplateId, new Set());
+      }
+      templatePermIdsByTemplateId.get(tp.roleTemplateId).add(tp.permissionId);
+    }
+
+    const formattedRoles = roles.map((role) => {
+      const rolePermIds = new Set(role.tenantRolePermissions.map((trp) => trp.permissionId));
+      const templatePermIds = role.createdFromTemplateId
+        ? templatePermIdsByTemplateId.get(role.createdFromTemplateId)
+        : null;
+      const nameMatchesTemplate =
+        role.createdFromTemplate?.roleName != null &&
+        role.roleAlias === role.createdFromTemplate.roleName;
+      const permsMatchTemplate =
+        templatePermIds != null &&
+        rolePermIds.size === templatePermIds.size &&
+        [...rolePermIds].every((id) => templatePermIds.has(id));
+      const modifiedFromTemplate =
+        !role.createdFromTemplate
+          ? true
+          : !nameMatchesTemplate || !permsMatchTemplate;
+
+      return {
+        id: role.id,
+        roleAlias: role.roleAlias,
+        description: role.description,
+        slotPosition: role.slotPosition,
+        isActive: role.isActive,
+        doesNotCountTowardSlotLimit: role.doesNotCountTowardSlotLimit,
+        createdFromTemplate: role.createdFromTemplate,
+        modifiedFromTemplate,
+        permissions: role.tenantRolePermissions.map((trp) => trp.permission),
+        permissionCount: role.tenantRolePermissions.length,
+        userCount: role._count.userRoles,
+        createdAt: role.createdAt,
+        updatedAt: role.updatedAt,
+      };
+    });
+
+    const rolesCountingTowardLimit = roles.filter((r) => !r.doesNotCountTowardSlotLimit);
+    const usedSlots = rolesCountingTowardLimit.length;
+    const availableSlots = Math.max(0, tenant.maxRoleSlots - usedSlots);
 
     return NextResponse.json({
       tenant: {
@@ -78,8 +117,8 @@ export async function GET(request, { params }) {
         maxRoleSlots: tenant.maxRoleSlots,
       },
       roles: formattedRoles,
-      usedSlots: formattedRoles.length,
-      availableSlots: tenant.maxRoleSlots - formattedRoles.length,
+      usedSlots,
+      availableSlots,
     });
   } catch (error) {
     console.error("Error fetching tenant roles:", error);
@@ -116,9 +155,8 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    // Check slot limits
     const existingRolesCount = await prisma.tenantRole.count({
-      where: { tenantId },
+      where: { tenantId, doesNotCountTowardSlotLimit: false },
     });
 
     if (existingRolesCount >= tenant.maxRoleSlots) {
@@ -361,7 +399,7 @@ export async function PUT(request, { params }) {
       const roles = [];
 
       for (const template of templates) {
-        // Skip if would exceed max slots
+        if (template.roleName?.toLowerCase() === GUEST_ROLE_ALIAS.toLowerCase()) continue;
         if (template.slotPosition > tenant.maxRoleSlots) {
           continue;
         }

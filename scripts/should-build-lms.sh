@@ -1,31 +1,29 @@
-#!/bin/bash
-# Combined check: Branch + Path-based
-# Only builds if branch is "main" AND LMS files changed
+#!/usr/bin/env bash
+# Used by Vercel "Ignore Build Step" for the LMS app.
+# Exit 0 = run build, exit 1 = skip build.
 
-# First check: Must be on main branch
-if [ "$VERCEL_GIT_COMMIT_REF" != "main" ]; then
-  echo "Not on main branch, skipping LMS build"
-  exit 0  # SKIP
+set -e
+
+# If no git or we can't determine changes, build to be safe
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+  exit 0
 fi
 
-# Second check: LMS files must have changed
-BASE_BRANCH=${VERCEL_GIT_COMMIT_REF:-main}
-PREVIOUS_SHA=${VERCEL_GIT_PREVIOUS_SHA:-}
+# Script lives at <repo>/scripts/should-build-lms.sh; go to repo root
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$ROOT"
 
-# Determine what to compare against
-if [ -n "$PREVIOUS_SHA" ]; then
-  DIFF_BASE="$PREVIOUS_SHA"
-else
-  # Try to find merge base with main branch
-  DIFF_BASE=$(git merge-base HEAD origin/$BASE_BRANCH 2>/dev/null || echo HEAD~1)
+# Vercel sets these; fall back to HEAD^ for local or when only one commit
+PREV="${VERCEL_GIT_PREVIOUS_SHA:-}"
+if [ -z "$PREV" ]; then
+  # First deploy or no previous SHA: always build
+  exit 0
 fi
 
-# Check if LMS-related files changed
-if git diff --quiet "$DIFF_BASE" HEAD -- apps/lms packages/ turbo.json package.json package-lock.json 2>/dev/null; then
-  echo "No LMS-related changes detected, skipping LMS build"
-  exit 0  # SKIP
+# Skip build only if no relevant files changed (LMS app or shared packages)
+if git diff --quiet "$PREV" HEAD -- apps/lms packages 2>/dev/null; then
+  exit 1
 fi
 
-# Both conditions met: branch is main AND LMS files changed
-echo "Branch is main AND LMS files changed, proceeding with LMS build"
-exit 1  # BUILD
+exit 0

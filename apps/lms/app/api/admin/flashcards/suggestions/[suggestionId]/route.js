@@ -25,7 +25,7 @@ export async function POST(req, context) {
       });
     }
 
-    const params = typeof context.params?.then === "function" ? await context.params : context.params;
+    const params = await context.params;
     const { suggestionId } = await z
       .object({ suggestionId: z.string().regex(/^[0-9a-fA-F]{24}$/) })
       .parseAsync({ suggestionId: params.suggestionId });

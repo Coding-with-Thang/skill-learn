@@ -1,8 +1,8 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Badge } from '@/components/cms/ui/badge'
-import { Button } from '@/components/cms/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Button } from "@skill-learn/ui/components/button"
 import { AlertTriangle, CheckCircle, XCircle, Info, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { formatTimeAgo } from '@/lib/cms/utils'

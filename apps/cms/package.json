@@ -6,7 +6,7 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint",
+    "lint": "eslint .",
     "clean": "rm -rf .next"
   },
   "dependencies": {
@@ -21,8 +21,10 @@
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",
     "next": "^16.1.6",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-hook-form": "^7.54.0",
+    "@hookform/resolvers": "^3.9.0",
     "react-dropzone": "^14.3.8",
     "recharts": "^3.6.0",
     "sonner": "^2.0.2",
@@ -32,7 +34,7 @@
   },
   "devDependencies": {
     "eslint": "^9.39.2",
-    "eslint-config-next": "^15.2.8",
+    "eslint-config-next": "^16.1.6",
     "postcss": "^8.5.4"
   }
 }

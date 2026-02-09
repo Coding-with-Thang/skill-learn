@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect } from "react"
-import Image from "next/image"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@skill-learn/ui/components/button"
@@ -12,21 +11,43 @@ import { FormSwitch } from "@skill-learn/ui/components/form-switch"
 import { Label } from "@skill-learn/ui/components/label"
 import { toast } from "sonner"
 import { useRewardStore } from "@skill-learn/lib/stores/rewardStore.js"
-import { Uploader } from "@/components/file-uploader/Uploader"
+import api from "@skill-learn/lib/utils/axios.js"
+import { Uploader } from "@skill-learn/ui/components/file-uploader"
+import { z } from "zod"
+import { rewardCreateSchema } from "@skill-learn/lib/zodSchemas.js"
+
+// Form schema: coerce cost and maxRedemptions from input string, add optional claimUrl
+const rewardFormSchema = rewardCreateSchema.extend({
+  cost: z.coerce.number().int("Cost must be an integer").positive("Cost must be positive"),
+  claimUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  maxRedemptions: z.preprocess(
+    (v) => {
+      if (v === "" || v === undefined) return null
+      if (typeof v === "number") return Number.isNaN(v) ? null : v
+      const n = Number(v)
+      return Number.isNaN(n) ? null : n
+    },
+    z.number().int().positive().nullable().optional()
+  ),
+})
+
+const defaultValues = {
+  prize: "",
+  description: "",
+  imageUrl: "",
+  fileKey: "",
+  cost: "",
+  claimUrl: "",
+  enabled: true,
+  allowMultiple: false,
+  maxRedemptions: 1,
+}
 
 export function RewardForm({ reward, onClose }) {
   const { addReward, updateReward } = useRewardStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    prize: '',
-    description: '',
-    imageUrl: '',
-    fileKey: '',
-    cost: '',
-    claimUrl: '',
-    enabled: true,
-    allowMultiple: false,
-    maxRedemptions: 1
+  const form = useForm({
+    resolver: zodResolver(rewardFormSchema),
+    defaultValues,
   })
 
   const watchedAllowMultiple = form.watch("allowMultiple")
@@ -117,15 +138,13 @@ export function RewardForm({ reward, onClose }) {
             Reward Image <span className="text-red-500">*</span>
           </Label>
           <Uploader
+            api={api}
             uploadEndpoint="/api/admin/rewards/upload"
-            value={formData.imageUrl || ""}
-            onChange={(url) => setFormData(prev => ({ ...prev, imageUrl: url || "" }))}
+            mediaListEndpoint="/api/admin/media"
+            value={watchedImageUrl || ""}
+            onChange={(url) => form.setValue("imageUrl", url || "")}
             onUploadComplete={(upload) => {
-              // upload: { url, path }
-              // store storage path as fileKey for database
-              if (upload?.path) {
-                setFormData(prev => ({ ...prev, fileKey: upload.path }))
-              }
+              if (upload?.path) form.setValue("fileKey", upload.path)
             }}
           />
         </div>

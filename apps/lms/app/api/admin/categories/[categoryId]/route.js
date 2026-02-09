@@ -8,6 +8,7 @@ import { categoryUpdateSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 import { objectIdSchema } from "@/lib/zodSchemas";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 // Get a specific category
 export async function GET(request, { params }) {
@@ -30,7 +31,7 @@ export async function GET(request, { params }) {
       id: categoryId,
     });
 
-    const category = await prisma.category.findFirst({
+    const row = await prisma.category.findFirst({
       where: whereClause,
       include: {
         _count: {
@@ -39,11 +40,18 @@ export async function GET(request, { params }) {
       },
     });
 
-    if (!category) {
+    if (!row) {
       throw new AppError("Category not found", ErrorType.NOT_FOUND, {
         status: 404,
       });
     }
+
+    let imageUrl = row.imageUrl ?? null;
+    if (row.fileKey) {
+      const url = await getSignedUrl(row.fileKey, 7);
+      if (url) imageUrl = url;
+    }
+    const category = { ...row, imageUrl };
 
     return successResponse({ category });
   } catch (error) {
@@ -65,15 +73,17 @@ export async function PUT(request, { params }) {
     );
     const data = await validateRequestBody(request, categoryUpdateSchema);
 
-    // Update category
+    // Update category (only include defined fields)
+    const updateData = {};
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+    if (data.fileKey !== undefined) updateData.fileKey = data.fileKey;
+    if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
     const category = await prisma.category.update({
       where: { id: categoryId },
-      data: {
-        name: data.name,
-        description: data.description,
-        imageUrl: data.imageUrl,
-        isActive: data.isActive,
-      },
+      data: updateData,
     });
 
     return successResponse({ category });

@@ -19,7 +19,7 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { sessionId, firstName, lastName, email } = body;
+    const { sessionId, firstName, lastName, email, username: providedUsername } = body;
 
     // Check if user already exists
     let user = await prisma.user.findUnique({
@@ -36,9 +36,9 @@ export async function POST(request) {
       });
     }
 
-    // Generate a unique username
+    // Use provided username (e.g. from username-only sign-up), or derive from email/name
     // Usernames are globally unique (enforced by both Clerk and database)
-    const baseUsername = email?.split("@")[0] || firstName?.toLowerCase() || "user";
+    const baseUsername = providedUsername?.trim() || email?.split("@")[0] || firstName?.toLowerCase() || "user";
     let username = baseUsername;
     let counter = 1;
     

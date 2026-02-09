@@ -29,6 +29,9 @@ export const dynamic = 'force-dynamic'
 export const metadata = {
   title: "Skill-Learn",
   description: "Gamify your knowledge - have a blast learning",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 import { CookieConsent } from "@/components/shared/CookieConsent";
@@ -43,6 +46,22 @@ export default function RootLayout({ children }) {
       <html lang="en" suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  try {
+                    const theme = localStorage.getItem('lms-theme') || 'light';
+                    if (theme === 'dark') {
+                      document.documentElement.classList.add('dark');
+                    } else {
+                      document.documentElement.classList.remove('dark');
+                    }
+                  } catch (e) {}
+                })();
+              `,
+            }}
+          />
         </head>
         <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
           <ErrorBoundaryProvider>

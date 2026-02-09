@@ -211,11 +211,11 @@ export default function JobDescriptionPage() {
                 </div>
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6 font-display">
+              <h1 className="text-3xl md:text-brand-teal font-bold text-slate-900 mb-6 font-display">
                 {job.title}
               </h1>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 p-6 bg-slate-50 rounded-4xl border border-slate-100">
                 <div className="space-y-1">
                   <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Location</p>
                   <div className="flex items-center gap-2 font-medium text-slate-700">
@@ -281,7 +281,7 @@ export default function JobDescriptionPage() {
           <div className="lg:w-80 space-y-6">
             <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-xl shadow-slate-100/50 sticky top-24">
               <Link href={`/careers/${jobId}/apply`}>
-                <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-2xl mb-4 group shadow-lg shadow-teal-100">
+                <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-4xl mb-4 group shadow-lg shadow-teal-100">
                   Apply for this role
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
                 </Button>

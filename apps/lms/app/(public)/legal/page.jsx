@@ -57,7 +57,7 @@ export default function LegalHubPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
               Legal Hub
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
@@ -82,7 +82,7 @@ export default function LegalHubPage() {
                 className="group block bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:border-brand-teal/20 transition-all duration-300"
               >
                 <div className="flex items-start gap-6">
-                  <div className={`p-4 rounded-2xl ${page.color} group-hover:scale-110 transition-transform`}>
+                  <div className={`p-4 rounded-4xl ${page.color} group-hover:scale-110 transition-transform`}>
                     <page.icon className="w-8 h-8" />
                   </div>
                   <div className="flex-1">
@@ -113,7 +113,7 @@ export default function LegalHubPage() {
               </div>
               <Link
                 href="mailto:legal@skill-learn.ca"
-                className="px-8 py-4 bg-brand-teal text-white font-bold rounded-2xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
+                className="px-8 py-4 bg-brand-teal text-white font-bold rounded-4xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
               >
                 Contact Legal Support
               </Link>

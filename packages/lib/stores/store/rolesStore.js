@@ -1,9 +1,9 @@
 import { create } from "zustand";
-import api from "../../utils/utils/axios.js";
-import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
-import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
-import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
-import { retryWithBackoff } from "../../utils/utils/retry.js";
+import api from "../../utils/axios.js";
+import { handleErrorWithNotification } from "../../utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/apiResponseParser.js";
+import { retryWithBackoff } from "../../utils/retry.js";
 
 // STORE constants
 const STORE = {
@@ -18,16 +18,17 @@ const requestDeduplicator = createRequestDeduplicator();
  * Manages roles for a tenant (used in both CMS and LMS)
  */
 export const useRolesStore = create((set, get) => ({
-  // State
   roles: [],
   permissions: [],
   permissionsByCategory: {},
   templates: [],
   tenant: null,
+  usedSlots: 0,
+  availableSlots: 0,
   isLoading: false,
   error: null,
   lastUpdated: null,
-  retryCount: 0, // Track retry attempts for UI feedback
+  retryCount: 0,
 
   // Fetch roles for tenant (LMS - uses current tenant context)
   fetchRoles: async (force = false) => {
@@ -52,12 +53,14 @@ export const useRolesStore = create((set, get) => ({
           set({
             roles: data.roles || [],
             tenant: data.tenant || null,
+            usedSlots: data.usedSlots ?? 0,
+            availableSlots: data.availableSlots ?? 0,
             isLoading: false,
             lastUpdated: Date.now(),
             retryCount: 0,
           });
 
-          return { roles: data.roles || [], tenant: data.tenant };
+          return { roles: data.roles || [], tenant: data.tenant, usedSlots: data.usedSlots, availableSlots: data.availableSlots };
         } catch (error) {
           handleErrorWithNotification(error, "Failed to load roles");
           set({

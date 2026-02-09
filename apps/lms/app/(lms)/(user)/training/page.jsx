@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion"
 import { LayoutGrid, BookOpen, GraduationCap, Heart, Filter, Grid3x3, List, X } from "lucide-react"
 import { useCategoryStore } from "@skill-learn/lib/stores/categoryStore.js";
@@ -13,7 +14,7 @@ import { Loader } from "@skill-learn/ui/components/loader"
 import { SearchBar } from "@skill-learn/ui/components/search-bar"
 import { CourseCard } from "@skill-learn/ui/components/course-card"
 import { QuizCard } from "@skill-learn/ui/components/quiz-card"
-import { cn } from "@skill-learn/lib/utils.js"
+import { cn, extractTextFromProseMirror } from "@skill-learn/lib/utils.js"
 import api from "@skill-learn/lib/utils/axios.js"
 import {
   Select,
@@ -53,6 +54,7 @@ const getCourseProgressData = (course, userProgressData = null) => {
 export default function TrainingPage() {
 
   const router = useRouter()
+  const { isLoaded: clerkLoaded } = useUser()
   const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoryStore()
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
 
@@ -71,6 +73,7 @@ export default function TrainingPage() {
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [userProgress, setUserProgress] = useState(null)
   const [progressLoading, setProgressLoading] = useState(false)
+  const [contentMessage, setContentMessage] = useState(null) // e.g. "Complete onboarding" when 400
 
   useEffect(() => {
     fetchCategories()
@@ -95,34 +98,40 @@ export default function TrainingPage() {
     fetchUserProgress()
   }, [])
 
-  // Fetch all courses from the database
+  // Fetch all courses from the database (wait for Clerk so auth token is sent)
   useEffect(() => {
+    if (!clerkLoaded) return
+
     const fetchCourses = async () => {
       setCoursesLoading(true)
       try {
+        setContentMessage(null)
         const response = await api.get("/courses")
         const result = response.data
 
-        // Check if response indicates an error
-        if (result?.success === false || result?.error) {
+        // Treat 2xx as success
+        const isSuccess = response.status >= 200 && response.status < 300
+        if (!isSuccess || result?.success === false || result?.error) {
+          if (response.status === 400 && result?.message) setContentMessage(result.message)
+          if (response.status === 401) {
+            setCoursesLoading(false)
+            return // interceptor will redirect
+          }
           console.error("Failed to fetch courses:", response.status, result)
           throw new Error(result?.error || result?.message || `Failed to fetch courses: ${response.status}`)
         }
 
-        // successResponse wraps data in { success: true, data: {...} }
-        // Handle both possible response structures
+        // API returns { success: true, data: { courses: [...] } }
         let courses = []
-        if (result?.success === true && result?.data?.courses) {
-          // Standard successResponse structure
-          courses = result.data.courses
-        } else if (result?.courses) {
-          // Direct courses array
+        const data = result?.data ?? result
+        if (Array.isArray(data?.courses)) {
+          courses = data.courses
+        } else if (Array.isArray(result?.courses)) {
           courses = result.courses
-        } else if (result?.data && Array.isArray(result.data)) {
-          // Data is directly an array
-          courses = result.data
-        } else {
-          console.warn("Unexpected response structure:", Object.keys(result || {}))
+        } else if (Array.isArray(data)) {
+          courses = data
+        } else if (Array.isArray(result)) {
+          courses = result
         }
 
         if (!Array.isArray(courses)) {
@@ -156,7 +165,7 @@ export default function TrainingPage() {
     }
 
     fetchCourses()
-  }, []) // Fetch courses once on mount
+  }, [clerkLoaded])
 
   // Transform courses when raw courses or user progress updates
   useEffect(() => {
@@ -180,7 +189,7 @@ export default function TrainingPage() {
       return {
         id: course.id,
         title: course.title,
-        description: course.description || course.excerptDescription || "",
+        description: extractTextFromProseMirror(course.description) || course.excerptDescription || "",
         imageUrl: course.imageUrl || "/placeholder-course.jpg",
         duration: durationStr,
         moduleCount,
@@ -193,54 +202,57 @@ export default function TrainingPage() {
     setAllCourses(transformedCourses)
   }, [rawCourses, userProgress]) // Re-transform when raw courses or user progress changes
 
-  // Fetch all quizzes from all categories
+  // Fetch all quizzes from /api/quizzes (wait for Clerk so auth token is sent)
   useEffect(() => {
+    if (!clerkLoaded) return
+
     const fetchAllQuizzes = async () => {
-      // While categories are loading, keep quiz loading state as-is
-      if (categoriesLoading) return
-
-      if (categories.length === 0) {
-        setAllQuizzes([])
-        setQuizzesLoading(false)
-        return
-      }
-
       setQuizzesLoading(true)
       try {
-        // Fetch quizzes for each category
-        const quizPromises = categories.map(async (category) => {
-          try {
-            const response = await api.get(`/categories/${category.id}`)
-            const data = response.data
-            const quizzes =
-              (Array.isArray(data?.quizzes) && data.quizzes) ||
-              (Array.isArray(data?.data?.quizzes) && data.data.quizzes) ||
-              (Array.isArray(data?.data?.category?.quizzes) && data.data.category.quizzes) ||
-              []
-            // Add category info to each quiz
-            return quizzes.map(quiz => ({
-              ...quiz,
-              categoryName: category.name,
-              categoryId: category.id
-            }))
-          } catch (error) {
-            console.error(`Error fetching quizzes for category ${category.id}:`, error)
-            return []
-          }
-        })
+        const response = await api.get("/quizzes")
+        const result = response.data
 
-        const quizArrays = await Promise.all(quizPromises)
-        const flatQuizzes = quizArrays.flat()
-        setAllQuizzes(flatQuizzes)
+        const isSuccess = response.status >= 200 && response.status < 300
+        if (!isSuccess || result?.success === false || result?.error) {
+          if (response.status === 400 && result?.message) setContentMessage(result.message)
+          setAllQuizzes([])
+          return
+        }
+
+        // API returns { success: true, data: { quizzes: [...] } }
+        let quizzes = []
+        const data = result?.data ?? result
+        if (Array.isArray(data?.quizzes)) {
+          quizzes = data.quizzes
+        } else if (Array.isArray(result?.quizzes)) {
+          quizzes = result.quizzes
+        } else if (Array.isArray(data)) {
+          quizzes = data
+        } else if (Array.isArray(result)) {
+          quizzes = result
+        }
+
+        if (!Array.isArray(quizzes)) {
+          quizzes = []
+        }
+
+        // Normalize category info for filtering (category can be relation object)
+        const normalized = quizzes.map((quiz) => ({
+          ...quiz,
+          categoryName: quiz.category?.name ?? quiz.categoryName ?? "Uncategorized",
+          categoryId: quiz.category?.id ?? quiz.categoryId,
+        }))
+        setAllQuizzes(normalized)
       } catch (error) {
         console.error("Error fetching quizzes:", error)
+        setAllQuizzes([])
       } finally {
         setQuizzesLoading(false)
       }
     }
 
     fetchAllQuizzes()
-  }, [categories, categoriesLoading])
+  }, [clerkLoaded])
 
   // Filter and search logic
   const filteredCourses = useMemo(() => {
@@ -323,7 +335,7 @@ export default function TrainingPage() {
     completedQuizzes: 0, // Will be calculated from user attempts
   }
 
-  const isLoading = categoriesLoading || quizzesLoading || coursesLoading
+  const isLoading = quizzesLoading || coursesLoading
 
   // Get unique category names from both quizzes and courses
   const availableCategories = useMemo(() => {
@@ -383,7 +395,7 @@ export default function TrainingPage() {
                 <span className="font-medium">Courses</span>
               </div>
               <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                {stats.activeCourses}
+                {stats.totalCourses}
               </span>
             </button>
 
@@ -569,6 +581,16 @@ export default function TrainingPage() {
             </AnimatePresence>
           </div>
 
+          {/* Message when API returns 400 (e.g. no tenant) */}
+          {contentMessage && !coursesLoading && !quizzesLoading && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+              {contentMessage}
+              {contentMessage.includes("onboarding") && (
+                <a href="/onboarding/workspace" className="ml-2 font-medium underline">Go to onboarding</a>
+              )}
+            </div>
+          )}
+
           {/* Content Sections */}
           <div className="space-y-12">
             {/* Courses Section */}
@@ -606,7 +628,7 @@ export default function TrainingPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    No courses found matching your filters
+                    {contentMessage || "No courses found matching your filters"}
                   </div>
                 )}
               </section>
@@ -656,7 +678,7 @@ export default function TrainingPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    No quizzes found matching your filters
+                    {contentMessage || "No quizzes found matching your filters"}
                   </div>
                 )}
               </section>

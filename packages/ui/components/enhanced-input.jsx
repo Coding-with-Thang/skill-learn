@@ -28,7 +28,7 @@ const EnhancedInput = React.forwardRef(({
       <input
         type={inputType}
         className={cn(
-          "flex w-full rounded-md border bg-input px-3 py-1 text-base shadow-sm transition-all duration-200 file:border-0 file:bg-input file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          "flex w-full rounded-4xld border bg-input px-3 py-1 text-base shadow-sm transition-all duration-200 file:border-0 file:bg-input file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           // Size variants
           size === "sm" && "h-8 text-sm px-2",
           size === "default" && "h-9 px-3",
@@ -78,7 +78,7 @@ const EnhancedInput = React.forwardRef(({
       )}
 
       {/* Focus ring animation */}
-      <div className="absolute inset-0 rounded-md ring-2 ring-primary/0 ring-offset-2 transition-all duration-200 pointer-events-none group-focus-within:ring-primary/20" />
+      <div className="absolute inset-0 rounded-4xld ring-2 ring-primary/0 ring-offset-2 transition-all duration-200 pointer-events-none group-focus-within:ring-primary/20" />
     </div>
   )
 })

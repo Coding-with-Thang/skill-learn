@@ -18,6 +18,7 @@ import {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
   ToggleLeft,
   ToggleRight,
   Lock,
@@ -30,6 +31,7 @@ import {
 import { cn } from '@skill-learn/lib/utils.js'
 import api from '@skill-learn/lib/utils/axios.js'
 import { useFeaturesStore } from '@skill-learn/lib/stores/featuresStore.js'
+import { AdminSwitch } from '@/components/admin/AdminSwitch'
 
 // Feature icon mapping
 const featureIcons = {
@@ -45,31 +47,9 @@ const featureIcons = {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
   ToggleLeft,
 }
-
-// Custom Switch Component
-const Switch = ({ checked, onCheckedChange, disabled = false }) => (
-  <button
-    onClick={() => !disabled && onCheckedChange(!checked)}
-    disabled={disabled}
-    className={cn(
-      "relative inline-flex h-[24px] w-[44px] shrink-0 cursor-pointer rounded-full border-2 border-transparent",
-      "transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-      "focus-visible:ring-primary focus-visible:ring-offset-2",
-      checked ? 'bg-primary' : 'bg-input',
-      disabled && 'opacity-50 cursor-not-allowed'
-    )}
-  >
-    <span
-      className={cn(
-        "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0",
-        "transition-transform duration-200 ease-in-out",
-        checked ? 'translate-x-5' : 'translate-x-0'
-      )}
-    />
-  </button>
-)
 
 export default function FeaturesPage() {
   // Note: Tenant-specific features are different from global features
@@ -82,10 +62,10 @@ export default function FeaturesPage() {
   const [error, setError] = useState(null)
   const [togglingFeatureId, setTogglingFeatureId] = useState(null)
 
-  // Fetch tenant features
-  const fetchFeatures = async () => {
+  // Fetch tenant features (isRefresh = true when re-fetching after toggle, to avoid full-page loading)
+  const fetchFeatures = async (isRefresh = false) => {
     try {
-      setLoading(true)
+      if (!isRefresh) setLoading(true)
       setError(null)
       const response = await api.get('/tenant/features')
 
@@ -105,8 +85,11 @@ export default function FeaturesPage() {
   }, [])
 
   // Handle feature toggle
+  const refreshStoreFeatures = useFeaturesStore((s) => s.refresh)
+
   const handleToggle = async (featureId, newEnabledState) => {
     setTogglingFeatureId(featureId)
+    setError(null)
     try {
       const response = await api.put('/tenant/features', { featureId, enabled: newEnabledState })
 
@@ -114,8 +97,10 @@ export default function FeaturesPage() {
         throw new Error(response.data.error || 'Failed to update feature')
       }
 
-      // Refresh features
-      await fetchFeatures()
+      // Re-fetch page data so list and summary show new state (skip full loading to avoid flash)
+      await fetchFeatures(true)
+      // Refresh global features store so sidebar and other consumers see new flags
+      await refreshStoreFeatures()
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Failed to update feature')
     } finally {
@@ -230,8 +215,8 @@ export default function FeaturesPage() {
             <div>
               <p className="font-medium text-blue-900 dark:text-blue-100">Feature Management</p>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Toggle features on or off to customize your organization&apos;s experience. 
-                Features marked with a lock icon have been restricted by your platform administrator 
+                Toggle features on or off to customize your organization&apos;s experience.
+                Features marked with a lock icon have been restricted by your platform administrator
                 and cannot be enabled.
               </p>
             </div>
@@ -267,7 +252,7 @@ export default function FeaturesPage() {
                   {categoryFeatures.map((feature, index) => {
                     const Icon = getIconComponent(feature.icon)
                     const isToggling = togglingFeatureId === feature.id
-                    
+
                     return (
                       <motion.div
                         key={feature.id}
@@ -309,7 +294,7 @@ export default function FeaturesPage() {
                             <Loader2 className="h-6 w-6 animate-spin text-primary" />
                           ) : (
                             <>
-                              <Switch
+                              <AdminSwitch
                                 checked={feature.enabled}
                                 onCheckedChange={(checked) => handleToggle(feature.id, checked)}
                                 disabled={!feature.canToggle || loading}

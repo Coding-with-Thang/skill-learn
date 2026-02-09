@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import SystemHealthPanel from '@/components/cms/dashboard/SystemHealthPanel'
 import RecentAlertsPanel from '@/components/cms/dashboard/RecentAlertsPanel'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import { Server, Database, Globe, Shield, Wifi, HardDrive } from 'lucide-react'
 
 // Mock Data
@@ -130,7 +130,7 @@ export default function SystemHealthPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 font-mono text-xs max-h-[300px] overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950/80 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-950/80 pointer-events-none" />
                 <div className="text-green-400">[INFO] Worker-01 processed batch #49221</div>
                 <div className="text-blue-400">[DEBUG] Cache hit for key user:1024</div>
                 <div className="text-yellow-400">[WARN] High memory usage detected on node-03</div>

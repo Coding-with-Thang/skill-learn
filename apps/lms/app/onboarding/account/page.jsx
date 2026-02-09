@@ -40,7 +40,9 @@ export default function OnboardingAccountPage() {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
+  const [passwordError, setPasswordError] = useState("");
 
   // If user is already signed in, redirect to workspace setup
   useEffect(() => {
@@ -52,12 +54,19 @@ export default function OnboardingAccountPage() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "password" || name === "confirmPassword") setPasswordError("");
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
 
     if (!signUpLoaded) return;
+
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError("Passwords must match");
+      return;
+    }
+    setPasswordError("");
 
     try {
       setLoading(true);
@@ -309,9 +318,10 @@ export default function OnboardingAccountPage() {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10 pr-10"
+                    className={`pl-10 pr-10 ${passwordError ? "border-red-500" : ""}`}
                     required
                     minLength={8}
+                    autoComplete="new-password"
                   />
                   <button
                     type="button"
@@ -324,6 +334,28 @@ export default function OnboardingAccountPage() {
                 <p className="text-xs text-gray-500">
                   Must be at least 8 characters
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Re-enter password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className={`pl-10 pr-10 ${passwordError ? "border-red-500" : ""}`}
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                </div>
+                {passwordError && (
+                  <p className="text-sm text-red-600">{passwordError}</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full" disabled={loading}>

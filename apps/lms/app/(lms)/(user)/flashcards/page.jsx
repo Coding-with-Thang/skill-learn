@@ -133,8 +133,8 @@ export default function FlashCardsHomePage() {
 
       {/* 1. Hero Section */}
       <section className="relative overflow-hidden rounded-[32px] bg-slate-950 p-8 md:p-12 lg:p-16 border border-white/5 shadow-2xl">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-blue-500/20 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-gradient-to-tr from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-bl from-blue-500/20 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/2 bg-linear-to-tr from-cyan-500/10 via-transparent to-transparent pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
           <div className="flex-1 space-y-8 text-center lg:text-left">
@@ -144,9 +144,9 @@ export default function FlashCardsHomePage() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+              <h1 className="text-4xl md:text-brand-teal lg:text-6xl font-bold text-white leading-tight">
                 Mastery Through <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Repetition</span>
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">Repetition</span>
               </h1>
               <p className="max-w-xl text-lg text-white/60 leading-relaxed mx-auto lg:mx-0">
                 Unlock the power of your memory. Use spaced repetition to cement knowledge, browse expert categories, or dive into your custom-crafted study sets.
@@ -155,13 +155,13 @@ export default function FlashCardsHomePage() {
 
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-6">
               <Link href="/flashcards/create-card">
-                <Button size="lg" className="h-14 rounded-2xl bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 border-none px-10 font-bold text-white shadow-lg shadow-cyan-500/20 text-lg">
+                <Button size="lg" className="h-14 rounded-4xl bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 border-none px-10 font-bold text-white shadow-lg shadow-cyan-500/20 text-lg">
                   <Plus className="mr-2 h-5 w-5" />
                   Create Cards
                 </Button>
               </Link>
               <Link href="/flashcards/decks">
-                <Button size="lg" variant="outline" className="h-14 rounded-2xl bg-white/5 border-white/10 text-white hover:bg-white/10 px-10 font-bold backdrop-blur-md text-lg">
+                <Button size="lg" variant="outline" className="h-14 rounded-4xl bg-white/5 border-white/10 text-white hover:bg-white/10 px-10 font-bold backdrop-blur-md text-lg">
                   View All Cards
                 </Button>
               </Link>
@@ -176,7 +176,7 @@ export default function FlashCardsHomePage() {
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                 className="absolute inset-0 bg-white/5 backdrop-blur-3xl rounded-[40px] border border-white/10 shadow-2xl"
               />
-              <div className="absolute inset-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-[32px] border border-white/5" />
+              <div className="absolute inset-4 bg-linear-to-br from-blue-500/10 to-purple-500/10 rounded-[32px] border border-white/5" />
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-12 bg-white/5 rounded-full blur-3xl" />
             </div>
           </div>
@@ -508,7 +508,7 @@ export default function FlashCardsHomePage() {
           </p>
 
           <Link href="/flashcards/deck-builder">
-            <Button size="lg" className="rounded-2xl bg-cyan-500 hover:bg-cyan-600 border-none px-14 font-bold text-white h-16 text-lg shadow-xl shadow-cyan-500/20 mt-4">
+            <Button size="lg" className="rounded-4xl bg-cyan-500 hover:bg-cyan-600 border-none px-14 font-bold text-white h-16 text-lg shadow-xl shadow-cyan-500/20 mt-4">
               {decks.length > 0 ? "Create Another Deck" : "Create Your First Deck"}
             </Button>
           </Link>

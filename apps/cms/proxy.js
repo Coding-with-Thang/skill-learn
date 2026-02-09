@@ -15,11 +15,13 @@ const proxy = clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Redirect sign-up to sign-in (no self-registration for CMS; super admins are created from within CMS)
+  if (pathname.startsWith("/cms/sign-up")) {
+    return NextResponse.redirect(new URL("/cms/sign-in", req.url));
+  }
+
   // Allow public routes to pass through without authentication checks
-  const isPublicRoute =
-    pathname.startsWith("/cms/sign-in") ||
-    pathname.startsWith("/cms/sign-up") ||
-    pathname.startsWith("/cms/pending-approval");
+  const isPublicRoute = pathname.startsWith("/cms/sign-in");
 
   // If it's a public route, allow it to pass through
   if (isPublicRoute) {
@@ -30,7 +32,7 @@ const proxy = clerkMiddleware(async (auth, req) => {
   try {
     const { userId, sessionClaims } = await auth();
 
-    // Protect all /cms/* routes (except sign-in, sign-up, and pending-approval)
+    // Protect all /cms/* routes (except sign-in)
     // Note: setup-guide is now locked and only accessible to super admins
     if (pathname.startsWith("/cms")) {
       if (!userId) {

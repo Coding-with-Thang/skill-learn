@@ -80,7 +80,7 @@ export function CookieConsent() {
             className="fixed bottom-6 right-6 z-[9998] p-3 bg-brand-teal text-white rounded-full shadow-lg hover:bg-brand-teal-dark transition-all group flex items-center gap-0 overflow-hidden"
             title="Cookie Settings"
           >
-            <Cookie className="w-5 h-5 flex-shrink-0" />
+            <Cookie className="w-5 h-5 shrink-0" />
             <span className="max-w-0 overflow-hidden group-hover:max-w-[150px] group-hover:ml-2 transition-all duration-500 whitespace-nowrap text-[12px] font-bold">
               Privacy Settings
             </span>
@@ -109,7 +109,7 @@ export function CookieConsent() {
             </button>
             <div className="p-5">
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-10 h-10 bg-brand-teal/5 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-brand-teal/5 rounded-xl flex items-center justify-center shrink-0">
                   <Cookie className="w-5 h-5 text-brand-teal" />
                 </div>
                 <div className="flex-1">

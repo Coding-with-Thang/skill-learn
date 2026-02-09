@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { requireTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 /**
  * GET /api/tenant/templates
@@ -24,8 +25,8 @@ export async function GET() {
       return permResult;
     }
 
-    // Get all role templates
-    const templates = await prisma.roleTemplate.findMany({
+    // Get all role templates (exclude Guest - it's built-in for all tenants and doesn't count toward slots)
+    const allTemplates = await prisma.roleTemplate.findMany({
       include: {
         roleTemplatePermissions: {
           include: {
@@ -42,6 +43,9 @@ export async function GET() {
       },
       orderBy: [{ templateSetName: "asc" }, { slotPosition: "asc" }],
     });
+    const templates = allTemplates.filter(
+      (t) => t.roleName?.toLowerCase() !== GUEST_ROLE_ALIAS.toLowerCase()
+    );
 
     // Format templates
     const formattedTemplates = templates.map((t) => ({

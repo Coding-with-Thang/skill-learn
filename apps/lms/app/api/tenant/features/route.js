@@ -1,71 +1,72 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import {
+  handleApiError,
+  AppError,
+  ErrorType,
+} from "@skill-learn/lib/utils/errorHandler.js";
+import {
+  requireAnyPermission,
+  PERMISSIONS,
+} from "@skill-learn/lib/utils/permissions.js";
+import { DEFAULT_FEATURES } from "@skill-learn/lib/constants/defaultFeatures.js";
+
+/** Permissions that allow viewing/managing tenant features (dashboard admin, billing, or features) */
+const FEATURES_ACCESS_PERMISSIONS = [
+  PERMISSIONS.DASHBOARD_ADMIN,
+  PERMISSIONS.DASHBOARD_MANAGER,
+  PERMISSIONS.BILLING_MANAGE,
+  "features.manage",
+];
 
 /**
- * Helper to check if user has admin role in their tenant
+ * Ensure user is authenticated, has a tenant, and has permission to access features API.
+ * @returns {{ user, tenant, userId }}
  */
-async function requireTenantAdmin() {
+async function requireFeaturesAccess() {
   const { userId } = await auth();
-
   if (!userId) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+    throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
   }
 
-  // Get user with tenant
   const user = await prisma.user.findUnique({
     where: { clerkId: userId },
-    include: {
-      tenant: true,
-    },
+    include: { tenant: true },
   });
 
   if (!user) {
-    return { error: NextResponse.json({ error: "User not found" }, { status: 404 }) };
+    throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
   }
 
   if (!user.tenant) {
-    return { error: NextResponse.json({ error: "No tenant assigned" }, { status: 403 }) };
+    throw new AppError("No tenant assigned", ErrorType.AUTH, { status: 403 });
   }
 
-  // Check if user has admin role (checking for permissions like features.manage or admin roles)
-  const userRoles = await prisma.userRole.findMany({
-    where: {
-      userId,
-      tenantId: user.tenant.id,
-    },
-    include: {
-      tenantRole: {
-        include: {
-          tenantRolePermissions: {
-            include: {
-              permission: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  // Check if user has features.manage permission or is an admin
-  const hasPermission = userRoles.some((ur) => {
-    return ur.tenantRole.tenantRolePermissions.some(
-      (trp) =>
-        trp.permission.name === "features.manage" ||
-        trp.permission.name === "admin.full" ||
-        trp.permission.category === "admin"
-    );
-  });
-
-  // Legacy fallback: check role if permission system not set up
-  // This ensures backward compatibility during migration
-  const isLegacyAdmin = !hasPermission && (user.role === "OPERATIONS" || user.role === "MANAGER");
-
-  if (!hasPermission && !isLegacyAdmin) {
-    return { error: NextResponse.json({ error: "Insufficient permissions" }, { status: 403 }) };
+  const permResult = await requireAnyPermission(
+    FEATURES_ACCESS_PERMISSIONS,
+    user.tenant.id,
+  );
+  if (permResult instanceof NextResponse) {
+    throw new AppError("Insufficient permissions", ErrorType.AUTH, {
+      status: 403,
+    });
   }
 
   return { user, tenant: user.tenant, userId };
+}
+
+/**
+ * Ensure all default features exist in the Feature table (creates any missing by key).
+ * So tenant admins always see the full list including Flash Cards even if seed was never run.
+ */
+async function ensureDefaultFeaturesExist() {
+  const existing = await prisma.feature.findMany({ select: { key: true } });
+  const existingKeys = new Set(existing.map((f) => f.key));
+  const toCreate = DEFAULT_FEATURES.filter((f) => !existingKeys.has(f.key));
+  if (toCreate.length > 0) {
+    await prisma.feature.createMany({ data: toCreate });
+  }
 }
 
 /**
@@ -74,12 +75,11 @@ async function requireTenantAdmin() {
  */
 export async function GET() {
   try {
-    const result = await requireTenantAdmin();
-    if (result.error) {
-      return result.error;
-    }
-
+    const result = await requireFeaturesAccess();
     const { tenant } = result;
+
+    // Ensure default features (e.g. flash_cards) exist so they appear in the list
+    await ensureDefaultFeaturesExist();
 
     // Get all global features that are active
     const allFeatures = await prisma.feature.findMany({
@@ -97,7 +97,7 @@ export async function GET() {
 
     // Create a map of tenant features by featureId
     const tenantFeatureMap = new Map(
-      tenantFeatures.map((tf) => [tf.featureId, tf])
+      tenantFeatures.map((tf) => [tf.featureId, tf]),
     );
 
     // Merge global features with tenant settings
@@ -160,11 +160,7 @@ export async function GET() {
       summary,
     });
   } catch (error) {
-    console.error("Error fetching tenant features:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch features" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }
 
@@ -175,36 +171,34 @@ export async function GET() {
  */
 export async function PUT(request) {
   try {
-    const result = await requireTenantAdmin();
-    if (result.error) {
-      return result.error;
-    }
-
+    const result = await requireFeaturesAccess();
     const { tenant, userId } = result;
     const body = await request.json();
     const { featureId, enabled } = body;
 
-    // Validate required fields
     if (!featureId || enabled === undefined) {
-      return NextResponse.json(
-        { error: "featureId and enabled are required" },
-        { status: 400 }
+      throw new AppError(
+        "featureId and enabled are required",
+        ErrorType.VALIDATION,
+        { status: 400 },
       );
     }
 
-    // Check if feature exists and is active
     const feature = await prisma.feature.findUnique({
       where: { id: featureId },
     });
 
     if (!feature) {
-      return NextResponse.json({ error: "Feature not found" }, { status: 404 });
+      throw new AppError("Feature not found", ErrorType.NOT_FOUND, {
+        status: 404,
+      });
     }
 
     if (!feature.isActive) {
-      return NextResponse.json(
-        { error: "This feature is globally disabled" },
-        { status: 400 }
+      throw new AppError(
+        "This feature is globally disabled",
+        ErrorType.VALIDATION,
+        { status: 400 },
       );
     }
 
@@ -220,9 +214,10 @@ export async function PUT(request) {
 
     // If super admin has disabled this feature, tenant admin cannot enable it
     if (existingTenantFeature && !existingTenantFeature.superAdminEnabled) {
-      return NextResponse.json(
-        { error: "This feature has been disabled by the administrator" },
-        { status: 403 }
+      throw new AppError(
+        "This feature has been disabled by the administrator",
+        ErrorType.AUTH,
+        { status: 403 },
       );
     }
 
@@ -271,10 +266,6 @@ export async function PUT(request) {
       },
     });
   } catch (error) {
-    console.error("Error updating tenant feature:", error);
-    return NextResponse.json(
-      { error: "Failed to update feature" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

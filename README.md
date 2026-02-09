@@ -192,8 +192,7 @@ skill-learn/
 ├── packages/
 │   ├── database/              # Prisma schema & client
 │   │   ├── prisma/
-│   │   │   ├── schema.prisma  # Database schema
-│   │   │   └── seed.js        # Database seeding
+│   │   │   └── schema.prisma  # Database schema
 │   │   └── index.js           # Prisma client export
 │   │
 │   ├── ui/                    # Shared UI components
@@ -251,13 +250,7 @@ nano .env.local
 npm run prisma:generate
 ```
 
-5. **Seed the database (optional)**
-
-```bash
-npm run prisma:seed
-```
-
-6. **Start development servers**
+5. **Start development servers**
 
 ```bash
 npm run dev
@@ -327,7 +320,6 @@ Run from the project root:
 | `npm run lint` | Run ESLint across all packages |
 | `npm run clean` | Clean build artifacts and node_modules |
 | `npm run prisma:generate` | Generate Prisma client |
-| `npm run prisma:seed` | Seed the database |
 
 ## 📱 Applications
 

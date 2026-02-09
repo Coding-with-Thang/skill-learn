@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
-import { Badge } from '@/components/cms/ui/badge'
-import { Progress } from '@/components/cms/ui/progress'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Progress } from "@skill-learn/ui/components/progress"
 import {
   Dialog,
   DialogContent,
@@ -25,15 +25,17 @@ import { useTenantsStore } from '@skill-learn/lib/stores/tenantsStore.js'
 import { useRoleTemplatesStore } from '@skill-learn/lib/stores/roleTemplatesStore.js'
 import { usePermissionsStore } from '@skill-learn/lib/stores/permissionsStore.js'
 import { parseApiResponse } from '@skill-learn/lib/utils/apiResponseParser.js'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { tenantUserCreateSchema } from '@skill-learn/lib/zodSchemas.js'
+import { toast } from 'sonner'
 
 import {
   ArrowLeft,
   Users,
-  ArrowRight,
   Loader2,
   CheckCircle2,
   AlertCircle,
-  UserCheck,
   Shield,
   Key,
   Eye,
@@ -55,6 +57,7 @@ import {
   FolderTree,
   BarChart3,
   ScrollText,
+  Layers,
   ToggleLeft,
   ToggleRight,
   Lock,
@@ -83,6 +86,17 @@ const featureIcons = {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
+}
+
+const createUserDefaultValues = {
+  username: '',
+  firstName: '',
+  lastName: '',
+  password: '',
+  confirmPassword: '',
+  email: '',
+  tenantRoleId: '',
 }
 
 // Custom Switch Component
@@ -128,7 +142,6 @@ export default function TenantDetailPage() {
   const fetchRoles = useTenantsStore((state) => state.fetchRoles);
   const fetchUserRoles = useTenantsStore((state) => state.fetchUserRoles);
   const fetchFeatures = useTenantsStore((state) => state.fetchFeatures);
-  const fetchTenants = useTenantsStore((state) => state.fetchTenants);
 
   const roleTemplates = useRoleTemplatesStore((state) => state.roleTemplates);
   const fetchRoleTemplates = useRoleTemplatesStore((state) => state.fetchRoleTemplates);
@@ -140,23 +153,19 @@ export default function TenantDetailPage() {
   const [activeTab, setActiveTab] = useState('users')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [selectedUsers, setSelectedUsers] = useState(new Set())
   const [searchQuery, setSearchQuery] = useState('')
-  const [successMessage, setSuccessMessage] = useState(null)
 
   // For permissions (can be fetched separately since it's not tenant-specific)
   const [permissions, setPermissions] = useState([])
   const [groupedPermissions, setGroupedPermissions] = useState({})
 
   // Dialog states
-  const [moveDialogOpen, setMoveDialogOpen] = useState(false)
   const [roleDialogOpen, setRoleDialogOpen] = useState(false)
   const [assignRoleDialogOpen, setAssignRoleDialogOpen] = useState(false)
   const [rolePermissionsDialogOpen, setRolePermissionsDialogOpen] = useState(false)
   const [deleteRoleDialogOpen, setDeleteRoleDialogOpen] = useState(false)
   const [initializeRolesDialogOpen, setInitializeRolesDialogOpen] = useState(false)
 
-  const [targetTenantId, setTargetTenantId] = useState('')
   const [selectedRole, setSelectedRole] = useState(null)
   const [selectedUserForRole, setSelectedUserForRole] = useState('')
   const [selectedRoleForAssignment, setSelectedRoleForAssignment] = useState('')
@@ -167,6 +176,36 @@ export default function TenantDetailPage() {
   const [rolesViewMode, setRolesViewMode] = useState('cards') // 'cards' or 'table'
   const [roleDetailsDialogOpen, setRoleDetailsDialogOpen] = useState(false)
   const [roleSearchQuery, setRoleSearchQuery] = useState('')
+  const [reassignDialogOpen, setReassignDialogOpen] = useState(false)
+  const [userRoleToReassign, setUserRoleToReassign] = useState(null)
+  const [reassignTargetRoleId, setReassignTargetRoleId] = useState('')
+
+  // User create/edit/delete (super admin)
+  const [createUserDialogOpen, setCreateUserDialogOpen] = useState(false)
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false)
+  const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState(null)
+  const [selectedUserForDelete, setSelectedUserForDelete] = useState(null)
+
+  const createUserForm = useForm({
+    defaultValues: createUserDefaultValues,
+    resolver: zodResolver(tenantUserCreateSchema),
+    mode: 'onChange',
+  })
+  const {
+    register: registerCreateUser,
+    handleSubmit: handleCreateUserSubmit,
+    formState: { errors: createUserErrors },
+    setError: setCreateUserError,
+    reset: resetCreateUser,
+  } = createUserForm
+
+  const [editUserForm, setEditUserForm] = useState({
+    firstName: '',
+    lastName: '',
+    username: '',
+    tenantRoleId: '',
+  })
 
   // Role form
   const [roleForm, setRoleForm] = useState({
@@ -201,7 +240,6 @@ export default function TenantDetailPage() {
       Promise.all([
         fetchTenant(tenantId),
         fetchUsers(tenantId),
-        fetchTenants(),
         fetchRoles(tenantId),
         fetchUserRoles(tenantId),
         fetchRoleTemplates(),
@@ -213,57 +251,7 @@ export default function TenantDetailPage() {
         })
         .finally(() => setLoading(false))
     }
-  }, [tenantId, fetchTenant, fetchUsers, fetchRoles, fetchUserRoles, fetchFeatures, fetchTenants, fetchRoleTemplates, fetchPermissions])
-
-  // Get filtered allTenants (exclude current tenant) - use selector or getState
-  const allTenantsFromStore = useTenantsStore((state) => state.tenants);
-  const filteredAllTenants = allTenantsFromStore.filter(t => t.id !== tenantId)
-
-  // Handle user selection for move
-  const toggleUserSelection = (userId) => {
-    const newSelected = new Set(selectedUsers)
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId)
-    } else {
-      newSelected.add(userId)
-    }
-    setSelectedUsers(newSelected)
-  }
-
-  // Handle single user move
-  const handleSingleUserMove = (userId) => {
-    setSelectedUsers(new Set([userId]))
-    setMoveDialogOpen(true)
-  }
-
-  // Handle move users
-  const handleMoveUsers = async () => {
-    if (!targetTenantId || selectedUsers.size === 0) return
-
-    setFormLoading(true)
-    setFormError(null)
-
-    try {
-      const response = await api.post(`/tenants/${tenantId}/users`, {
-        userIds: Array.from(selectedUsers),
-        targetTenantId,
-      })
-
-      setSuccessMessage(response.data.message || `Successfully moved ${selectedUsers.size} user(s)`)
-      await Promise.all([fetchTenant(tenantId), fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
-      setSelectedUsers(new Set())
-      setTargetTenantId('')
-
-      setTimeout(() => {
-        setMoveDialogOpen(false)
-        setSuccessMessage(null)
-      }, 1500)
-    } catch (err) {
-      setFormError(err.message)
-    } finally {
-      setFormLoading(false)
-    }
-  }
+  }, [tenantId, fetchTenant, fetchUsers, fetchRoles, fetchUserRoles, fetchFeatures, fetchRoleTemplates, fetchPermissions])
 
   // Handle role create/update
   const handleRoleSubmit = async (e) => {
@@ -340,18 +328,138 @@ export default function TenantDetailPage() {
     }
   }
 
-  // Handle remove user role
-  const handleRemoveUserRole = async (userRoleId) => {
+  const handleReassignUserRole = async () => {
+    if (!userRoleToReassign || !reassignTargetRoleId) return
+    setFormLoading(true)
+    setFormError(null)
     try {
-      const response = await api.delete(`/tenants/${tenantId}/user-roles`, {
-        params: { userRoleId },
+      const response = await api.put(`/tenants/${tenantId}/user-roles`, {
+        userRoleId: userRoleToReassign.id,
+        tenantRoleId: reassignTargetRoleId,
       })
-
-      if (response.data.error) throw new Error(response.data.error || 'Failed to remove role')
-
+      if (response.data.error) throw new Error(response.data.error || 'Failed to reassign role')
+      setReassignDialogOpen(false)
+      setUserRoleToReassign(null)
+      setReassignTargetRoleId('')
       await fetchUserRoles(tenantId, true)
     } catch (err) {
-      setError(err.message)
+      setFormError(err.response?.data?.error || err.message || 'Failed to reassign role')
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const onCreateUserSubmit = async (data) => {
+    if (formLoading) return
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const payload = {
+        username: data.username,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        tenantRoleId: data.tenantRoleId,
+      }
+      if (data.email) payload.email = data.email
+      const response = await api.post(`/tenants/${tenantId}/users`, payload)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to create user')
+      toast.success('User created successfully. They will appear in the list shortly.')
+      setCreateUserDialogOpen(false)
+      resetCreateUser(createUserDefaultValues)
+      await fetchUsers(tenantId, true)
+      await fetchUserRoles(tenantId, true)
+      setTimeout(() => {
+        fetchUsers(tenantId, true)
+        fetchUserRoles(tenantId, true)
+      }, 2500)
+    } catch (err) {
+      const data = err.response?.data
+      const msg = data?.error || err.message || 'Failed to create user'
+      setFormError(msg)
+      toast.error(msg)
+      // Set field-level errors from API so user sees which fields failed
+      const fieldErrors = data?.fieldErrors
+      if (fieldErrors && typeof fieldErrors === 'object') {
+        for (const [field, message] of Object.entries(fieldErrors)) {
+          if (field && message) setCreateUserError(field, { type: 'server', message })
+        }
+      }
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const openEditUser = (user) => {
+    const roleEntry = userRoles.find(ur => ur.userId === user.clerkId)
+    setSelectedUserForEdit(user)
+    setEditUserForm({
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      username: user.username || '',
+      tenantRoleId: roleEntry?.role?.id || '',
+    })
+    setEditUserDialogOpen(true)
+    setFormError(null)
+  }
+
+  const handleEditUser = async (e) => {
+    e.preventDefault()
+    if (!selectedUserForEdit?.clerkId) return
+
+    const firstName = editUserForm.firstName?.trim()
+    const lastName = editUserForm.lastName?.trim()
+    const username = editUserForm.username?.trim()
+    const tenantRoleId = editUserForm.tenantRoleId
+
+    if (!firstName || !lastName || !username) {
+      setFormError('First name, last name, and username are required.')
+      toast.error('Please fill in all required fields')
+      return
+    }
+    if (!tenantRoleId) {
+      setFormError('Please select a role for the user. A role is required.')
+      toast.error('Please select a role')
+      return
+    }
+
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const payload = { firstName, lastName, username, tenantRoleId }
+      const response = await api.put(`/tenants/${tenantId}/users/${selectedUserForEdit.clerkId}`, payload)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to update user')
+      toast.success('User updated successfully.')
+      setEditUserDialogOpen(false)
+      setSelectedUserForEdit(null)
+      await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to update user'
+      setFormError(msg)
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
+  const handleDeleteUser = async () => {
+    if (!selectedUserForDelete?.clerkId) return
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const response = await api.delete(`/tenants/${tenantId}/users/${selectedUserForDelete.clerkId}`)
+      if (response.data.error) throw new Error(response.data.error || 'Failed to delete user')
+      toast.success('User deleted successfully.')
+      setDeleteUserDialogOpen(false)
+      setSelectedUserForDelete(null)
+      await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
+    } catch (err) {
+      const msg = err.response?.data?.error || err.message || 'Failed to delete user'
+      setFormError(msg)
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
     }
   }
 
@@ -418,9 +526,15 @@ export default function TenantDetailPage() {
         setSelectedRole(updatedRole)
       }
     } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update role')
+      setFormError(err.response?.data?.error || err.message || 'Failed to update role')
     }
   }
+
+  const activeRoleCount = roles.filter((r) => r.isActive).length
+  const cannotDeactivateRole = (role) => role.isActive && activeRoleCount <= 1
+  const rolesCountingTowardLimit = roles.filter((r) => !r.doesNotCountTowardSlotLimit)
+  const usedRoleSlots = rolesCountingTowardLimit.length
+  const canAddMoreRoles = usedRoleSlots < (tenant?.maxRoleSlots || 5)
 
   // Handle view role details
   const handleViewRoleDetails = async (role) => {
@@ -519,33 +633,33 @@ export default function TenantDetailPage() {
   // Handle feature toggle (super admin controls superAdminEnabled)
   const handleFeatureToggle = async (featureId, superAdminEnabled) => {
     setFeatureLoading(true)
-    
+
     // Optimistic update: immediately update the store for instant UI feedback
     const previousFeatures = [...features]
     const previousGroupedFeatures = { ...groupedFeatures }
-    
-    const updatedFeatures = features.map(f => 
-      f.id === featureId 
-        ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+
+    const updatedFeatures = features.map(f =>
+      f.id === featureId
+        ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive }
         : f
     )
-    
+
     // Update grouped features as well
     const updatedGroupedFeatures = Object.entries(groupedFeatures).reduce((acc, [category, categoryFeatures]) => {
-      acc[category] = categoryFeatures.map(f => 
-        f.id === featureId 
-          ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive } 
+      acc[category] = categoryFeatures.map(f =>
+        f.id === featureId
+          ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive }
           : f
       )
       return acc
     }, {})
-    
+
     // Apply optimistic update to store using Zustand's setState
     useTenantsStore.setState({
       features: updatedFeatures,
       featuresByCategory: updatedGroupedFeatures,
     })
-    
+
     try {
       const response = await api.put(`/tenants/${tenantId}/features`, { featureId, superAdminEnabled })
 
@@ -691,13 +805,13 @@ export default function TenantDetailPage() {
               <div>
                 <p className="text-sm text-muted-foreground">Role Slots</p>
                 <p className="text-2xl font-bold">
-                  {roles.length} / {tenant?.maxRoleSlots || 0}
+                  {usedRoleSlots} / {tenant?.maxRoleSlots || 0}
                 </p>
               </div>
               <Shield className="h-8 w-8 text-muted-foreground" />
             </div>
             <Progress
-              value={(roles.length / (tenant?.maxRoleSlots || 1)) * 100}
+              value={tenant?.maxRoleSlots ? (usedRoleSlots / tenant.maxRoleSlots) * 100 : 0}
               className="mt-2"
             />
           </CardContent>
@@ -734,7 +848,7 @@ export default function TenantDetailPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-2 px-4 py-2 rounded-4xld text-sm font-medium transition-colors",
                 activeTab === tab.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -762,15 +876,21 @@ export default function TenantDetailPage() {
               <div>
                 <CardTitle>Users ({users.length})</CardTitle>
                 <CardDescription>
-                  Select users to move them to another tenant
+                  Users belonging to this tenant. Create, edit, or remove users; changes sync via Clerk webhook.
                 </CardDescription>
               </div>
-              {selectedUsers.size > 0 && (
-                <Button onClick={() => setMoveDialogOpen(true)} className="gap-2">
-                  <UserCheck className="h-4 w-4" />
-                  Move {selectedUsers.size} User{selectedUsers.size > 1 ? 's' : ''}
-                </Button>
-              )}
+              <Button
+                onClick={() => {
+                  resetCreateUser({ ...createUserDefaultValues, tenantRoleId: tenant?.defaultRoleId || '' })
+                  setFormError(null)
+                  setCreateUserDialogOpen(true)
+                }}
+                disabled={roles.filter(r => r.isActive).length === 0}
+                title={roles.filter(r => r.isActive).length === 0 ? 'Create at least one role for this tenant first' : undefined}
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add user
+              </Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -790,74 +910,65 @@ export default function TenantDetailPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex items-center gap-2 pb-2 border-b">
-                  <Checkbox
-                    checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setSelectedUsers(new Set(filteredUsers.map(u => u.id)))
-                      } else {
-                        setSelectedUsers(new Set())
-                      }
-                    }}
-                  />
-                  <Label className="text-sm font-medium cursor-pointer">
-                    Select All ({filteredUsers.length})
-                  </Label>
-                </div>
-
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                   >
-                    <Checkbox
-                      checked={selectedUsers.has(user.id)}
-                      onCheckedChange={() => toggleUserSelection(user.id)}
-                    />
-                    <div className="flex-1 flex items-center gap-3">
-                      {user.imageUrl ? (
-                        <Image
-                          src={user.imageUrl}
-                          alt={user.username}
-                          width={40}
-                          height={40}
-                          className="h-10 w-10 rounded-full"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
-                          {user.firstName?.[0] || user.username?.[0] || 'U'}
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <p className="font-medium">
-                          {user.firstName} {user.lastName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          @{user.username}
-                        </p>
+                    {user.imageUrl ? (
+                      <Image
+                        src={user.imageUrl}
+                        alt={user.username}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
+                        {user.firstName?.[0] || user.username?.[0] || 'U'}
                       </div>
-                      {(() => {
-                        const userRole = getUserRole(user)
-                        return userRole ? (
-                          <Badge variant="outline">
-                            {userRole}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
-                            No role
-                          </Badge>
-                        )
-                      })()}
+                    )}
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        @{user.username}
+                      </p>
+                    </div>
+                    {(() => {
+                      const userRole = getUserRole(user)
+                      return userRole ? (
+                        <Badge variant="outline">
+                          {userRole}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">
+                          No role
+                        </Badge>
+                      )
+                    })()}
+                    <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleSingleUserMove(user.id)}
-                        className="gap-2"
-                        title="Move user to another tenant"
+                        onClick={() => openEditUser(user)}
+                        title="Edit user"
                       >
-                        <ArrowRight className="h-4 w-4" />
-                        Move
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => {
+                          setSelectedUserForDelete(user)
+                          setFormError(null)
+                          setDeleteUserDialogOpen(true)
+                        }}
+                        title="Delete user"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -875,7 +986,7 @@ export default function TenantDetailPage() {
             <div>
               <h2 className="text-xl font-semibold">Tenant Roles</h2>
               <p className="text-sm text-muted-foreground">
-                {roles.length} of {tenant?.maxRoleSlots || 5} role slots used
+                {usedRoleSlots} of {tenant?.maxRoleSlots || 5} role slots used (Guest role does not count)
               </p>
             </div>
             <div className="flex gap-2">
@@ -886,12 +997,10 @@ export default function TenantDetailPage() {
               )}
               <Button
                 onClick={() => {
-                  console.log('Add Role button clicked')
                   resetRoleForm()
                   setRoleDialogOpen(true)
-                  console.log('roleDialogOpen set to:', true)
                 }}
-                disabled={roles.length >= (tenant?.maxRoleSlots || 5)}
+                disabled={!canAddMoreRoles}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Role
@@ -1018,13 +1127,14 @@ export default function TenantDetailPage() {
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-medium">{role.roleAlias}</p>
-                              {role.createdFromTemplate ? (
-                                <Badge variant="default" className="text-xs bg-blue-500">
-                                  Template
-                                </Badge>
-                              ) : (
+                              {role.modifiedFromTemplate && (
                                 <Badge variant="outline" className="text-xs">
                                   Custom
+                                </Badge>
+                              )}
+                              {role.createdFromTemplate && !role.modifiedFromTemplate && (
+                                <Badge variant="default" className="text-xs bg-blue-500">
+                                  Template
                                 </Badge>
                               )}
                             </div>
@@ -1037,7 +1147,7 @@ export default function TenantDetailPage() {
                           <Badge variant="secondary">Slot {role.slotPosition}</Badge>
                         </td>
                         <td className="p-4">
-                          <Badge variant={role.isActive ? 'default' : 'destructive'}>
+                          <Badge variant={role.isActive ? 'success' : 'destructive'}>
                             {role.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
@@ -1088,7 +1198,14 @@ export default function TenantDetailPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleToggleRoleActive(role)}
-                              title={role.isActive ? 'Deactivate' : 'Activate'}
+                              disabled={cannotDeactivateRole(role)}
+                              title={
+                                role.isActive
+                                  ? cannotDeactivateRole(role)
+                                    ? 'Tenant must have at least one active role'
+                                    : 'Deactivate'
+                                  : 'Activate'
+                              }
                             >
                               {role.isActive ? (
                                 <ToggleRight className="h-4 w-4 text-green-600" />
@@ -1128,13 +1245,14 @@ export default function TenantDetailPage() {
                           <Badge variant="secondary" className="text-xs">
                             Slot {role.slotPosition}
                           </Badge>
-                          {role.createdFromTemplate ? (
-                            <Badge variant="default" className="text-xs bg-blue-500">
-                              Template
-                            </Badge>
-                          ) : (
+                          {role.modifiedFromTemplate && (
                             <Badge variant="outline" className="text-xs">
                               Custom
+                            </Badge>
+                          )}
+                          {role.createdFromTemplate && !role.modifiedFromTemplate && (
+                            <Badge variant="default" className="text-xs bg-blue-500">
+                              Template
                             </Badge>
                           )}
                           {!role.isActive && (
@@ -1220,7 +1338,14 @@ export default function TenantDetailPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleRoleActive(role)}
-                          title={role.isActive ? 'Deactivate' : 'Activate'}
+                          disabled={cannotDeactivateRole(role)}
+                          title={
+                            role.isActive
+                              ? cannotDeactivateRole(role)
+                                ? 'Tenant must have at least one active role'
+                                : 'Deactivate'
+                              : 'Activate'
+                          }
                         >
                           {role.isActive ? (
                             <ToggleRight className="h-4 w-4 text-green-600" />
@@ -1305,7 +1430,7 @@ export default function TenantDetailPage() {
                                 className="h-8 w-8 rounded-full"
                               />
                             ) : (
-                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
+                              <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
                                 {ur.user?.firstName?.[0] || 'U'}
                               </div>
                             )}
@@ -1324,15 +1449,24 @@ export default function TenantDetailPage() {
                         <td className="p-4">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline">{ur.role?.roleAlias}</Badge>
-                            {ur.role?.createdFromTemplate ? (
-                              <Badge variant="secondary" className="text-xs">
-                                Template
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">
-                                Custom
-                              </Badge>
-                            )}
+                            {(() => {
+                              const roleMeta = roles.find((r) => r.id === ur.role?.id)
+                              if (roleMeta?.modifiedFromTemplate) {
+                                return (
+                                  <Badge variant="outline" className="text-xs">
+                                    Custom
+                                  </Badge>
+                                )
+                              }
+                              if (roleMeta?.createdFromTemplate && !roleMeta?.modifiedFromTemplate) {
+                                return (
+                                  <Badge variant="secondary" className="text-xs">
+                                    Template
+                                  </Badge>
+                                )
+                              }
+                              return null
+                            })()}
                           </div>
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
@@ -1342,10 +1476,14 @@ export default function TenantDetailPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-red-600 hover:text-red-700"
-                            onClick={() => handleRemoveUserRole(ur.id)}
+                            onClick={() => {
+                              setUserRoleToReassign(ur)
+                              setReassignTargetRoleId('')
+                              setReassignDialogOpen(true)
+                            }}
+                            title="Change role"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                         </td>
                       </tr>
@@ -1491,79 +1629,6 @@ export default function TenantDetailPage() {
         </div>
       )}
 
-      {/* Move Users Dialog */}
-      <Dialog open={moveDialogOpen} onOpenChange={(open) => {
-        setMoveDialogOpen(open)
-        if (!open) {
-          // Reset state when dialog closes
-          setTargetTenantId('')
-          setFormError(null)
-          setSuccessMessage(null)
-        }
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Move User{selectedUsers.size > 1 ? 's' : ''} to Another Tenant</DialogTitle>
-            <DialogDescription>
-              Move {selectedUsers.size} selected user{selectedUsers.size > 1 ? 's' : ''} to a different tenant.
-              {selectedUsers.size === 1 && ' This feature will be deprecated in the future.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {successMessage ? (
-              <div className="rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-3 text-sm flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                {successMessage}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="rounded-lg bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 p-3 text-sm flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <div>
-                    <p className="font-medium">Deprecation Notice</p>
-                    <p className="text-xs mt-1">
-                      This feature is temporary and will be deprecated in the future. Use only when necessary.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Target Tenant</Label>
-                  <select
-                    value={targetTenantId}
-                    onChange={(e) => setTargetTenantId(e.target.value)}
-                    className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
-                    disabled={formLoading}
-                  >
-                    <option value="">Select a tenant...</option>
-                    {filteredAllTenants.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} ({t.activeUsers} users)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-            {formError && (
-              <div className="mt-4 rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
-                {formError}
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setMoveDialogOpen(false)} disabled={formLoading}>
-              {successMessage ? 'Close' : 'Cancel'}
-            </Button>
-            {!successMessage && (
-              <Button onClick={handleMoveUsers} disabled={!targetTenantId || formLoading}>
-                {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                Move Users
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Role Dialog */}
       <Dialog open={roleDialogOpen} onOpenChange={(open) => {
         console.log('Dialog onOpenChange called with:', open)
@@ -1600,7 +1665,7 @@ export default function TenantDetailPage() {
                 <Input
                   type="number"
                   min="1"
-                  max={tenant?.maxRoleSlots || 5}
+                  max={Math.max(1, (tenant?.maxRoleSlots || 5))}
                   value={roleForm.slotPosition}
                   onChange={(e) => setRoleForm({ ...roleForm, slotPosition: parseInt(e.target.value) || 1 })}
                 />
@@ -1701,6 +1766,326 @@ export default function TenantDetailPage() {
             >
               {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Assign Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reassign User Role Dialog */}
+      <Dialog open={reassignDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setUserRoleToReassign(null)
+          setReassignTargetRoleId('')
+          setFormError(null)
+        }
+        setReassignDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change role</DialogTitle>
+            <DialogDescription>
+              Assign this user to a different role. Users must have a role; use this to change it.
+            </DialogDescription>
+          </DialogHeader>
+          {userRoleToReassign && (
+            <div className="space-y-4 py-4">
+              <div className="grid gap-2">
+                <Label className="text-sm text-muted-foreground">User</Label>
+                <p className="font-medium">
+                  {userRoleToReassign.user?.fullName || userRoleToReassign.user?.username || userRoleToReassign.userId}
+                </p>
+              </div>
+              <div className="grid gap-2">
+                <Label>New role *</Label>
+                <select
+                  value={reassignTargetRoleId}
+                  onChange={(e) => setReassignTargetRoleId(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                  disabled={formLoading}
+                >
+                  <option value="">Select a role...</option>
+                  {roles
+                    .filter((r) => r.isActive && r.id !== userRoleToReassign.role?.id)
+                    .map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.roleAlias}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              {formError && (
+                <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                  {formError}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReassignDialogOpen(false)} disabled={formLoading}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReassignUserRole}
+              disabled={!reassignTargetRoleId || formLoading}
+            >
+              {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Change role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create User Dialog */}
+      <Dialog open={createUserDialogOpen} onOpenChange={(open) => {
+        setFormError(null)
+        if (!open) resetCreateUser(createUserDefaultValues)
+        setCreateUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create tenant user</DialogTitle>
+            <DialogDescription>
+              User is created in Clerk; webhook will sync to the database and assign the selected role.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUserSubmit(onCreateUserSubmit)}>
+            {formError && (
+              <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm mb-4" role="alert">
+                {formError}
+              </div>
+            )}
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="create-firstName">First name *</Label>
+                  <Input
+                    id="create-firstName"
+                    placeholder="Jane"
+                    maxLength={100}
+                    {...registerCreateUser('firstName')}
+                    className={createUserErrors.firstName ? 'border-red-500' : ''}
+                  />
+                  {createUserErrors.firstName && (
+                    <p className="text-sm text-red-600">{createUserErrors.firstName.message}</p>
+                  )}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="create-lastName">Last name *</Label>
+                  <Input
+                    id="create-lastName"
+                    placeholder="Doe"
+                    maxLength={100}
+                    {...registerCreateUser('lastName')}
+                    className={createUserErrors.lastName ? 'border-red-500' : ''}
+                  />
+                  {createUserErrors.lastName && (
+                    <p className="text-sm text-red-600">{createUserErrors.lastName.message}</p>
+                  )}
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-username">Username * (letters, numbers, underscores; 3–128 chars)</Label>
+                <Input
+                  id="create-username"
+                  placeholder="janedoe"
+                  maxLength={128}
+                  {...registerCreateUser('username')}
+                  className={createUserErrors.username ? 'border-red-500' : ''}
+                />
+                {createUserErrors.username && (
+                  <p className="text-sm text-red-600">{createUserErrors.username.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-password">Password * (8–128 characters)</Label>
+                <Input
+                  id="create-password"
+                  type="password"
+                  placeholder="Min 8 characters"
+                  maxLength={128}
+                  autoComplete="new-password"
+                  {...registerCreateUser('password')}
+                  className={createUserErrors.password ? 'border-red-500' : ''}
+                />
+                {createUserErrors.password && (
+                  <p className="text-sm text-red-600">{createUserErrors.password.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-confirm-password">Confirm password *</Label>
+                <Input
+                  id="create-confirm-password"
+                  type="password"
+                  placeholder="Re-enter password"
+                  maxLength={128}
+                  autoComplete="new-password"
+                  {...registerCreateUser('confirmPassword')}
+                  className={createUserErrors.confirmPassword ? 'border-red-500' : ''}
+                />
+                {createUserErrors.confirmPassword && (
+                  <p className="text-sm text-red-600">{createUserErrors.confirmPassword.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-email">Email (optional)</Label>
+                <Input
+                  id="create-email"
+                  type="email"
+                  placeholder="jane@example.com"
+                  maxLength={254}
+                  {...registerCreateUser('email')}
+                  className={createUserErrors.email ? 'border-red-500' : ''}
+                />
+                {createUserErrors.email && (
+                  <p className="text-sm text-red-600">{createUserErrors.email.message}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="create-user-role">Role *</Label>
+                <select
+                  id="create-user-role"
+                  className={cn('w-full h-10 rounded-lg border border-input bg-background px-3 text-sm', createUserErrors.tenantRoleId && 'border-red-500')}
+                  aria-required="true"
+                  {...registerCreateUser('tenantRoleId')}
+                >
+                  <option value="">Select a role (required)</option>
+                  {roles.filter(r => r.isActive).map((r) => (
+                    <option key={r.id} value={r.id}>{r.roleAlias}</option>
+                  ))}
+                </select>
+                {createUserErrors.tenantRoleId && (
+                  <p className="text-sm text-red-600">{createUserErrors.tenantRoleId.message}</p>
+                )}
+                <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setCreateUserDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={formLoading}
+              >
+                {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create user
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editUserDialogOpen} onOpenChange={(open) => {
+        if (!open) { setSelectedUserForEdit(null); setFormError(null) }
+        setEditUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit user</DialogTitle>
+            <DialogDescription>
+              Profile changes sync to Clerk; role changes update the database and Clerk metadata.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedUserForEdit && (
+            <form onSubmit={handleEditUser}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>First name *</Label>
+                    <Input
+                      value={editUserForm.firstName}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, firstName: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Last name *</Label>
+                    <Input
+                      value={editUserForm.lastName}
+                      onChange={(e) => setEditUserForm({ ...editUserForm, lastName: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label>Username *</Label>
+                  <Input
+                    value={editUserForm.username}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, username: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-user-role">Role *</Label>
+                  <select
+                    id="edit-user-role"
+                    value={editUserForm.tenantRoleId}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, tenantRoleId: e.target.value })}
+                    className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm"
+                    required
+                    aria-required="true"
+                  >
+                    <option value="">Select a role (required)</option>
+                    {roles.filter(r => r.isActive).map((r) => (
+                      <option key={r.id} value={r.id}>{r.roleAlias}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">User must have an assigned role.</p>
+                </div>
+                {formError && (
+                  <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                    {formError}
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditUserDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    formLoading ||
+                    !editUserForm.firstName?.trim() ||
+                    !editUserForm.lastName?.trim() ||
+                    !editUserForm.username?.trim() ||
+                    !editUserForm.tenantRoleId
+                  }
+                >
+                  {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Update user
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={deleteUserDialogOpen} onOpenChange={(open) => {
+        if (!open) { setSelectedUserForDelete(null); setFormError(null) }
+        setDeleteUserDialogOpen(open)
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete user</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{selectedUserForDelete?.firstName} {selectedUserForDelete?.lastName}</strong> (@{selectedUserForDelete?.username})? They will be removed from Clerk and the database (via webhook).
+            </DialogDescription>
+          </DialogHeader>
+          {formError && (
+            <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+              {formError}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteUserDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteUser} disabled={formLoading}>
+              {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete user
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1822,7 +2207,7 @@ export default function TenantDetailPage() {
                   <div>
                     <Label className="text-sm text-muted-foreground">Status</Label>
                     <div>
-                      <Badge variant={selectedRole.isActive ? 'default' : 'destructive'}>
+                      <Badge variant={selectedRole.isActive ? 'success' : 'destructive'}>
                         {selectedRole.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </div>

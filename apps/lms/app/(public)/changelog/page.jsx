@@ -114,7 +114,7 @@ export default async function ChangelogPage() {
 
                     {/* Card */}
                     <Link href={`/changelog/${update.slug}`}>
-                      <Card className="overflow-hidden border-slate-100 hover:border-teal-200 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/5 group/card bg-white rounded-2xl">
+                      <Card className="overflow-hidden border-slate-100 hover:border-teal-200 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/5 group/card bg-white rounded-4xl">
                         <CardContent className="p-0">
                           <div className="p-8 space-y-6">
                             {update.tags && update.tags.length > 0 && (
@@ -171,7 +171,7 @@ export default async function ChangelogPage() {
           {/* Sidebar */}
           <div className="lg:col-span-4 space-y-8">
             {/* Stay Updated Card */}
-            <Card className="bg-white border-slate-100 shadow-sm rounded-2xl overflow-hidden">
+            <Card className="bg-white border-slate-100 shadow-sm rounded-4xl overflow-hidden">
               <CardContent className="p-8 space-y-6">
                 <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
                   <Bell className="w-6 h-6" />

@@ -1,5 +1,6 @@
 import { prisma } from '@skill-learn/database';
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js"
+import { extractTextFromProseMirror } from "@skill-learn/lib/utils.js"
 import { buttonVariants } from "@skill-learn/ui/components/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button"
@@ -7,10 +8,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Clock, BookOpen } from "lucide-react";
 import { notFound } from 'next/navigation';
+import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
-async function getCourse(courseId) {
-    const course = await prisma.course.findUnique({
-        where: { id: courseId },
+async function getCourse(courseId, tenantId) {
+    const tenantFilter = buildTenantContentFilter(tenantId ?? null, {});
+    const course = await prisma.course.findFirst({
+        where: { id: courseId, ...tenantFilter },
         include: { category: true },
     });
 
@@ -29,8 +32,12 @@ async function getCourse(courseId) {
 }
 
 export default async function PreviewCoursePage({ params }) {
-    const { courseId } = params;
-    const course = await getCourse(courseId);
+    const { courseId } = await params;
+    const context = await getTenantContext();
+    if (context instanceof Response) {
+        notFound();
+    }
+    const course = await getCourse(courseId, context.tenantId);
 
     if (!course) {
         notFound();
@@ -93,7 +100,7 @@ export default async function PreviewCoursePage({ params }) {
 
                 <CardContent className="p-6 pt-0">
                     <div className="prose max-w-none">
-                        <div dangerouslySetInnerHTML={{ __html: course.description }} />
+                        <p className="whitespace-pre-wrap">{extractTextFromProseMirror(course.description)}</p>
                     </div>
 
                     <div className="mt-8 flex gap-4">

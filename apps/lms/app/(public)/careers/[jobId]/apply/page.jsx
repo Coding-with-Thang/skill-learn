@@ -55,7 +55,7 @@ export default function ApplyPage() {
             Thank you for applying for the <strong>{formattedJobId}</strong> role. Our team will review your application and get back to you within 3-5 business days.
           </p>
           <Link href="/careers">
-            <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-2xl h-14">
+            <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-4xl h-14">
               Return to Careers
             </Button>
           </Link>
@@ -83,7 +83,7 @@ export default function ApplyPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="flex gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex gap-4 p-4 bg-white rounded-4xl border border-slate-100 shadow-sm">
                 <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
                   <CheckCircle className="w-5 h-5 text-teal-600" />
                 </div>
@@ -92,7 +92,7 @@ export default function ApplyPage() {
                   <p className="text-xs text-slate-500 mt-1">Work from anywhere in the world.</p>
                 </div>
               </div>
-              <div className="flex gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <div className="flex gap-4 p-4 bg-white rounded-4xl border border-slate-100 shadow-sm">
                 <div className="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center shrink-0">
                   <CheckCircle className="w-5 h-5 text-teal-600" />
                 </div>
@@ -136,7 +136,7 @@ export default function ApplyPage() {
                 <div className="space-y-2">
                   <Label>Resume / CV</Label>
                   <div
-                    className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer ${file ? "border-teal-500 bg-teal-50/30" : "border-slate-200 hover:border-teal-300"
+                    className={`border-2 border-dashed rounded-4xl p-8 text-center transition-colors cursor-pointer ${file ? "border-teal-500 bg-teal-50/30" : "border-slate-200 hover:border-teal-300"
                       }`}
                     onClick={() => document.getElementById('resume-upload').click()}
                   >
@@ -187,14 +187,14 @@ export default function ApplyPage() {
                     id="message"
                     placeholder="Tell us about yourself and what drives you..."
                     rows={4}
-                    className="rounded-2xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 p-4"
+                    className="rounded-4xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 p-4"
                   />
                 </div>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-2xl shadow-lg shadow-teal-100 transition-all active:scale-[0.98]"
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-4xl shadow-lg shadow-teal-100 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <>

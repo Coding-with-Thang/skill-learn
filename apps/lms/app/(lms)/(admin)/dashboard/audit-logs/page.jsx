@@ -229,7 +229,7 @@ export default function AuditLogsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
-                          <div className="p-1 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors">
+                          <div className="p-1 rounded-4xld bg-muted/50 group-hover:bg-primary/10 transition-colors">
                             <Database className="w-3 h-3 text-muted-foreground group-hover:text-primary" />
                           </div>
                           <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{log.resource}</span>

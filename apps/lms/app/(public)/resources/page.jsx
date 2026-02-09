@@ -71,7 +71,7 @@ export default function ResourcesPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
               Resources
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
@@ -97,7 +97,7 @@ export default function ResourcesPage() {
               >
                 <div className="flex flex-col h-full">
                   <div className="flex items-start gap-6 mb-4">
-                    <div className={`p-4 rounded-2xl ${resource.color} group-hover:scale-110 transition-transform flex-shrink-0`}>
+                    <div className={`p-4 rounded-4xl ${resource.color} group-hover:scale-110 transition-transform shrink-0`}>
                       <resource.icon className="w-8 h-8" />
                     </div>
                     <div className="flex-1">
@@ -109,7 +109,7 @@ export default function ResourcesPage() {
                       </h2>
                     </div>
                   </div>
-                  <p className="text-slate-500 leading-relaxed mb-6 flex-grow">
+                  <p className="text-slate-500 leading-relaxed mb-6 grow">
                     {resource.description}
                   </p>
                   <div className="flex items-center text-sm font-bold text-brand-teal group-hover:gap-2 transition-all">
@@ -177,7 +177,7 @@ export default function ResourcesPage() {
               </div>
               <Link
                 href="/contact"
-                className="px-8 py-4 bg-brand-teal text-white font-bold rounded-2xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
+                className="px-8 py-4 bg-brand-teal text-white font-bold rounded-4xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
               >
                 Contact Support
               </Link>

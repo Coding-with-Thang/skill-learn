@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import api from "../../utils/utils/axios.js";
+import api from "../../utils/axios.js";
 import { toast } from "sonner";
 import { usePointsStore } from "./pointsStore.js";
-import { handleErrorWithNotification } from "../../utils/utils/notifications.js";
-import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
-import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
+import { handleErrorWithNotification } from "../../utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/apiResponseParser.js";
 
 // STORE constants
 const STORE = {
@@ -25,7 +25,9 @@ export const useRewardStore = create((set, get) => ({
       async () => {
         set({ isLoading: true });
         try {
-          const response = await api.get("/user/rewards");
+          // Cache-bust when forcing so axios doesn't return cached GET (UI refreshes after add/update/delete)
+          const url = force ? `/user/rewards?_t=${Date.now()}` : "/user/rewards";
+          const response = await api.get(url);
           // API returns standardized format: { success: true, data: { rewards: [...] } }
           const rewards = parseApiResponse(response, "rewards") || [];
           set({
@@ -76,8 +78,8 @@ export const useRewardStore = create((set, get) => ({
       set({ isLoading: true });
       const response = await api.post("/user/rewards/add", data);
 
-      // Refresh rewards list
-      await get().fetchRewards();
+      // Force refetch so UI shows new data (bypass cache/dedup)
+      await get().fetchRewards(true);
 
       return true;
     } catch (error) {
@@ -148,11 +150,25 @@ export const useRewardStore = create((set, get) => ({
         ...formattedData,
       });
 
-      // Refresh the rewards list after update
-      await get().fetchRewards();
+      // Force refetch so UI shows updated data (bypass cache/dedup)
+      await get().fetchRewards(true);
       return true;
     } catch (error) {
       handleErrorWithNotification(error, "Failed to update reward");
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  deleteReward: async (id) => {
+    try {
+      set({ isLoading: true });
+      await api.delete(`/user/rewards/${id}`);
+      // Force refetch so UI shows updated list
+      await get().fetchRewards(true);
+    } catch (error) {
+      handleErrorWithNotification(error, "Failed to delete reward");
       throw error;
     } finally {
       set({ isLoading: false });

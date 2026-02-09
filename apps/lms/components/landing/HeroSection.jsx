@@ -229,7 +229,7 @@ export default function HeroSection() {
 
             {/* Main Headline */}
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-4xl sm:text-brand-teal lg:text-7xl font-bold text-gray-900 leading-tight">
                 <span className="bg-linear-to-r from-brand-teal to-brand-dark-blue bg-clip-text text-transparent">
                   AI-Powered
                 </span>
@@ -297,7 +297,7 @@ export default function HeroSection() {
           {/* Right Column - Interactive Visual */}
           <div className="relative h-auto lg:h-[650px] animate-slide-in-right order-1 lg:order-2">
             {/* Tasks Card (Behind) */}
-            <div className="hidden lg:block absolute top-52 right-20 w-full max-w-md bg-white rounded-2xl shadow-xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-10 overflow-hidden">
+            <div className="hidden lg:block absolute top-52 right-20 w-full max-w-md bg-white rounded-4xl shadow-xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-10 overflow-hidden">
               <div className="p-6 space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">Tasks Overview</h3>
 
@@ -339,7 +339,7 @@ export default function HeroSection() {
             </div>
 
             {/* Profile Card (Front) */}
-            <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-2xl shadow-2xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-20 overflow-hidden">
+            <div className="hidden lg:block absolute top-0 right-0 w-full max-w-md bg-white rounded-4xl shadow-2xl hover:shadow-[0_25px_60px_rgba(21,93,89,0.2)] transition-all duration-300 z-2000 overflow-hidden">
               {/* Gradient Header */}
               <div className="h-24 bg-linear-to-r from-brand-teal/60 via-brand-dark-blue/40 to-brand-teal/40 relative">
                 <div className="absolute -bottom-10 left-6">
@@ -412,7 +412,7 @@ export default function HeroSection() {
           onClick={() => setIsVideoPlaying(false)}
         >
           <div
-            className="relative w-full max-w-4xl aspect-video bg-white rounded-2xl overflow-hidden border-2 border-gray-200 animate-scale-in"
+            className="relative w-full max-w-4xl aspect-video bg-white rounded-4xl overflow-hidden border-2 border-gray-200 animate-scale-in"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

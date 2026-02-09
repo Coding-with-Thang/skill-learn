@@ -49,20 +49,11 @@ export function UserFilters({ onFilterChange }) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Roles</SelectItem>
-                            {roles && roles.length > 0 ? (
-                                roles.map((role) => (
-                                    <SelectItem key={role.id} value={role.roleAlias}>
-                                        {role.roleAlias}
-                                    </SelectItem>
-                                ))
-                            ) : (
-                                // Fallback to legacy roles if tenant roles not loaded yet
-                                <>
-                                    <SelectItem value="AGENT">Agent</SelectItem>
-                                    <SelectItem value="MANAGER">Manager</SelectItem>
-                                    <SelectItem value="OPERATIONS">Operations</SelectItem>
-                                </>
-                            )}
+                            {roles?.map((role) => (
+                                <SelectItem key={role.id} value={role.roleAlias}>
+                                    {role.roleAlias}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                     <Select onValueChange={handleSortChange}>

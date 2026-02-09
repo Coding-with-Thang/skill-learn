@@ -51,6 +51,10 @@ export async function GET(request) {
             description: true,
             slotPosition: true,
             isActive: true,
+            createdFromTemplateId: true,
+            createdFromTemplate: {
+              select: { id: true, templateSetName: true },
+            },
           },
         },
       },

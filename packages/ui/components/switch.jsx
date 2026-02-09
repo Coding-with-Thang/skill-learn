@@ -7,21 +7,47 @@ import { cn } from "@skill-learn/lib/utils.js"
 
 function Switch({
   className,
+  checked = false,
+  style: styleProp,
   ...props
 }) {
+  const isChecked = Boolean(checked)
+  const trackStyle = isChecked
+    ? { backgroundColor: "var(--primary)", borderColor: "var(--primary)" }
+    : {
+        backgroundColor: "var(--switch-off-bg, #cbd5e1)",
+        borderColor: "var(--switch-off-bg, #cbd5e1)",
+      }
+  const thumbStyle = isChecked
+    ? {
+        transform: "translateX(20px)",
+        backgroundColor: "var(--primary-foreground)",
+        border: "none",
+      }
+    : {
+        transform: "translateX(2px)",
+        backgroundColor: "var(--switch-thumb-off, #fff)",
+        border: "2px solid var(--switch-off-border, #94a3b8)",
+      }
+
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+        "group peer inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 shadow-sm transition-all outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        "min-w-[2.75rem]",
         className
       )}
+      style={{ ...styleProp, ...trackStyle }}
+      checked={checked}
       {...props}>
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
-          "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
-        )} />
+          "pointer-events-none block size-5 rounded-full shadow-md ring-0 transition-transform"
+        )}
+        style={thumbStyle}
+      />
     </SwitchPrimitive.Root>
   );
 }

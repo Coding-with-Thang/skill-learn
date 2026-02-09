@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import api from "../../utils/utils/axios.js";
-import { createRequestDeduplicator } from "../../utils/utils/requestDeduplication.js";
-import { parseApiResponse } from "../../utils/utils/apiResponseParser.js";
+import api from "../../utils/axios.js";
+import { createRequestDeduplicator } from "../../utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/apiResponseParser.js";
 // STORE constants - should be passed as parameter or defined here
 const STORE = { 
   CACHE_DURATION: 5 * 60 * 1000,

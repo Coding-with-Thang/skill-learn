@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from '@skill-learn/database';
+import { prisma } from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { ensureTenantHasGuestRole } from "@skill-learn/lib/utils/tenantDefaultRole.js";
 
 // Get a single tenant
 export async function GET(request, { params }) {
@@ -40,6 +41,42 @@ export async function GET(request, { params }) {
       );
     }
 
+    if (!tenant.defaultRoleId) {
+      await ensureTenantHasGuestRole(tenant.id);
+      const updated = await prisma.tenant.findUnique({
+        where: { id: tenantId },
+        include: {
+          defaultRole: { select: { id: true, roleAlias: true, isActive: true } },
+          _count: { select: { users: true, tenantRoles: true, quizzes: true, courses: true, rewards: true } },
+        },
+      });
+      if (updated) {
+        return NextResponse.json({
+          tenant: {
+            id: updated.id,
+            name: updated.name,
+            slug: updated.slug,
+            subscriptionTier: updated.subscriptionTier,
+            maxRoleSlots: updated.maxRoleSlots,
+            baseRoleSlots: updated.baseRoleSlots,
+            purchasedRoleSlots: updated.purchasedRoleSlots,
+            defaultRoleId: updated.defaultRoleId,
+            defaultRole: updated.defaultRole,
+            requireEmailForRegistration: updated.requireEmailForRegistration,
+            activeUsers: updated._count.users,
+            roleCount: updated._count.tenantRoles,
+            quizCount: updated._count.quizzes,
+            courseCount: updated._count.courses,
+            rewardCount: updated._count.rewards,
+            createdAt: updated.createdAt,
+            updatedAt: updated.updatedAt,
+            stripeCustomerId: updated.stripeCustomerId,
+            stripeSubscriptionId: updated.stripeSubscriptionId,
+          },
+        });
+      }
+    }
+
     return NextResponse.json({
       tenant: {
         id: tenant.id,
@@ -51,6 +88,7 @@ export async function GET(request, { params }) {
         purchasedRoleSlots: tenant.purchasedRoleSlots,
         defaultRoleId: tenant.defaultRoleId,
         defaultRole: tenant.defaultRole,
+        requireEmailForRegistration: tenant.requireEmailForRegistration,
         activeUsers: tenant._count.users,
         roleCount: tenant._count.tenantRoles,
         quizCount: tenant._count.quizzes,
@@ -81,7 +119,7 @@ export async function PUT(request, { params }) {
 
     const { tenantId } = await params;
     const body = await request.json();
-    const { name, slug, subscriptionTier, maxRoleSlots, defaultRoleId } = body;
+    const { name, slug, subscriptionTier, maxRoleSlots, defaultRoleId, requireEmailForRegistration } = body;
 
     // Check if tenant exists
     const existingTenant = await prisma.tenant.findUnique({
@@ -139,6 +177,7 @@ export async function PUT(request, { params }) {
         ...(subscriptionTier && { subscriptionTier }),
         ...(maxRoleSlots !== undefined && { maxRoleSlots }),
         ...(defaultRoleId !== undefined && { defaultRoleId: defaultRoleId || null }),
+        ...(requireEmailForRegistration !== undefined && { requireEmailForRegistration: !!requireEmailForRegistration }),
       },
       include: {
         defaultRole: {
@@ -216,7 +255,7 @@ export async function DELETE(request, { params }) {
     if (tenant._count.users > 0) {
       return NextResponse.json(
         {
-          error: `Cannot delete tenant with ${tenant._count.users} user(s). Please reassign or remove users first.`,
+          error: `Cannot delete tenant with ${tenant._count.users} user(s). Please remove users first.`,
         },
         { status: 400 }
       );

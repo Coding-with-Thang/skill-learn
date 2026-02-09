@@ -2,7 +2,7 @@
 
 import MobileSidebar from "@/components/layout/MobileSidebar";
 import { Search, Bell } from "lucide-react";
-import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
+import ThemeToggle from "./ThemeToggle";
 import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import { useUser } from "@clerk/nextjs";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole.js";
@@ -19,7 +19,7 @@ export default function TopBar({ adminMode }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-20 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all">
+    <header className="sticky top-0 z-2000 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all">
       <div className="flex items-center gap-4">
         {adminMode ? (
           <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
@@ -32,7 +32,7 @@ export default function TopBar({ adminMode }) {
         {/* Search Trigger Button */}
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="hidden md:flex items-center bg-muted/50 rounded-2xl px-5 py-3 border border-border/50 hover:border-primary/50 hover:bg-muted transition-all w-full max-w-lg group cursor-pointer"
+          className="hidden md:flex items-center bg-muted/50 rounded-4xl px-5 py-3 border border-border/50 hover:border-primary/50 hover:bg-muted transition-all w-full max-w-lg group cursor-pointer"
         >
           <Search className="w-4 h-4 text-muted-foreground mr-4 group-hover:text-primary transition-colors" />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors flex-1 text-left">
@@ -55,7 +55,7 @@ export default function TopBar({ adminMode }) {
             <Search className="w-5 h-5 text-muted-foreground" />
           </button>
 
-          <ThemeSwitcher />
+          <ThemeToggle />
 
           <div className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer">
             <Bell className="w-5 h-5 text-muted-foreground" />

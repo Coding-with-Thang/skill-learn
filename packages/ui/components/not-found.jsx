@@ -11,14 +11,14 @@ import { Button } from "./button";
  * @param {string} props.title - Custom title (default: "Oops! Page not found.")
  * @param {string} props.description - Custom description
  */
-export function NotFound({ 
-  homeHref = "/", 
+export function NotFound({
+  homeHref = "/",
   homeLabel = "Go back home",
   title = "Oops! Page not found.",
   description = "Sorry, we couldn't find the page you're looking for."
 }) {
   return (
-    <div className="flex flex-col items-center justify-center bg-gradient-to-br from-background to-muted min-h-screen p-4">
+    <div className="flex flex-col items-center justify-center bg-linear-to-br from-background to-muted min-h-screen p-4">
       <h1 className="mt-20 font-bold text-xl text-primary">404</h1>
       <p className="mt-4 text-2xl md:text-4xl lg:text-6xl font-semibold text-foreground text-center">
         {title}

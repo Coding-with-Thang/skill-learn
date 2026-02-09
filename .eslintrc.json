@@ -9,6 +9,6 @@
     "react/no-unescaped-entities": "off",
     "react/no-unknown-property": "off",
     "react/no-unused-vars": "off",
-    "react/no-deprecated": "off",
+    "react/no-deprecated": "off"
   }
 }

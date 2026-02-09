@@ -1,11 +1,18 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Star, BookOpenText, ChartColumnBig, LayoutDashboard, Gamepad2, Trophy, Layers } from 'lucide-react';
 import { NavLink } from './NavLink';
-import { useFeatures } from '@skill-learn/lib/hooks/useFeatures.js';
+import { useFeaturesStore } from '@skill-learn/lib/stores/featuresStore.js';
 
 export function Navigation({ isOperations, mobile }) {
-  const { isEnabled, isLoading } = useFeatures();
+  const isEnabled = useFeaturesStore((s) => s.isEnabled);
+  const isLoading = useFeaturesStore((s) => s.isLoading);
+  const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
+
+  useEffect(() => {
+    fetchFeatures();
+  }, [fetchFeatures]);
 
   // Define navigation items with feature requirements
   const navItems = [

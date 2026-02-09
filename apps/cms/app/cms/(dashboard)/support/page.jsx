@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
-import { Input } from '@/components/cms/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
+import { Input } from "@skill-learn/ui/components/input"
 import { MessageSquare, Search, Filter, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
 
 // Mock Data

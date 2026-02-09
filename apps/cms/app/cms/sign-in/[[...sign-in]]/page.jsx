@@ -4,7 +4,7 @@ import { SignIn, SignedIn, SignOutButton, useUser } from '@clerk/nextjs'
 import { dark, light } from '@clerk/themes'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/cms/ui/button'
+import { Button } from "@skill-learn/ui/components/button"
 import { Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export default function CMSSignInPage() {
@@ -35,7 +35,7 @@ export default function CMSSignInPage() {
       try {
         const response = await fetch('/api/check-super-admin')
         const data = await response.json()
-        
+
         if (data.isSuperAdmin) {
           setIsSuperAdmin(true)
           // Redirect to dashboard if already super admin
@@ -69,7 +69,7 @@ export default function CMSSignInPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-background to-muted/20 p-4">
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -92,7 +92,7 @@ export default function CMSSignInPage() {
                   Access Restricted
                 </h3>
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  You are signed in as <strong>{user?.emailAddresses?.[0]?.emailAddress || user?.username}</strong>, 
+                  You are signed in as <strong>{user?.emailAddresses?.[0]?.emailAddress || user?.username}</strong>,
                   but you don&apos;t have super admin privileges.
                 </p>
                 <p className="text-xs text-yellow-700 dark:text-yellow-300">
@@ -106,8 +106,8 @@ export default function CMSSignInPage() {
                   Sign Out
                 </Button>
               </SignOutButton>
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="flex-1"
                 onClick={() => router.push('/')}
               >
@@ -123,7 +123,6 @@ export default function CMSSignInPage() {
             <SignIn
               routing="path"
               path="/cms/sign-in"
-              signUpUrl="/cms/sign-up"
               afterSignInUrl="/cms/tenants"
               appearance={{
                 baseTheme: theme === 'dark' ? dark : light,

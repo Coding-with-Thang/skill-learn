@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
-import { Badge } from '@/components/cms/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
+import { Badge } from "@skill-learn/ui/components/badge"
 import { Save, Lock, Globe, Mail, Bell, Shield } from 'lucide-react'
 
 // Mock Tabs using state
@@ -83,19 +83,19 @@ export default function SettingsPage() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Platform Name</label>
-                      <Input defaultValue="EduCore LMS Enterprise" />
+                      <Input defaultValue="Skill-Learn.ca" />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Support Email Address</label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input defaultValue="support@educore.io" className="pl-9" />
+                          <Input defaultValue="support@skill-learn.ca" className="pl-9" />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Default Timezone</label>
-                        <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                        <select className="flex h-10 w-full rounded-4xld border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                           <option>(UTC-05:00) Eastern Time (US & Canada)</option>
                           <option>(UTC+00:00) UTC</option>
                           <option>(UTC+01:00) London</option>

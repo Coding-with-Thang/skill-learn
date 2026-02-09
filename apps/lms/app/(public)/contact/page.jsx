@@ -89,7 +89,7 @@ export default function ContactPage() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-teal/10 text-brand-teal rounded-full text-xs font-bold uppercase tracking-widest mb-8">
               Support Hub
             </div>
-            <h1 className="text-5xl md:text-6xl font-extrabold text-[#1B1B53] mb-8 tracking-tight leading-[1.1]">
+            <h1 className="text-brand-teal md:text-6xl font-extrabold text-[#1B1B53] mb-8 tracking-tight leading-[1.1]">
               Contact Our Team
             </h1>
             <p className="text-xl text-slate-600 mb-12 max-w-lg leading-relaxed">
@@ -104,9 +104,9 @@ export default function ContactPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 + 0.3 }}
-                  className="flex items-center gap-6 group p-2 -ml-2 rounded-2xl hover:bg-white hover:shadow-sm transition-all"
+                  className="flex items-center gap-6 group p-2 -ml-2 rounded-4xl hover:bg-white hover:shadow-sm transition-all"
                 >
-                  <div className={`p-4 rounded-2xl ${item.color} group-hover:scale-110 transition-transform`}>
+                  <div className={`p-4 rounded-4xl ${item.color} group-hover:scale-110 transition-transform`}>
                     <item.icon className="w-6 h-6" />
                   </div>
                   <div>
@@ -148,7 +148,7 @@ export default function ContactPage() {
                       id="name"
                       placeholder="John Doe"
                       required
-                      className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
+                      className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
                   </div>
                   <div className="space-y-3">
@@ -158,7 +158,7 @@ export default function ContactPage() {
                       type="email"
                       placeholder="john@company.com"
                       required
-                      className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
+                      className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
                   </div>
                 </div>
@@ -169,16 +169,16 @@ export default function ContactPage() {
                     <Input
                       id="company"
                       placeholder="Enter your company"
-                      className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
+                      className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
                   </div>
                   <div className="space-y-3">
                     <Label htmlFor="department" className="text-sm font-bold text-slate-900 ml-1">Department</Label>
                     <Select>
-                      <SelectTrigger className="h-14 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6">
+                      <SelectTrigger className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6">
                         <SelectValue placeholder="Select department" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-slate-100 shadow-xl p-2">
+                      <SelectContent className="rounded-4xl border-slate-100 shadow-xl p-2">
                         <SelectItem value="sales" className="rounded-xl py-3 cursor-pointer">Sales & Marketing</SelectItem>
                         <SelectItem value="support" className="rounded-xl py-3 cursor-pointer">Technical Support</SelectItem>
                         <SelectItem value="billing" className="rounded-xl py-3 cursor-pointer">Billing & Finance</SelectItem>
@@ -201,7 +201,7 @@ export default function ContactPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-16 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-2xl transition-all shadow-lg hover:shadow-[#00D181]/20 group"
+                  className="w-full h-16 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-4xl transition-all shadow-lg hover:shadow-[#00D181]/20 group"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-3">

@@ -12,6 +12,11 @@ export async function GET(request) {
       return adminResult;
     }
 
+    const { tenantId } = adminResult;
+    if (!tenantId) {
+      return successResponse({ logs: [], total: 0 });
+    }
+
     // Get query parameters
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -21,8 +26,8 @@ export async function GET(request) {
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
 
-    // Build where clause
-    const where = {};
+    // Build where clause - only logs for users in this tenant
+    const where = { user: { tenantId } };
     if (resource) where.resource = resource;
     if (action) where.action = action;
     if (startDate || endDate) {

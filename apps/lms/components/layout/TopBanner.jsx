@@ -27,7 +27,7 @@ export default function TopBanner() {
 
   return (
     <div
-      className={`bg-gradient-to-r from-brand-teal/40 via-brand-teal/90 to-brand-dark-blue/60 text-white py-2 px-4 transition-all duration-300 ease-out transform-gpu ${closing ? 'opacity-0 -translate-y-4' : 'animate-fade-in-up'}`}
+      className={`bg-linear-to-r from-brand-teal/40 via-brand-teal/90 to-brand-dark-blue/60 text-white py-2 px-4 transition-all duration-300 ease-out transform-gpu ${closing ? 'opacity-0 -translate-y-4' : 'animate-fade-in-up'}`}
       role="region"
       aria-label="Important banner"
     >
@@ -46,7 +46,7 @@ export default function TopBanner() {
         <button
           onClick={close}
           aria-label="Dismiss banner"
-          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
+          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-4xld p-1.5 text-white bg-white/10 hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/30"
         >
           <X className="w-4 h-4" />
         </button>

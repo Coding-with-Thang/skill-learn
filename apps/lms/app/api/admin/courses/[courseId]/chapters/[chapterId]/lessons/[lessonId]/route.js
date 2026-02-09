@@ -1,0 +1,149 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@skill-learn/database";
+import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
+import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
+
+// Get a single lesson (for edit page). Lesson is found by lessonId + courseId so a wrong/stale chapterId in the URL still resolves.
+export async function GET(request, { params }) {
+  try {
+    const { courseId, lessonId } = await params;
+    if (!courseId || !lessonId) {
+      throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
+        status: 400,
+      });
+    }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        chapter: { courseId },
+      },
+      include: {
+        chapter: {
+          select: { id: true, title: true, courseId: true },
+        },
+      },
+    });
+    if (!lesson) {
+      throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
+
+    return successResponse({ lesson });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// Update a lesson (title, content, position). Resolve by lessonId + courseId so URL chapterId can be wrong/stale.
+export async function PATCH(request, { params }) {
+  try {
+    const { courseId, lessonId } = await params;
+    if (!courseId || !lessonId) {
+      throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
+        status: 400,
+      });
+    }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        chapter: { courseId },
+      },
+    });
+    if (!lesson) {
+      throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
+    const effectiveChapterId = lesson.chapterId;
+
+    const body = await request.json();
+    const data = {};
+    if (typeof body?.title === "string") {
+      const trimmed = body.title.trim();
+      if (trimmed.length === 0) {
+        throw new AppError("Title is required", ErrorType.VALIDATION, {
+          status: 400,
+          fieldErrors: { title: ["Title is required"] },
+        });
+      }
+      if (trimmed.length > 200) {
+        throw new AppError("Title is too long", ErrorType.VALIDATION, {
+          status: 400,
+          fieldErrors: { title: ["Title must be 200 characters or less"] },
+        });
+      }
+      data.title = trimmed;
+    }
+    if (body?.content !== undefined) data.content = String(body.content ?? "");
+    if (body?.videoUrl !== undefined) data.videoUrl = body.videoUrl ? String(body.videoUrl).trim() : null;
+    if (typeof body?.position === "number") {
+      const pos = Math.floor(Number(body.position));
+      if (!Number.isInteger(body.position) || pos < 0) {
+        throw new AppError("Position must be a non-negative integer", ErrorType.VALIDATION, {
+          status: 400,
+          fieldErrors: { position: ["Position must be 0 or greater"] },
+        });
+      }
+      const lessonCount = await prisma.lesson.count({
+        where: { chapterId: effectiveChapterId },
+      });
+      data.position = Math.min(Math.max(0, pos), Math.max(0, lessonCount - 1));
+    }
+
+    const updated = await prisma.lesson.update({
+      where: { id: lessonId },
+      data,
+    });
+
+    return successResponse({
+      message: "Lesson updated successfully",
+      lesson: updated,
+    });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// Delete a lesson. Resolve by lessonId + courseId so URL chapterId can be wrong/stale.
+export async function DELETE(request, { params }) {
+  try {
+    const { courseId, lessonId } = await params;
+    if (!courseId || !lessonId) {
+      throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
+        status: 400,
+      });
+    }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        chapter: { courseId },
+      },
+    });
+    if (!lesson) {
+      throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
+
+    await prisma.lesson.delete({
+      where: { id: lessonId },
+    });
+
+    return successResponse({
+      message: "Lesson deleted successfully",
+    });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { createPortalSession } from "@/lib/stripe";
 
 /**
@@ -12,7 +13,7 @@ export async function POST(request) {
     const { userId } = await auth();
     
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
     
     // Get user's tenant
@@ -29,10 +30,7 @@ export async function POST(request) {
     });
     
     if (!user?.tenant?.stripeCustomerId) {
-      return NextResponse.json(
-        { error: "No billing account found. Please subscribe to a plan first." },
-        { status: 400 }
-      );
+      throw new AppError("No billing account found. Please subscribe to a plan first.", ErrorType.VALIDATION, { status: 400 });
     }
     
     // Determine return URL
@@ -50,10 +48,6 @@ export async function POST(request) {
       url: session.url,
     });
   } catch (error) {
-    console.error("Error creating portal session:", error);
-    return NextResponse.json(
-      { error: error.message || "Failed to create portal session" },
-      { status: 500 }
-    );
+    return handleApiError(error);
   }
 }

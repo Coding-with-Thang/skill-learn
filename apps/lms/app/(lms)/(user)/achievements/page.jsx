@@ -17,6 +17,11 @@ import {
   Telescope,
   Rocket,
   ShieldCheck,
+  Filter,
+  Award,
+  Star,
+  Share2,
+  Calendar,
 } from 'lucide-react'
 import { Button } from "@skill-learn/ui/components/button"
 import {
@@ -229,12 +234,12 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
       <div className={`${sizeClasses[size]} rounded-full bg-black/10 absolute top-2 left-0 blur-md transition-all duration-300 group-hover:top-4 group-hover:blur-lg`}></div>
 
       {/* Main Badge Body */}
-      <div className={`${sizeClasses[size]} rounded-full ${isLocked ? 'bg-muted/20 border-2 border-dashed border-border' : `bg-gradient-to-br ${color} ring-4 ring-white/20`} flex items-center justify-center relative shadow-xl transform transition-transform duration-300 group-hover:-translate-y-2 overflow-hidden`}>
+      <div className={`${sizeClasses[size]} rounded-full ${isLocked ? 'bg-muted/20 border-2 border-dashed border-border' : `bg-linear-to-br ${color} ring-4 ring-white/20`} flex items-center justify-center relative shadow-xl transform transition-transform duration-300 group-hover:-translate-y-2 overflow-hidden`}>
 
         {/* Shine Layer */}
         {!isLocked && (
           <>
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-tr from-white/40 via-white/0 to-transparent opacity-60"></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-linear-to-tr from-white/40 via-white/0 to-transparent opacity-60"></div>
             <div className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] bg-white/20 rotate-45 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             <div className="absolute inset-1.5 rounded-full border border-white/30 shadow-inner"></div>
           </>
@@ -242,8 +247,8 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
 
         {size === 'lg' ? (
           <div className="flex flex-col items-center z-10">
-            <span className="text-white text-7xl sm:text-9xl font-black italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">1st</span>
-            <div className="mt-[-10px] bg-sky-300 w-20 h-10 rounded-b-2xl flex items-center justify-center shadow-lg border-t border-sky-200 z-20">
+            <span className="text-white text-7xl sm:text-brand-teal font-black italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">1st</span>
+            <div className="mt-[-10px] bg-sky-300 w-20 h-10 rounded-b-2xl flex items-center justify-center shadow-lg border-t border-sky-200 z-2000">
               <div className="w-10 h-5 border-2 border-white/50 rounded-full"></div>
             </div>
           </div>
@@ -266,7 +271,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
         {badgeBody}
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-0 overflow-hidden rounded-[24px] border-border shadow-2xl">
-        <div className={`h-2 w-full bg-gradient-to-r ${isLocked ? 'from-slate-200 to-slate-300' : color}`}></div>
+        <div className={`h-2 w-full bg-linear-to-r ${isLocked ? 'from-slate-200 to-slate-300' : color}`}></div>
         <div className="p-6 space-y-4">
           <div className="flex justify-between items-start">
             <div className="space-y-1">
@@ -371,7 +376,7 @@ export default function AchievementsPage() {
           <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 dark:bg-primary/5 rounded-full blur-3xl"></div>
 
           <div className="relative p-10 md:p-16 flex flex-col lg:flex-row items-center gap-16">
-            <div className="flex-shrink-0 animate-float">
+            <div className="shrink-0 animate-float">
               <Badge3D
                 size="lg"
                 color="from-cyan-400 to-cyan-600"

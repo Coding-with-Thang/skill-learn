@@ -26,8 +26,6 @@ export default function Reveal({ children, className = '', rootMargin = '0px 0px
 
     io.observe(ref.current);
     return () => io.disconnect();
-    // Dependencies are already included - warning is about ref.current which is intentionally excluded
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rootMargin, threshold, once]);
 
   // default animation classes applied when visible

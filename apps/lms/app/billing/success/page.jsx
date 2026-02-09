@@ -88,7 +88,7 @@ export default function CheckoutSuccessPage() {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-brand-teal mx-auto mb-4" />
           <p className="text-gray-600">Confirming your subscription...</p>
@@ -99,11 +99,11 @@ export default function CheckoutSuccessPage() {
 
   if (status === "error") {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center"
+          className="max-w-md w-full bg-white rounded-4xl shadow-xl p-8 text-center"
         >
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <XCircle className="w-10 h-10 text-red-500" />
@@ -129,11 +129,11 @@ export default function CheckoutSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 text-center"
+        className="max-w-lg w-full bg-white rounded-4xl shadow-xl p-8 text-center"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -176,7 +176,7 @@ export default function CheckoutSuccessPage() {
             <ul className="space-y-2">
               {subscription.plan.features.slice(0, 4).map((feature, idx) => (
                 <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
-                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
                   {feature}
                 </li>
               ))}

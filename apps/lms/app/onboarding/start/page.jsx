@@ -24,6 +24,8 @@ export default function OnboardingStartPage() {
     }
 
     validateSession();
+    // validateSession is stable in intent; omit to avoid effect on every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   const validateSession = async () => {

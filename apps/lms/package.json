@@ -6,12 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "clean": "rm -rf .next"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.8",
     "@clerk/themes": "^2.4.48",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
     "@hookform/resolvers": "^5.2.2",
     "@skill-learn/database": "*",
     "@skill-learn/lib": "*",
@@ -34,9 +36,9 @@
     "next": "^16.1.6",
     "next-themes": "^0.4.6",
     "postcss": "^8.5.4",
-    "react": "^19.2.1",
+    "react": "^19.2.4",
     "react-day-picker": "^9.7.0",
-    "react-dom": "^19.2.1",
+    "react-dom": "^19.2.4",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.63.0",
     "react-icons": "^5.4.0",
@@ -57,7 +59,7 @@
     "@types/node": "^22.15.29",
     "@types/react": "^19.2.0",
     "eslint": "^9.39.2",
-    "eslint-config-next": "^15.2.8",
+    "eslint-config-next": "^16.1.6",
     "prisma": "^6.19.2"
   }
 }

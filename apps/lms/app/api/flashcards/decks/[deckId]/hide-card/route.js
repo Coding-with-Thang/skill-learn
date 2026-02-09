@@ -8,14 +8,8 @@ import {
 } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestParams, validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
-import { z } from "zod";
+import { deckIdParamSchema, flashCardDeckHideSchema } from "@/lib/zodSchemas.js";
 import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
-
-const deckIdSchema = z.object({ deckId: z.string().regex(/^[0-9a-fA-F]{24}$/) });
-const bodySchema = z.object({
-  cardId: z.string().regex(/^[0-9a-fA-F]{24}$/),
-  hidden: z.boolean(),
-});
 
 /**
  * POST: Hide or unhide a card in a deck
@@ -25,8 +19,8 @@ export async function POST(req, { params }) {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) return authResult;
 
-    const { deckId } = await validateRequestParams(deckIdSchema, params);
-    const { cardId, hidden } = await validateRequestBody(req, bodySchema);
+    const { deckId } = await validateRequestParams(deckIdParamSchema, params);
+    const { cardId, hidden } = await validateRequestBody(req, flashCardDeckHideSchema);
 
     const tenantId = await getTenantId();
     if (!tenantId) {

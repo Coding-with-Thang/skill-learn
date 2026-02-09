@@ -11,8 +11,10 @@ import CourseActions from '@/components/courses/CourseActions';
 import Pagination from '@/components/shared/Pagination';
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
 
-async function getCourses({ page = 1, pageSize = 5, category } = {}) {
-    const where = {};
+async function getCourses({ page = 1, pageSize = 5, category, tenantId } = {}) {
+    // CRITICAL: Only show courses for the current user's tenant (or global). Never show other tenants' courses.
+    const tenantFilter = buildTenantContentFilter(tenantId ?? null, {});
+    const where = { ...tenantFilter };
     if (category) where.categoryId = category;
 
     const total = await prisma.course.count({ where });
@@ -66,7 +68,7 @@ export default async function CoursesPage({ searchParams }) {
     });
 
     const [{ courses, total, totalPages, currentPage }, categories] = await Promise.all([
-        getCourses({ page, pageSize, category: category || undefined }),
+        getCourses({ page, pageSize, category: category || undefined, tenantId }),
         prisma.category.findMany({ 
           where: categoryWhereClause, 
           orderBy: { name: 'asc' } 

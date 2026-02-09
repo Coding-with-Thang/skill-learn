@@ -1,46 +1,89 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
-import { Input } from '@/components/cms/ui/input'
-import { Badge } from '@/components/cms/ui/badge'
-import { Plus, Search, MoreVertical, Shield, Mail, User, ShieldCheck } from 'lucide-react'
-
-// Mock Data
-const admins = [
-  {
-    id: 1,
-    name: 'Alex Morgan',
-    email: 'alex.morgan@lms.admin',
-    role: 'Super Admin',
-    status: 'active',
-    lastActive: '2 mins ago',
-    permissions: ['all'],
-  },
-  {
-    id: 2,
-    name: 'Sarah Chen',
-    email: 'sarah.chen@lms.admin',
-    role: 'Support Manager',
-    status: 'active',
-    lastActive: '1 hr ago',
-    permissions: ['users.read', 'tickets.manage'],
-  },
-  {
-    id: 3,
-    name: 'James Wilson',
-    email: 'james.w@lms.admin',
-    role: 'Content Moderator',
-    status: 'inactive',
-    lastActive: '2 days ago',
-    permissions: ['content.moderate'],
-  },
-]
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
+import { Input } from "@skill-learn/ui/components/input"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@skill-learn/ui/components/dialog'
+import { Plus, Search, Shield, Mail, ShieldCheck, Loader2, AlertCircle } from 'lucide-react'
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [superAdmins, setSuperAdmins] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [addEmail, setAddEmail] = useState('')
+  const [addLoading, setAddLoading] = useState(false)
+  const [addError, setAddError] = useState('')
+  const [addSuccess, setAddSuccess] = useState('')
+
+  const fetchSuperAdmins = async () => {
+    try {
+      const res = await fetch('/api/admin/super-admins')
+      const data = await res.json()
+      if (res.ok) {
+        setSuperAdmins(data.superAdmins || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch super admins:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchSuperAdmins()
+  }, [])
+
+  const handleAddSuperAdmin = async (e) => {
+    e.preventDefault()
+    setAddError('')
+    setAddSuccess('')
+    if (!addEmail.trim()) {
+      setAddError('Email is required')
+      return
+    }
+    setAddLoading(true)
+    try {
+      const res = await fetch('/api/admin/super-admins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: addEmail.trim() }),
+      })
+      const data = await res.json()
+
+      if (res.ok) {
+        setAddSuccess(data.message || 'User promoted successfully.')
+        setAddEmail('')
+        await fetchSuperAdmins()
+        setTimeout(() => {
+          setAddSuccess('')
+          setAddDialogOpen(false)
+        }, 2000)
+      } else {
+        setAddError(data.error || 'Failed to promote user')
+      }
+    } catch (err) {
+      setAddError('Failed to promote user')
+    } finally {
+      setAddLoading(false)
+    }
+  }
+
+  const filteredAdmins = superAdmins.filter((admin) => {
+    const q = searchQuery.toLowerCase()
+    const email = (admin.email || '').toLowerCase()
+    const name = ((admin.fullName || '') + (admin.firstName || '') + (admin.lastName || '')).toLowerCase()
+    return email.includes(q) || name.includes(q)
+  })
 
   return (
     <div className="p-4 lg:p-6 w-full space-y-6">
@@ -50,23 +93,25 @@ export default function AdminUsersPage() {
         className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Admin Users</h1>
-          <p className="text-muted-foreground">Manage access and roles for the administrative console.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Super Admins</h1>
+          <p className="text-muted-foreground">
+            Manage super admin access. Only super admins can promote new super admins.
+          </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setAddDialogOpen(true)}>
           <Plus className="h-4 w-4" />
-          Add New Admin
+          Add Super Admin
         </Button>
       </motion.div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>Administrators</CardTitle>
+            <CardTitle>Super Administrators</CardTitle>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search admins..."
+                placeholder="Search by name or email..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -75,100 +120,138 @@ export default function AdminUsersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b text-sm text-muted-foreground">
-                  <th className="pb-3 text-left font-medium">User</th>
-                  <th className="pb-3 text-left font-medium">Role</th>
-                  <th className="pb-3 text-left font-medium">Status</th>
-                  <th className="pb-3 text-left font-medium hidden md:table-cell">Last Active</th>
-                  <th className="pb-3 text-left font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {admins.map((admin) => (
-                  <tr key={admin.id} className="group border-b last:border-0 hover:bg-muted/50 transition-colors">
-                    <td className="py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
-                          {admin.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-medium">{admin.name}</p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {admin.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <div className="flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4 text-purple-500" />
-                        <span>{admin.role}</span>
-                      </div>
-                    </td>
-                    <td className="py-4">
-                      <Badge variant={admin.status === 'active' ? 'default' : 'secondary'} className={admin.status === 'active' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                        {admin.status}
-                      </Badge>
-                    </td>
-                    <td className="py-4 hidden md:table-cell text-muted-foreground">
-                      {admin.lastActive}
-                    </td>
-                    <td className="py-4">
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </td>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b text-sm text-muted-foreground">
+                    <th className="pb-3 text-left font-medium">User</th>
+                    <th className="pb-3 text-left font-medium">Email</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="text-sm">
+                  {filteredAdmins.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="py-8 text-center text-muted-foreground">
+                        No super admins found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAdmins.map((admin) => (
+                      <tr
+                        key={admin.id}
+                        className="group border-b last:border-0 hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                              {(admin.fullName || admin.email || '?').charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="font-medium flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4 text-purple-500" />
+                                {admin.fullName || admin.email || 'Unknown'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4">
+                          <p className="text-muted-foreground flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {admin.email || '—'}
+                          </p>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Roles Breakdown Helper */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Super Admins</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              1
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <Shield className="h-5 w-5 text-primary" />
+            Super Admin Count
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{superAdmins.length}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Full access to CMS. New super admins must have an existing account (e.g. from LMS sign-up).
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Add Super Admin Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={(open) => {
+        setAddDialogOpen(open)
+        if (!open) {
+          setAddEmail('')
+          setAddError('')
+          setAddSuccess('')
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Super Admin</DialogTitle>
+            <DialogDescription>
+              Enter the email of a user who already has an account (e.g. signed up via LMS). They will be promoted to super admin and can sign in to CMS after signing out and back in.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddSuperAdmin} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Email</label>
+              <Input
+                type="email"
+                placeholder="user@example.com"
+                value={addEmail}
+                onChange={(e) => setAddEmail(e.target.value)}
+                disabled={addLoading}
+              />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Full access to all systems</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Support Staff</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-500" />
-              12
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Limited to ticket management</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Content Mods</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
-              <Shield className="h-5 w-5 text-orange-500" />
-              5
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Course & Community moderation</p>
-          </CardContent>
-        </Card>
-      </div>
+            {addError && (
+              <div className="flex items-center gap-2 text-sm text-brand-tealestructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {addError}
+              </div>
+            )}
+            {addSuccess && (
+              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <ShieldCheck className="h-4 w-4 shrink-0" />
+                {addSuccess}
+              </div>
+            )}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddDialogOpen(false)}
+                disabled={addLoading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addLoading}>
+                {addLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Promoting...
+                  </>
+                ) : (
+                  'Promote to Super Admin'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -108,13 +108,13 @@ export default function LeaderboardWidget() {
         <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab("points")}
-            className={cn("px-3 py-1 rounded-md text-xs font-medium transition-all", activeTab === "points" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+            className={cn("px-3 py-1 rounded-4xld text-xs font-medium transition-all", activeTab === "points" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
           >
             Points
           </button>
           <button
             onClick={() => setActiveTab("lessons")}
-            className={cn("px-3 py-1 rounded-md text-xs font-medium transition-all", activeTab === "lessons" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
+            className={cn("px-3 py-1 rounded-4xld text-xs font-medium transition-all", activeTab === "lessons" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
           >
             Lessons
           </button>

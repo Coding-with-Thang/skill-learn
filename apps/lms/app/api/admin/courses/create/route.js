@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
 import { createCourse } from '../actions';
-import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { getTenantContext } from "@skill-learn/lib/utils/tenant.js";
+import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { handleApiError, AppError, ErrorType } from '@skill-learn/lib/utils/errorHandler.js';
 import { successResponse } from '@skill-learn/lib/utils/apiWrapper.js';
 
 export async function POST(req) {
     try {
-        const adminResult = await requireAdmin();
-        if (adminResult instanceof NextResponse) {
-            return adminResult;
+        const context = await getTenantContext();
+        if (context instanceof Response) {
+            return context;
         }
-        const { user } = adminResult;
+        const { user, tenantId } = context;
+        const permResult = await requirePermission(PERMISSIONS.COURSES_CREATE, tenantId);
+        if (permResult instanceof NextResponse) {
+            return permResult;
+        }
 
         const body = await req.json();
 
         // Forward to server action that performs validation and DB write
-        const result = await createCourse(body, user.id);
+        const result = await createCourse(body, user.id, tenantId);
 
         if (result?.status === 'success') {
             return successResponse(result);

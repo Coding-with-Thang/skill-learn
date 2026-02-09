@@ -37,7 +37,7 @@ export function ProgressCard({
       )}
     >
       {/* Background gradient accent */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-teal via-blue-500 to-purple-500" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-brand-teal via-blue-500 to-purple-500" />
 
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
@@ -65,7 +65,7 @@ export function ProgressCard({
                 <Progress
                   value={progress}
                   className="h-2"
-                  indicatorClassName="bg-gradient-to-r from-orange-500 to-orange-600"
+                  indicatorClassName="bg-linear-to-r from-orange-500 to-orange-600"
                 />
               </motion.div>
               <div className="flex items-center justify-between mt-2">

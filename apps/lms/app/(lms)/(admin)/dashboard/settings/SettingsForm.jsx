@@ -264,7 +264,7 @@ export default function SettingsForm({ initialSettings }) {
               exit={{ y: 100, opacity: 0 }}
               className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl"
             >
-              <div className="bg-background/80 backdrop-blur-xl border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl p-4 flex items-center justify-between gap-4">
+              <div className="bg-background/80 backdrop-blur-xl border border-primary/30 shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-4xl p-4 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 pl-2">
                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   <p className="text-sm font-bold">You have unsaved changes</p>

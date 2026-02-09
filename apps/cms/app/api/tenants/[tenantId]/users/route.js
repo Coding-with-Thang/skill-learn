@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from '@skill-learn/database';
+import { prisma } from "@skill-learn/database";
+import { clerkClient } from "@clerk/nextjs/server";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
+import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
+import { handleApiError } from "@skill-learn/lib/utils/errorHandler.js";
+import { tenantUserCreateSchema } from "@skill-learn/lib/zodSchemas.js";
 
 // Get all users for a tenant
 export async function GET(request, { params }) {
@@ -54,7 +58,11 @@ export async function GET(request, { params }) {
   }
 }
 
-// Move users to a different tenant
+/**
+ * POST /api/tenants/[tenantId]/users
+ * Create a tenant user via Clerk. Webhook (user.created) will create User in DB and assign role.
+ * Body: { username, firstName, lastName, password, email?, tenantRoleId } — validated with tenantUserCreateSchema.
+ */
 export async function POST(request, { params }) {
   try {
     const adminResult = await requireSuperAdmin();
@@ -63,106 +71,98 @@ export async function POST(request, { params }) {
     }
 
     const { tenantId } = await params;
-    const body = await request.json();
-    const { userIds, targetTenantId } = body;
 
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
-      return NextResponse.json(
-        { error: "userIds array is required" },
-        { status: 400 }
-      );
+    let data;
+    try {
+      data = await validateRequestBody(request, tenantUserCreateSchema);
+    } catch (err) {
+      if (err instanceof SyntaxError || (err.message && err.message.toLowerCase().includes("json"))) {
+        return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+      }
+      throw err;
     }
 
-    if (!targetTenantId) {
-      return NextResponse.json(
-        { error: "targetTenantId is required" },
-        { status: 400 }
-      );
-    }
+    const { username, firstName, lastName, password, email, tenantRoleId } = data;
 
-    // Verify source tenant exists
-    const sourceTenant = await prisma.tenant.findUnique({
+    const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
-    });
-
-    if (!sourceTenant) {
-      return NextResponse.json(
-        { error: "Source tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    // Verify target tenant exists
-    const targetTenant = await prisma.tenant.findUnique({
-      where: { id: targetTenantId },
-    });
-
-    if (!targetTenant) {
-      return NextResponse.json(
-        { error: "Target tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    if (tenantId === targetTenantId) {
-      return NextResponse.json(
-        { error: "Source and target tenants cannot be the same" },
-        { status: 400 }
-      );
-    }
-
-    // Verify all users exist and belong to source tenant
-    const users = await prisma.user.findMany({
-      where: {
-        id: { in: userIds },
-        tenantId,
+      include: {
+        defaultRole: { select: { id: true, roleAlias: true } },
       },
     });
 
-    if (users.length !== userIds.length) {
+    if (!tenant) {
+      return NextResponse.json({ error: "Tenant not found." }, { status: 404 });
+    }
+
+    const role = await prisma.tenantRole.findFirst({
+      where: { id: tenantRoleId, tenantId, isActive: true },
+      select: { roleAlias: true },
+    });
+    if (!role) {
       return NextResponse.json(
-        { error: "Some users were not found or don't belong to the source tenant" },
+        { error: "Selected role is not found or is inactive. Please choose an active role for this tenant." },
+        { status: 400 }
+      );
+    }
+    const roleAlias = role.roleAlias;
+
+    const existingDb = await prisma.user.findUnique({
+      where: { username },
+    });
+    if (existingDb) {
+      return NextResponse.json(
+        { error: "Username already exists" },
         { status: 400 }
       );
     }
 
-    // Move users to target tenant
-    // Also need to remove their UserRole assignments from source tenant
-    const result = await prisma.$transaction(async (tx) => {
-      // Update users' tenantId
-      const updatedUsers = await tx.user.updateMany({
-        where: {
-          id: { in: userIds },
-        },
-        data: {
-          tenantId: targetTenantId,
-        },
-      });
+    const client = typeof clerkClient === "function" ? await clerkClient() : clerkClient;
+    const existingClerk = await client.users.getUserList({
+      username: [username],
+      limit: 1,
+    });
+    const clerkList = Array.isArray(existingClerk) ? existingClerk : existingClerk?.data || [];
+    if (clerkList.length > 0) {
+      return NextResponse.json(
+        { error: "Username already exists" },
+        { status: 400 }
+      );
+    }
 
-      // Get Clerk IDs for these users
-      const userClerkIds = users.map(u => u.clerkId);
+    const publicMetadata = {
+      tenantId,
+      tenantSlug: tenant.slug,
+      defaultRole: roleAlias,
+    };
 
-      // Remove UserRole assignments from source tenant
-      await tx.userRole.deleteMany({
-        where: {
-          userId: { in: userClerkIds },
-          tenantId,
-        },
-      });
+    const createParams = {
+      username,
+      firstName,
+      lastName,
+      password,
+    };
+    if (email) {
+      createParams.emailAddress = [email];
+    }
 
-      return updatedUsers;
+    const clerkUser = await client.users.createUser(createParams);
+
+    await client.users.updateUserMetadata(clerkUser.id, {
+      publicMetadata,
     });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully moved ${result.count} user(s) to ${targetTenant.name}`,
-      movedCount: result.count,
+      message: "User created. They will appear in the list after the system syncs.",
+      user: {
+        clerkId: clerkUser.id,
+        username: clerkUser.username,
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+      },
     });
   } catch (error) {
-    console.error("Error moving users:", error);
-    return NextResponse.json(
-      { error: "Failed to move users" },
-      { status: 500 }
-    );
+    return handleApiError(error, null, 500);
   }
 }

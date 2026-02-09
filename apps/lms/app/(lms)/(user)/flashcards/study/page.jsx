@@ -278,7 +278,7 @@ export default function FlashCardStudyPage() {
       </div>
 
       {/* 1. Header */}
-      <header className="px-6 py-4 flex items-center justify-between z-20 sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50">
+      <header className="px-6 py-4 flex items-center justify-between z-2000 sticky top-0 bg-background/60 backdrop-blur-xl border-b border-border/50">
         <div className="flex-1 flex justify-start">
           <Button
             variant="outline"
@@ -316,7 +316,7 @@ export default function FlashCardStudyPage() {
           </div>
           <Avatar className="w-10 h-10 border-2 border-border shadow-sm">
             <AvatarImage src={user?.imageUrl} />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold">
+            <AvatarFallback className="bg-linear-to-br from-primary to-accent text-primary-foreground font-bold">
               {user?.firstName?.charAt(0) || "U"}
             </AvatarFallback>
           </Avatar>
@@ -383,7 +383,7 @@ export default function FlashCardStudyPage() {
                 <div className="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto space-y-8">
                   <h2 className={cn(
                     "font-bold leading-tight tracking-tight text-foreground",
-                    isFlipped ? "text-2xl md:text-3xl font-medium" : "text-3xl md:text-4xl lg:text-5xl"
+                    isFlipped ? "text-2xl md:text-3xl font-medium" : "text-3xl md:text-4xl lg:text-brand-teal"
                   )}>
                     {isFlipped ? card.answer : card.question}
                   </h2>
@@ -421,7 +421,7 @@ export default function FlashCardStudyPage() {
                         setShowHint(!showHint);
                       }}
                       className={cn(
-                        "rounded-2xl border-border bg-card h-11 px-5 shadow-sm hover:bg-muted transition-all font-bold",
+                        "rounded-4xl border-border bg-card h-11 px-5 shadow-sm hover:bg-muted transition-all font-bold",
                         showHint && "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
                       )}
                     >
@@ -511,12 +511,12 @@ export default function FlashCardStudyPage() {
               variant="ghost"
               onClick={handleHideFromDeck}
               disabled={hiding}
-              className="rounded-xl h-12 px-6 text-muted-foreground hover:text-destructive font-bold"
+              className="rounded-xl h-12 px-6 text-muted-foreground hover:text-brand-tealestructive font-bold"
             >
               <EyeOff className="w-4 h-4 mr-2" /> {hiding ? "Hiding..." : "Hide"}
             </Button>
             {hidingError && (
-              <span className="text-xs text-destructive">Could not hide card</span>
+              <span className="text-xs text-brand-tealestructive">Could not hide card</span>
             )}
           </div>
         )}

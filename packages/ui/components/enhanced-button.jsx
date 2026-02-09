@@ -5,14 +5,14 @@ import { Loader } from "./loader.jsx"
 import { cn } from "@skill-learn/lib/utils.js"
 
 const enhancedButtonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 aria-invalid:border-destructive relative overflow-hidden group",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-4xld text-sm font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 aria-invalid:border-destructive relative overflow-hidden group",
   {
     variants: {
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary-hover active:bg-primary-active disabled:bg-primary-disabled hover:shadow-md hover:shadow-primary/20 active:scale-[0.98]",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive-hover active:bg-destructive/90 focus-visible:ring-destructive/20 hover:shadow-md hover:shadow-destructive/20 active:scale-[0.98]",
+          "bg-destructive text-brand-tealestructive-foreground shadow-sm hover:bg-destructive-hover active:bg-destructive/90 focus-visible:ring-destructive/20 hover:shadow-md hover:shadow-destructive/20 active:scale-[0.98]",
         outline:
           "border border-border bg-background text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent-active hover:shadow-md hover:shadow-accent/20 active:scale-[0.98]",
         secondary:
@@ -26,8 +26,8 @@ const enhancedButtonVariants = cva(
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        sm: "h-8 rounded-4xld gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-4xld px-6 has-[>svg]:px-4",
         xl: "h-12 rounded-lg px-8 has-[>svg]:px-6 text-base",
         icon: "size-9",
       },
@@ -67,7 +67,7 @@ const EnhancedButton = React.forwardRef(({
       )}
       {children}
       {/* Ripple effect */}
-      <div className="absolute inset-0 rounded-md bg-white/20 opacity-0 group-active:opacity-100 transition-opacity duration-150 pointer-events-none" />
+      <div className="absolute inset-0 rounded-4xld bg-white/20 opacity-0 group-active:opacity-100 transition-opacity duration-150 pointer-events-none" />
     </Comp>
   )
 })

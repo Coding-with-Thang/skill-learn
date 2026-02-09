@@ -286,7 +286,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "relative flex flex-col rounded-2xl border-2 p-8 h-full transition-all duration-300",
+        "relative flex flex-col rounded-4xl border-2 p-8 h-full transition-all duration-300",
         tier.popular
           ? "border-brand-teal shadow-2xl shadow-brand-teal/20 scale-105 z-10 pt-12"
           : tier.borderColor,
@@ -298,7 +298,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center">
           <span className={cn(
             "inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg",
-            "bg-gradient-to-r", tier.color
+            "bg-linear-to-r", tier.color
           )}>
             <Sparkles className="w-4 h-4" />
             {tier.badge}
@@ -310,7 +310,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
       <div className="text-center mb-6">
         <div className={cn(
           "inline-flex items-center justify-center w-14 h-14 rounded-xl mb-4",
-          "bg-gradient-to-br", tier.color
+          "bg-linear-to-br", tier.color
         )}>
           <Icon className="w-7 h-7 text-white" />
         </div>
@@ -324,7 +324,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
           <div className="text-4xl font-bold text-gray-900">Custom</div>
         ) : (
           <div className="flex items-baseline justify-center gap-1">
-            <span className="text-5xl font-bold text-gray-900">${price}</span>
+            <span className="text-brand-teal font-bold">${price}</span>
             <span className="text-gray-600">/user/month</span>
           </div>
         )}
@@ -337,13 +337,13 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
       </div>
 
       {/* Features */}
-      <ul className="space-y-3 mb-8 flex-grow">
+      <ul className="space-y-3 mb-8 grow">
         {tier.features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-3">
             {feature.included ? (
-              <Check className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
             ) : (
-              <X className="w-5 h-5 text-gray-300 flex-shrink-0 mt-0.5" />
+              <X className="w-5 h-5 text-gray-300 shrink-0 mt-0.5" />
             )}
             <span className={cn(
               "text-sm",
@@ -362,7 +362,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
         className={cn(
           "w-full py-6 text-lg font-semibold",
           tier.popular
-            ? "bg-gradient-to-r from-brand-teal to-blue-600 hover:from-brand-teal/90 hover:to-blue-600/90 text-white"
+            ? "bg-linear-to-r from-brand-teal to-blue-600 hover:from-brand-teal/90 hover:to-blue-600/90 text-white"
             : tier.ctaVariant === "outline"
               ? "border-2 border-gray-300 bg-white hover:bg-gray-50 text-gray-900"
               : ""
@@ -475,7 +475,7 @@ function FeatureComparison() {
                     {category.features.map((feature, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-r-lg"
+                        className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-4xl-lg"
                       >
                         <div className="text-sm text-gray-600 pl-4">{feature.name}</div>
                         <div className="text-center">{renderValue(feature.free)}</div>
@@ -520,7 +520,7 @@ function FAQSection() {
             >
               <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
               <ChevronDown className={cn(
-                "w-5 h-5 text-gray-400 flex-shrink-0 transition-transform",
+                "w-5 h-5 text-gray-400 shrink-0 transition-transform",
                 openIndex === idx && "rotate-180"
               )} />
             </button>
@@ -545,7 +545,7 @@ export default function PricingPage() {
   const { isSignedIn, user } = useUser();
 
   // Handle subscription checkout
-  // Supports both authenticated users and new signups (payment-first onboarding)
+  // Supports both authenticated users and new sign-ups (payment-first onboarding)
   const handleSubscribe = async (planId, interval) => {
     // For free plan, redirect to sign up
     if (planId === "free") {
@@ -620,7 +620,7 @@ export default function PricingPage() {
   return (
     <main className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative pt-20 pb-12 bg-gradient-to-b from-gray-50 to-white">
+      <section className="relative pt-20 pb-12 bg-linear-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -631,7 +631,7 @@ export default function PricingPage() {
               <Gift className="w-4 h-4" />
               14-day free trial on Pro plan
             </span>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-brand-teal font-bold text-gray-900 mb-6">
               Simple, Transparent Pricing
             </h1>
             <p className="text-xl text-gray-600 mb-8">
@@ -732,7 +732,7 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-brand-teal to-blue-600">
+      <section className="py-20 bg-linear-to-r from-brand-teal to-blue-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

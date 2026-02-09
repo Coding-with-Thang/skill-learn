@@ -2,24 +2,14 @@
   "name": "skill-learn",
   "version": "0.0.4",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "npm run sync:env && turbo run dev",
-    "sync:env": "node scripts/sync-env.js",
+    "dev": "turbo run dev",
     "build": "turbo run build",
     "start": "turbo run start",
     "lint": "turbo run lint",
-    "clean": "turbo run clean && rm -rf node_modules",
     "prisma:generate": "turbo run prisma:generate",
-    "prisma:seed": "turbo run prisma:seed",
-    "seed:permissions": "node --experimental-modules prisma/seeds/permissions.js",
-    "seed:flashcard-permissions": "node packages/database/scripts/seed-flashcard-permissions.js",
-    "seed:all": "npm run prisma:seed && npm run seed:permissions",
-    "fix:tenant-index": "node packages/database/scripts/fix-tenant-default-role-index.js",
-    "db:push": "node packages/database/scripts/db-push.js"
+    "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
     "baseline-browser-mapping": "^2.9.19",
@@ -30,8 +20,11 @@
     "next": "16.1.6"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.9.0",
     "npm": ">=9.0.0"
   },
-  "packageManager": "npm@10.0.0"
+  "packageManager": "npm@10.0.0",
+  "dependencies": {
+    "radix-ui": "^1.4.3"
+  }
 }

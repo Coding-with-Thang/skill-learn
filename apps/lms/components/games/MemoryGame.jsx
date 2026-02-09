@@ -128,7 +128,7 @@ const MemoryGame = () => {
             <button
               key={id}
               onClick={() => handleCardClick(id)}
-              className={`aspect-square rounded-2xl md:rounded-3xl flex items-center justify-center text-4xl shadow-sm transition-all duration-500 transform
+              className={`aspect-square rounded-4xl md:rounded-3xl flex items-center justify-center text-4xl shadow-sm transition-all duration-500 transform
                 ${isFlipped ? 'bg-white [transform:rotateY(180deg)]' : 'bg-slate-100 hover:bg-white hover:scale-105'}
                 ${isMatched ? 'opacity-50 grayscale-[0.5]' : ''}
               `}

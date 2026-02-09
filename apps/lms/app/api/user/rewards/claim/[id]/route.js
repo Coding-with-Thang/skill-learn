@@ -12,7 +12,7 @@ export async function POST(request, { params }) {
     }
     const userId = authResult;
 
-    const { id } = params;
+    const { id } = await params;
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },

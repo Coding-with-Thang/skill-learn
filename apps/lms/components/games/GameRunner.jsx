@@ -4,11 +4,15 @@ import React, { useState, useEffect } from 'react';
 import GamePlayLayout from './GamePlayLayout';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage.js";
 
+const PLACEHOLDER_AVATAR =
+  "data:image/svg+xml," +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#9ca3af"/></svg>');
+
 const DEFAULT_LEADERBOARD = [
-  { name: "ZenMaster_01", score: 9420, avatar: "/api/placeholder/40/40" },
-  { name: "CodingWizard", score: 8150, avatar: "/api/placeholder/40/40" },
-  { name: "LogicLover", score: 7900, avatar: "/api/placeholder/40/40" },
-  { name: "WebDevPro", score: 6500, avatar: "/api/placeholder/40/40" },
+  { name: "ZenMaster_01", score: 9420, avatar: PLACEHOLDER_AVATAR },
+  { name: "CodingWizard", score: 8150, avatar: PLACEHOLDER_AVATAR },
+  { name: "LogicLover", score: 7900, avatar: PLACEHOLDER_AVATAR },
+  { name: "WebDevPro", score: 6500, avatar: PLACEHOLDER_AVATAR },
 ];
 
 const GameRunner = ({ gameConfig, GameComponent }) => {
@@ -49,7 +53,7 @@ const GameRunner = ({ gameConfig, GameComponent }) => {
 
       {isPaused && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
-          <div className="bg-white/90 backdrop-blur-md p-8 rounded-[2rem] shadow-2xl text-center">
+          <div className="bg-white/90 backdrop-blur-md p-8 rounded-4xl shadow-2xl text-center">
             <h3 className="text-2xl font-black text-slate-800 mb-4">GAME PAUSED</h3>
             <button
               onClick={() => setIsPaused(false)}

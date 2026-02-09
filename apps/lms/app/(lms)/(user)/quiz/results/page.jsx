@@ -6,7 +6,7 @@ import { Button } from "@skill-learn/ui/components/button"
 import { RotateCcw, LayoutDashboard, Eye, Trophy, Timer, CheckCircle, XCircle, ListChecks, Calendar, Star, ArrowRight, ChevronDown, ChevronUp, Crown, PartyPopper, Coins } from 'lucide-react'
 import { useEffect, useState } from "react"
 import { Card, CardContent } from "@skill-learn/ui/components/card"
-import { useAuditLog } from '@/lib/hooks/useAuditLog';
+import { useAuditLog } from "@skill-learn/lib";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { cn } from "@skill-learn/lib/utils.js"
 import { toast } from "sonner"
@@ -32,35 +32,35 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
   const selectedOptionIds = userResponse?.selectedOptionIds || [];
 
   return (
-    <Card className="border-0 shadow-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md">
+    <Card className="border-0 shadow-sm rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md bg-card border-border">
       <CardContent className="p-0">
         {/* Header - Clickable to toggle */}
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className="p-6 md:p-8 flex items-start justify-between gap-4 cursor-pointer bg-white hover:bg-slate-50/50 transition-colors"
+          className="p-6 md:p-8 flex items-start justify-between gap-4 cursor-pointer bg-card hover:bg-muted/50 transition-colors"
         >
           <div className="flex gap-3 flex-1">
-            <span className="text-lg font-bold text-blue-600 bg-blue-50 w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0">
+            <span className="text-lg font-bold text-primary bg-primary/10 w-8 h-8 flex items-center justify-center rounded-lg shrink-0">
               {index + 1}.
             </span>
             <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-slate-900 pt-0.5 leading-snug">
+              <h3 className="text-lg font-semibold text-foreground pt-0.5 leading-snug">
                 {question.text}
               </h3>
               {!isOpen && (
-                <p className="text-sm text-slate-400 font-medium">Click to view details</p>
+                <p className="text-sm text-muted-foreground font-medium">Click to view details</p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3 md:gap-4 shrink-0">
             <div className={cn(
               "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
-              isCorrect ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              isCorrect ? "bg-green-500/20 text-green-600 dark:text-green-400" : "bg-red-500/20 text-red-600 dark:text-red-400"
             )}>
               {isCorrect ? "Correct" : "Incorrect"}
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
               {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
             </Button>
           </div>
@@ -73,26 +73,23 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
               const isSelected = selectedOptionIds.includes(option.id);
               const isAnswerCorrect = option.isCorrect;
 
-              // Styling Logic
-              let containerClass = "border-slate-200 bg-white hover:bg-slate-50"; // Default
-              let labelColor = "text-slate-700";
+              // Styling Logic (theme-aware for dark mode)
+              let containerClass = "border-border bg-card hover:bg-muted/50";
+              let labelColor = "text-foreground";
               let icon = null;
 
               if (isSelected && isAnswerCorrect) {
-                // Correct & Selected (Your Answer) - Green
-                containerClass = "border-green-200 bg-green-50 ring-1 ring-green-200";
-                labelColor = "text-green-800 font-medium";
-                icon = <CheckCircle className="w-5 h-5 text-green-600" />;
+                containerClass = "border-green-500/40 bg-green-500/10 dark:bg-green-500/20 ring-1 ring-green-500/30";
+                labelColor = "text-green-700 dark:text-green-300 font-medium";
+                icon = <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
               } else if (isSelected && !isAnswerCorrect) {
-                // Incorrect & Selected (Your Answer) - Red
-                containerClass = "border-red-200 bg-red-50 ring-1 ring-red-200";
-                labelColor = "text-red-800 font-medium";
-                icon = <XCircle className="w-5 h-5 text-red-600" />;
+                containerClass = "border-red-500/40 bg-red-500/10 dark:bg-red-500/20 ring-1 ring-red-500/30";
+                labelColor = "text-red-700 dark:text-red-300 font-medium";
+                icon = <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
               } else if (!isSelected && isAnswerCorrect && showCorrectAnswers) {
-                // Correct & Not Selected (Missed CA) - Green Outline
-                containerClass = "border-green-200 bg-white ring-1 ring-green-100";
-                labelColor = "text-green-700 font-medium";
-                icon = <CheckCircle className="w-5 h-5 text-green-500 opacity-50" />;
+                containerClass = "border-green-500/30 bg-card ring-1 ring-green-500/20";
+                labelColor = "text-green-700 dark:text-green-400 font-medium";
+                icon = <CheckCircle className="w-5 h-5 text-green-500 dark:text-green-400 opacity-50" />;
               }
 
               return (
@@ -106,7 +103,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "w-6 h-6 rounded flex items-center justify-center text-xs font-bold border",
-                      isSelected ? "border-transparent bg-white/50" : "border-slate-300 bg-slate-50 text-slate-500"
+                      isSelected ? "border-transparent bg-primary/20 text-foreground" : "border-border bg-muted text-muted-foreground"
                     )}>
                       {String.fromCharCode(65 + optIndex)}
                     </div>
@@ -119,7 +116,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
                     {isSelected && (
                       <span className={cn(
                         "text-xs font-bold uppercase tracking-wide",
-                        isAnswerCorrect ? "text-green-600" : "text-red-600"
+                        isAnswerCorrect ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       )}>
                         (Your Answer)
                       </span>
@@ -208,86 +205,85 @@ export default function ResultsPage() {
   const isPassed = results.hasPassed;
 
   let PointsIcon = Coins;
-  let pointsIconBg = "bg-blue-100 text-blue-600";
-  let pointsCardBg = "bg-white"; // default
+  let pointsIconBg = "bg-primary/20 text-primary";
+  let pointsCardBg = ""; // default uses card bg
 
   if (isPerfect) {
-    PointsIcon = Crown; // or PartyPopper
-    pointsIconBg = "bg-yellow-100 text-yellow-600 animate-bounce";
-    pointsCardBg = "bg-gradient-to-br from-yellow-50/50 to-orange-50/50";
+    PointsIcon = Crown;
+    pointsIconBg = "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-bounce";
+    pointsCardBg = "bg-linear-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20";
   } else if (isPassed) {
     PointsIcon = Star;
-    pointsIconBg = "bg-blue-100 text-blue-600";
+    pointsIconBg = "bg-primary/20 text-primary";
   } else {
     PointsIcon = Coins;
-    pointsIconBg = "bg-gray-100 text-gray-500";
+    pointsIconBg = "bg-muted text-muted-foreground";
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-12 font-sans text-slate-800">
+    <div className="min-h-screen bg-background p-6 md:p-12 font-sans text-foreground">
       <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* 1. Quiz Header */}
         <header className="space-y-6">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               <span>{selectedQuiz?.category?.name || "Product Knowledge"}</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-muted-foreground/60">•</span>
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
                 {formatDate()}
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
               {selectedQuiz?.title || "Assessment Module"}
             </h1>
           </div>
 
           {/* Stat Cards Row */}
-          {/* Order: Final Score -> Correct Answers -> Status -> Points Scored -> Time Taken */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
 
             {/* 1. Final Score */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Final Score</span>
-                  <div className="p-1.5 bg-green-100 text-green-600 rounded-full">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Final Score</span>
+                  <div className="p-1.5 bg-green-500/20 text-green-600 dark:text-green-400 rounded-full">
                     <Trophy className="w-4 h-4" />
                   </div>
                 </div>
-                <span className="text-3xl font-extrabold text-slate-900">{results.score}%</span>
+                <span className="text-3xl font-extrabold text-foreground">{results.score}%</span>
               </CardContent>
             </Card>
 
-            {/* 2. Correct Answers (Moved here) */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            {/* 2. Correct Answers */}
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Correct Answers</span>
-                  <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-full">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Correct Answers</span>
+                  <div className="p-1.5 bg-primary/20 text-primary rounded-full">
                     <ListChecks className="w-4 h-4" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-extrabold text-slate-900">{results.correctAnswers}</span>
-                  <span className="text-sm text-slate-400 font-medium">/ {results.totalQuestions}</span>
+                  <span className="text-3xl font-extrabold text-foreground">{results.correctAnswers}</span>
+                  <span className="text-sm text-muted-foreground font-medium">/ {results.totalQuestions}</span>
                 </div>
               </CardContent>
             </Card>
 
-            {/* 3. Status (Moved to Middle) */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+            {/* 3. Status */}
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Status</span>
-                  <div className={cn("p-1.5 rounded-full", results.hasPassed ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600")}>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</span>
+                  <div className={cn("p-1.5 rounded-full", results.hasPassed ? "bg-green-500/20 text-green-600 dark:text-green-400" : "bg-red-500/20 text-red-600 dark:text-red-400")}>
                     {results.hasPassed ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   </div>
                 </div>
                 <span className={cn(
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider w-fit",
-                  results.hasPassed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  results.hasPassed ? "bg-green-500/20 text-green-700 dark:text-green-300" : "bg-red-500/20 text-red-700 dark:text-red-300"
                 )}>
                   {results.hasPassed ? "PASSED" : "FAILED"}
                 </span>
@@ -295,41 +291,40 @@ export default function ResultsPage() {
             </Card>
 
             {/* 4. Points Scored */}
-            <Card className={cn("border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1", pointsCardBg)}>
+            <Card className={cn("border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1 bg-card border-border", pointsCardBg)}>
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Points Scored</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Points Scored</span>
                   <div className={cn("p-1.5 rounded-full", pointsIconBg)}>
                     <PointsIcon className={cn("w-4 h-4", isPerfect && "animate-bounce")} />
                   </div>
                 </div>
-                <span className="text-3xl font-extrabold text-slate-900">
+                <span className="text-3xl font-extrabold text-foreground">
                   {new Intl.NumberFormat().format(results.pointsEarned || 0)}
                 </span>
               </CardContent>
             </Card>
 
             {/* 5. Time Taken */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1">
+            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1 bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">Time Taken</span>
-                  <div className="p-1.5 bg-sky-100 text-sky-600 rounded-full">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Time Taken</span>
+                  <div className="p-1.5 bg-primary/20 text-primary rounded-full">
                     <Timer className="w-4 h-4" />
                   </div>
                 </div>
-                <span className="text-3xl font-extrabold text-slate-900">{formatTime(results.timeSpent)}</span>
+                <span className="text-3xl font-extrabold text-foreground">{formatTime(results.timeSpent)}</span>
               </CardContent>
             </Card>
           </div>
         </header>
 
         {/* 2. Accuracy Visualization */}
-        <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
+        <Card className="border-0 shadow-sm rounded-4xl overflow-hidden bg-card border-border">
           <CardContent className="p-8">
-            <h3 className="text-lg font-bold text-slate-900 mb-6 text-center">Accuracy</h3>
+            <h3 className="text-lg font-bold text-foreground mb-6 text-center">Accuracy</h3>
             <div className="flex flex-col items-center justify-center">
-              {/* Chart */}
               <div className="relative w-48 h-48 mb-6">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -350,25 +345,23 @@ export default function ResultsPage() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                {/* Center Text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-3xl font-extrabold text-slate-900">{results.score}%</span>
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Correct</span>
+                  <span className="text-3xl font-extrabold text-foreground">{results.score}%</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Correct</span>
                 </div>
               </div>
 
-              {/* Legend */}
-              <div className="flex items-center gap-8 border-t pt-6 w-full justify-center">
+              <div className="flex items-center gap-8 border-t border-border pt-6 w-full justify-center">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm" />
-                  <span className="text-sm font-medium text-slate-600">
-                    Correct <span className="text-slate-900 font-bold ml-1">({results.correctAnswers})</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Correct <span className="font-bold ml-1">({results.correctAnswers})</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm" />
-                  <span className="text-sm font-medium text-slate-600">
-                    Incorrect <span className="text-slate-900 font-bold ml-1">({results.totalQuestions - results.correctAnswers})</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Incorrect <span className="font-bold ml-1">({results.totalQuestions - results.correctAnswers})</span>
                   </span>
                 </div>
               </div>
@@ -381,10 +374,9 @@ export default function ResultsPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Question Review</h2>
-                <p className="text-slate-500 text-sm">Review all quiz questions and your submitted answers.</p>
+                <h2 className="text-xl font-bold text-foreground">Question Review</h2>
+                <p className="text-muted-foreground text-sm">Review all quiz questions and your submitted answers.</p>
               </div>
-              {/* Optional: Add a "Expand All" / "Collapse All" button here if needed */}
             </div>
 
             <div className="space-y-4">
@@ -402,10 +394,10 @@ export default function ResultsPage() {
         )}
 
         {/* 4. Footer Actions */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-slate-200">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-border">
           <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-2 text-sm">
-            <span className="text-slate-500">Next recommended module: </span>
-            <span className="font-bold text-blue-600 cursor-pointer hover:underline flex items-center gap-1">
+            <span className="text-muted-foreground">Next recommended module: </span>
+            <span className="font-bold text-primary cursor-pointer hover:underline flex items-center gap-1">
               Advanced Hazard Analysis <ArrowRight className="w-3 h-3" />
             </span>
           </div>
@@ -413,7 +405,7 @@ export default function ResultsPage() {
           <div className="flex flex-wrap justify-center gap-4">
             <Button
               variant="outline"
-              className="px-6 py-5 text-slate-700 border-slate-300 hover:bg-slate-50 font-semibold"
+              className="px-6 py-5 text-foreground border-border hover:bg-muted font-semibold"
               onClick={() => router.push(`/quiz/start/${selectedQuiz?.id}`)}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
@@ -422,7 +414,7 @@ export default function ResultsPage() {
 
             <Button
               variant="outline"
-              className="px-6 py-5 text-slate-700 border-slate-300 hover:bg-slate-50 font-semibold"
+              className="px-6 py-5 text-foreground border-border hover:bg-muted font-semibold"
               onClick={() => router.push("/user/stats")}
             >
               <Eye className="w-4 h-4 mr-2" />
@@ -430,7 +422,7 @@ export default function ResultsPage() {
             </Button>
 
             <Button
-              className="px-8 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-200 transition-all hover:scale-105"
+              className="px-8 py-5 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg transition-all hover:scale-105"
               onClick={() => router.push("/training")}
             >
               <LayoutDashboard className="w-4 h-4 mr-2" />

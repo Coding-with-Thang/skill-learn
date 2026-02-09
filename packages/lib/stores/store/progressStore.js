@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import api from "../../utils/utils/axios.js";
+import api from "../../utils/axios.js";
 
 /**
  * Progress Store - Manages user training progress data

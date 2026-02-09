@@ -11,7 +11,7 @@ import { FormSelect } from "@skill-learn/ui/components/form-select"
 import { FormDescription } from "@skill-learn/ui/components/form"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
 import { useRolesStore } from "@skill-learn/lib/stores/rolesStore.js"
-import { usePermissions } from "@skill-learn/lib/hooks/usePermissions.js"
+import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js"
 import { toast } from "sonner"
 import { userCreateSchema, userUpdateSchema } from "@/lib/zodSchemas"
 import api from "@skill-learn/lib/utils/axios.js"
@@ -19,10 +19,14 @@ import api from "@skill-learn/lib/utils/axios.js"
 export default function UserForm({ user = null, onSuccess }) {
     const { createUser, updateUser, isLoading, users } = useUsersStore()
     const { roles, tenant, fetchRoles } = useRolesStore()
-    const { hasPermission } = usePermissions()
+    const hasPermission = usePermissionsStore((s) => s.hasPermission)
+    const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions)
     const [defaultRoleId, setDefaultRoleId] = useState(null)
 
-    // Fetch users if not already loaded
+    useEffect(() => {
+        fetchPermissions();
+    }, [fetchPermissions]);
+
     useEffect(() => {
         if (users.length === 0) {
             useUsersStore.getState().fetchUsers()
@@ -57,10 +61,9 @@ export default function UserForm({ user = null, onSuccess }) {
             lastName: user?.lastName || "",
             username: user?.username || "",
             password: "",
+            confirmPassword: "",
             tenantRoleId: user?.tenantRoleId || defaultRoleId || "",
-            // Legacy fields for backward compatibility
-            role: user?.role || "",
-            manager: user?.manager || "",
+            reportsToUserId: user?.reportsToUserId ?? "",
         },
     })
 
@@ -86,30 +89,31 @@ export default function UserForm({ user = null, onSuccess }) {
         }))
     }, [roles])
 
+    // Reports-to: same-tenant users, exclude self when editing
+    const reportsToOptions = useMemo(() => {
+        const list = (users || []).filter((u) => !user || u.id !== user.id)
+        const options = [{ value: "", label: "None" }]
+        list.forEach((u) => {
+            options.push({
+                value: u.id,
+                label: `${u.firstName} ${u.lastName} (${u.username})`,
+            })
+        })
+        return options
+    }, [users, user])
+
     const onSubmit = async (data) => {
         try {
-            // Prepare submit data
             const submitData = { ...data }
-            
-            // Use defaultRoleId if tenantRoleId is not provided and creating new user
             if (!user && !submitData.tenantRoleId && defaultRoleId) {
                 submitData.tenantRoleId = defaultRoleId
             }
-            
-            // Remove password if empty (for updates)
             if (user && !submitData.password) {
                 delete submitData.password
             }
-
-            // Legacy fields: keep role for backward compatibility but prefer tenantRoleId
-            if (submitData.tenantRoleId) {
-                // tenantRoleId takes precedence
-                if (!submitData.role) {
-                    delete submitData.role
-                }
-                if (!submitData.manager) {
-                    delete submitData.manager
-                }
+            delete submitData.confirmPassword
+            if (submitData.reportsToUserId === "") {
+                submitData.reportsToUserId = null
             }
 
             if (user) {
@@ -156,6 +160,14 @@ export default function UserForm({ user = null, onSuccess }) {
                             label="Password"
                             type="password"
                             placeholder={user ? "Leave blank to keep current password" : "Enter password"}
+                            autoComplete="new-password"
+                        />
+                        <FormInput
+                            name="confirmPassword"
+                            label="Confirm password"
+                            type="password"
+                            placeholder={user ? "Re-enter new password (if changing)" : "Re-enter password"}
+                            autoComplete="new-password"
                         />
 
                         {roleOptions.length > 0 ? (
@@ -182,6 +194,12 @@ export default function UserForm({ user = null, onSuccess }) {
                                 No roles available. Please configure roles for this tenant first.
                             </div>
                         )}
+
+                        <FormSelect
+                            name="reportsToUserId"
+                            label="Reports to"
+                            options={reportsToOptions}
+                        />
 
                         <Button type="submit" disabled={isLoading} className="w-full">
                             {isLoading ? "Loading..." : user ? "Update User" : "Create User"}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import RevenueChart from '@/components/cms/dashboard/RevenueChart'
 import SubscriptionDistribution from '@/components/cms/dashboard/SubscriptionDistribution'
 import { ArrowUpRight, ArrowDownRight, Users, Zap, Clock, MousePointerClick, Loader2 } from 'lucide-react'

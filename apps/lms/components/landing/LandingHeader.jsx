@@ -47,7 +47,7 @@ export default function LandingHeader() {
   }, [resourcesOpen]);
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-[100] overflow-visible">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-100 overflow-visible">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative overflow-visible">
         <div className="flex items-center justify-between h-16 overflow-visible">
           {/* Logo */}
@@ -57,21 +57,21 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 overflow-visible">
-            <Link 
-              href="/features" 
+            <Link
+              href="/features"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               Features
             </Link>
             {/* Resources Dropdown */}
             <div className="relative flex items-center">
-              <Link 
+              <Link
                 href="/resources"
                 className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
               >
                 Resources
               </Link>
-              <button 
+              <button
                 ref={resourcesRef}
                 onClick={() => setResourcesOpen(!resourcesOpen)}
                 className="text-gray-700 hover:text-brand-teal p-1 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200 ml-1"
@@ -80,10 +80,10 @@ export default function LandingHeader() {
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${resourcesOpen ? 'rotate-180' : ''}`} />
               </button>
               {resourcesOpen && (
-                <div 
+                <div
                   ref={dropdownRef}
                   onMouseLeave={() => setResourcesOpen(false)}
-                  className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-[99999]"
+                  className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-99999"
                   style={{ pointerEvents: 'auto' }}
                 >
                   <div className="py-2">
@@ -127,14 +127,14 @@ export default function LandingHeader() {
                 </div>
               )}
             </div>
-            <Link 
-              href="/pricing" 
+            <Link
+              href="/pricing"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               Pricing
             </Link>
-            <Link 
-              href="#solutions" 
+            <Link
+              href="#solutions"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               Why Skill-Learn
@@ -167,7 +167,7 @@ export default function LandingHeader() {
           <div className="md:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-md text-gray-700 hover:text-brand-teal hover:bg-gray-100"
+              className="p-2 rounded-4xld text-gray-700 hover:text-brand-teal hover:bg-gray-100"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (

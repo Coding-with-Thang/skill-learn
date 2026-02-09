@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Input } from '@/components/cms/ui/input'
-import { Button } from '@/components/cms/ui/button'
-import { Badge } from '@/components/cms/ui/badge'
+import { Input } from "@skill-learn/ui/components/input"
+import { Button } from "@skill-learn/ui/components/button"
+import { Badge } from "@skill-learn/ui/components/badge"
 import {
   Search,
   Bell,
@@ -231,7 +231,7 @@ export default function TopBar() {
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
+                <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
                   {userInitials}
                 </div>
               )}
@@ -270,7 +270,7 @@ export default function TopBar() {
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="w-full justify-start gap-2 text-brand-tealestructive hover:text-brand-tealestructive hover:bg-destructive/10"
                     >
                       <LogOut className="h-4 w-4" />
                       Logout

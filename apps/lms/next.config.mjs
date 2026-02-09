@@ -13,6 +13,10 @@ const nextConfig = {
     "@skill-learn/database",
   ],
   turbopack: {},
+  // Reduce dev terminal noise (compile/proxy/render lines); set to true or use ignore: [] to restore
+  logging: {
+    incomingRequests: false,
+  },
   images: {
     remotePatterns: [
       {
@@ -91,6 +95,18 @@ const nextConfig = {
         ],
       },
     ];
+  },
+  // Optimize webpack cache for large strings
+  webpack: (config, { isServer }) => {
+    // Optimize cache serialization for large strings
+    if (config.cache) {
+      config.cache = {
+        ...config.cache,
+        compression: "gzip",
+        maxMemoryGenerations: 1,
+      };
+    }
+    return config;
   },
 };
 

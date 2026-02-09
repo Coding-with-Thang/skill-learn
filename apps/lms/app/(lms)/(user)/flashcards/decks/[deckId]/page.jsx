@@ -72,11 +72,11 @@ export default function DeckSettingsPage() {
       setDeck((prev) =>
         prev
           ? {
-              ...prev,
-              cardIds: newCardIds,
-              hiddenCardIds: newHidden,
-              cards: (prev.cards ?? []).filter((c) => c.id !== cardId),
-            }
+            ...prev,
+            cardIds: newCardIds,
+            hiddenCardIds: newHidden,
+            cards: (prev.cards ?? []).filter((c) => c.id !== cardId),
+          }
           : prev
       );
       toast.success("Card removed from deck");
@@ -173,33 +173,33 @@ export default function DeckSettingsPage() {
               <p className="text-muted-foreground text-sm py-4">No visible cards.</p>
             ) : (
               visibleCards.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between gap-4 p-3 rounded-lg border"
-                  >
-                    <p className="text-sm truncate flex-1">{c.question}</p>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleHidden(c.id, false)}
-                        disabled={toggling === c.id}
-                      >
-                        <EyeOff className="h-4 w-4 mr-1" />
-                        Hide
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => removeFromDeck(c.id)}
-                        disabled={toggling === c.id}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </Button>
-                    </div>
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between gap-4 p-3 rounded-lg border"
+                >
+                  <p className="text-sm truncate flex-1">{c.question}</p>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleHidden(c.id, false)}
+                      disabled={toggling === c.id}
+                    >
+                      <EyeOff className="h-4 w-4 mr-1" />
+                      Hide
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-brand-tealestructive hover:text-brand-tealestructive"
+                      onClick={() => removeFromDeck(c.id)}
+                      disabled={toggling === c.id}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
                   </div>
+                </div>
               ))
             )}
           </CardContent>
@@ -215,33 +215,33 @@ export default function DeckSettingsPage() {
               <p className="text-muted-foreground text-sm py-4">No hidden cards.</p>
             ) : (
               hiddenCards.map((c) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between gap-4 p-3 rounded-lg border opacity-75"
-                  >
-                    <p className="text-sm truncate flex-1">{c.question}</p>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleHidden(c.id, true)}
-                        disabled={toggling === c.id}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Unhide
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => removeFromDeck(c.id)}
-                        disabled={toggling === c.id}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </Button>
-                    </div>
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between gap-4 p-3 rounded-lg border opacity-75"
+                >
+                  <p className="text-sm truncate flex-1">{c.question}</p>
+                  <div className="flex gap-2 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleHidden(c.id, true)}
+                      disabled={toggling === c.id}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Unhide
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-brand-tealestructive hover:text-brand-tealestructive"
+                      onClick={() => removeFromDeck(c.id)}
+                      disabled={toggling === c.id}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
                   </div>
+                </div>
               ))
             )}
           </CardContent>

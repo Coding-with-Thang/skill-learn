@@ -1,7 +1,7 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/cms/ui/card'
-import { Button } from '@/components/cms/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
+import { Button } from "@skill-learn/ui/components/button"
 import {
   Plus,
   FileText,
@@ -57,8 +57,8 @@ export default function QuickActions() {
                     onClick={() => handleAction(action)}
                     className="h-auto w-full flex-col gap-2 p-4 hover:shadow-md transition-all hover:-translate-y-0.5 group relative overflow-hidden"
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                    <div className={`rounded-full bg-gradient-to-br ${action.color} p-2.5 text-white`}>
+                    <div className={`absolute inset-0 bg-linear-to-br ${action.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                    <div className={`rounded-full bg-linear-to-br ${action.color} p-2.5 text-white`}>
                       <Icon className="h-5 w-5" />
                     </div>
                     <span className="text-xs font-medium text-center leading-tight">

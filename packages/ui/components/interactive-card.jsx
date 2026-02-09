@@ -28,7 +28,7 @@ const InteractiveCard = React.forwardRef(({
   >
     {children}
     {interactive && (
-      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <div className="absolute inset-0 rounded-xl bg-linear-to-r from-primary/0 via-primary/0 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
     )}
   </div>
 ))

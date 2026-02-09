@@ -239,115 +239,131 @@ export async function POST(request, { params }) {
 }
 
 /**
- * DELETE /api/tenants/[tenantId]/user-roles
- * Remove a role from a user (via query params or body)
+ * PUT /api/tenants/[tenantId]/user-roles
+ * Reassign a user to a different role (user must have a role; use this to change it)
  */
-export async function DELETE(request, { params }) {
+export async function PUT(request, { params }) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
       return adminResult;
     }
 
+    const { userId: adminUserId } = adminResult;
     const { tenantId } = await params;
+    const body = await request.json();
+    const { userRoleId, tenantRoleId: newTenantRoleId } = body;
 
-    // Support both query params and body
-    const { searchParams } = new URL(request.url);
-    let userId = searchParams.get("userId");
-    let tenantRoleId = searchParams.get("tenantRoleId");
-    let userRoleId = searchParams.get("userRoleId");
-
-    // Try to get from body if not in query params
-    if (!userRoleId && !userId) {
-      try {
-        const body = await request.json();
-        userId = body.userId;
-        tenantRoleId = body.tenantRoleId;
-        userRoleId = body.userRoleId;
-      } catch (e) {
-        // Body parsing failed, use query params
-      }
+    if (!userRoleId || !newTenantRoleId) {
+      return NextResponse.json(
+        { error: "userRoleId and tenantRoleId are required" },
+        { status: 400 }
+      );
     }
 
-    // Check if tenant exists
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId },
+      select: { id: true, name: true },
     });
 
     if (!tenant) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
     }
 
-    // Delete by userRoleId (preferred) or by userId + tenantRoleId
-    let deletedUserRole = null;
-
-    if (userRoleId) {
-      const userRole = await prisma.userRole.findFirst({
-        where: {
-          id: userRoleId,
-          tenantId,
+    const existingUserRole = await prisma.userRole.findFirst({
+      where: { id: userRoleId, tenantId },
+      include: {
+        tenantRole: {
+          select: { id: true, roleAlias: true },
         },
-      });
+      },
+    });
 
-      if (!userRole) {
-        return NextResponse.json(
-          { error: "User role assignment not found" },
-          { status: 404 }
-        );
-      }
-
-      deletedUserRole = userRole;
-      await prisma.userRole.delete({
-        where: { id: userRoleId },
-      });
-    } else if (userId && tenantRoleId) {
-      const userRole = await prisma.userRole.findFirst({
-        where: {
-          userId,
-          tenantRoleId,
-          tenantId,
-        },
-      });
-
-      if (!userRole) {
-        return NextResponse.json(
-          { error: "User role assignment not found" },
-          { status: 404 }
-        );
-      }
-
-      deletedUserRole = userRole;
-      await prisma.userRole.delete({
-        where: { id: userRole.id },
-      });
-    } else {
+    if (!existingUserRole) {
       return NextResponse.json(
-        {
-          error:
-            "Either userRoleId or both userId and tenantRoleId are required",
-        },
+        { error: "User role assignment not found" },
+        { status: 404 }
+      );
+    }
+
+    const newRole = await prisma.tenantRole.findFirst({
+      where: {
+        id: newTenantRoleId,
+        tenantId,
+        isActive: true,
+      },
+    });
+
+    if (!newRole) {
+      return NextResponse.json(
+        { error: "Target role not found or is not active" },
+        { status: 404 }
+      );
+    }
+
+    if (existingUserRole.tenantRoleId === newTenantRoleId) {
+      return NextResponse.json(
+        { error: "User already has this role" },
         { status: 400 }
       );
     }
 
-    // Sync user metadata to Clerk (remove role/permissions)
-    if (deletedUserRole) {
-      try {
-        await syncUserMetadataToClerk(deletedUserRole.userId, tenantId);
-      } catch (syncError) {
-        console.error("Failed to sync user metadata to Clerk:", syncError);
-        // Don't fail the request, role was removed successfully
-      }
+    const updatedUserRole = await prisma.userRole.update({
+      where: { id: userRoleId },
+      data: {
+        tenantRoleId: newTenantRoleId,
+        assignedBy: adminUserId,
+      },
+      include: {
+        tenantRole: {
+          select: {
+            id: true,
+            roleAlias: true,
+            description: true,
+            slotPosition: true,
+          },
+        },
+      },
+    });
+
+    try {
+      await syncUserMetadataToClerk(existingUserRole.userId, tenantId);
+    } catch (syncError) {
+      console.error("Failed to sync user metadata to Clerk:", syncError);
     }
 
+    const userData = await prisma.user.findUnique({
+      where: { clerkId: existingUserRole.userId },
+      select: {
+        username: true,
+        firstName: true,
+        lastName: true,
+        imageUrl: true,
+      },
+    });
+
     return NextResponse.json({
-      success: true,
-      message: "User role assignment removed successfully",
+      userRole: {
+        id: updatedUserRole.id,
+        userId: updatedUserRole.userId,
+        user: userData
+          ? {
+              username: userData.username,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              fullName: `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || userData.username,
+              imageUrl: userData.imageUrl,
+            }
+          : null,
+        role: updatedUserRole.tenantRole,
+        assignedAt: updatedUserRole.assignedAt,
+        assignedBy: updatedUserRole.assignedBy,
+      },
     });
   } catch (error) {
-    console.error("Error removing user role:", error);
+    console.error("Error reassigning user role:", error);
     return NextResponse.json(
-      { error: "Failed to remove user role" },
+      { error: "Failed to reassign user role" },
       { status: 500 }
     );
   }

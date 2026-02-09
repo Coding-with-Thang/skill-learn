@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
+
+const MAX_TX_RETRIES = 3;
+const TX_RETRY_DELAY_MS = 100;
+
+function isRetryablePrismaError(e) {
+  return e?.code === "P2034" || e?.code === "P2024";
+}
 
 /**
  * GET /api/tenant/roles/[roleId]
@@ -12,27 +20,20 @@ export async function GET(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_READ, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
     }
-
     const role = await prisma.tenantRole.findFirst({
       where: { id: roleId, tenantId: user.tenantId },
       include: {
@@ -58,7 +59,7 @@ export async function GET(request, { params }) {
     });
 
     if (!role) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     // Group permissions by category
@@ -85,8 +86,7 @@ export async function GET(request, { params }) {
       },
     });
   } catch (error) {
-    console.error("Error fetching role:", error);
-    return NextResponse.json({ error: "Failed to fetch role" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -98,22 +98,16 @@ export async function PUT(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_UPDATE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -128,64 +122,72 @@ export async function PUT(request, { params }) {
     });
 
     if (!existingRole) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
-
-    // Check for duplicate name
     if (roleAlias && roleAlias !== existingRole.roleAlias) {
       const duplicate = await prisma.tenantRole.findFirst({
         where: { tenantId: user.tenantId, roleAlias, id: { not: roleId } },
       });
       if (duplicate) {
-        return NextResponse.json(
-          { error: `A role with name "${roleAlias}" already exists` },
-          { status: 400 }
-        );
+        throw new AppError(`A role with name "${roleAlias}" already exists`, ErrorType.VALIDATION, { status: 400 });
       }
     }
 
-    // Update in transaction
-    const role = await prisma.$transaction(async (tx) => {
-      await tx.tenantRole.update({
-        where: { id: roleId },
-        data: {
-          ...(roleAlias !== undefined && { roleAlias }),
-          ...(description !== undefined && { description }),
-          ...(slotPosition !== undefined && { slotPosition }),
-          ...(isActive !== undefined && { isActive }),
-        },
-      });
-
-      // Update permissions if provided
-      if (permissionIds !== undefined) {
-        await tx.tenantRolePermission.deleteMany({
-          where: { tenantRoleId: roleId },
-        });
-
-        if (permissionIds.length > 0) {
-          await tx.tenantRolePermission.createMany({
-            data: permissionIds.map((permId) => ({
-              tenantRoleId: roleId,
-              permissionId: permId,
-            })),
-          });
-        }
-      }
-
-      return tx.tenantRole.findUnique({
-        where: { id: roleId },
-        include: {
-          tenantRolePermissions: {
-            include: {
-              permission: {
-                select: { id: true, name: true, displayName: true, category: true },
-              },
+    // Update in transaction with retry (avoids P2034 when ClerkSync runs concurrently)
+    let role;
+    let lastError;
+    for (let attempt = 0; attempt < MAX_TX_RETRIES; attempt++) {
+      try {
+        role = await prisma.$transaction(async (tx) => {
+          await tx.tenantRole.update({
+            where: { id: roleId },
+            data: {
+              ...(roleAlias !== undefined && { roleAlias }),
+              ...(description !== undefined && { description }),
+              ...(slotPosition !== undefined && { slotPosition }),
+              ...(isActive !== undefined && { isActive }),
             },
-          },
-          _count: { select: { userRoles: true } },
-        },
-      });
-    });
+          });
+
+          if (permissionIds !== undefined) {
+            await tx.tenantRolePermission.deleteMany({
+              where: { tenantRoleId: roleId },
+            });
+
+            if (permissionIds.length > 0) {
+              await tx.tenantRolePermission.createMany({
+                data: permissionIds.map((permId) => ({
+                  tenantRoleId: roleId,
+                  permissionId: permId,
+                })),
+              });
+            }
+          }
+
+          return tx.tenantRole.findUnique({
+            where: { id: roleId },
+            include: {
+              tenantRolePermissions: {
+                include: {
+                  permission: {
+                    select: { id: true, name: true, displayName: true, category: true },
+                  },
+                },
+              },
+              _count: { select: { userRoles: true } },
+            },
+          });
+        });
+        break;
+      } catch (e) {
+        lastError = e;
+        if (attempt < MAX_TX_RETRIES - 1 && isRetryablePrismaError(e)) {
+          await new Promise((r) => setTimeout(r, TX_RETRY_DELAY_MS * (attempt + 1)));
+          continue;
+        }
+        throw e;
+      }
+    }
 
     // Sync users with this role to Clerk
     if (permissionIds !== undefined) {
@@ -209,8 +211,7 @@ export async function PUT(request, { params }) {
       },
     });
   } catch (error) {
-    console.error("Error updating role:", error);
-    return NextResponse.json({ error: "Failed to update role" }, { status: 500 });
+    return handleApiError(error);
   }
 }
 
@@ -222,22 +223,16 @@ export async function DELETE(request, { params }) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
     }
-
     const { roleId } = await params;
-
-    // Get user's tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       select: { tenantId: true },
     });
-
     if (!user?.tenantId) {
-      return NextResponse.json({ error: "No tenant assigned" }, { status: 400 });
+      throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
     }
-
-    // Check permission
     const permResult = await requirePermission(PERMISSIONS.ROLES_DELETE, user.tenantId);
     if (permResult instanceof NextResponse) {
       return permResult;
@@ -250,14 +245,10 @@ export async function DELETE(request, { params }) {
     });
 
     if (!role) {
-      return NextResponse.json({ error: "Role not found" }, { status: 404 });
+      throw new AppError("Role not found", ErrorType.NOT_FOUND, { status: 404 });
     }
-
     if (role._count.userRoles > 0) {
-      return NextResponse.json(
-        { error: `Cannot delete role with ${role._count.userRoles} user(s). Remove users first.` },
-        { status: 400 }
-      );
+      throw new AppError(`Cannot delete role with ${role._count.userRoles} user(s). Remove users first.`, ErrorType.VALIDATION, { status: 400 });
     }
 
     // Delete role (cascade removes permissions)
@@ -270,7 +261,6 @@ export async function DELETE(request, { params }) {
       message: "Role deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting role:", error);
-    return NextResponse.json({ error: "Failed to delete role" }, { status: 500 });
+    return handleApiError(error);
   }
 }

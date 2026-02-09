@@ -78,7 +78,7 @@ export default function SitemapPage() {
               <Map className="w-3 h-3" />
               Sitemap
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
               Site Navigation
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl leading-relaxed mx-auto md:mx-0">
@@ -135,7 +135,7 @@ export default function SitemapPage() {
           <p className="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">
             Our support team is available 24/7 to help you navigate our platform and find the resources you need.
           </p>
-          <button className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-lg">
+          <button className="px-8 py-4 bg-slate-900 text-white font-bold rounded-4xl hover:bg-slate-800 transition-all shadow-lg">
             Chat with Support
           </button>
         </div>

@@ -67,7 +67,7 @@ export default function RockPaperScissors() {
               onClick={() => playGame(choice)}
               className="group aspect-square bg-slate-100 hover:bg-white rounded-[2.5rem] shadow-inner hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-2"
             >
-              <span className="text-5xl group-hover:scale-125 transition-transform duration-300">{choice.emoji}</span>
+              <span className="text-brand-teal group-hover:scale-125 transition-transform duration-300">{choice.emoji}</span>
               <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{choice.name}</span>
             </button>
           ))}
@@ -99,7 +99,7 @@ export default function RockPaperScissors() {
 
           <Button
             onClick={nextRound}
-            className="h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
+            className="h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-4xl transition-all shadow-lg active:scale-95"
           >
             NEXT MATCH
           </Button>

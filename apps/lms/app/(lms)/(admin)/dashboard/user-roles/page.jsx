@@ -17,13 +17,13 @@ import {
 import {
   Key,
   UserPlus,
-  Trash2,
   Loader2,
   AlertCircle,
   RefreshCw,
   Search,
   Users,
   Shield,
+  Pencil,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUserRolesStore } from "@skill-learn/lib/stores/userRolesStore.js";
@@ -44,10 +44,9 @@ export default function UserRolesPage() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Dialog state
+  // Dialog state (assign or re-assign). When re-assigning, we need to remove the old assignment first.
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedUserRole, setSelectedUserRole] = useState(null);
+  const [reassignUserRoleId, setReassignUserRoleId] = useState(null);
 
   // Form state
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -75,13 +74,17 @@ export default function UserRolesPage() {
   const isLoading = loading || storeLoading;
   const displayError = error || storeError;
 
-  // Handle assign role
+  // Handle assign role (or re-assign: remove existing then assign new)
   const handleAssignRole = async () => {
     if (!selectedUserId || !selectedRoleId) return;
     setFormLoading(true);
     setFormError(null);
 
     try {
+      if (reassignUserRoleId) {
+        await removeRole(reassignUserRoleId);
+        setReassignUserRoleId(null);
+      }
       await assignRole(selectedUserId, selectedRoleId);
       setAssignDialogOpen(false);
       setSelectedUserId("");
@@ -93,21 +96,13 @@ export default function UserRolesPage() {
     }
   };
 
-  // Handle remove role
-  const handleRemoveRole = async () => {
-    if (!selectedUserRole) return;
-    setFormLoading(true);
+  // Open assign dialog for re-assign (pre-fill user and current role)
+  const openReassignDialog = (userRole) => {
+    setSelectedUserId(userRole.user?.clerkId || userRole.userId || "");
+    setSelectedRoleId(userRole.role?.id || userRole.roleId || "");
+    setReassignUserRoleId(userRole.id);
     setFormError(null);
-
-    try {
-      await removeRole(selectedUserRole.id);
-      setDeleteDialogOpen(false);
-      setSelectedUserRole(null);
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || "Failed to remove role");
-    } finally {
-      setFormLoading(false);
-    }
+    setAssignDialogOpen(true);
   };
 
   // Filter user roles
@@ -268,7 +263,7 @@ export default function UserRolesPage() {
                   <th className="text-left p-4 font-medium">User</th>
                   <th className="text-left p-4 font-medium">Role</th>
                   <th className="text-left p-4 font-medium">Assigned</th>
-                  <th className="text-right p-4 font-medium">Actions</th>
+                  <th className="text-right p-4 font-medium">Re-assign</th>
                 </tr>
               </thead>
               <tbody>
@@ -324,15 +319,13 @@ export default function UserRolesPage() {
                     </td>
                     <td className="p-4 text-right">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => {
-                          setSelectedUserRole(ur);
-                          setDeleteDialogOpen(true);
-                        }}
+                        onClick={() => openReassignDialog(ur)}
+                        className="gap-1.5"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Pencil className="h-4 w-4" />
+                        Re-assign
                       </Button>
                     </td>
                   </motion.tr>
@@ -343,13 +336,13 @@ export default function UserRolesPage() {
         </Card>
       )}
 
-      {/* Assign Role Dialog */}
+      {/* Assign / Re-assign Role Dialog */}
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assign Role to User</DialogTitle>
+            <DialogTitle>Assign or Re-assign Role</DialogTitle>
             <DialogDescription>
-              Select a user and role to create an assignment.
+              Every user must have a role. Select a user and role to assign or change their role.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -400,6 +393,7 @@ export default function UserRolesPage() {
                 setAssignDialogOpen(false);
                 setSelectedUserId("");
                 setSelectedRoleId("");
+                setReassignUserRoleId(null);
                 setFormError(null);
               }}
             >
@@ -411,44 +405,6 @@ export default function UserRolesPage() {
             >
               {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Assign Role
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Remove Role Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Remove Role Assignment</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to remove the &quot;{selectedUserRole?.role?.roleAlias}&quot;
-              role from {selectedUserRole?.user?.fullName || selectedUserRole?.userId}?
-            </DialogDescription>
-          </DialogHeader>
-          {formError && (
-            <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
-              {formError}
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false);
-                setSelectedUserRole(null);
-                setFormError(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemoveRole}
-              disabled={formLoading}
-            >
-              {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Remove Role
             </Button>
           </DialogFooter>
         </DialogContent>

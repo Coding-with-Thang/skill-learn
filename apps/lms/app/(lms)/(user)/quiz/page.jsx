@@ -13,7 +13,7 @@ import { toast } from "sonner"
 import { cn } from "@skill-learn/lib/utils.js"
 import { Progress } from "@skill-learn/ui/components/progress"
 import { UI, QUIZ_CONFIG } from "@/config/constants"
-import { handleErrorWithNotification } from "@/lib/utils/notifications"
+import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications.js"
 
 // Utility functions
 const formatTime = (seconds) => {

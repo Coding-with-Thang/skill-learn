@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent } from '@/components/cms/ui/card'
+import { Card, CardContent } from "@skill-learn/ui/components/card"
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn, formatPercentage } from '@/lib/cms/utils'
@@ -14,7 +14,7 @@ export default function HeroStatsCard({ stat, index }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.3 }}
     >
-      <Card className="overflow-hidden bg-gradient-to-br from-card to-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <Card className="overflow-hidden bg-linear-to-br from-card to-card/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Header */}
@@ -74,8 +74,8 @@ export default function HeroStatsCard({ stat, index }) {
                     className={cn(
                       "flex-1 rounded-sm",
                       isPositive
-                        ? "bg-gradient-to-t from-green-500 to-green-400"
-                        : "bg-gradient-to-t from-primary to-primary/70"
+                        ? "bg-linear-to-t from-green-500 to-green-400"
+                        : "bg-linear-to-t from-primary to-primary/70"
                     )}
                   />
                 )

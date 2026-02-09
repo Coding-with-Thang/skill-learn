@@ -142,6 +142,28 @@ export async function PUT(request, { params }) {
       );
     }
 
+    if (existingRole.doesNotCountTowardSlotLimit && isActive === false) {
+      return NextResponse.json(
+        { error: "The built-in Guest (default) role cannot be deactivated." },
+        { status: 400 }
+      );
+    }
+
+    if (isActive === false && existingRole.isActive) {
+      const activeCount = await prisma.tenantRole.count({
+        where: { tenantId, isActive: true },
+      });
+      if (activeCount <= 1) {
+        return NextResponse.json(
+          {
+            error:
+              "Tenant must have at least one active role. Add or activate another role before deactivating this one.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // If changing role alias, check for duplicates
     if (roleAlias && roleAlias !== existingRole.roleAlias) {
       const duplicateName = await prisma.tenantRole.findFirst({
@@ -295,7 +317,13 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // Check if any users have this role
+    if (role.doesNotCountTowardSlotLimit) {
+      return NextResponse.json(
+        { error: "The built-in Guest (default) role cannot be deleted." },
+        { status: 400 }
+      );
+    }
+
     if (role._count.userRoles > 0) {
       return NextResponse.json(
         {
