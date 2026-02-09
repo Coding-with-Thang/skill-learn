@@ -40,7 +40,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
           className="p-6 md:p-8 flex items-start justify-between gap-4 cursor-pointer bg-card hover:bg-muted/50 transition-colors"
         >
           <div className="flex gap-3 flex-1">
-            <span className="text-lg font-bold text-primary bg-primary/10 w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0">
+            <span className="text-lg font-bold text-primary bg-primary/10 w-8 h-8 flex items-center justify-center rounded-lg shrink-0">
               {index + 1}.
             </span>
             <div className="space-y-1">
@@ -53,7 +53,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-3 md:gap-4 shrink-0">
             <div className={cn(
               "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
               isCorrect ? "bg-green-500/20 text-green-600 dark:text-green-400" : "bg-red-500/20 text-red-600 dark:text-red-400"
@@ -211,7 +211,7 @@ export default function ResultsPage() {
   if (isPerfect) {
     PointsIcon = Crown;
     pointsIconBg = "bg-amber-500/20 text-amber-600 dark:text-amber-400 animate-bounce";
-    pointsCardBg = "bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20";
+    pointsCardBg = "bg-linear-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-500/20 dark:to-orange-500/20";
   } else if (isPassed) {
     PointsIcon = Star;
     pointsIconBg = "bg-primary/20 text-primary";
@@ -321,7 +321,7 @@ export default function ResultsPage() {
         </header>
 
         {/* 2. Accuracy Visualization */}
-        <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-card border-border">
+        <Card className="border-0 shadow-sm rounded-4xl overflow-hidden bg-card border-border">
           <CardContent className="p-8">
             <h3 className="text-lg font-bold text-foreground mb-6 text-center">Accuracy</h3>
             <div className="flex flex-col items-center justify-center">

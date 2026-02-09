@@ -41,7 +41,7 @@ export function RenderErrorState() {
   return (
     <div className="text-center">
       <div className="flex items-center mx-auto justify-center size-12 rounded-full bg-destructive/30 mb-4">
-        <FileImage className="size-6 text-destructive" />
+        <FileImage className="size-6 text-brand-tealestructive" />
       </div>
       <p className="text-base font-semibold">Upload Failed</p>
       <p className="text-xs mt-1 text-muted-foreground">Something went wrong</p>
@@ -60,7 +60,7 @@ export function RenderUploadedState({ previewUrl, onDelete, isDeleting }) {
         <img
           src={previewUrl}
           alt="Uploaded file"
-          className="size-24 sm:size-28 object-contain rounded-md border border-border bg-muted/30"
+          className="size-24 sm:size-28 object-contain rounded-4xld border border-border bg-muted/30"
         />
         <Button
           variant="destructive"

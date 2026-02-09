@@ -5,14 +5,14 @@ import { cva } from "class-variance-authority";
 import { cn } from "@skill-learn/lib/utils.js"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors duration-normal disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-4xld text-sm font-medium transition-colors duration-normal disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:bg-primary/80 disabled:bg-primary/50",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive-hover active:bg-destructive/90 focus-visible:ring-destructive/20",
+          "bg-destructive text-brand-tealestructive-foreground shadow-sm hover:bg-destructive-hover active:bg-destructive/90 focus-visible:ring-destructive/20",
         outline:
           "border border-border bg-background text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground active:bg-accent-active",
         secondary:
@@ -23,8 +23,8 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md gap-1.5 px-3 py-2",
-        lg: "h-10 rounded-md px-6 py-2",
+        sm: "h-8 rounded-4xld gap-1.5 px-3 py-2",
+        lg: "h-10 rounded-4xld px-6 py-2",
         icon: "size-9 p-2",
       },
     },

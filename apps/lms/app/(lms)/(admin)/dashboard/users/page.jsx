@@ -171,7 +171,7 @@ export default function UsersPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleDeleteConfirm(userToDelete)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

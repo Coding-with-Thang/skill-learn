@@ -108,7 +108,7 @@ export default function LessonPage() {
         const d = r.data?.data ?? r.data;
         setProgress(d ?? null);
       }),
-    ]).catch(() => {}).finally(() => {
+    ]).catch(() => { }).finally(() => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
@@ -170,7 +170,7 @@ export default function LessonPage() {
         {/* Side panel - chapters & lessons */}
         <aside
           className={cn(
-            "border-r border-border bg-card flex flex-col w-full lg:w-72 shrink-0 transition-transform duration-200 z-20",
+            "border-r border-border bg-card flex flex-col w-full lg:w-72 shrink-0 transition-transform duration-200 z-2000",
             sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-14"
           )}
         >
@@ -178,7 +178,7 @@ export default function LessonPage() {
             <button
               type="button"
               onClick={() => setSidebarOpen((o) => !o)}
-              className="p-2 rounded-md hover:bg-muted text-muted-foreground"
+              className="p-2 rounded-4xld hover:bg-muted text-muted-foreground"
               aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
             >
               <List className="h-5 w-5" />
@@ -213,7 +213,7 @@ export default function LessonPage() {
                               <Link
                                 href={`/courses/${courseId}/lessons/${lesson.id}`}
                                 className={cn(
-                                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+                                  "flex items-center gap-2 px-3 py-2 rounded-4xld text-sm transition-colors",
                                   isCurrent
                                     ? "bg-primary/10 text-primary font-medium"
                                     : "text-muted-foreground hover:bg-muted hover:text-foreground",

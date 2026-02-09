@@ -18,7 +18,7 @@ export default function ThemeSystemDemo() {
 
         {/* Header */}
         <header className="text-center space-y-4">
-          <h1 className="text-5xl font-bold text-gradient-teal">
+          <h1 className="text-brand-teal font-bold text-gradient-teal">
             Theme System Demo
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -81,7 +81,7 @@ export default function ThemeSystemDemo() {
             <button className="bg-accent text-accent-foreground hover:bg-accent-hover active:bg-accent-active px-6 py-3 rounded-lg shadow-theme-sm transition-normal">
               Accent Button
             </button>
-            <button className="bg-destructive text-destructive-foreground hover:bg-destructive-hover px-6 py-3 rounded-lg shadow-theme-sm transition-normal">
+            <button className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive-hover px-6 py-3 rounded-lg shadow-theme-sm transition-normal">
               Delete Button
             </button>
           </div>
@@ -126,7 +126,7 @@ export default function ThemeSystemDemo() {
         {/* Game Elements */}
         <section className="space-y-4">
           <h2 className="text-3xl font-bold">Game Elements</h2>
-          <div className="bg-game-background p-8 rounded-2xl shadow-theme-xl">
+          <div className="bg-game-background p-8 rounded-4xl shadow-theme-xl">
             <div className="text-center space-y-6">
               <h3 className="text-4xl font-bold text-gradient-game">
                 Level Complete!

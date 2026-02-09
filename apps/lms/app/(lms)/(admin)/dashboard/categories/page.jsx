@@ -203,7 +203,7 @@ export default function CategoriesPage() {
                     </div>
 
                     {/* Categories Table */}
-                    <div className="rounded-md border overflow-x-auto">
+                    <div className="rounded-4xld border overflow-x-auto">
                         <Table className="min-w-[600px]">
                             <TableHeader>
                                 <TableRow>
@@ -261,7 +261,7 @@ export default function CategoriesPage() {
             {/* Create/Edit Form — simple modal (no Radix) so Create button always receives clicks */}
             {showForm && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                    className="fixed inset-0 z-100 flex items-center justify-center p-4"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="category-form-title"
@@ -297,7 +297,7 @@ export default function CategoriesPage() {
                                 className="space-y-4 py-4"
                             >
                                 {formError && (
-                                    <div className="rounded-lg bg-destructive/10 text-destructive border border-destructive/20 px-3 py-2 text-sm" role="alert">
+                                    <div className="rounded-lg bg-destructive/10 text-brand-tealestructive border border-destructive/20 px-3 py-2 text-sm" role="alert">
                                         {formError}
                                     </div>
                                 )}
@@ -420,7 +420,7 @@ export default function CategoriesPage() {
             )}
 
             <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-                <AlertDialogContent className="z-[200]">
+                <AlertDialogContent className="z-200">
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete category?</AlertDialogTitle>
                         <AlertDialogDescription>
@@ -430,7 +430,7 @@ export default function CategoriesPage() {
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive/90"
                             onClick={() => deleteConfirmId && handleDeleteInModal(deleteConfirmId)}
                         >
                             Delete

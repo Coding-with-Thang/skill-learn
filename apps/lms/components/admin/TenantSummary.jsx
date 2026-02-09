@@ -75,7 +75,7 @@ export function TenantSummary() {
   };
 
   return (
-    <Card className="shadow-sm border-none bg-gradient-to-br from-card to-muted/20">
+    <Card className="shadow-sm border-none bg-linear-to-br from-card to-muted/20">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

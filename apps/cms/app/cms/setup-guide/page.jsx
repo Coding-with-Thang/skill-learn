@@ -17,12 +17,12 @@ export default function SetupGuidePage() {
     )
   }
 
-  const hasSuperAdmin = 
+  const hasSuperAdmin =
     user?.publicMetadata?.role === 'super_admin' ||
     user?.publicMetadata?.appRole === 'super_admin'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/20 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-background to-muted/20 p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
@@ -64,7 +64,7 @@ export default function SetupGuidePage() {
               </p>
               <div className="mt-4 space-y-2">
                 <p className="text-xs text-red-600 dark:text-red-400">
-                  <strong>Security Notice:</strong> The initial setup process has been locked down to prevent unauthorized access. 
+                  <strong>Security Notice:</strong> The initial setup process has been locked down to prevent unauthorized access.
                   Only existing super admins can now approve new super admin users through the CMS dashboard.
                 </p>
               </div>

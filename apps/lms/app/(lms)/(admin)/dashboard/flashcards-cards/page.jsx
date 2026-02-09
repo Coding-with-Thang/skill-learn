@@ -162,7 +162,7 @@ export default function FlashCardsAdminCardsPage() {
               No flash cards yet.
             </p>
           ) : (
-            <div className="rounded-md border overflow-x-auto">
+            <div className="rounded-4xld border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -205,7 +205,7 @@ export default function FlashCardsAdminCardsPage() {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-destructive"
+                              className="text-brand-tealestructive"
                               onClick={() => handleDelete(card)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />

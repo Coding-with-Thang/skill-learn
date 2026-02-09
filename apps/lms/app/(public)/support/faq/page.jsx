@@ -124,7 +124,7 @@ export default function FAQPage() {
           <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-teal/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
 
           <div className="relative z-10 max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-extrabold text-white mb-6 tracking-tight">
               How can we help you today?
             </h1>
             <p className="text-brand-teal text-lg font-medium mb-12">
@@ -137,7 +137,7 @@ export default function FAQPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for answers (e.g., 'API integration', 'Invoices')..."
-                className="h-16 pl-14 pr-6 rounded-2xl bg-white border-none shadow-xl focus:ring-2 focus:ring-brand-teal/20 text-lg transition-all"
+                className="h-16 pl-14 pr-6 rounded-4xl bg-white border-none shadow-xl focus:ring-2 focus:ring-brand-teal/20 text-lg transition-all"
               />
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function FAQPage() {
                       key={cat.id}
                       onClick={() => setActiveCategory(cat.id)}
                       className={cn(
-                        "w-full flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all text-left",
+                        "w-full flex items-center gap-4 px-4 py-4 rounded-4xl font-bold transition-all text-left",
                         activeCategory === cat.id
                           ? "bg-brand-teal/10 text-brand-teal"
                           : "text-slate-500 hover:bg-slate-50"
@@ -173,7 +173,7 @@ export default function FAQPage() {
                 })}
               </nav>
 
-              <div className="mt-12 p-6 bg-slate-50 rounded-2xl">
+              <div className="mt-12 p-6 bg-slate-50 rounded-4xl">
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">STILL NEED HELP?</h4>
                 <p className="text-xs text-slate-500 mb-6 leading-relaxed">
                   Can't find what you're looking for? Our team is here to help.
@@ -217,7 +217,7 @@ export default function FAQPage() {
                           <div
                             key={id}
                             className={cn(
-                              "bg-white rounded-2xl border transition-all duration-300",
+                              "bg-white rounded-4xl border transition-all duration-300",
                               isExpanded ? "border-brand-teal shadow-md" : "border-slate-100 hover:border-slate-200"
                             )}
                           >
@@ -272,11 +272,11 @@ export default function FAQPage() {
             Our support experts are available 24/7 to help you with any questions or technical issues.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="h-14 px-8 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black rounded-2xl flex items-center gap-3 shadow-lg shadow-emerald-500/10">
+            <Button className="h-14 px-8 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black rounded-4xl flex items-center gap-3 shadow-lg shadow-emerald-500/10">
               <Mail className="w-5 h-5" />
               Email Support
             </Button>
-            <Button variant="outline" className="h-14 px-8 border-slate-100 text-[#1B1B53] font-bold rounded-2xl flex items-center gap-3 hover:bg-slate-50">
+            <Button variant="outline" className="h-14 px-8 border-slate-100 text-[#1B1B53] font-bold rounded-4xl flex items-center gap-3 hover:bg-slate-50">
               <MessageCircle className="w-5 h-5" />
               Live Chat
             </Button>

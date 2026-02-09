@@ -95,7 +95,7 @@ export default function SettingsPage() {
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Default Timezone</label>
-                        <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+                        <select className="flex h-10 w-full rounded-4xld border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
                           <option>(UTC-05:00) Eastern Time (US & Canada)</option>
                           <option>(UTC+00:00) UTC</option>
                           <option>(UTC+01:00) London</option>

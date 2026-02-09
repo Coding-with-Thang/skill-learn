@@ -37,7 +37,7 @@ export function CourseCard({
       >
         <div className="flex gap-4 p-4 rounded-xl border border-border bg-card hover:border-brand-teal/50 hover:shadow-md transition-all duration-300">
           {/* Thumbnail */}
-          <div className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+          <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden">
             <Image
               src={course.imageUrl || "/placeholder-course.jpg"}
               alt={course.title}
@@ -58,7 +58,7 @@ export function CourseCard({
                   {course.excerptDescription || course.description}
                 </p>
               </div>
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 {course.progress > 0 ? (
                   <span className={cn("text-sm font-medium", getStatusColor(course.status))}>
                     {course.progress}%

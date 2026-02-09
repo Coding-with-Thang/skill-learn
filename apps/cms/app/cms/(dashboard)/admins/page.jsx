@@ -218,7 +218,7 @@ export default function AdminUsersPage() {
               />
             </div>
             {addError && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
+              <div className="flex items-center gap-2 text-sm text-brand-tealestructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {addError}
               </div>

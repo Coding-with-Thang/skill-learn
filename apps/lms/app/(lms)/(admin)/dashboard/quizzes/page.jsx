@@ -381,7 +381,7 @@ export default function QuizzesAdminPage() {
           </div>
 
           {/* Table */}
-          <div className="rounded-md border">
+          <div className="rounded-4xld border">
             <Table>
               <TableHeader>
                 <TableRow>

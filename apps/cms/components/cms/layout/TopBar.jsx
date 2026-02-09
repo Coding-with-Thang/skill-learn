@@ -231,7 +231,7 @@ export default function TopBar() {
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
+                <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary to-primary/70 flex items-center justify-center text-white font-medium">
                   {userInitials}
                 </div>
               )}
@@ -270,7 +270,7 @@ export default function TopBar() {
                     </Button>
                     <Button
                       variant="ghost"
-                      className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="w-full justify-start gap-2 text-brand-tealestructive hover:text-brand-tealestructive hover:bg-destructive/10"
                     >
                       <LogOut className="h-4 w-4" />
                       Logout

@@ -34,7 +34,7 @@ export default function SkillLearnHere() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-      <div className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-[#40C9FF] via-[#3FA7D6] to-[#48B1BF] p-8 md:p-16 lg:p-20 shadow-2xl shadow-blue-500/20">
+      <div className="relative overflow-hidden rounded-[3rem] bg-linear-to-br from-[#40C9FF] via-[#3FA7D6] to-[#48B1BF] p-8 md:p-16 lg:p-20 shadow-2xl shadow-blue-500/20">
 
         {/* Background Decorative Icons */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 opacity-10 pointer-events-none">
@@ -59,7 +59,7 @@ export default function SkillLearnHere() {
               New Performance Suite
             </div>
 
-            <h2 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight font-display">
+            <h2 className="text-brand-teal md:text-7xl font-extrabold leading-[1.1] tracking-tight font-display">
               Empower Your <br />
               Team with <br />
               Skill-Learn
@@ -73,7 +73,7 @@ export default function SkillLearnHere() {
               <Button
                 asChild
                 size="lg"
-                className="bg-white text-blue-600 hover:bg-white/90 h-14 px-8 rounded-2xl font-bold text-lg group shadow-lg shadow-black/5"
+                className="bg-white text-blue-600 hover:bg-white/90 h-14 px-8 rounded-4xl font-bold text-lg group shadow-lg shadow-black/5"
               >
                 <Link href="/pricing">
                   Get Started Free
@@ -84,7 +84,7 @@ export default function SkillLearnHere() {
                 variant="outline"
                 size="lg"
                 onClick={() => setIsVideoPlaying(true)}
-                className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 h-14 px-8 rounded-2xl font-bold text-lg"
+                className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 h-14 px-8 rounded-4xl font-bold text-lg"
               >
                 <Play className="mr-2 w-5 h-5 fill-current" />
                 Watch Video
@@ -155,11 +155,11 @@ export default function SkillLearnHere() {
 
               {/* Bottom Cards */}
               <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="p-4 bg-slate-50 rounded-2xl flex items-center gap-3">
+                <div className="p-4 bg-slate-50 rounded-4xl flex items-center gap-3">
                   <div className="text-blue-500 font-black text-xl">85%</div>
                   <div className="w-8 h-1.5 bg-blue-500 rounded-full" />
                 </div>
-                <div className="p-4 bg-slate-50/50 rounded-2xl relative overflow-hidden group">
+                <div className="p-4 bg-slate-50/50 rounded-4xl relative overflow-hidden group">
                   <div className="flex items-center gap-1.5 text-blue-600 font-black text-lg">
                     <TrendingUp className="w-4 h-4" />
                     12%
@@ -177,7 +177,7 @@ export default function SkillLearnHere() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4, duration: 0.6 }}
-              className="absolute -top-6 -right-6 md:-right-10 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-4 z-20"
+              className="absolute -top-6 -right-6 md:-right-10 bg-white rounded-4xl p-4 shadow-xl border border-slate-50 flex items-center gap-4 z-2000"
             >
               <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center">
                 <Trophy className="text-orange-400 w-6 h-6" />
@@ -194,7 +194,7 @@ export default function SkillLearnHere() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="absolute -bottom-6 -left-6 md:-left-12 bg-white rounded-2xl p-4 shadow-xl border border-slate-50 flex items-center gap-4 z-20"
+              className="absolute -bottom-6 -left-6 md:-left-12 bg-white rounded-4xl p-4 shadow-xl border border-slate-50 flex items-center gap-4 z-2000"
             >
               <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
                 <TrendingUp className="text-emerald-500 w-5 h-5" />
@@ -218,7 +218,7 @@ export default function SkillLearnHere() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="relative w-full max-w-4xl aspect-video bg-white rounded-2xl overflow-hidden border-2 border-slate-200"
+            className="relative w-full max-w-4xl aspect-video bg-white rounded-4xl overflow-hidden border-2 border-slate-200"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"

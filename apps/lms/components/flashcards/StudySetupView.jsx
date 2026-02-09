@@ -139,12 +139,12 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-4 rounded-2xl bg-destructive/10 border border-destructive/20"
+            className="flex items-center gap-3 p-4 rounded-4xl bg-destructive/10 border border-destructive/20"
           >
-            <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
-            <p className="flex-1 text-sm font-medium text-destructive">{error}</p>
+            <AlertCircle className="w-5 h-5 text-brand-tealestructive shrink-0" />
+            <p className="flex-1 text-sm font-medium text-brand-tealestructive">{error}</p>
             {onClearError && (
-              <Button variant="ghost" size="sm" onClick={onClearError} className="text-destructive hover:bg-destructive/10">
+              <Button variant="ghost" size="sm" onClick={onClearError} className="text-brand-tealestructive hover:bg-destructive/10">
                 Dismiss
               </Button>
             )}
@@ -165,7 +165,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
                 type="button"
                 onClick={() => setMode(m.id)}
                 className={cn(
-                  "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all text-left",
+                  "flex flex-col items-center gap-2 p-4 rounded-4xl border-2 transition-all text-left",
                   mode === m.id
                     ? "border-primary bg-primary/5 shadow-md"
                     : "border-border hover:border-primary/50 hover:bg-muted/30"
@@ -248,7 +248,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
                     type="button"
                     onClick={() => selectVirtual(vId)}
                     className={cn(
-                      "flex items-start gap-3 p-4 rounded-2xl border-2 transition-all text-left",
+                      "flex items-start gap-3 p-4 rounded-4xl border-2 transition-all text-left",
                       virtualSource === vId
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/50 hover:bg-muted/30"
@@ -279,7 +279,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
             size="lg"
             onClick={handleStart}
             disabled={!canStart}
-            className="w-full h-16 rounded-2xl text-lg font-bold bg-gradient-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 disabled:opacity-50"
+            className="w-full h-16 rounded-4xl text-lg font-bold bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 disabled:opacity-50"
           >
             Start Session
             <ChevronRight className="w-5 h-5 ml-2" />

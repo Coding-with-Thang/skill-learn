@@ -54,7 +54,7 @@ export default function OnboardingWorkspacePage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
-  
+
   const { isSignedIn, user, isLoaded } = useUser();
 
   const [loading, setLoading] = useState(false);
@@ -223,173 +223,173 @@ export default function OnboardingWorkspacePage() {
       </div>
 
       {step === 1 && (
-      <Card>
-        <CardHeader className="text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="w-16 h-16 bg-brand-teal/10 rounded-full flex items-center justify-center mx-auto mb-4"
-          >
-            <Building2 className="w-8 h-8 text-brand-teal" />
-          </motion.div>
-          <CardTitle className="text-2xl">Set Up Your Workspace</CardTitle>
-          <CardDescription>
-            Create your organization&apos;s learning environment
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="organizationName">
-                Organization Name <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="organizationName"
-                  name="organizationName"
-                  type="text"
-                  placeholder="Acme Corporation"
-                  value={formData.organizationName}
-                  onChange={handleInputChange}
-                  className="pl-10"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="subdomain">Workspace URL</Label>
-              <div className="flex items-center">
-                <div className="relative flex-1">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <Card>
+          <CardHeader className="text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="w-16 h-16 bg-brand-teal/10 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <Building2 className="w-8 h-8 text-brand-teal" />
+            </motion.div>
+            <CardTitle className="text-2xl">Set Up Your Workspace</CardTitle>
+            <CardDescription>
+              Create your organization&apos;s learning environment
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="space-y-2">
+                <Label htmlFor="organizationName">
+                  Organization Name <span className="text-red-500">*</span>
+                </Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
-                    id="subdomain"
-                    name="subdomain"
+                    id="organizationName"
+                    name="organizationName"
                     type="text"
-                    placeholder="acme"
-                    value={formData.subdomain}
+                    placeholder="Acme Corporation"
+                    value={formData.organizationName}
                     onChange={handleInputChange}
-                    className="pl-10 rounded-r-none"
-                    pattern="[a-z0-9-]+"
+                    className="pl-10"
+                    required
                   />
                 </div>
-                <div className="px-3 py-2 bg-gray-100 border border-l-0 rounded-r-md text-sm text-gray-500">
-                  .skill-learn.com
-                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                This will be your workspace&apos;s unique URL
-              </p>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industry</Label>
-              <Select
-                value={formData.industry}
-                onValueChange={(value) => handleSelectChange("industry", value)}
-              >
-                <SelectTrigger>
-                  <Briefcase className="w-4 h-4 text-gray-400 mr-2" />
-                  <SelectValue placeholder="Select your industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {industries.map((industry) => (
-                    <SelectItem key={industry.value} value={industry.value}>
-                      {industry.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="teamSize">Team Size</Label>
-              <Select
-                value={formData.teamSize}
-                onValueChange={(value) => handleSelectChange("teamSize", value)}
-              >
-                <SelectTrigger>
-                  <Users className="w-4 h-4 text-gray-400 mr-2" />
-                  <SelectValue placeholder="Select team size" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teamSizes.map((size) => (
-                    <SelectItem key={size.value} value={size.value}>
-                      {size.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              ) : (
-                <CheckCircle2 className="w-5 h-5 mr-2" />
-              )}
-              Create Workspace
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-      )}
-
-      {step === 2 && (
-      <Card>
-        <CardHeader className="text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="w-16 h-16 bg-brand-teal/10 rounded-full flex items-center justify-center mx-auto mb-4"
-          >
-            <Shield className="w-8 h-8 text-brand-teal" />
-          </motion.div>
-          <CardTitle className="text-2xl">Default Role for New Users</CardTitle>
-          <CardDescription>
-            New users and anyone without a role will get this role by default. You can change this later in settings.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-          {rolesLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-brand-teal" />
-            </div>
-          ) : (
-            <form onSubmit={handleDefaultRoleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="defaultRoleId">Default role</Label>
+                <Label htmlFor="subdomain">Workspace URL</Label>
+                <div className="flex items-center">
+                  <div className="relative flex-1">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="subdomain"
+                      name="subdomain"
+                      type="text"
+                      placeholder="acme"
+                      value={formData.subdomain}
+                      onChange={handleInputChange}
+                      className="pl-10 rounded-4xl-none"
+                      pattern="[a-z0-9-]+"
+                    />
+                  </div>
+                  <div className="px-3 py-2 bg-gray-100 border border-l-0 rounded-4xl-md text-sm text-gray-500">
+                    .skill-learn.com
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  This will be your workspace&apos;s unique URL
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="industry">Industry</Label>
                 <Select
-                  value={defaultRoleId}
-                  onValueChange={setDefaultRoleId}
+                  value={formData.industry}
+                  onValueChange={(value) => handleSelectChange("industry", value)}
                 >
                   <SelectTrigger>
-                    <Shield className="w-4 h-4 text-gray-400 mr-2" />
-                    <SelectValue placeholder="Select default role" />
+                    <Briefcase className="w-4 h-4 text-gray-400 mr-2" />
+                    <SelectValue placeholder="Select your industry" />
                   </SelectTrigger>
                   <SelectContent>
-                    {roles.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        {role.roleAlias}
-                        {role.doesNotCountTowardSlotLimit && " (view-only, doesn’t count toward role limit)"}
+                    {industries.map((industry) => (
+                      <SelectItem key={industry.value} value={industry.value}>
+                        {industry.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <Button type="submit" className="w-full" disabled={loading || !defaultRoleId}>
+
+              <div className="space-y-2">
+                <Label htmlFor="teamSize">Team Size</Label>
+                <Select
+                  value={formData.teamSize}
+                  onValueChange={(value) => handleSelectChange("teamSize", value)}
+                >
+                  <SelectTrigger>
+                    <Users className="w-4 h-4 text-gray-400 mr-2" />
+                    <SelectValue placeholder="Select team size" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teamSizes.map((size) => (
+                      <SelectItem key={size.value} value={size.value}>
+                        {size.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
                 ) : (
-                  <ArrowRight className="w-5 h-5 mr-2" />
+                  <CheckCircle2 className="w-5 h-5 mr-2" />
                 )}
-                Continue
+                Create Workspace
               </Button>
             </form>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
+
+      {step === 2 && (
+        <Card>
+          <CardHeader className="text-center">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="w-16 h-16 bg-brand-teal/10 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <Shield className="w-8 h-8 text-brand-teal" />
+            </motion.div>
+            <CardTitle className="text-2xl">Default Role for New Users</CardTitle>
+            <CardDescription>
+              New users and anyone without a role will get this role by default. You can change this later in settings.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6">
+            {rolesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-brand-teal" />
+              </div>
+            ) : (
+              <form onSubmit={handleDefaultRoleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="defaultRoleId">Default role</Label>
+                  <Select
+                    value={defaultRoleId}
+                    onValueChange={setDefaultRoleId}
+                  >
+                    <SelectTrigger>
+                      <Shield className="w-4 h-4 text-gray-400 mr-2" />
+                      <SelectValue placeholder="Select default role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.roleAlias}
+                          {role.doesNotCountTowardSlotLimit && " (view-only, doesn’t count toward role limit)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading || !defaultRoleId}>
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 mr-2" />
+                  )}
+                  Continue
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {user && (

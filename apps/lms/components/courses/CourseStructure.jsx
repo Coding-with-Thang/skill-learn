@@ -103,7 +103,7 @@ export default function CourseStructure({
               e.stopPropagation();
               if (!disabled) onDelete(chapterId, lesson);
             }}
-            className="text-muted-foreground hover:text-destructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+            className="text-muted-foreground hover:text-brand-tealestructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
             aria-label="Delete lesson"
             disabled={disabled}
           >
@@ -202,7 +202,7 @@ export default function CourseStructure({
       <div
         ref={setNodeRef}
         style={style}
-        className={`touch-none rounded-md border border-border ${isDragging ? "z-10 bg-background shadow" : ""}`}
+        className={`touch-none rounded-4xld border border-border ${isDragging ? "z-10 bg-background shadow" : ""}`}
       >
         <div className="flex items-center gap-2 p-3">
           <button
@@ -279,7 +279,7 @@ export default function CourseStructure({
                 e.stopPropagation();
                 if (!disabled) onDelete(chapter);
               }}
-              className="text-muted-foreground hover:text-destructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
+              className="text-muted-foreground hover:text-brand-tealestructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
               aria-label="Delete chapter"
               disabled={disabled}
             >

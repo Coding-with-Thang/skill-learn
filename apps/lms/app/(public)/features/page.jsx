@@ -90,7 +90,7 @@ export default function FeaturesPage() {
             <span className="inline-block px-4 py-1.5 bg-brand-teal/10 text-brand-teal rounded-full text-xs font-bold uppercase tracking-widest mb-8">
               Platform Features
             </span>
-            <h1 className="text-5xl md:text-7xl font-extrabold text-[#1B1B53] mb-8 tracking-tight max-w-4xl mx-auto leading-[1.05]">
+            <h1 className="text-brand-teal md:text-7xl font-extrabold text-[#1B1B53] mb-8 tracking-tight max-w-4xl mx-auto leading-[1.05]">
               Powering the next generation of <span className="text-[#00D181]">corporate learning.</span>
             </h1>
             <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-12">
@@ -111,7 +111,7 @@ export default function FeaturesPage() {
                 {...fadeInUp}
                 className={feature.reverse ? 'lg:order-2' : ''}
               >
-                <div className={`w-12 h-12 rounded-2xl ${feature.color} flex items-center justify-center mb-8 shadow-sm`}>
+                <div className={`w-12 h-12 rounded-4xl ${feature.color} flex items-center justify-center mb-8 shadow-sm`}>
                   {idx === 0 ? <Gamepad2 className="w-6 h-6" /> : idx === 1 ? <Layout className="w-6 h-6" /> : <BarChart3 className="w-6 h-6" />}
                 </div>
                 <h2 className="text-4xl font-extrabold text-[#1B1B53] mb-6 tracking-tight">
@@ -166,7 +166,7 @@ export default function FeaturesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <span className="text-xs font-black text-brand-teal uppercase tracking-[0.3em] mb-4 block">Success Stories</span>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-[#1B1B53] tracking-tight">Trusted by industry leaders</h2>
+            <h2 className="text-4xl md:text-brand-teal font-extrabold text-[#1B1B53] tracking-tight">Trusted by industry leaders</h2>
           </div>
 
           <motion.div
@@ -180,7 +180,7 @@ export default function FeaturesPage() {
                   <Target className="w-5 h-5 text-[#00D181]" />
                   <span className="text-xs font-black text-[#1B1B53] uppercase tracking-widest">TechFlow</span>
                 </div>
-                <h3 className="text-4xl md:text-5xl font-extrabold text-[#1B1B53] mb-8 leading-[1.1]">
+                <h3 className="text-4xl md:text-brand-teal font-extrabold text-[#1B1B53] mb-8 leading-[1.1]">
                   Boosted employee engagement by <span className="text-[#00D181]">45%</span> in six months.
                 </h3>
                 <blockquote className="text-xl text-slate-600 italic mb-12 border-l-4 border-[#00D181] pl-8 leading-relaxed">
@@ -213,7 +213,7 @@ export default function FeaturesPage() {
                   <div className="text-4xl font-black text-[#1B1B53]">92% Certification Rate</div>
                 </div>
                 <Link href="/resources/case-studies/techflow" className="block">
-                  <Button className="w-full h-14 bg-[#1B1B53] hover:bg-[#1B1B53]/90 text-white rounded-2xl font-bold">
+                  <Button className="w-full h-14 bg-[#1B1B53] hover:bg-[#1B1B53]/90 text-white rounded-4xl font-bold">
                     Read Full Case Study
                   </Button>
                 </Link>
@@ -243,10 +243,10 @@ export default function FeaturesPage() {
               Join over 500+ forward-thinking companies scaling their knowledge with Skill-Learn.
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button size="lg" className="h-16 px-10 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-2xl shadow-xl shadow-emerald-500/20">
+              <Button size="lg" className="h-16 px-10 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-4xl shadow-xl shadow-emerald-500/20">
                 Start Free Trial
               </Button>
-              <Button size="lg" variant="outline" className="h-16 px-10 border-2 border-white/20 text-white hover:bg-white/10 font-bold text-lg rounded-2xl backdrop-blur-md">
+              <Button size="lg" variant="outline" className="h-16 px-10 border-2 border-white/20 text-white hover:bg-white/10 font-bold text-lg rounded-4xl backdrop-blur-md">
                 Schedule Demo
               </Button>
             </div>

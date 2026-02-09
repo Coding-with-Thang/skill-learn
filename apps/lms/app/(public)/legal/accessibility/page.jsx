@@ -74,7 +74,7 @@ export default function AccessibilityPage() {
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 tracking-tight">
               Accessibility Statement
             </h1>
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold uppercase tracking-wider">
@@ -91,9 +91,9 @@ export default function AccessibilityPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar Navigation */}
-          <aside className="lg:w-72 flex-shrink-0">
+          <aside className="lg:w-72 shrink-0">
             <div className="sticky top-10">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+              <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
                 <h3 className="text-sm font-bold text-slate-900 mb-1 tracking-tight">Table of Contents</h3>
                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">Quick Navigation</p>
                 <nav className="space-y-1">
@@ -166,7 +166,7 @@ export default function AccessibilityPage() {
                   <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Compatibility</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
                     <div className="p-3 bg-emerald-50 rounded-xl w-fit mb-6">
                       <Monitor className="w-6 h-6 text-emerald-600" />
                     </div>
@@ -177,14 +177,14 @@ export default function AccessibilityPage() {
                     <ul className="space-y-3">
                       {["JAWS", "NVDA", "VoiceOver (macOS and iOS)"].map((tech) => (
                         <li key={tech} className="flex items-start gap-3">
-                          <div className="mt-2 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                          <div className="mt-2 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           <span className="text-sm text-slate-700 font-medium">{tech}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-4xl p-8 border border-slate-100 shadow-sm">
                     <div className="p-3 bg-emerald-50 rounded-xl w-fit mb-6">
                       <Globe className="w-6 h-6 text-emerald-600" />
                     </div>
@@ -195,7 +195,7 @@ export default function AccessibilityPage() {
                     <ul className="space-y-3">
                       {["Google Chrome", "Mozilla Firefox", "Apple Safari", "Microsoft Edge"].map((browser) => (
                         <li key={browser} className="flex items-start gap-3">
-                          <div className="mt-2 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                          <div className="mt-2 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                           <span className="text-sm text-slate-700 font-medium">{browser}</span>
                         </li>
                       ))}
@@ -263,7 +263,7 @@ export default function AccessibilityPage() {
                     </div>
 
                     <div className="lg:pl-12">
-                      <button className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-200 group">
+                      <button className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-4xl hover:bg-emerald-700 transition-all shadow-lg hover:shadow-emerald-200 group">
                         <Flag className="w-5 h-5 group-hover:animate-bounce" />
                         Report a Barrier
                       </button>

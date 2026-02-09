@@ -66,7 +66,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                     ) : (
                         <PaginationItem key={p}>
                             <PaginationLink asChild isActive={p === currentPage}>
-                                <Link href={`${baseHref}&page=${p}`} onClick={() => setCurrentPage(p)} className="px-3 py-1 rounded-md border text-sm hover:bg-accent">{p}</Link>
+                                <Link href={`${baseHref}&page=${p}`} onClick={() => setCurrentPage(p)} className="px-3 py-1 rounded-4xld border text-sm hover:bg-accent">{p}</Link>
                             </PaginationLink>
                         </PaginationItem>
                     )

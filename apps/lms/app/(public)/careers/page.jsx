@@ -98,8 +98,8 @@ export default function CareersPage() {
     <div className="min-h-screen bg-slate-50/50">
       {/* Hero Section */}
       <section className="relative pt-20 pb-16 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-teal-50/50 to-transparent" />
+        <div className="absolute inset-0 z-200">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-linear-to-b from-teal-50/50 to-transparent" />
         </div>
 
         <div className="container relative z-10 px-4 mx-auto text-center">
@@ -153,7 +153,7 @@ export default function CareersPage() {
               >
                 <Card className="h-full border-slate-100 hover:border-teal-100 transition-colors shadow-sm hover:shadow-md group">
                   <CardContent className="pt-8 px-8 pb-8">
-                    <div className="w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-4xl bg-teal-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                       {perk.icon}
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-3">{perk.title}</h3>
@@ -213,7 +213,7 @@ export default function CareersPage() {
                   viewport={{ once: true }}
                 >
                   <Link href={`/careers/${job.id}`}>
-                    <div className="group bg-white border border-slate-100 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-lg hover:border-teal-200 transition-all duration-300">
+                    <div className="group bg-white border border-slate-100 p-6 rounded-4xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-lg hover:border-teal-200 transition-all duration-300">
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
                           <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-600 transition-colors">

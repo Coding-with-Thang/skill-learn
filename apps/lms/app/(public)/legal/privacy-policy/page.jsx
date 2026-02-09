@@ -81,7 +81,7 @@ export default function PrivacyPolicyPage() {
                         <span className="text-slate-900 font-medium">Privacy Policy</span>
                     </nav>
 
-                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
                         Privacy Policy
                     </h1>
                     <p className="text-xl text-slate-600 max-w-3xl leading-relaxed mb-10">
@@ -118,7 +118,7 @@ export default function PrivacyPolicyPage() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Sidebar Navigation */}
-                    <aside className="lg:w-72 flex-shrink-0">
+                    <aside className="lg:w-72 shrink-0">
                         <div className="sticky top-10 space-y-8">
                             <div>
                                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Navigation</h3>
@@ -150,7 +150,7 @@ export default function PrivacyPolicyPage() {
                             </div>
 
                             {/* Legal Update Card */}
-                            <div className="bg-gradient-to-br from-emerald-500 to-brand-teal rounded-2xl p-6 text-white shadow-xl shadow-brand-teal/20 relative overflow-hidden group">
+                            <div className="bg-linear-to-br from-emerald-500 to-brand-teal rounded-4xl p-6 text-white shadow-xl shadow-brand-teal/20 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110" />
                                 <span className="inline-block text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded mb-4">
                                     Legal Update
@@ -180,7 +180,7 @@ export default function PrivacyPolicyPage() {
                                 </div>
 
                                 {/* Callout: GDPR */}
-                                <div className="mt-10 bg-[#F0F7FF] border-l-4 border-[#007AFF] rounded-r-2xl p-6 flex flex-col sm:flex-row gap-4 items-start">
+                                <div className="mt-10 bg-[#F0F7FF] border-l-4 border-[#007AFF] rounded-4xl-2xl p-6 flex flex-col sm:flex-row gap-4 items-start">
                                     <div className="p-2 bg-white rounded-lg shadow-sm">
                                         <Info className="w-5 h-5 text-[#007AFF]" />
                                     </div>
@@ -202,25 +202,25 @@ export default function PrivacyPolicyPage() {
                                     </p>
                                     <ul className="space-y-4 list-none pl-0">
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Identity Data</strong> includes first name, last name, username or similar identifier.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Contact Data</strong> includes billing address, delivery address, email address and telephone numbers.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Technical Data</strong> includes internet protocol (IP) address, your login data, browser type and version.
                                             </p>
                                         </li>
                                         <li className="flex items-start gap-4">
-                                            <div className="mt-3 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                            <div className="mt-3 w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0" />
                                             <p className="m-0 text-slate-700">
                                                 <strong className="text-slate-900 font-bold">Usage Data</strong> includes information about how you use our website, products and services.
                                             </p>
@@ -256,7 +256,7 @@ export default function PrivacyPolicyPage() {
                                 </div>
 
                                 {/* Callout: Action Required */}
-                                <div className="mt-10 bg-[#FFF7E6] border-l-4 border-[#FFA500] rounded-r-2xl p-6 flex flex-col sm:flex-row gap-4 items-start">
+                                <div className="mt-10 bg-[#FFF7E6] border-l-4 border-[#FFA500] rounded-4xl-2xl p-6 flex flex-col sm:flex-row gap-4 items-start">
                                     <div className="p-2 bg-white rounded-lg shadow-sm">
                                         <AlertTriangle className="w-5 h-5 text-[#FFA500]" />
                                     </div>
@@ -304,7 +304,7 @@ export default function PrivacyPolicyPage() {
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
-                                    <div className="bg-[#F8F9FB] rounded-2xl p-8 border border-slate-100 flex flex-col items-start shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="bg-[#F8F9FB] rounded-4xl p-8 border border-slate-100 flex flex-col items-start shadow-sm hover:shadow-md transition-shadow">
                                         <div className="p-3 bg-white rounded-xl shadow-sm mb-6">
                                             <Mail className="w-6 h-6 text-brand-teal" />
                                         </div>
@@ -314,7 +314,7 @@ export default function PrivacyPolicyPage() {
                                         </a>
                                     </div>
 
-                                    <div className="bg-[#F8F9FB] rounded-2xl p-8 border border-slate-100 flex flex-col items-start shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="bg-[#F8F9FB] rounded-4xl p-8 border border-slate-100 flex flex-col items-start shadow-sm hover:shadow-md transition-shadow">
                                         <div className="p-3 bg-white rounded-xl shadow-sm mb-6">
                                             <Phone className="w-6 h-6 text-brand-teal" />
                                         </div>

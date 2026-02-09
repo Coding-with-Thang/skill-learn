@@ -130,7 +130,7 @@ export default function SystemHealthPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3 font-mono text-xs max-h-[300px] overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-950/80 pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-slate-950/80 pointer-events-none" />
                 <div className="text-green-400">[INFO] Worker-01 processed batch #49221</div>
                 <div className="text-blue-400">[DEBUG] Cache hit for key user:1024</div>
                 <div className="text-yellow-400">[WARN] High memory usage detected on node-03</div>

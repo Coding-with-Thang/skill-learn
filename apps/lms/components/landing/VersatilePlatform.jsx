@@ -110,7 +110,7 @@ export default function VersatilePlatform() {
           <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
             Skill-Learn Platform
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+          <h2 className="text-4xl md:text-brand-teal lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
             The Most <span className="relative inline-block">
               Versatile
               <svg className="absolute -bottom-1 left-0 w-full" height="8" viewBox="0 0 100 10" preserveAspectRatio="none">
@@ -172,7 +172,7 @@ export default function VersatilePlatform() {
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   {CONTENT[activeTab].badge}
                 </span>
-                <h3 className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 leading-[1.1] tracking-tight">
+                <h3 className="text-3xl md:text-4xl lg:text-brand-teal font-black text-slate-900 leading-[1.1] tracking-tight">
                   {CONTENT[activeTab].title} <br />
                   <span className="text-indigo-600">{CONTENT[activeTab].titleAccent}</span>
                 </h3>
@@ -234,7 +234,7 @@ export default function VersatilePlatform() {
                     scale: { duration: 0.3 },
                     y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
                   }}
-                  className={`absolute ${CONTENT[activeTab].floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-20`}
+                  className={`absolute ${CONTENT[activeTab].floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
                 >
                   {(() => {
                     const FloatingIcon = CONTENT[activeTab].floating.icon;

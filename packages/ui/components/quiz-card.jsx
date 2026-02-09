@@ -34,7 +34,7 @@ export function QuizCard({
         )}>
           {/* Thumbnail */}
           {quiz.imageUrl && (
-            <div className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+            <div className="relative w-32 h-24 shrink-0 rounded-lg overflow-hidden">
               <Image
                 src={quiz.imageUrl}
                 alt={quiz.title}
@@ -56,7 +56,7 @@ export function QuizCard({
           </div>
 
           {/* Meta */}
-          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground shrink-0">
             <div className="flex items-center gap-1">
               <Circle className="h-3 w-3 fill-current" />
               <span>{quiz.questionCount} Questions</span>
@@ -117,42 +117,42 @@ export function QuizCard({
 
         {/* Content */}
         <div className="p-5">
-        <h4 className="font-bold text-foreground group-hover:text-brand-teal transition-colors line-clamp-2 mb-2">
-          {quiz.title}
-        </h4>
-        <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-          {quiz.description}
-        </p>
+          <h4 className="font-bold text-foreground group-hover:text-brand-teal transition-colors line-clamp-2 mb-2">
+            {quiz.title}
+          </h4>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+            {quiz.description}
+          </p>
 
-        {/* Meta */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-          <div className="flex items-center gap-1">
-            <Circle className="h-3 w-3 fill-current" />
-            <span>{quiz.questionCount || 20} Questions</span>
+          {/* Meta */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+            <div className="flex items-center gap-1">
+              <Circle className="h-3 w-3 fill-current" />
+              <span>{quiz.questionCount || 20} Questions</span>
+            </div>
+            {isCompleted && quiz.score && (
+              <span className="font-semibold text-green-600 dark:text-green-400">
+                Score: {quiz.score}%
+              </span>
+            )}
           </div>
-          {isCompleted && quiz.score && (
-            <span className="font-semibold text-green-600 dark:text-green-400">
-              Score: {quiz.score}%
-            </span>
-          )}
-        </div>
 
-        {/* Action Button */}
-        <EnhancedButton
-          className={cn(
-            "w-full",
-            isCompleted
-              ? "border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-              : "bg-brand-teal hover:bg-brand-teal-dark text-white"
-          )}
-          variant={isCompleted ? "outline" : "default"}
-          onClick={(e) => {
-            e.stopPropagation()
-            onClick()
-          }}
-        >
-          {isCompleted ? "Retake Quiz" : "Start Quiz"}
-        </EnhancedButton>
+          {/* Action Button */}
+          <EnhancedButton
+            className={cn(
+              "w-full",
+              isCompleted
+                ? "border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                : "bg-brand-teal hover:bg-brand-teal-dark text-white"
+            )}
+            variant={isCompleted ? "outline" : "default"}
+            onClick={(e) => {
+              e.stopPropagation()
+              onClick()
+            }}
+          >
+            {isCompleted ? "Retake Quiz" : "Start Quiz"}
+          </EnhancedButton>
         </div>
       </div>
     </motion.div>

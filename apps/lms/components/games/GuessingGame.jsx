@@ -68,12 +68,12 @@ export default function NumberGuessingGame() {
           onChange={(e) => setGuess(e.target.value)}
           placeholder="Enter a number..."
           disabled={gameOver}
-          className="w-full h-16 bg-white rounded-2xl border-none text-center text-2xl font-black text-slate-800 focus:ring-4 focus:ring-cyan-200 transition-all outline-none"
+          className="w-full h-16 bg-white rounded-4xl border-none text-center text-2xl font-black text-slate-800 focus:ring-4 focus:ring-cyan-200 transition-all outline-none"
         />
         <Button
           type="submit"
           disabled={gameOver}
-          className="w-full h-14 bg-cyan-400 hover:bg-cyan-500 text-white font-black text-lg rounded-2xl shadow-lg transition-all active:scale-95"
+          className="w-full h-14 bg-cyan-400 hover:bg-cyan-500 text-white font-black text-lg rounded-4xl shadow-lg transition-all active:scale-95"
         >
           GUESS
         </Button>
@@ -90,7 +90,7 @@ export default function NumberGuessingGame() {
       {gameOver && (
         <Button
           onClick={nextRound}
-          className="mt-8 h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl transition-all animate-fade-in"
+          className="mt-8 h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-4xl transition-all animate-fade-in"
         >
           NEXT ROUND
         </Button>

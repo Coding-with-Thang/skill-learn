@@ -144,7 +144,7 @@ const buttonClasses = colorCombinations.button.primary.default;
 </button>
 
 // Destructive button
-<button className="bg-destructive text-destructive-foreground hover:bg-destructive-hover px-4 py-2 rounded transition-colors duration-normal">
+<button className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive-hover px-4 py-2 rounded transition-colors duration-normal">
   Delete
 </button>
 ```

@@ -81,13 +81,13 @@ export default function PointsRewardsWidget() {
   };
 
   return (
-    <Card className="w-full h-full bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative group hover:shadow-lg transition-all duration-300">
+    <Card className="w-full h-full bg-linear-to-br from-white via-purple-50/30 to-blue-50/30 rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative group hover:shadow-lg transition-all duration-300">
       {/* Decorative gradient orb */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-gradient-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" />
+      <div className="absolute -top-20 -right-20 w-40 h-40 bg-linear-to-br from-purple-400/20 to-blue-400/20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-500" />
 
       <CardHeader className="relative z-10">
         <CardTitle className="text-lg font-bold flex items-center gap-2">
-          <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg">
+          <div className="p-2 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg">
             <Trophy className="w-5 h-5 text-white" />
           </div>
           Points & Rewards
@@ -96,7 +96,7 @@ export default function PointsRewardsWidget() {
 
       <CardContent className="space-y-4 relative z-10">
         {/* Current Points - Large Display */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 p-6 shadow-md hover:shadow-xl transition-all duration-300 group/points">
+        <div className="relative overflow-hidden rounded-4xl bg-linear-to-br from-purple-500 to-blue-600 p-6 shadow-md hover:shadow-xl transition-all duration-300 group/points">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 group-hover/points:scale-110 transition-transform duration-500" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12 group-hover/points:scale-110 transition-transform duration-500" />
 
@@ -140,8 +140,8 @@ export default function PointsRewardsWidget() {
               className={cn(
                 "absolute top-0 left-0 h-full rounded-full transition-all duration-500",
                 isLimitReached
-                  ? "bg-gradient-to-r from-red-400 to-red-500"
-                  : "bg-gradient-to-r from-purple-500 to-blue-500"
+                  ? "bg-linear-to-r from-red-400 to-red-500"
+                  : "bg-linear-to-r from-purple-500 to-blue-500"
               )}
               style={{ width: `${Math.min(progressPercentage, UI.MAX_PERCENTAGE)}%` }}
             />
@@ -168,7 +168,7 @@ export default function PointsRewardsWidget() {
           {/* Lifetime Points */}
           <div className="bg-white rounded-xl p-4 border border-gray-100 hover:border-purple-200 hover:shadow-md transition-all duration-300 group/stat">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
+              <div className="p-1.5 bg-linear-to-br from-yellow-400 to-orange-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
                 <Star className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-xs font-medium text-gray-600">Lifetime</span>
@@ -185,7 +185,7 @@ export default function PointsRewardsWidget() {
           {/* Completed Topics */}
           <div className="bg-white rounded-xl p-4 border border-gray-100 hover:border-blue-200 hover:shadow-md transition-all duration-300 group/stat">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
+              <div className="p-1.5 bg-linear-to-br from-green-400 to-emerald-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
                 <Trophy className="w-3.5 h-3.5 text-white" />
               </div>
               <span className="text-xs font-medium text-gray-600">Topics</span>
@@ -205,8 +205,8 @@ export default function PointsRewardsWidget() {
           href="/rewards"
           className="block w-full"
         >
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 p-4 hover:shadow-lg transition-all duration-300 group/cta cursor-pointer">
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 opacity-0 group-hover/cta:opacity-100 transition-opacity duration-300" />
+          <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-pink-500 via-purple-500 to-indigo-500 p-4 hover:shadow-lg transition-all duration-300 group/cta cursor-pointer">
+            <div className="absolute inset-0 bg-linear-to-r from-pink-600 via-purple-600 to-indigo-600 opacity-0 group-hover/cta:opacity-100 transition-opacity duration-300" />
 
             <div className="relative z-10 flex items-center justify-between">
               <div className="flex items-center gap-3">

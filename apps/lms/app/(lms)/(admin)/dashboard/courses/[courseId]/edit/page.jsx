@@ -815,7 +815,7 @@ export default function EditCoursePage() {
                                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddChapterSubmit())}
                             />
                             {addChapterTitleError && (
-                                <p id="add-chapter-title-error" role="alert" className="text-sm text-destructive">
+                                <p id="add-chapter-title-error" role="alert" className="text-sm text-brand-tealestructive">
                                     {addChapterTitleError}
                                 </p>
                             )}
@@ -850,7 +850,7 @@ export default function EditCoursePage() {
                                 onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddLessonSubmit())}
                             />
                             {addLessonTitleError && (
-                                <p id="add-lesson-title-error" role="alert" className="text-sm text-destructive">
+                                <p id="add-lesson-title-error" role="alert" className="text-sm text-brand-tealestructive">
                                     {addLessonTitleError}
                                 </p>
                             )}

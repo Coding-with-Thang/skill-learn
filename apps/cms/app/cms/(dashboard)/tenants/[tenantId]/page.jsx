@@ -848,7 +848,7 @@ export default function TenantDetailPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-2 px-4 py-2 rounded-4xld text-sm font-medium transition-colors",
                 activeTab === tab.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
@@ -924,7 +924,7 @@ export default function TenantDetailPage() {
                         className="h-10 w-10 rounded-full"
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
+                      <div className="h-10 w-10 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-sm font-semibold">
                         {user.firstName?.[0] || user.username?.[0] || 'U'}
                       </div>
                     )}
@@ -1430,7 +1430,7 @@ export default function TenantDetailPage() {
                                 className="h-8 w-8 rounded-full"
                               />
                             ) : (
-                              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
+                              <div className="h-8 w-8 rounded-full bg-linear-to-br from-primary/20 to-primary/10 flex items-center justify-center text-xs font-semibold">
                                 {ur.user?.firstName?.[0] || 'U'}
                               </div>
                             )}

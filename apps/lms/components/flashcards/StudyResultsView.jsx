@@ -50,7 +50,7 @@ export default function StudyResultsView({
           transition={{ delay: 0.1 }}
           className="grid grid-cols-2 gap-4"
         >
-          <Card className="p-6 rounded-2xl border-border bg-card/80 backdrop-blur">
+          <Card className="p-6 rounded-4xl border-border bg-card/80 backdrop-blur">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-emerald-500/10">
                 <CheckCircle2 className="w-6 h-6 text-emerald-500" />
@@ -62,7 +62,7 @@ export default function StudyResultsView({
             </div>
           </Card>
 
-          <Card className="p-6 rounded-2xl border-border bg-card/80 backdrop-blur">
+          <Card className="p-6 rounded-4xl border-border bg-card/80 backdrop-blur">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-indigo-500/10">
                 <Target className="w-6 h-6 text-indigo-500" />
@@ -74,7 +74,7 @@ export default function StudyResultsView({
             </div>
           </Card>
 
-          <Card className="p-6 rounded-2xl border-border bg-card/80 backdrop-blur col-span-2">
+          <Card className="p-6 rounded-4xl border-border bg-card/80 backdrop-blur col-span-2">
             <div className="flex items-center gap-3">
               <div className="p-3 rounded-xl bg-orange-500/10">
                 <Flame className="w-6 h-6 text-orange-500" />
@@ -97,7 +97,7 @@ export default function StudyResultsView({
           <Link href="/flashcards" className="flex-1">
             <Button
               size="lg"
-              className="w-full h-14 rounded-2xl text-base font-bold bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600"
+              className="w-full h-14 rounded-4xl text-base font-bold bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600"
             >
               <Sparkles className="w-5 h-5 mr-2" />
               Finish & Return
@@ -107,7 +107,7 @@ export default function StudyResultsView({
             variant="outline"
             size="lg"
             onClick={onReview}
-            className="flex-1 h-14 rounded-2xl text-base font-bold"
+            className="flex-1 h-14 rounded-4xl text-base font-bold"
           >
             <RotateCw className="w-5 h-5 mr-2" />
             Review Session

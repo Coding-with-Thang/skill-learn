@@ -51,7 +51,7 @@ export default async function DashboardPage() {
                 <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Total Users</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{totalUsers.value.toLocaleString()}</h3>
               </div>
-              <div className="p-3 bg-primary/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-primary/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
                 <Users className="w-6 h-6 text-primary" />
               </div>
             </div>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
                 <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Active Rewards</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{activeRewards.value}</h3>
               </div>
-              <div className="p-3 bg-violet-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-violet-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
                 <Gift className="w-6 h-6 text-violet-500" />
               </div>
             </div>
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
                 <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Points Awarded</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{totalPointsAwarded.value.toLocaleString()}</h3>
               </div>
-              <div className="p-3 bg-amber-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-amber-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
                 <Star className="w-6 h-6 text-amber-500" />
               </div>
             </div>
@@ -113,7 +113,7 @@ export default async function DashboardPage() {
                 <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Rewards Claimed</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{rewardsClaimed.value}</h3>
               </div>
-              <div className="p-3 bg-emerald-500/10 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 bg-emerald-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
                 <CheckCircle className="w-6 h-6 text-emerald-500" />
               </div>
             </div>
@@ -184,7 +184,7 @@ export default async function DashboardPage() {
                 <CardContent className="p-6">
                   <div className="flex justify-between items-center mb-6">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-primary/5 rounded-2xl group-hover:bg-primary/10 transition-colors">
+                      <div className="p-3 bg-primary/5 rounded-4xl group-hover:bg-primary/10 transition-colors">
                         <BookOpen className="h-5 w-5 text-primary" />
                       </div>
                       <h3 className="font-bold text-base truncate tracking-tight">{category.category}</h3>

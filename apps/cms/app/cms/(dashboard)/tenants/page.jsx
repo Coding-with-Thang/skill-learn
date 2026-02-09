@@ -305,7 +305,7 @@ export default function TenantsPage() {
                 >
                   Cancel
                 </Button>
-                  <Button type="submit" disabled={formLoading}>
+                <Button type="submit" disabled={formLoading}>
                   {formLoading ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -386,7 +386,7 @@ export default function TenantsPage() {
                   {/* Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-xl font-semibold">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-linear-to-br from-primary/20 to-primary/10 text-xl font-semibold">
                         {getTenantLogo(tenant.name)}
                       </div>
                       <div>
@@ -412,7 +412,7 @@ export default function TenantsPage() {
                             className="fixed inset-0 z-10"
                             onClick={() => setOpenMenuId(null)}
                           />
-                          <div className="absolute right-0 top-8 bg-background border rounded-lg shadow-lg p-1 min-w-[120px] z-20">
+                          <div className="absolute right-0 top-8 bg-background border rounded-lg shadow-lg p-1 min-w-[120px] z-2000">
                             <Button
                               variant="ghost"
                               size="sm"

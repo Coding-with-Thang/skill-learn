@@ -53,7 +53,7 @@ const GameRunner = ({ gameConfig, GameComponent }) => {
 
       {isPaused && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
-          <div className="bg-white/90 backdrop-blur-md p-8 rounded-[2rem] shadow-2xl text-center">
+          <div className="bg-white/90 backdrop-blur-md p-8 rounded-4xl shadow-2xl text-center">
             <h3 className="text-2xl font-black text-slate-800 mb-4">GAME PAUSED</h3>
             <button
               onClick={() => setIsPaused(false)}

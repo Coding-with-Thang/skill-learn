@@ -123,7 +123,7 @@ export default function CompliancePage() {
             Version 2.4 - Effective July 2024
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">
+          <h1 className="text-4xl md:text-brand-teal font-bold mb-6 tracking-tight">
             Enterprise-Grade <span className="text-emerald-600">Data Protection</span> & Compliance
           </h1>
           <p className="text-xl text-slate-600 leading-relaxed max-w-3xl">
@@ -136,9 +136,9 @@ export default function CompliancePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-12">
 
         {/* Sticky Sidebar */}
-        <aside className="lg:w-64 flex-shrink-0">
+        <aside className="lg:w-64 shrink-0">
           <div className="sticky top-10 space-y-8">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+            <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
               <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">On this page</p>
               <nav className="space-y-1">
                 {sections.map((section) => {
@@ -166,7 +166,7 @@ export default function CompliancePage() {
               </nav>
             </div>
 
-            <div className="bg-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-600/20">
+            <div className="bg-emerald-600 rounded-4xl p-6 text-white shadow-lg shadow-emerald-600/20">
               <p className="text-[10px] uppercase tracking-widest text-emerald-100/60 font-bold mb-2">Need more info?</p>
               <p className="text-xs text-emerald-50 leading-relaxed mb-6">Contact our Data Protection Officer for detailed inquiries.</p>
               <button className="w-full py-2.5 bg-white text-emerald-600 text-xs font-bold rounded-xl transition-all hover:bg-emerald-50 shadow-md">
@@ -186,7 +186,7 @@ export default function CompliancePage() {
                 { label: "Encryption", value: "AES-256", detail: "Standard Protocol", icon: Lock },
                 { label: "Backup Frequency", value: "Hourly", detail: "Point-in-Time (PITR)", icon: Clock },
               ].map((stat, i) => (
-                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+                <div key={i} className="bg-white border border-slate-200 rounded-4xl p-8 shadow-sm hover:shadow-md transition-shadow">
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-3">{stat.label}</p>
                   <p className="text-3xl font-bold text-slate-900 mb-2">{stat.value}</p>
                   <p className="text-xs text-emerald-600 flex items-center gap-1.5 font-semibold">
@@ -202,7 +202,7 @@ export default function CompliancePage() {
             <h3 className="text-xl font-bold text-slate-900 mb-8 tracking-tight">Global Compliance Certifications</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {certifications.map((cert) => (
-                <div key={cert.name} className="bg-white border border-slate-100 rounded-2xl p-8 flex flex-col items-center justify-center text-center shadow-sm group hover:border-emerald-200 transition-all">
+                <div key={cert.name} className="bg-white border border-slate-100 rounded-4xl p-8 flex flex-col items-center justify-center text-center shadow-sm group hover:border-emerald-200 transition-all">
                   <div className="p-4 bg-emerald-50 rounded-full mb-4 group-hover:scale-110 transition-transform">
                     <cert.icon className="w-6 h-6 text-emerald-600" />
                   </div>
@@ -218,7 +218,7 @@ export default function CompliancePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {securityStandards.map((std) => (
                 <div key={std.title} className="bg-white border border-slate-100 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all group">
-                  <div className="p-3 bg-emerald-50 rounded-2xl w-fit mb-6 group-hover:bg-emerald-100 transition-colors">
+                  <div className="p-3 bg-emerald-50 rounded-4xl w-fit mb-6 group-hover:bg-emerald-100 transition-colors">
                     <std.icon className="w-6 h-6 text-emerald-600" />
                   </div>
                   <h4 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">{std.title}</h4>
@@ -239,7 +239,7 @@ export default function CompliancePage() {
           {/* Specs Table */}
           <section id="infrastructure" className="mb-24 scroll-mt-20">
             <h3 className="text-xl font-bold text-slate-900 mb-8 tracking-tight">Technical Specifications</h3>
-            <div className="overflow-hidden border border-slate-200 rounded-2xl shadow-sm bg-white">
+            <div className="overflow-hidden border border-slate-200 rounded-4xl shadow-sm bg-white">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200">
@@ -268,17 +268,17 @@ export default function CompliancePage() {
           {/* Whitepaper Section */}
           <section id="privacy" className="scroll-mt-20">
             <div className="bg-emerald-600 rounded-[40px] p-12 md:p-16 text-center shadow-xl shadow-emerald-600/20 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-br from-emerald-500/20 to-transparent" />
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 relative z-10 tracking-tight">Full Security Whitepaper</h2>
               <p className="text-emerald-50 max-w-2xl mx-auto mb-10 relative z-10 leading-relaxed text-lg">
                 Download our comprehensive 45-page security dossier detailing our cloud architecture, disaster recovery plans, and organizational security policies.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
-                <Button className="h-14 px-10 bg-white text-emerald-600 hover:bg-emerald-50 font-bold text-sm uppercase tracking-widest rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-105">
+                <Button className="h-14 px-10 bg-white text-emerald-600 hover:bg-emerald-50 font-bold text-sm uppercase tracking-widest rounded-4xl transition-all shadow-lg hover:shadow-xl hover:scale-105">
                   <Download className="w-4 h-4 mr-3" />
                   Download PDF (2.4MB)
                 </Button>
-                <Button variant="outline" className="h-14 px-10 border-white/30 text-white hover:bg-white/10 font-bold text-sm uppercase tracking-widest rounded-2xl transition-all">
+                <Button variant="outline" className="h-14 px-10 border-white/30 text-white hover:bg-white/10 font-bold text-sm uppercase tracking-widest rounded-4xl transition-all">
                   Request DPA
                 </Button>
               </div>

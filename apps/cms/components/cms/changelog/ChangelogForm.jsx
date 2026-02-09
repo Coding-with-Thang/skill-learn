@@ -116,11 +116,11 @@ export default function ChangelogForm({ initialData = null }) {
       // Convert number fields to integers
       const submitData = {
         ...formData,
-        newFeaturesCount: formData.newFeaturesCount != null && formData.newFeaturesCount !== '' 
-          ? parseInt(formData.newFeaturesCount, 10) || 0 
+        newFeaturesCount: formData.newFeaturesCount != null && formData.newFeaturesCount !== ''
+          ? parseInt(formData.newFeaturesCount, 10) || 0
           : 0,
-        bugFixesCount: formData.bugFixesCount != null && formData.bugFixesCount !== '' 
-          ? parseInt(formData.bugFixesCount, 10) || 0 
+        bugFixesCount: formData.bugFixesCount != null && formData.bugFixesCount !== ''
+          ? parseInt(formData.bugFixesCount, 10) || 0
           : 0,
       }
 
@@ -212,7 +212,7 @@ export default function ChangelogForm({ initialData = null }) {
                         <div>
                           <h4 className="font-semibold mb-2">Headers</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`# H1 Header
+                            {`# H1 Header
 ## H2 Header
 ### H3 Header`}
                           </pre>
@@ -220,7 +220,7 @@ export default function ChangelogForm({ initialData = null }) {
                         <div>
                           <h4 className="font-semibold mb-2">Text Formatting</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`**bold text**
+                            {`**bold text**
 *italic text*
 ~~strikethrough~~`}
                           </pre>
@@ -228,7 +228,7 @@ export default function ChangelogForm({ initialData = null }) {
                         <div>
                           <h4 className="font-semibold mb-2">Lists</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`- Unordered item
+                            {`- Unordered item
 - Another item
 
 1. Ordered item
@@ -238,14 +238,14 @@ export default function ChangelogForm({ initialData = null }) {
                         <div>
                           <h4 className="font-semibold mb-2">Links & Images</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`[Link text](https://example.com)
+                            {`[Link text](https://example.com)
 ![Image alt](https://example.com/image.jpg)`}
                           </pre>
                         </div>
                         <div>
                           <h4 className="font-semibold mb-2">Code</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`\`inline code\`
+                            {`\`inline code\`
 
 \`\`\`javascript
 // Code block
@@ -256,7 +256,7 @@ const example = "code";
                         <div>
                           <h4 className="font-semibold mb-2">Blockquotes</h4>
                           <pre className="bg-muted p-2 rounded text-xs overflow-x-auto">
-{`> This is a blockquote
+                            {`> This is a blockquote
 > It can span multiple lines`}
                           </pre>
                         </div>
@@ -370,8 +370,8 @@ const example = "code";
                       <SelectItem key={admin.id} value={admin.id}>
                         <div className="flex items-center gap-2">
                           {admin.imageUrl && (
-                            <img 
-                              src={admin.imageUrl} 
+                            <img
+                              src={admin.imageUrl}
                               alt={admin.fullName}
                               className="w-5 h-5 rounded-full object-cover"
                             />
@@ -435,7 +435,7 @@ const example = "code";
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 gap-2 bg-gradient-to-r from-teal-500 to-blue-500 text-white border-none"
+                  className="flex-1 gap-2 bg-linear-to-r from-teal-500 to-blue-500 text-white border-none"
                 >
                   {loading ? 'Saving...' : <><Save className="h-4 w-4" /> Save Update</>}
                 </Button>

@@ -203,7 +203,7 @@ const TicTacToe = () => {
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(renderSquare)}
       </div>
 
-      <div className="mt-8 text-center min-h-[2rem]">
+      <div className="mt-8 text-center min-h-8">
         {winner ? (
           <p className={`text-xl font-black uppercase tracking-widest animate-bounce ${winner === 'X' ? 'text-cyan-500' : winner === 'O' ? 'text-rose-400' : 'text-slate-400'}`}>
             {winner === 'draw' ? "It's a Draw!" : winner === 'X' ? "You Won!" : "AI Won!"}

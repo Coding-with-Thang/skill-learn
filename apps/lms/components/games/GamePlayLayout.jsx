@@ -49,7 +49,7 @@ const GamePlayLayout = ({
   const { user } = useUser();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#94D1CF] via-[#7CB9B6] to-[#5DA39F] text-[#1e293b] p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-linear-to-br from-[#94D1CF] via-[#7CB9B6] to-[#5DA39F] text-[#1e293b] p-4 md:p-8 font-sans">
       {/* Header */}
       <header className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-6">
@@ -60,14 +60,14 @@ const GamePlayLayout = ({
             </Button>
           </Link>
           <div className="flex flex-col">
-            <nav className="flex items-center text-[10px] uppercase tracking-wider font-bold text-[#155d59]/60">
-              <Link href="/home" className="hover:text-[#155d59]">HOME</Link>
+            <nav className="flex items-center text-[10px] uppercase tracking-wider font-bold text-brand-teal/60">
+              <Link href="/home" className="hover:text-brand-teal">HOME</Link>
               <ChevronRight className="h-3 w-3 mx-1" />
-              <Link href="/games" className="hover:text-[#155d59]">GAMES</Link>
+              <Link href="/games" className="hover:text-brand-teal">GAMES</Link>
               <ChevronRight className="h-3 w-3 mx-1" />
-              <span className="text-[#155d59]">{title}</span>
+              <span className="text-brand-teal">{title}</span>
             </nav>
-            <h1 className="text-2xl font-black text-[#155d59] mt-1">{title}: {gameTitle}</h1>
+            <h1 className="text-2xl font-black text-brand-teal mt-1">{title}: {gameTitle}</h1>
           </div>
         </div>
 
@@ -77,7 +77,7 @@ const GamePlayLayout = ({
       {/* Top Stats Cards */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Current Score */}
-        <Card className="bg-white/90 backdrop-blur-sm border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden relative">
+        <Card className="bg-white/90 backdrop-blur-sm border-none rounded-4xl shadow-xl shadow-teal-900/10 overflow-hidden relative">
 
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">CURRENT SCORE</p>
@@ -89,7 +89,7 @@ const GamePlayLayout = ({
         </Card>
 
         {/* Game Progress */}
-        <Card className="bg-white/90 backdrop-blur-sm border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden relative">
+        <Card className="bg-white/90 backdrop-blur-sm border-none rounded-4xl shadow-xl shadow-teal-900/10 overflow-hidden relative">
 
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">GAME PROGRESS</p>
@@ -106,7 +106,7 @@ const GamePlayLayout = ({
         </Card>
 
         {/* Personal Best */}
-        <Card className="bg-gradient-to-r from-cyan-400 to-cyan-500 border-none rounded-[2rem] shadow-xl shadow-cyan-600/20 overflow-hidden relative text-white">
+        <Card className="bg-linear-to-r from-cyan-400 to-cyan-500 border-none rounded-4xl shadow-xl shadow-cyan-600/20 overflow-hidden relative text-white">
 
           <CardContent className="p-6 flex flex-col justify-between h-32 relative z-10">
             <p className="text-[10px] uppercase font-black tracking-widest text-white/70">PERSONAL BEST</p>
@@ -128,7 +128,7 @@ const GamePlayLayout = ({
         {/* Left Column: Leaderboard & Tip */}
         <div className="lg:col-span-3 space-y-8">
           {/* Leaderboard */}
-          <Card className="bg-white border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden">
+          <Card className="bg-white border-none rounded-4xl shadow-xl shadow-teal-900/10 overflow-hidden">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6 text-[#5DA39F]">
                 <TrendingUp className="h-5 w-5" />
@@ -136,7 +136,7 @@ const GamePlayLayout = ({
               </div>
               <div className="space-y-4">
                 {leaderboard.length > 0 ? leaderboard.map((player, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors group">
+                  <div key={idx} className="flex items-center justify-between p-2 rounded-4xl hover:bg-slate-50 transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-slate-100">
@@ -165,7 +165,7 @@ const GamePlayLayout = ({
           </Card>
 
           {/* Game Master Tip */}
-          <Card className="bg-white/40 backdrop-blur-md border border-white/30 rounded-[2rem] shadow-lg overflow-hidden">
+          <Card className="bg-white/40 backdrop-blur-md border border-white/30 rounded-4xl shadow-lg overflow-hidden">
             <CardContent className="p-6 relative">
               <div className="flex items-center gap-2 mb-4 text-cyan-500">
                 <Lightbulb className="h-5 w-5" />
@@ -196,20 +196,20 @@ const GamePlayLayout = ({
             <div className="flex items-center gap-4 mt-12 pb-4">
               <Button
                 onClick={onResume}
-                className="h-14 px-8 rounded-2xl bg-cyan-400 hover:bg-cyan-500 text-white font-black text-lg gap-2 shadow-lg shadow-cyan-400/30 transition-all active:scale-95"
+                className="h-14 px-8 rounded-4xl bg-cyan-400 hover:bg-cyan-500 text-white font-black text-lg gap-2 shadow-lg shadow-cyan-400/30 transition-all active:scale-95"
               >
                 <Play className="h-6 w-6 fill-white" />
                 RESUME
               </Button>
               <Button
                 onClick={onReset}
-                className="h-14 w-14 rounded-2xl bg-white hover:bg-slate-50 border-none shadow-lg text-slate-400 hover:text-cyan-500 transition-all hover:rotate-180 duration-500 flex items-center justify-center p-0"
+                className="h-14 w-14 rounded-4xl bg-white hover:bg-slate-50 border-none shadow-lg text-slate-400 hover:text-cyan-500 transition-all hover:rotate-180 duration-500 flex items-center justify-center p-0"
               >
                 <RotateCcw className="h-6 w-6" />
               </Button>
               <Button
                 onClick={onPause}
-                className="h-14 w-14 rounded-2xl bg-white hover:bg-slate-50 border-none shadow-lg text-slate-400 hover:text-cyan-500 transition-all flex items-center justify-center p-0"
+                className="h-14 w-14 rounded-4xl bg-white hover:bg-slate-50 border-none shadow-lg text-slate-400 hover:text-cyan-500 transition-all flex items-center justify-center p-0"
               >
                 <Pause className="h-6 w-6 fill-current" />
               </Button>
@@ -219,7 +219,7 @@ const GamePlayLayout = ({
 
         {/* Right Column: How to Play */}
         <div className="lg:col-span-3">
-          <Card className="bg-white border-none rounded-[2rem] shadow-xl shadow-teal-900/10 overflow-hidden h-full">
+          <Card className="bg-white border-none rounded-4xl shadow-xl shadow-teal-900/10 overflow-hidden h-full">
             <CardContent className="p-8">
               <div className="flex items-center gap-2 mb-8 text-[#5DA39F]">
                 <HelpCircle className="h-6 w-6" />
@@ -228,7 +228,7 @@ const GamePlayLayout = ({
               <ul className="space-y-6">
                 {rules.map((rule, idx) => (
                   <li key={idx} className="flex gap-4">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-50 text-cyan-500 flex items-center justify-center font-black text-sm border border-cyan-100">
+                    <span className="shrink-0 w-8 h-8 rounded-full bg-cyan-50 text-cyan-500 flex items-center justify-center font-black text-sm border border-cyan-100">
                       {idx + 1}
                     </span>
                     <p className="text-sm font-semibold text-slate-600 leading-relaxed pt-1">
@@ -243,11 +243,11 @@ const GamePlayLayout = ({
       </div>
 
       {/* Footer */}
-      <footer className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/20 flex flex-wrap items-center justify-between gap-4 text-[10px] font-bold text-[#155d59]/50 uppercase tracking-widest">
+      <footer className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/20 flex flex-wrap items-center justify-between gap-4 text-[10px] font-bold text-brand-teal/50 uppercase tracking-widest">
         <div>© 2024 SKILL-LEARN LMS. Premium Gaming Experience.</div>
         <div className="flex gap-6">
-          <button className="hover:text-[#155d59]">Need Help?</button>
-          <button className="hover:text-[#155d59]">Report a Bug</button>
+          <button className="hover:text-brand-teal">Need Help?</button>
+          <button className="hover:text-brand-teal">Report a Bug</button>
         </div>
       </footer>
     </div>

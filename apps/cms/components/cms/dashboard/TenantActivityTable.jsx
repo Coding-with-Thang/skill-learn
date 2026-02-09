@@ -88,7 +88,7 @@ export default function TenantActivityTable({ tenants }) {
                   >
                     <td className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 text-xl font-semibold">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-linear-to-br from-primary/20 to-primary/10 text-xl font-semibold">
                           {tenant.logo || tenant.name?.charAt(0).toUpperCase() || '?'}
                         </div>
                         <div>
@@ -137,21 +137,21 @@ export default function TenantActivityTable({ tenants }) {
                               <div className="p-1">
                                 <button
                                   onClick={() => handleAction('view', tenant)}
-                                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors"
+                                  className="flex w-full items-center gap-2 rounded-4xld px-3 py-2 text-sm hover:bg-muted transition-colors"
                                 >
                                   <Eye className="h-4 w-4" />
                                   View Details
                                 </button>
                                 <button
                                   onClick={() => handleAction('edit', tenant)}
-                                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted transition-colors"
+                                  className="flex w-full items-center gap-2 rounded-4xld px-3 py-2 text-sm hover:bg-muted transition-colors"
                                 >
                                   <Edit className="h-4 w-4" />
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleAction('suspend', tenant)}
-                                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                                  className="flex w-full items-center gap-2 rounded-4xld px-3 py-2 text-sm text-brand-tealestructive hover:bg-destructive/10 transition-colors"
                                 >
                                   <Ban className="h-4 w-4" />
                                   Suspend

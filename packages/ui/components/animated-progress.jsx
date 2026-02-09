@@ -46,8 +46,8 @@ const AnimatedProgress = React.forwardRef(({
           variant === "error" && "bg-error",
           variant === "info" && "bg-info",
           // Gradient variants
-          variant === "gradient" && "bg-gradient-to-r from-primary to-accent",
-          variant === "rainbow" && "bg-gradient-to-r from-error via-warning to-success",
+          variant === "gradient" && "bg-linear-to-r from-primary to-accent",
+          variant === "rainbow" && "bg-linear-to-r from-error via-warning to-success",
         )}
         style={{
           width: isVisible ? `${percentage}%` : "0%",
@@ -56,7 +56,7 @@ const AnimatedProgress = React.forwardRef(({
       >
         {/* Animated shimmer effect */}
         {animated && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent animate-pulse" />
         )}
       </div>
 

@@ -70,7 +70,7 @@ export function OnboardingChecklist({ className }) {
       exit={{ opacity: 0, y: -20 }}
       className={cn("", className)}
     >
-      <Card className="border-brand-teal/20 bg-gradient-to-br from-brand-teal/5 to-blue-50 dark:from-brand-teal/10 dark:to-blue-950/20">
+      <Card className="border-brand-teal/20 bg-linear-to-br from-brand-teal/5 to-blue-50 dark:from-brand-teal/10 dark:to-blue-950/20">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

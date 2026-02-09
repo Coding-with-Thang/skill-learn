@@ -223,7 +223,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
       {/* Controls bar */}
       <div
         className={cn(
-          "absolute bottom-1 left-0 right-0 flex items-center gap-2 px-3 py-2 bg-gradient-to-t from-black/90 to-transparent transition-opacity",
+          "absolute bottom-1 left-0 right-0 flex items-center gap-2 px-3 py-2 bg-linear-to-t from-black/90 to-transparent transition-opacity",
           hoverControls || !playing ? "opacity-100" : "opacity-0"
         )}
       >
@@ -289,7 +289,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
                 aria-hidden
                 onClick={() => setShowRateMenu(false)}
               />
-              <div className="absolute bottom-full left-0 mb-1 py-1 bg-black/95 rounded shadow-lg z-20 min-w-[80px]">
+              <div className="absolute bottom-full left-0 mb-1 py-1 bg-black/95 rounded shadow-lg z-2000 min-w-[80px]">
                 {PLAYBACK_RATES.map((rate) => (
                   <button
                     key={rate}

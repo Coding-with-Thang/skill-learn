@@ -5,9 +5,9 @@ import { Button } from "@skill-learn/ui/components/button";
 
 function PricingCard({ title, price, features, cta, highlighted, badge }) {
   return (
-    <div className={`relative p-8 rounded-2xl border ${highlighted ? 'border-brand-teal shadow-2xl scale-105 z-10 bg-white' : 'border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow'}`}>
+    <div className={`relative p-8 rounded-4xl border ${highlighted ? 'border-brand-teal shadow-2xl scale-105 z-10 bg-white' : 'border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow'}`}>
       {badge && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-brand-teal to-brand-dark-blue text-white text-sm font-semibold rounded-full">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-linear-to-r from-brand-teal to-brand-dark-blue text-white text-sm font-semibold rounded-full">
           {badge}
         </div>
       )}
@@ -21,13 +21,13 @@ function PricingCard({ title, price, features, cta, highlighted, badge }) {
       <ul className="space-y-4 mb-8">
         {features.map((feature, index) => (
           <li key={index} className="flex items-center gap-3 text-gray-600">
-            <Check className="w-5 h-5 text-green-500 flex-shrink-0" />
+            <Check className="w-5 h-5 text-green-500 shrink-0" />
             <span>{feature}</span>
           </li>
         ))}
       </ul>
       <Button
-        className={`w-full py-6 text-lg ${highlighted ? 'bg-gradient-to-r from-brand-teal to-brand-dark-blue hover:from-brand-teal-dark hover:to-brand-dark-blue text-white' : 'bg-white text-brand-teal border-2 border-brand-teal/20 hover:bg-brand-teal/5'}`}
+        className={`w-full py-6 text-lg ${highlighted ? 'bg-linear-to-r from-brand-teal to-brand-dark-blue hover:from-brand-teal-dark hover:to-brand-dark-blue text-white' : 'bg-white text-brand-teal border-2 border-brand-teal/20 hover:bg-brand-teal/5'}`}
       >
         {cta}
       </Button>

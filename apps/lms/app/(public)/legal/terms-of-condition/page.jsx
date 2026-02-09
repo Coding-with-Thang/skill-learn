@@ -79,7 +79,7 @@ export default function TermsOfConditionPage() {
 
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
-                            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
+                            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-4 tracking-tight">
                                 Terms & Conditions
                             </h1>
                             <p className="text-lg text-slate-500 leading-relaxed">
@@ -104,9 +104,9 @@ export default function TermsOfConditionPage() {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Sidebar Navigation */}
-                    <aside className="lg:w-72 flex-shrink-0">
+                    <aside className="lg:w-72 shrink-0">
                         <div className="sticky top-10 space-y-8">
-                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                            <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
                                 <h3 className="text-sm font-bold text-slate-900 mb-4 tracking-tight">Table of Contents</h3>
                                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">Quick Navigation</p>
                                 <nav className="space-y-1">
@@ -181,7 +181,7 @@ export default function TermsOfConditionPage() {
                                             "Impersonating or attempting to impersonate Skill-Learn, a Skill-Learn employee, or any other user.",
                                         ].map((item, idx) => (
                                             <li key={idx} className="flex items-start gap-4">
-                                                <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal flex-shrink-0" />
+                                                <div className="mt-2 w-1.5 h-1.5 rounded-full bg-brand-teal shrink-0" />
                                                 <p className="m-0 text-slate-700">{item}</p>
                                             </li>
                                         ))}
@@ -198,7 +198,7 @@ export default function TermsOfConditionPage() {
                                     </p>
 
                                     {/* Quote-style callout matching mockup */}
-                                    <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 rounded-r-2xl p-8 italic text-blue-900 text-lg leading-relaxed shadow-sm">
+                                    <div className="mt-8 bg-blue-50 border-l-4 border-blue-500 rounded-4xl-2xl p-8 italic text-blue-900 text-lg leading-relaxed shadow-sm">
                                         "User Content remains the property of the User. However, by uploading content to Skill-Learn, you grant us a worldwide, non-exclusive, royalty-free license to host, store, and process that content for the sole purpose of providing the service to you."
                                     </div>
                                 </div>
@@ -212,14 +212,14 @@ export default function TermsOfConditionPage() {
                                 </p>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                                    <div className="bg-slate-50/50 rounded-2xl p-8 border border-slate-100 flex flex-col shadow-sm">
+                                    <div className="bg-slate-50/50 rounded-4xl p-8 border border-slate-100 flex flex-col shadow-sm">
                                         <h4 className="text-brand-teal font-bold mb-3 tracking-tight">Account Security</h4>
                                         <p className="text-sm text-slate-500 leading-relaxed">
                                             You are responsible for maintaining the confidentiality of your credentials and for all activities that occur under your account.
                                         </p>
                                     </div>
 
-                                    <div className="bg-slate-50/50 rounded-2xl p-8 border border-slate-100 flex flex-col shadow-sm">
+                                    <div className="bg-slate-50/50 rounded-4xl p-8 border border-slate-100 flex flex-col shadow-sm">
                                         <h4 className="text-brand-teal font-bold mb-3 tracking-tight">Compliance</h4>
                                         <p className="text-sm text-slate-500 leading-relaxed">
                                             You must ensure that all sub-users (employees/learners) comply with these terms and conditions at all times.

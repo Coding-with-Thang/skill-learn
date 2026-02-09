@@ -81,7 +81,7 @@ export default function CaseStudyPage() {
                 <Clock className="w-3 h-3" /> 8 min read
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-[#1B1B53] mb-8 leading-[1.1] tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal lg:text-6xl font-extrabold text-[#1B1B53] mb-8 leading-[1.1] tracking-tight">
               How TechFlow increased employee productivity by <span className="text-[#00D181]">40%</span> using Skill-Learn
             </h1>
             <div className="flex items-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -115,7 +115,7 @@ export default function CaseStudyPage() {
               <h3 className="text-lg font-extrabold text-[#1B1B53] mb-8">Case Study Snapshot</h3>
               <div className="space-y-6">
                 {snapshot.map((item, idx) => (
-                  <div key={idx} className="bg-slate-50/50 rounded-2xl p-4 flex items-center gap-4 group hover:bg-white hover:shadow-md transition-all">
+                  <div key={idx} className="bg-slate-50/50 rounded-4xl p-4 flex items-center gap-4 group hover:bg-white hover:shadow-md transition-all">
                     <div className={cn("p-2.5 rounded-xl shrink-0 group-hover:scale-110 transition-transform", item.color)}>
                       <item.icon className="w-5 h-5" />
                     </div>
@@ -176,7 +176,7 @@ export default function CaseStudyPage() {
                 </ul>
               </div>
 
-              <div className="mt-12 bg-white border-l-4 border-brand-teal rounded-r-3xl p-10 shadow-sm italic relative">
+              <div className="mt-12 bg-white border-l-4 border-brand-teal rounded-4xl-3xl p-10 shadow-sm italic relative">
                 <Quote className="absolute top-6 left-6 w-12 h-12 text-brand-teal/5" />
                 <p className="text-xl text-[#1B1B53] font-medium leading-relaxed mb-6">
                   "We reached a point where our growth was actually hurting our velocity. We needed a way to automate knowledge transfer without losing the human element of mentorship."
@@ -275,13 +275,13 @@ export default function CaseStudyPage() {
         >
           <div className="absolute inset-0 bg-linear-to-br from-brand-teal/20 to-transparent" />
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-8 tracking-tight">Ready to see similar results for your team?</h2>
+            <h2 className="text-4xl md:text-brand-teal font-extrabold mb-8 tracking-tight">Ready to see similar results for your team?</h2>
             <p className="text-lg text-white/70 mb-12 font-medium">Join over 500+ forward-thinking companies using Skill-Learn to scale their engineering talent and boost operational efficiency.</p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button className="h-14 px-8 bg-brand-teal hover:bg-brand-teal-dark text-white font-black rounded-2xl shadow-xl shadow-brand-teal/20">
+              <Button className="h-14 px-8 bg-brand-teal hover:bg-brand-teal-dark text-white font-black rounded-4xl shadow-xl shadow-brand-teal/20">
                 Schedule a Free Demo
               </Button>
-              <Button variant="outline" className="h-14 px-8 border-white/20 text-white font-bold rounded-2xl hover:bg-white/10 backdrop-blur-md">
+              <Button variant="outline" className="h-14 px-8 border-white/20 text-white font-bold rounded-4xl hover:bg-white/10 backdrop-blur-md">
                 View All Case Studies
               </Button>
             </div>

@@ -59,7 +59,7 @@ export function ErrorCard({
   return (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm p-6 ${className}`}>
       <div className="flex flex-col items-center gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
+        <AlertCircle className="h-12 w-12 text-brand-tealestructive" />
         <div className="text-center">
           <h3 className="text-lg font-semibold">{message}</h3>
           <p className="text-sm text-muted-foreground mt-1">

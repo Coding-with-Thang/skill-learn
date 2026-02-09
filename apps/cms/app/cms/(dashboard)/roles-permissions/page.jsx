@@ -59,7 +59,7 @@ export default function RolesPermissionsPage() {
   const updateRoleTemplate = useRoleTemplatesStore((state) => state.updateRoleTemplate);
   const deleteRoleTemplate = useRoleTemplatesStore((state) => state.deleteRoleTemplate);
   const updateTemplatePermissions = useRoleTemplatesStore((state) => state.updateTemplatePermissions);
-  
+
   // Get store instance for accessing updated state after mutations
   const roleTemplatesStore = useRoleTemplatesStore.getState();
 
@@ -237,7 +237,7 @@ export default function RolesPermissionsPage() {
         if (response.data.error) {
           throw new Error(response.data.error || 'Failed to delete permission')
         }
-        
+
         setDeleteDialogOpen(false)
         setSelectedItem(null)
         await fetchPermissions() // Refresh local permissions (with deprecated)
@@ -273,7 +273,7 @@ export default function RolesPermissionsPage() {
 
       // Use store method for permission assignment
       await updateTemplatePermissions(selectedItem.id, permissionId, isChecked)
-      
+
       // Refresh templates and update selected item
       const updatedTemplates = useRoleTemplatesStore.getState().roleTemplates
       const updatedTemplate = updatedTemplates.find(t => t.id === selectedItem.id)
@@ -413,7 +413,7 @@ export default function RolesPermissionsPage() {
                 setSearchQuery('')
               }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-2 px-4 py-2 rounded-4xld text-sm font-medium transition-colors",
                 activeTab === tab.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"

@@ -146,7 +146,7 @@ const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }) => (
     className={cn("absolute pointer-events-none", color)}
     style={{ left: x, top: y, zIndex: 10 }}
   >
-    <div className={cn("p-3 rounded-2xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20")}>
+    <div className={cn("p-3 rounded-4xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20")}>
       <Icon className={`w-${size} h-${size}`} />
     </div>
   </motion.div>
@@ -156,7 +156,7 @@ const FullScreenLoader = ({ text }) => {
   return (
     <div className="fixed inset-0 z-[9999] flex flex-col h-screen w-screen bg-slate-50 dark:bg-[#0F172A] overflow-hidden">
       {/* Background Gradients - pushed to back */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-200">
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
@@ -209,13 +209,13 @@ const FullScreenLoader = ({ text }) => {
             />
 
             <div className="w-24 h-24 bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl shadow-indigo-500/20 flex items-center justify-center relative z-10">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl" />
+              <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl" />
               <motion.div
                 animate={{
                   scale: [1, 1.1, 1],
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl p-4 shadow-lg shadow-orange-500/30 transform rotate-3"
+                className="bg-linear-to-br from-orange-400 to-orange-600 rounded-xl p-4 shadow-lg shadow-orange-500/30 transform rotate-3"
               >
                 <GraduationCap className="w-8 h-8 text-white" />
               </motion.div>
@@ -225,7 +225,7 @@ const FullScreenLoader = ({ text }) => {
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-              className="absolute -top-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg border-2 border-white dark:border-[#0F172A] z-20"
+              className="absolute -top-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg border-2 border-white dark:border-[#0F172A] z-2000"
             >
               <Sparkles className="w-3 h-3" />
             </motion.div>
@@ -260,7 +260,7 @@ const FullScreenLoader = ({ text }) => {
           >
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
               Your potential is <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-400">powering up!</span>
+              <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-400">powering up!</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">
               {text || "Unlocking awesome insights just for you..."}
@@ -298,7 +298,7 @@ const FullScreenLoader = ({ text }) => {
             <motion.div
               animate={{ x: ["-100%", "100%"] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-orange-400 via-pink-500 to-indigo-500 rounded-full"
+              className="absolute top-0 left-0 w-1/2 h-full bg-linear-to-r from-orange-400 via-pink-500 to-indigo-500 rounded-full"
             />
           </div>
 

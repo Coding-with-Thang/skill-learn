@@ -641,7 +641,7 @@ export default function QuizBuilder({ quizId = null }) {
                             size="icon"
                             onClick={() => handleRemoveOption(qIndex, oIndex)}
                             disabled={(form.watch(`questions.${qIndex}.options`) || []).length <= 2}
-                            className="text-muted-foreground hover:text-destructive shrink-0"
+                            className="text-muted-foreground hover:text-brand-tealestructive shrink-0"
                             aria-label="Remove option"
                           >
                             <X className="w-4 h-4" />

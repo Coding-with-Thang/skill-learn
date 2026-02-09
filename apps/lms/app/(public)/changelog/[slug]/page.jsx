@@ -81,7 +81,7 @@ export default async function ChangelogDetailPage({ params }) {
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 leading-[1.1]">
+              <h1 className="text-4xl md:text-brand-teal font-black tracking-tight text-slate-900 leading-[1.1]">
                 {update.title}
               </h1>
 
@@ -91,7 +91,7 @@ export default async function ChangelogDetailPage({ params }) {
                   alt={update.title}
                   className="object-cover w-full h-full"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent pointer-events-none" />
               </div>
             </div>
 
@@ -118,11 +118,11 @@ export default async function ChangelogDetailPage({ params }) {
               {update.authorName && (
                 <div className="pt-8 border-t">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                    <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden shrink-0">
                       {update.authorImage ? (
                         <img src={update.authorImage} alt={update.authorName} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500" />
+                        <div className="w-full h-full bg-linear-to-br from-teal-400 to-blue-500" />
                       )}
                     </div>
                     <div>
@@ -165,7 +165,7 @@ export default async function ChangelogDetailPage({ params }) {
                       {update.authorImage ? (
                         <img src={update.authorImage} alt={update.authorName} className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500" />
+                        <div className="w-full h-full bg-linear-to-br from-teal-400 to-blue-500" />
                       )}
                     </div>
                     <div>
@@ -179,14 +179,14 @@ export default async function ChangelogDetailPage({ params }) {
                 <div className="space-y-3">
                   {update.apiDocsUrl && (
                     <Link href={update.apiDocsUrl} className="w-full">
-                      <Button className="w-full justify-start bg-teal-500 text-slate-900 font-bold hover:bg-teal-400 rounded-2xl h-12">
+                      <Button className="w-full justify-start bg-teal-500 text-slate-900 font-bold hover:bg-teal-400 rounded-4xl h-12">
                         <Terminal className="w-4 h-4 mr-3" /> API Docs
                       </Button>
                     </Link>
                   )}
                   {update.githubRepoUrl && (
                     <Link href={update.githubRepoUrl} className="w-full">
-                      <Button variant="outline" className="w-full justify-start border-slate-200 text-slate-900 font-bold hover:bg-slate-50 rounded-2xl h-12">
+                      <Button variant="outline" className="w-full justify-start border-slate-200 text-slate-900 font-bold hover:bg-slate-50 rounded-4xl h-12">
                         <ExternalLink className="w-4 h-4 mr-3" /> GitHub Repo
                       </Button>
                     </Link>
@@ -224,13 +224,13 @@ export default async function ChangelogDetailPage({ params }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {relatedUpdates.map(u => (
               <Link key={u.id} href={`/changelog/${u.slug}`}>
-                <Card className="h-full border-slate-100 hover:border-teal-200 transition-all group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl">
+                <Card className="h-full border-slate-100 hover:border-teal-200 transition-all group rounded-4xl overflow-hidden shadow-sm hover:shadow-xl">
                   <CardContent className="p-0">
-                    <div className="aspect-[16/10] bg-slate-100 overflow-hidden relative">
-                      <img 
-                        src={u.imageUrl || FALLBACK_IMAGE} 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                        alt={u.title} 
+                    <div className="aspect-16/10 bg-slate-100 overflow-hidden relative">
+                      <img
+                        src={u.imageUrl || FALLBACK_IMAGE}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        alt={u.title}
                       />
                       <div className="absolute top-4 left-4">
                         <Badge className="bg-white/90 backdrop-blur-md text-slate-900 border-0 text-[10px] uppercase font-bold">

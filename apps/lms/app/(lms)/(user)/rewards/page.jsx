@@ -55,7 +55,7 @@ const PointsBalance = ({ points }) => {
   const progress = Math.min(UI.MAX_PERCENTAGE, (points / nextTierPoints) * UI.MAX_PERCENTAGE);
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+    <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
       <div className="flex justify-between items-start mb-4">
         <h3 className="font-semibold text-gray-900 text-lg">Your Points Balance</h3>
         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -93,7 +93,7 @@ const DailyStreak = () => {
   const currentStreak = streak?.current || 0;
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+    <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
       <div className="flex justify-between items-start mb-2">
         <h3 className="font-semibold text-gray-900 text-lg">Daily Streak</h3>
         <div className="flex gap-1">
@@ -186,7 +186,7 @@ const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
   const { isOneTime, max, isFullyRedeemed } = status || {};
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-4xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-md transition-shadow">
       <div className="relative h-48 w-full bg-gray-50 flex items-center justify-center p-4">
         <div className="relative h-full w-full">
           <Image
@@ -201,11 +201,11 @@ const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
         </div>
         <div className="absolute top-3 left-3">
           {isOneTime ? (
-            <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border border-gray-200">
+            <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-4xld border border-gray-200">
               One-time
             </span>
           ) : (
-            <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-md border border-purple-200">
+            <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-4xld border border-purple-200">
               {max ? `Limit: ${max}` : "Multiple"}
             </span>
           )}
@@ -337,7 +337,7 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-2xl">
+      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-4xl">
         {isLoading && <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50"><Loader variant="gif" /></div>}
         <div className="p-6 pb-0 relative z-10">
           <div className="flex justify-between items-center mb-6">
@@ -694,93 +694,93 @@ export default function RewardsPage() {
   }
 
   return (
-    <FeatureGate 
-      feature="rewards_store" 
+    <FeatureGate
+      feature="rewards_store"
       featureName="Rewards Store"
       fallback={<FeatureDisabledPage featureName="Rewards Store" />}
     >
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
-      <div className="max-w-7xl mx-auto pb-20">
-        <RewardsHero />
+      <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
+        <div className="max-w-7xl mx-auto pb-20">
+          <RewardsHero />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <PointsBalance points={points} />
-          <DailyStreak />
-        </div>
-        {/* Featured Reward */}
-        {featuredReward && (
-          <section className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Featured Reward</h2>
-            </div>
-            <FeaturedRewardCard
-              reward={featuredReward}
-              status={getRedemptionStatus(featuredReward)}
-              onRedeem={(r) => handleRewardClick(r, getRedemptionStatus(r))}
-              disabled={false}
-              isLoading={redeemingRewardId === featuredReward.id}
-            />
-          </section>
-        )}
-
-        {/* All Rewards */}
-        <section className="mb-12">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h2 className="text-xl font-bold text-gray-900">All Rewards</h2>
-            <div className="flex gap-2">
-              {/* Placeholder for filters if needed, or simple text for now */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Sort by:</span>
-                <select className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white py-1.5 pl-3 pr-8">
-                  <option>Popularity</option>
-                  <option>Cost: Low to High</option>
-                  <option>Cost: High to Low</option>
-                </select>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <PointsBalance points={points} />
+            <DailyStreak />
+          </div>
+          {/* Featured Reward */}
+          {featuredReward && (
+            <section className="mb-12">
+              <div className="flex items-center gap-2 mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Featured Reward</h2>
               </div>
-              <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <Filter className="h-4 w-4 mr-2 text-gray-500" />
-                Filter
-              </button>
+              <FeaturedRewardCard
+                reward={featuredReward}
+                status={getRedemptionStatus(featuredReward)}
+                onRedeem={(r) => handleRewardClick(r, getRedemptionStatus(r))}
+                disabled={false}
+                isLoading={redeemingRewardId === featuredReward.id}
+              />
+            </section>
+          )}
+
+          {/* All Rewards */}
+          <section className="mb-12">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <h2 className="text-xl font-bold text-gray-900">All Rewards</h2>
+              <div className="flex gap-2">
+                {/* Placeholder for filters if needed, or simple text for now */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">Sort by:</span>
+                  <select className="text-sm border-gray-300 rounded-4xld shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white py-1.5 pl-3 pr-8">
+                    <option>Popularity</option>
+                    <option>Cost: Low to High</option>
+                    <option>Cost: High to Low</option>
+                  </select>
+                </div>
+                <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-4xld text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <Filter className="h-4 w-4 mr-2 text-gray-500" />
+                  Filter
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {rewards.filter(r => r.id !== featuredReward?.id).map((reward) => {
-              const status = getRedemptionStatus(reward);
-              return (
-                <RewardCard
-                  key={reward.id}
-                  reward={reward}
-                  status={status}
-                  onRedeem={(r) => handleRewardClick(r, status)}
-                  disabled={false}
-                  isLoading={redeemingRewardId === reward.id}
-                />
-              );
-            })}
-          </div>
-        </section>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {rewards.filter(r => r.id !== featuredReward?.id).map((reward) => {
+                const status = getRedemptionStatus(reward);
+                return (
+                  <RewardCard
+                    key={reward.id}
+                    reward={reward}
+                    status={status}
+                    onRedeem={(r) => handleRewardClick(r, status)}
+                    disabled={false}
+                    isLoading={redeemingRewardId === reward.id}
+                  />
+                );
+              })}
+            </div>
+          </section>
 
-        {/* Redemption History */}
-        <section id="redemption-history" className="scroll-mt-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Redemption History</h2>
-          <InteractiveCard className="rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <RedemptionHistory
-              rewardHistory={rewardHistory}
-              onClaimReward={handleClaimReward}
-            />
-          </InteractiveCard>
-        </section>
+          {/* Redemption History */}
+          <section id="redemption-history" className="scroll-mt-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Redemption History</h2>
+            <InteractiveCard className="rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <RedemptionHistory
+                rewardHistory={rewardHistory}
+                onClaimReward={handleClaimReward}
+              />
+            </InteractiveCard>
+          </section>
+        </div>
+
+        <RedemptionModal
+          open={showRedeemModal}
+          onOpenChange={setShowRedeemModal}
+          reward={selectedReward}
+          userPoints={points}
+          onConfirm={confirmRedemption}
+          isLoading={redeemingRewardId === selectedReward?.id}
+        />
       </div>
-
-      <RedemptionModal
-        open={showRedeemModal}
-        onOpenChange={setShowRedeemModal}
-        reward={selectedReward}
-        userPoints={points}
-        onConfirm={confirmRedemption}
-        isLoading={redeemingRewardId === selectedReward?.id}
-      />
-    </div>
     </FeatureGate>
   )
 }

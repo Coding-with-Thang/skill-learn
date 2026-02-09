@@ -125,8 +125,8 @@ export default function RewardsAdminPage() {
         <CardContent>
           {/* Advanced Filters */}
           <div className="flex gap-4 mb-4">
-            <Input 
-              placeholder="Search rewards..." 
+            <Input
+              placeholder="Search rewards..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -265,7 +265,7 @@ export default function RewardsAdminPage() {
 
       {/* Add/Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[600px] z-[200] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] z-200 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingReward ? 'Edit Reward' : 'Add New Reward'}

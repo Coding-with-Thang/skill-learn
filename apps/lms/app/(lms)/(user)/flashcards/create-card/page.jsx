@@ -156,13 +156,13 @@ export default function CreateFlashCardPage() {
         <div className="flex flex-col items-center text-center space-y-4 pt-4 pb-12">
           <div className="relative">
             <div className="absolute inset-0 bg-yellow-400/20 blur-3xl rounded-full" />
-            <div className="relative h-16 w-16 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-3xl flex items-center justify-center shadow-xl shadow-yellow-500/20 transform -rotate-6 animate-float">
+            <div className="relative h-16 w-16 bg-linear-to-br from-yellow-300 to-orange-400 rounded-3xl flex items-center justify-center shadow-xl shadow-yellow-500/20 transform -rotate-6 animate-float">
               <Lightbulb className="h-8 w-8 text-white" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+            <h1 className="text-4xl md:text-brand-teal font-black tracking-tight">
               Create Flash Cards
             </h1>
             <p className="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto">
@@ -178,14 +178,14 @@ export default function CreateFlashCardPage() {
             <form onSubmit={handleSubmit} className="space-y-8">
 
               {/* Shared Settings Section */}
-              <div className="rounded-2xl border border-dashed border-border/60 bg-white/5 p-6 space-y-4">
+              <div className="rounded-4xl border border-dashed border-border/60 bg-white/5 p-6 space-y-4">
                 <div className="space-y-2.5">
                   <Label htmlFor="category" className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
                     <LayoutGrid className="h-4 w-4 text-blue-500" />
                     Category (for all cards)
                   </Label>
                   <Select value={categoryId} onValueChange={setCategoryId}>
-                    <SelectTrigger id="category" className="h-14 rounded-2xl bg-background border-border shadow-sm transition-all focus:ring-2 focus:ring-primary/20">
+                    <SelectTrigger id="category" className="h-14 rounded-4xl bg-background border-border shadow-sm transition-all focus:ring-2 focus:ring-primary/20">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
@@ -231,7 +231,7 @@ export default function CreateFlashCardPage() {
                     <div
                       key={idx}
                       className={cn(
-                        "relative rounded-2xl border bg-background/40 p-6 space-y-6 transition-all duration-300",
+                        "relative rounded-4xl border bg-background/40 p-6 space-y-6 transition-all duration-300",
                         "hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5",
                         "border-border shadow-sm"
                       )}
@@ -330,7 +330,7 @@ export default function CreateFlashCardPage() {
                 <Button
                   type="button"
                   variant="ghost"
-                  className="h-14 px-8 rounded-2xl font-bold text-slate-500 hover:text-slate-900 transition-all w-full sm:w-auto"
+                  className="h-14 px-8 rounded-4xl font-bold text-slate-500 hover:text-slate-900 transition-all w-full sm:w-auto"
                   onClick={() => router.push("/flashcards")}
                 >
                   Cancel
@@ -338,7 +338,7 @@ export default function CreateFlashCardPage() {
                 <Button
                   type="submit"
                   disabled={saving || !getValidCards().length || !categoryId}
-                  className="h-14 px-10 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto min-w-[200px]"
+                  className="h-14 px-10 rounded-4xl bg-linear-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold shadow-xl shadow-blue-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto min-w-[200px]"
                 >
                   {saving ? (
                     <Loader className="mr-2 h-5 w-5 animate-spin" />

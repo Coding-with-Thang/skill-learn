@@ -48,7 +48,7 @@ export default function CourseFilters({ categories = [], initialCategory = '', i
     return (
         <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm text-muted-foreground">Category</label>
-            <select name="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} className="rounded-md border px-2 py-1">
+            <select name="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} className="rounded-4xld border px-2 py-1">
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -56,7 +56,7 @@ export default function CourseFilters({ categories = [], initialCategory = '', i
             </select>
 
             <label className="text-sm text-muted-foreground">Per page</label>
-            <select name="pageSize" value={String(pageSize || 5)} onChange={(e) => setPageSize(Number(e.target.value))} className="rounded-md border px-2 py-1">
+            <select name="pageSize" value={String(pageSize || 5)} onChange={(e) => setPageSize(Number(e.target.value))} className="rounded-4xld border px-2 py-1">
                 <option value="5">5</option>
                 <option value="10">10</option>
                 <option value="20">20</option>

@@ -108,7 +108,7 @@ export default function VideoAdPage() {
               initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ delay: 0.4, duration: 1, type: "spring" }}
-              className="relative w-full aspect-video mb-12 rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+              className="relative w-full aspect-video mb-12 rounded-4xl overflow-hidden shadow-2xl border border-white/10"
             >
               <Image
                 src={scene.image}
@@ -117,7 +117,7 @@ export default function VideoAdPage() {
                 className="object-cover"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
             </motion.div>
           )}
 
@@ -129,7 +129,7 @@ export default function VideoAdPage() {
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.4 + (idx * 0.2), type: "spring" }}
-                  className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl"
+                  className="w-20 h-20 rounded-4xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl"
                 >
                   <Icon className="w-10 h-10 text-white" />
                 </motion.div>

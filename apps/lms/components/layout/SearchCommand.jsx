@@ -76,7 +76,7 @@ export function SearchCommand({ isOpen, setIsOpen }) {
                   <button
                     key={item.id}
                     onClick={() => handleSelect(item.id)}
-                    className="flex items-center gap-3 p-3 rounded-2xl hover:bg-muted transition-colors text-left group"
+                    className="flex items-center gap-3 p-3 rounded-4xl hover:bg-muted transition-colors text-left group"
                   >
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
                       <item.icon className="h-5 w-5" />
@@ -95,7 +95,7 @@ export function SearchCommand({ isOpen, setIsOpen }) {
                 <button
                   key={item.id}
                   onClick={() => handleSelect(item.id)}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-muted transition-colors group"
+                  className="w-full flex items-center justify-between p-3 rounded-4xl hover:bg-muted transition-colors group"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">

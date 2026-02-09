@@ -150,7 +150,7 @@ export default function FlashCardsAdminCategoriesPage() {
           {categories.length === 0 ? (
             <p className="text-muted-foreground py-8">No categories yet.</p>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-4xld border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -181,7 +181,7 @@ export default function FlashCardsAdminCategoriesPage() {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-destructive"
+                              className="text-brand-tealestructive"
                               onClick={() => handleDelete(cat)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />

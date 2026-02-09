@@ -66,7 +66,7 @@ export default function ChangelogPage() {
           <p className="text-muted-foreground">Create and manage platform updates and feature releases.</p>
         </div>
         <Link href="/cms/changelog/new">
-          <Button className="gap-2 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 border-none shadow-md">
+          <Button className="gap-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 border-none shadow-md">
             <Plus className="h-4 w-4" />
             New Update
           </Button>
@@ -115,11 +115,11 @@ export default function ChangelogPage() {
                 <div className="p-6">
                   <div className="flex flex-col md:flex-row justify-between gap-4">
                     <div className="flex gap-4">
-                      <div className="relative h-20 w-20 rounded-lg overflow-hidden flex-shrink-0 border">
-                        <img 
-                          src={item.imageUrl || FALLBACK_IMAGE} 
-                          alt={item.title} 
-                          className="object-cover w-full h-full" 
+                      <div className="relative h-20 w-20 rounded-lg overflow-hidden shrink-0 border">
+                        <img
+                          src={item.imageUrl || FALLBACK_IMAGE}
+                          alt={item.title}
+                          className="object-cover w-full h-full"
                         />
                       </div>
                       <div className="space-y-1">

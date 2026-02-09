@@ -39,7 +39,7 @@ const FloatingIcon = ({ icon: Icon, delay = 0, className = "" }) => (
       delay,
       ease: "easeInOut"
     }}
-    className={`absolute p-4 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl ${className}`}
+    className={`absolute p-4 rounded-4xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl ${className}`}
   >
     <Icon className="w-8 h-8 text-white" />
   </motion.div>
@@ -531,7 +531,7 @@ const SignInPage = () => {
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-5xl font-black text-white leading-[1.1] tracking-tight"
+              className="text-brand-teal font-black leading-[1.1] tracking-tight"
             >
               Ready to <br />
               <span className="text-indigo-400">level up</span> <br />
@@ -589,7 +589,7 @@ const SignInPage = () => {
           animate="visible"
           className="w-full max-w-[440px] z-10"
         >
-          {/* Header Moble */}
+          {/* Header Mobile */}
           <div className="lg:hidden flex justify-between items-center mb-10 w-full">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
@@ -600,7 +600,7 @@ const SignInPage = () => {
           </div>
 
           <motion.div variants={itemVariants} className="text-center mb-10">
-            <h1 className="text-4xl lg:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+            <h1 className="text-4xl lg:text-brand-teal font-black text-slate-900 mb-4 tracking-tight">
               Welcome Back! 👋
             </h1>
             <p className="text-slate-500 text-lg font-medium">
@@ -634,7 +634,7 @@ const SignInPage = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-sm text-red-700"
+                      className="p-4 bg-red-50 border-2 border-red-200 rounded-4xl text-sm text-red-700"
                     >
                       <div className="flex items-start gap-2">
                         <span className="font-semibold">⚠️</span>
@@ -659,7 +659,7 @@ const SignInPage = () => {
                       required
                       maxLength={6}
                       autoComplete="one-time-code"
-                      className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 text-center text-xl tracking-widest font-mono ${twoFactorError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
+                      className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 text-center text-xl tracking-widest font-mono ${twoFactorError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
                         }`}
                     />
                   </div>
@@ -670,7 +670,7 @@ const SignInPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={loading || !twoFactorCode || twoFactorCode.length < 6}
-                  className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-4xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -710,7 +710,7 @@ const SignInPage = () => {
 
                   {/* Error Message */}
                   {resetError && (
-                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-sm text-red-700">
+                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-4xl text-sm text-red-700">
                       {resetError}
                     </div>
                   )}
@@ -728,7 +728,7 @@ const SignInPage = () => {
                         }}
                         placeholder="you@example.com"
                         required
-                        className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
+                        className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
                           }`}
                       />
                     </div>
@@ -739,7 +739,7 @@ const SignInPage = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     disabled={loading || !resetEmail}
-                    className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-4xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -774,7 +774,7 @@ const SignInPage = () => {
 
                   {/* Error Message */}
                   {resetError && (
-                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-sm text-red-700">
+                    <div className="p-4 bg-red-50 border-2 border-red-200 rounded-4xl text-sm text-red-700">
                       {resetError}
                     </div>
                   )}
@@ -793,7 +793,7 @@ const SignInPage = () => {
                         placeholder="Enter 6-digit code"
                         required
                         maxLength={6}
-                        className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 text-center text-xl tracking-widest font-mono ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
+                        className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 text-center text-xl tracking-widest font-mono ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
                           }`}
                       />
                     </div>
@@ -814,7 +814,7 @@ const SignInPage = () => {
                         required
                         minLength={8}
                         autoComplete="new-password"
-                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
+                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
                       />
                       <button
                         type="button"
@@ -841,7 +841,7 @@ const SignInPage = () => {
                         required
                         minLength={8}
                         autoComplete="new-password"
-                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
+                        className={`w-full h-14 pl-12 pr-12 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${resetError ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'}`}
                       />
                     </div>
                     {resetError && (
@@ -854,7 +854,7 @@ const SignInPage = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     disabled={loading}
-                    className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-4xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -890,7 +890,7 @@ const SignInPage = () => {
                     type="button"
                     onClick={() => handleSocialSignIn('oauth_google')}
                     disabled={loading}
-                    className="w-full h-14 px-6 bg-white border-2 border-slate-100 hover:border-indigo-500 hover:bg-slate-50 rounded-2xl font-bold text-lg text-slate-900 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-14 px-6 bg-white border-2 border-slate-100 hover:border-indigo-500 hover:bg-slate-50 rounded-4xl font-bold text-lg text-slate-900 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -916,7 +916,7 @@ const SignInPage = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-sm text-red-700"
+                      className="p-4 bg-red-50 border-2 border-red-200 rounded-4xl text-sm text-red-700"
                     >
                       <div className="flex items-start gap-2">
                         <span className="font-semibold">⚠️</span>
@@ -940,7 +940,7 @@ const SignInPage = () => {
                       }}
                       placeholder="e.g. learning_ninja"
                       required
-                      className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-2xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${error ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
+                      className={`w-full h-14 pl-12 pr-6 bg-slate-50 border-2 rounded-4xl focus:outline-none focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200 ${error ? 'border-red-300 focus:border-red-500' : 'border-slate-100 focus:border-indigo-500'
                         }`}
                     />
                   </div>
@@ -957,7 +957,7 @@ const SignInPage = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       required
-                      className="w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200"
+                      className="w-full h-14 pl-12 pr-12 bg-slate-50 border-2 border-slate-100 rounded-4xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-900 font-medium placeholder:text-slate-400 group-hover:border-slate-200"
                     />
                     <button
                       type="button"
@@ -989,7 +989,7 @@ const SignInPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   disabled={loading || !signInLoaded}
-                  className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-2xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 group transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-4xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 group transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

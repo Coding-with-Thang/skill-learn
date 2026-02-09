@@ -237,95 +237,95 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <FeatureGate 
-      feature="leaderboards" 
+    <FeatureGate
+      feature="leaderboards"
       featureName="Leaderboards"
       fallback={<FeatureDisabledPage featureName="Leaderboards" />}
     >
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <BreadCrumbCom endtrail="Leaderboard" />
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <h1 className="text-3xl font-bold">Leaderboard</h1>
-
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab("points")}
-            className={cn(
-              "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
-              activeTab === "points"
-                ? "bg-white shadow-sm text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <Trophy className="w-4 h-4" />
-            Lifetime Points
-          </button>
-          <button
-            onClick={() => setActiveTab("quiz")}
-            className={cn(
-              "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
-              activeTab === "quiz"
-                ? "bg-white shadow-sm text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <Award className="w-4 h-4" />
-            Quiz Performance
-          </button>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <BreadCrumbCom endtrail="Leaderboard" />
         </div>
-      </div>
 
-      {/* Top 3 Podium */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="text-center">
-            {activeTab === "points" ? "Top Points Leaders" : "Top Quiz Performers"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {topThree.length > 0 ? (
-            <div className="flex justify-center items-end gap-2 md:gap-6 mt-4 pb-4">
-              {topThree[1] && (
-                <PodiumPosition
-                  user={topThree[1]}
-                  position={2}
-                  metric={activeTab}
-                />
-              )}
-              {topThree[0] && (
-                <PodiumPosition
-                  user={topThree[0]}
-                  position={1}
-                  metric={activeTab}
-                />
-              )}
-              {topThree[2] && (
-                <PodiumPosition
-                  user={topThree[2]}
-                  position={3}
-                  metric={activeTab}
-                />
-              )}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No data available
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <h1 className="text-3xl font-bold">Leaderboard</h1>
 
-      {/* Full Leaderboard Table */}
-      {remaining.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Full Rankings</h2>
-          <LeaderboardTable data={remaining} type={activeTab} />
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab("points")}
+              className={cn(
+                "px-4 py-2 rounded-4xld text-sm font-medium transition-all flex items-center gap-2",
+                activeTab === "points"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Trophy className="w-4 h-4" />
+              Lifetime Points
+            </button>
+            <button
+              onClick={() => setActiveTab("quiz")}
+              className={cn(
+                "px-4 py-2 rounded-4xld text-sm font-medium transition-all flex items-center gap-2",
+                activeTab === "quiz"
+                  ? "bg-white shadow-sm text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              )}
+            >
+              <Award className="w-4 h-4" />
+              Quiz Performance
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Top 3 Podium */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-center">
+              {activeTab === "points" ? "Top Points Leaders" : "Top Quiz Performers"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {topThree.length > 0 ? (
+              <div className="flex justify-center items-end gap-2 md:gap-6 mt-4 pb-4">
+                {topThree[1] && (
+                  <PodiumPosition
+                    user={topThree[1]}
+                    position={2}
+                    metric={activeTab}
+                  />
+                )}
+                {topThree[0] && (
+                  <PodiumPosition
+                    user={topThree[0]}
+                    position={1}
+                    metric={activeTab}
+                  />
+                )}
+                {topThree[2] && (
+                  <PodiumPosition
+                    user={topThree[2]}
+                    position={3}
+                    metric={activeTab}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No data available
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Full Leaderboard Table */}
+        {remaining.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold mb-4">Full Rankings</h2>
+            <LeaderboardTable data={remaining} type={activeTab} />
+          </div>
+        )}
+      </div>
     </FeatureGate>
   );
 }
