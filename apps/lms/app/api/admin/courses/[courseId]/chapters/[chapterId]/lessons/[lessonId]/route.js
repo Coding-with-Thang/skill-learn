@@ -4,7 +4,43 @@ import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 
-// Update a lesson (title, position)
+// Get a single lesson (for edit page)
+export async function GET(request, { params }) {
+  try {
+    const { courseId, chapterId, lessonId } = await params;
+    if (!courseId || !chapterId || !lessonId) {
+      throw new AppError("Course ID, Chapter ID and Lesson ID are required", ErrorType.VALIDATION, {
+        status: 400,
+      });
+    }
+    const authResult = await requireCanEditCourse(courseId);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
+    const lesson = await prisma.lesson.findFirst({
+      where: {
+        id: lessonId,
+        chapterId,
+        chapter: { courseId },
+      },
+      include: {
+        chapter: {
+          select: { id: true, title: true, courseId: true },
+        },
+      },
+    });
+    if (!lesson) {
+      throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
+
+    return successResponse({ lesson });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+// Update a lesson (title, content, position)
 export async function PATCH(request, { params }) {
   try {
     const { courseId, chapterId, lessonId } = await params;
@@ -18,11 +54,11 @@ export async function PATCH(request, { params }) {
       return authResult;
     }
 
-    const lesson = await prisma.courseLesson.findFirst({
+    const lesson = await prisma.lesson.findFirst({
       where: {
         id: lessonId,
-        courseChapterId: chapterId,
-        courseChapter: { courseId },
+        chapterId,
+        chapter: { courseId },
       },
     });
     if (!lesson) {
@@ -47,7 +83,7 @@ export async function PATCH(request, { params }) {
       }
       data.title = trimmed;
     }
-    if (body?.description !== undefined) data.description = body.description;
+    if (body?.content !== undefined) data.content = String(body.content ?? "");
     if (typeof body?.position === "number") {
       const pos = Math.floor(Number(body.position));
       if (!Number.isInteger(body.position) || pos < 0) {
@@ -56,13 +92,13 @@ export async function PATCH(request, { params }) {
           fieldErrors: { position: ["Position must be 0 or greater"] },
         });
       }
-      const lessonCount = await prisma.courseLesson.count({
-        where: { courseChapterId: chapterId },
+      const lessonCount = await prisma.lesson.count({
+        where: { chapterId },
       });
       data.position = Math.min(Math.max(0, pos), Math.max(0, lessonCount - 1));
     }
 
-    const updated = await prisma.courseLesson.update({
+    const updated = await prisma.lesson.update({
       where: { id: lessonId },
       data,
     });
@@ -90,18 +126,18 @@ export async function DELETE(request, { params }) {
       return authResult;
     }
 
-    const lesson = await prisma.courseLesson.findFirst({
+    const lesson = await prisma.lesson.findFirst({
       where: {
         id: lessonId,
-        courseChapterId: chapterId,
-        courseChapter: { courseId },
+        chapterId,
+        chapter: { courseId },
       },
     });
     if (!lesson) {
       throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    await prisma.courseLesson.delete({
+    await prisma.lesson.delete({
       where: { id: lessonId },
     });
 

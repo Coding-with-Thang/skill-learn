@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -54,12 +54,18 @@ import CourseStructure from '@/components/courses/CourseStructure'
 
 export default function EditCoursePage() {
     const params = useParams();
+    const searchParams = useSearchParams();
     const courseId = params.courseId;
     const [categories, setCategories] = useState([]);
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [courseLoading, setCourseLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState("details");
+    const tabFromUrl = searchParams.get("tab");
+    const [activeTab, setActiveTab] = useState(tabFromUrl === "structure" ? "structure" : "details");
+    useEffect(() => {
+        if (tabFromUrl === "structure") setActiveTab("structure");
+        else if (tabFromUrl === "details") setActiveTab("details");
+    }, [tabFromUrl]);
     const [chapterToDelete, setChapterToDelete] = useState(null);
     const [deleteChapterPending, setDeleteChapterPending] = useState(false);
     const [lessonToDelete, setLessonToDelete] = useState(null); // { chapterId, lesson }
@@ -154,7 +160,8 @@ export default function EditCoursePage() {
         };
 
         fetchCourse();
-    }, [courseId, form, router]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- form is used imperatively; including it can cause infinite re-runs
+    }, [courseId]);
 
     // If there's a preview image URL stored in the client store (set when clicking Edit), prefer that
     useEffect(() => {
@@ -350,6 +357,7 @@ export default function EditCoursePage() {
                         // noop
                     }
                     toast.success('Course updated successfully');
+                    router.refresh();
                     router.push('/dashboard/courses');
                     return;
                 } else if (data?.data?.status === 'error') {
@@ -512,7 +520,12 @@ export default function EditCoursePage() {
                                         <FormItem className="full-w">
                                             <FormLabel>Thumbnail Image</FormLabel>
                                             <FormControl>
-                                                <Uploader onChange={field.onChange} value={field.value} name={field.name}
+                                                <Uploader
+                                                    onChange={field.onChange}
+                                                    value={field.value}
+                                                    name={field.name}
+                                                    api={api}
+                                                    mediaListEndpoint="/api/admin/media"
                                                     onUploadComplete={(upload) => {
                                                         form.setValue('fileKey', upload?.path || '', { shouldValidate: true });
                                                     }}
@@ -647,6 +660,30 @@ export default function EditCoursePage() {
                             mutationPending={structureMutationPending}
                             onDeleteChapter={(chapter) => setChapterToDelete(chapter)}
                             onAddChapter={openAddChapterDialog}
+                            onRenameChapter={async (chapterId, newTitle) => {
+                                if (structureMutationPending) return;
+                                const chapter = course?.chapters?.find((ch) => ch.id === chapterId);
+                                if (!chapter) return;
+                                setStructureMutationPending(true);
+                                try {
+                                    await api.put(`/admin/courses/${courseId}/chapters/${chapterId}`, {
+                                        title: newTitle,
+                                        order: chapter.position ?? chapter.order ?? 0,
+                                    });
+                                    toast.success('Chapter renamed');
+                                    setStructureRefreshing(true);
+                                    try {
+                                        await refreshCourse();
+                                    } finally {
+                                        setStructureRefreshing(false);
+                                    }
+                                } catch (err) {
+                                    toast.error(err?.response?.data?.message || 'Failed to rename chapter');
+                                    await refreshCourse({ silent: true });
+                                } finally {
+                                    setStructureMutationPending(false);
+                                }
+                            }}
                             onReorderChapters={async (chapterIds) => {
                                 if (structureMutationPending) return;
                                 setStructureMutationPending(true);

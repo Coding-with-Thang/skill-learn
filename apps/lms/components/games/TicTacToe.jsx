@@ -64,7 +64,7 @@ const TicTacToe = () => {
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState(null);
   const [winningLine, setWinningLine] = useState([]);
-  const [difficulty, setDifficulty] = useState('easy');
+  const [difficulty, setDifficulty] = useState("easy");
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const [round, setRound] = useLocalStorage("round", 1);
@@ -78,6 +78,10 @@ const TicTacToe = () => {
   difficultyRef.current = difficulty;
   winnerRef.current = winner;
   isXNextRef.current = isXNext;
+
+  const handleDifficultyChange = useCallback((v) => {
+    if (v === "easy" || v === "hard") setDifficulty(v);
+  }, []);
 
   useEffect(() => {
     if (round >= 3) {
@@ -181,9 +185,9 @@ const TicTacToe = () => {
     <div className="flex flex-col items-center">
       <div className="mb-8 flex items-center gap-4">
         <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Difficulty</span>
-        <Select value={difficulty} onValueChange={setDifficulty}>
+        <Select defaultValue="easy" onValueChange={handleDifficultyChange}>
           <SelectTrigger className="w-32 rounded-xl border-none bg-slate-100 font-bold text-slate-600">
-            <SelectValue />
+            <SelectValue placeholder="Difficulty" />
           </SelectTrigger>
           <SelectContent className="rounded-xl border-none shadow-xl">
             <SelectItem value="easy">Easy</SelectItem>

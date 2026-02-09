@@ -316,6 +316,7 @@ export const categoryCreateSchema = z.object({
     .max(100, "Category name must be less than 100 characters"),
   description: z.string().optional(),
   imageUrl: z.string().optional(),
+  fileKey: z.string().optional(),
   isActive: z.boolean().optional().default(true),
 });
 

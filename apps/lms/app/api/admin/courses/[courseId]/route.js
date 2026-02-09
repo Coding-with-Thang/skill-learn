@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
-import { prisma } from '@skill-learn/database';
-import { courseSchema, objectIdSchema } from "@/lib/zodSchemas";
+import { prisma } from "@skill-learn/database";
+import { courseSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
-import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
+import {
+  handleApiError,
+  AppError,
+  ErrorType,
+} from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest.js";
 import { getCourseWithChaptersAndLessons } from "@/lib/courses.js";
-import { z } from "zod";
 
 // Get a specific course (with chapters and lessons)
 export async function GET(request, { params }) {
@@ -40,7 +42,7 @@ export async function GET(request, { params }) {
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for course image:",
-        err?.message || err
+        err?.message || err,
       );
     }
 

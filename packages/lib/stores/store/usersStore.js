@@ -23,7 +23,8 @@ export const useUsersStore = create((set, get) => ({
       async () => {
         set({ isLoading: true, error: null });
         try {
-          const response = await api.get("/users");
+          const url = force ? `/users?_t=${Date.now()}` : "/users";
+          const response = await api.get(url);
           // API returns standardized format: { success: true, data: { users: [...] } }
           const users = parseApiResponse(response, "users") || [];
           set({

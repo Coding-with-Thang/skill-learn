@@ -113,7 +113,38 @@ export async function POST(request) {
       10
     );
 
-    // Create new quiz with default questions and options
+    // Build questions in Prisma nested create shape: each question must have options: { create: [...] }
+    const questionsPayload = data.questions?.length
+      ? data.questions.map((q) => ({
+          text: q.text ?? "",
+          imageUrl: q.imageUrl ?? null,
+          fileKey: q.fileKey ?? null,
+          videoUrl: q.videoUrl ?? null,
+          points: q.points ?? 1,
+          options: {
+            create: (q.options || []).map((opt) => ({
+              text: opt.text ?? "",
+              isCorrect: !!opt.isCorrect,
+            })),
+          },
+        }))
+      : Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT)
+          .fill(null)
+          .map((_, i) => ({
+            text: `Question ${i + 1}`,
+            points: 1,
+            fileKey: null,
+            options: {
+              create: Array(4)
+                .fill(null)
+                .map((_, j) => ({
+                  text: `Option ${j + 1}`,
+                  isCorrect: j === 0,
+                })),
+            },
+          }));
+
+    // Create new quiz with questions and options
     const quiz = await prisma.quiz.create({
       data: {
         title: data.title,
@@ -129,23 +160,7 @@ export async function POST(request) {
         showQuestionReview: data.showQuestionReview ?? true,
         showCorrectAnswers: data.showCorrectAnswers ?? false,
         questions: {
-          create:
-            data.questions ||
-            Array(QUIZ_CONFIG.DEFAULT_QUESTIONS_COUNT)
-              .fill(null)
-              .map((_, i) => ({
-                text: `Question ${i + 1}`,
-                points: 1,
-                fileKey: null,
-                options: {
-                  create: Array(4)
-                    .fill(null)
-                    .map((_, j) => ({
-                      text: `Option ${j + 1}`,
-                      isCorrect: j === 0, // First option is correct by default
-                    })),
-                },
-              })),
+          create: questionsPayload,
         },
       },
       include: {

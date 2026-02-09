@@ -395,7 +395,7 @@ export default function TrainingPage() {
                 <span className="font-medium">Courses</span>
               </div>
               <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                {stats.activeCourses}
+                {stats.totalCourses}
               </span>
             </button>
 

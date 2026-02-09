@@ -31,6 +31,7 @@ import {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
   ToggleLeft,
   Plus,
   Edit,
@@ -54,6 +55,7 @@ const featureIcons = {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
   Zap,
   ToggleLeft,
 }
@@ -85,7 +87,7 @@ const Switch = ({ checked, onCheckedChange, disabled = false }) => (
 const iconOptions = [
   'Gamepad2', 'FileQuestion', 'Trophy', 'Gift', 'Award', 'Flame',
   'GraduationCap', 'Coins', 'FolderTree', 'BarChart3', 'ScrollText',
-  'Shield', 'Zap', 'ToggleLeft'
+  'Shield', 'Layers', 'Zap', 'ToggleLeft'
 ]
 
 // Category options

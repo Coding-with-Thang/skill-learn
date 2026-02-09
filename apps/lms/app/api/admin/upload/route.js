@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdmin } from "@skill-learn/lib/utils/auth.js";
+import { requireAdminOrMediaAccess } from "@skill-learn/lib/utils/auth.js";
 import admin from "firebase-admin";
 import { fileUploadSchema } from "@skill-learn/lib/zodSchemas.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
@@ -57,10 +57,11 @@ const getStorage = () => {
 
 export async function POST(req) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
+    const authResult = await requireAdminOrMediaAccess();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { tenantId } = authResult;
 
     try {
       const ct = req.headers.get("content-type");
@@ -128,7 +129,7 @@ export async function POST(req) {
     }
 
     const bucket = storage.bucket();
-    const storageFileName = `courses/${Date.now()}_${originalName}`;
+    const storageFileName = `tenants/${tenantId}/media/${Date.now()}_${originalName}`;
     const fileRef = bucket.file(storageFileName);
 
     // Upload the buffer
@@ -158,10 +159,11 @@ export async function POST(req) {
 
 export async function DELETE(req) {
   try {
-    const adminResult = await requireAdmin();
-    if (adminResult instanceof NextResponse) {
-      return adminResult;
+    const authResult = await requireAdminOrMediaAccess();
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    const { tenantId } = authResult;
 
     const body = await req.json();
     const { path } = body || {};
@@ -172,6 +174,15 @@ export async function DELETE(req) {
         {
           status: 400,
         }
+      );
+    }
+
+    const tenantPrefix = `tenants/${tenantId}/media/`;
+    if (!path.startsWith(tenantPrefix)) {
+      throw new AppError(
+        "You can only delete media that belongs to your tenant",
+        ErrorType.AUTH,
+        { status: 403 }
       );
     }
 

@@ -57,7 +57,8 @@
     "./utils/notifications.js": "./utils/notifications.js",
     "./utils/sm2.js": "./utils/sm2.js",
     "./utils/flashCardPriority.js": "./utils/flashCardPriority.js",
-    "./utils/flashCardFingerprint.js": "./utils/flashCardFingerprint.js"
+    "./utils/flashCardFingerprint.js": "./utils/flashCardFingerprint.js",
+    "./constants/defaultFeatures.js": "./constants/defaultFeatures.js"
   },
   "scripts": {},
   "dependencies": {

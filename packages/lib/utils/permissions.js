@@ -372,6 +372,10 @@ export const PERMISSIONS = {
   FLASHCARDS_DELETE: "flashcards.delete",
   FLASHCARDS_MANAGE_TENANT: "flashcards.manage_tenant", // Admin: manage all tenant cards
   FLASHCARDS_MANAGE_GLOBAL: "flashcards.manage_global", // Super admin: manage global cards
+
+  // Media (browse/upload for tenant-scoped media library)
+  MEDIA_BROWSE: "media.browse",
+  MEDIA_UPLOAD: "media.upload",
 };
 
 export default {

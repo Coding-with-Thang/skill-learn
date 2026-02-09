@@ -79,14 +79,17 @@ api.interceptors.request.use(
       });
     }
 
-    // Check cache for GET requests (skip cache for mutable tenant/CMS data so UI refreshes after create/update/delete)
+    // Check cache for GET requests (skip cache for mutable tenant/CMS/admin data so UI refreshes after create/update/delete)
     if (config.method === "get") {
       const key = `${config.url}${JSON.stringify(config.params || {})}`;
       const cachedResponse = cache.get(key);
-      const isTenantPath = config.url && String(config.url).startsWith("/tenants");
-      const cacheDuration = isTenantPath
-        ? 0
-        : cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
+      const url = config.url && String(config.url);
+      const isTenantPath = url && url.startsWith("/tenants");
+      const isAdminPath = url && (url.includes("/admin/") || url.endsWith("/admin"));
+      const cacheDuration =
+        isTenantPath || isAdminPath
+          ? 0
+          : cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
 
       if (
         cachedResponse &&
@@ -108,10 +111,15 @@ api.interceptors.request.use(
 // Handle responses
 api.interceptors.response.use(
   (response) => {
-    // Cache successful GET responses (skip tenant paths so CMS UI refreshes after mutations)
+    // Cache successful GET responses (skip tenant/admin paths so UI refreshes after mutations)
     if (response.config.method === "get") {
       const url = response.config.url && String(response.config.url);
-      if (!url || !url.startsWith("/tenants")) {
+      const skipCache =
+        !url ||
+        url.startsWith("/tenants") ||
+        url.includes("/admin/") ||
+        url.endsWith("/admin");
+      if (!skipCache) {
         const key = `${url}${JSON.stringify(
           response.config.params || {}
         )}`;

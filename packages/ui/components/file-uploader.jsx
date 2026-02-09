@@ -5,10 +5,16 @@ import { useDropzone } from "react-dropzone";
 import { Card, CardContent } from "./card";
 import { Button } from "./button";
 import { Input } from "./input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./dialog";
 import { cn } from "@skill-learn/lib/utils.js";
 import { toast } from "sonner";
 import axios from "axios";
-import { CloudUpload, FileImage, X, Loader2, Link2 } from "lucide-react";
+import { CloudUpload, FileImage, X, Loader2, Link2, FolderOpen } from "lucide-react";
 
 // --- Render states (exported for customization if needed) ---
 
@@ -48,27 +54,30 @@ export function RenderErrorState() {
 
 export function RenderUploadedState({ previewUrl, onDelete, isDeleting }) {
   return (
-    <div className="relative w-full h-full min-h-[200px]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={previewUrl}
-        alt="Uploaded file"
-        className="w-full h-full min-h-[200px] object-contain p-2"
-      />
-      <Button
-        variant="destructive"
-        size="icon"
-        className="absolute top-4 right-4"
-        onClick={onDelete}
-        aria-label="Delete uploaded file"
-        disabled={isDeleting}
-      >
-        {isDeleting ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <X className="size-4" />
-        )}
-      </Button>
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[200px] gap-3">
+      <div className="relative shrink-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={previewUrl}
+          alt="Uploaded file"
+          className="size-24 sm:size-28 object-contain rounded-md border border-border bg-muted/30"
+        />
+        <Button
+          variant="destructive"
+          size="icon"
+          className="absolute -top-1 -right-1 size-6 rounded-full"
+          onClick={onDelete}
+          aria-label="Delete uploaded file"
+          disabled={isDeleting}
+        >
+          {isDeleting ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <X className="size-3" />
+          )}
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">Image selected</p>
     </div>
   );
 }
@@ -94,23 +103,30 @@ const IMAGE_URL_PATTERN = /^https?:\/\/.+/i;
 /**
  * Shared file uploader for LMS and CMS.
  * API: value (url string), onChange(url), onUploadComplete({ url, path }?), uploadEndpoint, optional className, name (for forms).
- * Users can either upload an image or provide an image URL.
+ * Optional mediaListEndpoint: GET endpoint that returns { data: { items: [{ url, path, name }] } } to enable "Browse" mode.
+ * Optional api: authenticated axios-like instance (e.g. from @skill-learn/lib) so media list requests include auth.
+ * Users can upload an image, set a URL, or (when mediaListEndpoint is set) browse already uploaded media.
  */
 export function Uploader({
   value,
   onChange,
   onUploadComplete,
   uploadEndpoint = "/api/admin/upload",
+  mediaListEndpoint,
+  api,
   className,
   name,
 }) {
   const [url, setUrl] = useState(value ?? undefined);
-  const [mode, setMode] = useState("upload"); // "upload" | "url"
+  const [mode, setMode] = useState("upload"); // "upload" | "url" | "browse"
   const [urlInput, setUrlInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
+  const [browseOpen, setBrowseOpen] = useState(false);
+  const [mediaItems, setMediaItems] = useState([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
 
   const applyUrlFromInput = useCallback(() => {
     const trimmed = urlInput?.trim();
@@ -170,6 +186,44 @@ export function Uploader({
     }
   }, [value, url]);
 
+  const fetchMediaList = useCallback(async () => {
+    if (!mediaListEndpoint) return;
+    setMediaLoading(true);
+    try {
+      // Use authenticated api when provided (includes Clerk Bearer token for tenant-scoped media)
+      const mediaPath = mediaListEndpoint.replace(/^\/api/, "") || "/admin/media";
+      const client = api || axios;
+      const res = await (api ? client.get(mediaPath) : client.get(mediaListEndpoint, { withCredentials: true }));
+      const data = res?.data;
+      const raw = data?.data ?? data;
+      const list = Array.isArray(raw?.items) ? raw.items : [];
+      setMediaItems(list);
+    } catch (err) {
+      console.error("[Uploader] media list error", err);
+      toast.error("Failed to load media");
+      setMediaItems([]);
+    } finally {
+      setMediaLoading(false);
+    }
+  }, [mediaListEndpoint, api]);
+
+  const openBrowse = useCallback(() => {
+    setBrowseOpen(true);
+    fetchMediaList();
+  }, [fetchMediaList]);
+
+  const selectMediaItem = useCallback(
+    (item) => {
+      if (!item?.url) return;
+      setUrl(item.url);
+      onChange?.(item.url);
+      onUploadComplete?.({ url: item.url, path: item.path });
+      setBrowseOpen(false);
+      toast.success("Image selected");
+    },
+    [onChange, onUploadComplete]
+  );
+
   const onDrop = useCallback(
     (acceptedFiles) => {
       const f = acceptedFiles?.[0];
@@ -202,71 +256,152 @@ export function Uploader({
   });
 
   const isUploadMode = mode === "upload";
+  const isUrlMode = mode === "url";
+  const isBrowseMode = mode === "browse";
+  const canDropzone = isUploadMode && !url && !uploading;
 
   return (
-    <Card
-      {...(isUploadMode && !url ? getRootProps() : {})}
-      className={cn(
-        "relative border-2 border-dashed w-full min-h-[200px]",
-        isUploadMode && !url && isDragActive ? "border-primary bg-primary/10" : "border-border",
-        className
-      )}
-    >
-      <CardContent className="flex flex-col items-center justify-center w-full h-full min-h-[200px] p-4">
-        <input {...getInputProps()} name={name} id={name} />
-        {uploading ? (
-          <RenderUploadingState progress={progress} file={currentFile} />
-        ) : url ? (
-          <RenderUploadedState
-            previewUrl={url}
-            onDelete={handleRemoveFile}
-            isDeleting={isDeleting}
-          />
-        ) : (
-          <>
-            <div className="flex gap-1 p-1 rounded-lg bg-muted mb-4">
-              <Button
-                type="button"
-                variant={isUploadMode ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setMode("upload")}
-              >
-                <CloudUpload className="size-4 mr-1.5" />
-                Upload
-              </Button>
-              <Button
-                type="button"
-                variant={!isUploadMode ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setMode("url")}
-              >
-                <Link2 className="size-4 mr-1.5" />
-                URL
-              </Button>
-            </div>
-            {isUploadMode ? (
-              <RenderEmptyState isDragActive={isDragActive} />
-            ) : (
-              <div
-                className="w-full max-w-sm space-y-2"
-                onClick={(e) => e.stopPropagation()}
-                onDragOver={(e) => e.stopPropagation()}
-              >
-                <Input
-                  type="url"
-                  placeholder="https://example.com/image.png"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyUrlFromInput())}
-                />
-                <Button type="button" onClick={applyUrlFromInput} className="w-full">
-                  Use image URL
+    <>
+      <Card
+        {...(canDropzone ? getRootProps() : {})}
+        className={cn(
+          "relative border-2 border-dashed w-full min-h-[200px]",
+          canDropzone && isDragActive ? "border-primary bg-primary/10" : "border-border",
+          className
+        )}
+      >
+        <CardContent className="flex flex-col items-center justify-center w-full h-full min-h-[200px] p-4">
+          <input {...getInputProps()} name={name} id={name} />
+          {uploading ? (
+            <RenderUploadingState progress={progress} file={currentFile} />
+          ) : url ? (
+            <RenderUploadedState
+              previewUrl={url}
+              onDelete={handleRemoveFile}
+              isDeleting={isDeleting}
+            />
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-1 p-1 rounded-lg bg-muted mb-4 justify-center">
+                <Button
+                  type="button"
+                  variant={isUploadMode ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setMode("upload")}
+                >
+                  <CloudUpload className="size-4 mr-1.5" />
+                  Upload
                 </Button>
+                <Button
+                  type="button"
+                  variant={isUrlMode ? "secondary" : "ghost"}
+                  size="sm"
+                  onClick={() => setMode("url")}
+                >
+                  <Link2 className="size-4 mr-1.5" />
+                  URL
+                </Button>
+                {mediaListEndpoint && (
+                  <Button
+                    type="button"
+                    variant={isBrowseMode ? "secondary" : "ghost"}
+                    size="sm"
+                    onClick={() => setMode("browse")}
+                  >
+                    <FolderOpen className="size-4 mr-1.5" />
+                    Browse
+                  </Button>
+                )}
+              </div>
+              {isUploadMode && (
+                <RenderEmptyState isDragActive={isDragActive} />
+              )}
+              {isUrlMode && (
+                <div
+                  className="w-full max-w-sm space-y-2"
+                  onClick={(e) => e.stopPropagation()}
+                  onDragOver={(e) => e.stopPropagation()}
+                >
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/image.png"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), applyUrlFromInput())}
+                  />
+                  <Button type="button" onClick={applyUrlFromInput} className="w-full">
+                    Use image URL
+                  </Button>
+                </div>
+              )}
+              {isBrowseMode && (
+                <div
+                  className="text-center"
+                  onClick={(e) => e.stopPropagation()}
+                  onDragOver={(e) => e.stopPropagation()}
+                >
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Choose from previously uploaded images
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openBrowse();
+                    }}
+                  >
+                    <FolderOpen className="size-4 mr-1.5" />
+                    Browse media
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={browseOpen} onOpenChange={setBrowseOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col z-[200]">
+          <DialogHeader>
+            <DialogTitle>Select image</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-0">
+            {mediaLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="size-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : mediaItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No uploaded media yet. Upload an image first.
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                {mediaItems.map((item) => (
+                  <button
+                    key={item.path || item.url}
+                    type="button"
+                    className="rounded-lg border border-border overflow-hidden bg-muted/30 hover:border-primary hover:ring-2 hover:ring-primary/20 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    onClick={() => selectMediaItem(item)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.url}
+                      alt={item.name || "Media"}
+                      className="w-full aspect-square object-cover"
+                    />
+                    {item.name && (
+                      <p className="text-xs text-muted-foreground truncate px-1.5 py-1">
+                        {item.name}
+                      </p>
+                    )}
+                  </button>
+                ))}
               </div>
             )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -10,7 +10,7 @@ import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js
 import { Navigation } from './Navigation/Navigation';
 import { Logo } from '../shared/Logo';
 import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
-import ThemeSwitcher from "@skill-learn/ui/components/ThemeSwitcher";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   const { isLoaded: clerkLoaded } = useUser();
@@ -60,7 +60,7 @@ export default function Header() {
         </div>
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center justify-end gap-6 mr-6 lg:mr-9">
-          <ThemeSwitcher />
+          <ThemeToggle />
           {!clerkLoaded ? (
             <LoadingSpinner size="small" />
           ) : (
@@ -94,7 +94,7 @@ export default function Header() {
       {/* Mobile menu dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden border-b-2 px-4 pb-4 animate-fade-in z-50 bg-background text-foreground font-fun transition-colors duration-300">
-          <ThemeSwitcher />
+          <ThemeToggle />
           {!clerkLoaded ? (
             <div className="py-4 flex justify-center"><LoadingSpinner size="small" /></div>
           ) : (

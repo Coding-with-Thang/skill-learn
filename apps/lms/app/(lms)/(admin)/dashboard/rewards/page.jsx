@@ -265,7 +265,7 @@ export default function RewardsAdminPage() {
 
       {/* Add/Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] z-[200] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingReward ? 'Edit Reward' : 'Add New Reward'}

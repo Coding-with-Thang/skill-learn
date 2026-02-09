@@ -57,6 +57,7 @@ import {
   FolderTree,
   BarChart3,
   ScrollText,
+  Layers,
   ToggleLeft,
   ToggleRight,
   Lock,
@@ -85,6 +86,7 @@ const featureIcons = {
   BarChart3,
   ScrollText,
   Shield,
+  Layers,
 }
 
 const createUserDefaultValues = {
@@ -194,6 +196,7 @@ export default function TenantDetailPage() {
     register: registerCreateUser,
     handleSubmit: handleCreateUserSubmit,
     formState: { errors: createUserErrors },
+    setError: setCreateUserError,
     reset: resetCreateUser,
   } = createUserForm
 
@@ -372,9 +375,17 @@ export default function TenantDetailPage() {
         fetchUserRoles(tenantId, true)
       }, 2500)
     } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Failed to create user'
+      const data = err.response?.data
+      const msg = data?.error || err.message || 'Failed to create user'
       setFormError(msg)
       toast.error(msg)
+      // Set field-level errors from API so user sees which fields failed
+      const fieldErrors = data?.fieldErrors
+      if (fieldErrors && typeof fieldErrors === 'object') {
+        for (const [field, message] of Object.entries(fieldErrors)) {
+          if (field && message) setCreateUserError(field, { type: 'server', message })
+        }
+      }
     } finally {
       setFormLoading(false)
     }
@@ -1838,6 +1849,11 @@ export default function TenantDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateUserSubmit(onCreateUserSubmit)}>
+            {formError && (
+              <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm mb-4" role="alert">
+                {formError}
+              </div>
+            )}
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
@@ -1942,11 +1958,6 @@ export default function TenantDetailPage() {
                 )}
                 <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
               </div>
-              {formError && (
-                <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
-                  {formError}
-                </div>
-              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setCreateUserDialogOpen(false)}>

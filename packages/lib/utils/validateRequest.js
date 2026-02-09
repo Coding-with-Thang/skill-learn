@@ -19,12 +19,18 @@ export async function validateRequest(schema, data) {
       const path = err.path.join(".");
       return path ? `${path}: ${err.message}` : err.message;
     });
+    // Client-safe field errors: { fieldName: message } (first message per path)
+    const fieldErrors = {};
+    for (const err of error.errors) {
+      const key = err.path.length ? err.path.join(".") : "form";
+      if (!fieldErrors[key]) fieldErrors[key] = err.message;
+    }
     throw new AppError(
       `Validation failed: ${errorMessages.join(", ")}`,
       ErrorType.VALIDATION,
       {
         status: 400,
-        details: error.errors,
+        fieldErrors,
       }
     );
   }

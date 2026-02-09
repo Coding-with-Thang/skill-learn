@@ -4,6 +4,8 @@ import { prisma } from "@skill-learn/database";
  * Default include for course with chapters and lessons (ordered by position).
  * Use with prisma.course.findUnique or findMany.
  */
+// Match Prisma schema: Chapter uses "order", CourseChapter uses "position".
+// Use "position" if Course.chapters points to CourseChapter; use "order" for Chapter.
 export const courseWithChaptersAndLessonsInclude = {
   category: true,
   chapters: {

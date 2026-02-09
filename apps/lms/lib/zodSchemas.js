@@ -3,66 +3,145 @@
  * LMS-only schemas (flashcards, user form overrides for reportsToUserId).
  */
 import { z } from "zod";
-import {
-  objectIdSchema,
-  courseStatus,
-  courseStatusOptions,
-  courseSchema,
-  courseUpdateSchema,
-  addPointsSchema,
-  spendPointsSchema,
-  quizCreateSchema,
-  quizUpdateSchema,
-  quizFinishSchema,
-  userCreateSchemaBase as libUserCreateSchemaBase,
-  userUpdateSchemaBase as libUserUpdateSchemaBase,
-  rewardRedeemSchema,
-  rewardCreateSchema,
-  rewardUpdateSchema,
-  categoryCreateSchema,
-  categoryUpdateSchema,
-  settingUpdateSchema,
-  settingsFormSchema,
-  pathParamSchema,
-  fileUploadSchema,
-} from "@skill-learn/lib/zodSchemas.js";
+import * as libSchemas from "@skill-learn/lib/zodSchemas.js";
 
-// Re-export all shared schemas from the package
-export {
-  objectIdSchema,
-  courseStatus,
-  courseStatusOptions,
-  courseSchema,
-  courseUpdateSchema,
-  addPointsSchema,
-  spendPointsSchema,
-  quizCreateSchema,
-  quizUpdateSchema,
-  quizFinishSchema,
-  rewardRedeemSchema,
-  rewardCreateSchema,
-  rewardUpdateSchema,
-  categoryCreateSchema,
-  categoryUpdateSchema,
-  settingUpdateSchema,
-  settingsFormSchema,
-  pathParamSchema,
-  fileUploadSchema,
-};
+// Re-export everything from package; we override specific schemas below
+export const objectIdSchema = libSchemas.objectIdSchema;
+export const addPointsSchema = libSchemas.addPointsSchema;
+export const spendPointsSchema = libSchemas.spendPointsSchema;
+export const quizCreateSchema = libSchemas.quizCreateSchema;
+export const quizUpdateSchema = libSchemas.quizUpdateSchema;
+export const quizFinishSchema = libSchemas.quizFinishSchema;
+export const rewardRedeemSchema = libSchemas.rewardRedeemSchema;
+export const rewardCreateSchema = libSchemas.rewardCreateSchema;
+export const rewardUpdateSchema = libSchemas.rewardUpdateSchema;
+export const categoryCreateSchema = libSchemas.categoryCreateSchema;
+export const categoryUpdateSchema = libSchemas.categoryUpdateSchema;
+export const settingUpdateSchema = libSchemas.settingUpdateSchema;
+export const settingsFormSchema = libSchemas.settingsFormSchema;
+export const pathParamSchema = libSchemas.pathParamSchema;
+export const fileUploadSchema = libSchemas.fileUploadSchema;
 
 // LMS form override: reportsToUserId accepts empty string from select and transforms to null
-export const userCreateSchema = libUserCreateSchemaBase.extend({
+export const userCreateSchema = libSchemas.userCreateSchemaBase.extend({
   reportsToUserId: z
     .union([objectIdSchema, z.literal("")])
     .optional()
     .nullable()
     .transform((v) => (v === "" ? null : v)),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
 });
 
-export const userUpdateSchema = libUserUpdateSchemaBase.extend({
+// Common schemas (LMS overrides; objectIdSchema comes from package re-export above)
+export const courseStatus = z.enum(["Draft", "Published", "Achieved"]);
+
+// Array of course status values for UI components
+export const courseStatusOptions = ["Draft", "Published", "Achieved"];
+
+// Course schemas
+export const courseSchema = z.object({
+  title: z
+    .string()
+    .min(10, "Title must be at least 10 characters")
+    .max(100, "Title must be less than 100 characters"),
+  description: z.string().min(10).max(1000),
+  // imageUrl can be empty/undefined while creating — make it optional
+  imageUrl: z.string().optional(),
+  category: objectIdSchema,
+  duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
+  status: courseStatus,
+  excerptDescription: z
+    .string()
+    .min(10, "Excerpt description must be at least 10 characters")
+    .max(200, "Excerpt description must be less than 200 characters"),
+  slug: z
+    .string()
+    .min(5, "Slug must be at least 5 characters")
+    .max(100, "Slug must be less than 100 characters"),
+  // fileKey corresponds to a stored file identifier required by Prisma schema
+  fileKey: z.string().optional(),
+});
+
+export const courseUpdateSchema = z.object({
+  title: z
+    .string()
+    .min(10, "Title must be at least 10 characters")
+    .max(100, "Title must be less than 100 characters"),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(1000, "Description must be less than 1000 characters"),
+  imageUrl: z.string(),
+  category: objectIdSchema,
+  duration: z.number().min(1, "Duration must be at least 1 minute"),
+  status: courseStatus,
+  excerptDescription: z
+    .string()
+    .min(10, "Excerpt description must be at least 10 characters")
+    .max(200, "Excerpt description must be less than 200 characters"),
+  slug: z
+    .string()
+    .min(5, "Slug must be at least 5 characters")
+    .max(100, "Slug must be less than 100 characters"),
+});
+
+// Chapter schemas
+export const chapterSchema = z.object({
+  title: z.string().min(1, "Chapter title is required").max(200),
+  order: z.number().int().min(0).default(0),
+});
+
+// Lesson schemas
+export const lessonSchema = z.object({
+  title: z.string().min(1, "Lesson title is required").max(200),
+  content: z.string().default(""),
+  order: z.number().int().min(0).default(0),
+});
+
+// addPointsSchema, spendPointsSchema are re-exported from @skill-learn/lib
+
+// Quiz schemas (questionOptionSchema, questionSchema used by package quiz schemas; we don't re-export)
+const questionOptionSchema = z.object({
+  text: z.string().min(1, "Option text is required"),
+  isCorrect: z.boolean(),
+});
+
+const questionSchema = z
+  .object({
+    text: z.string().min(1, "Question text is required"),
+    imageUrl: z
+      .string()
+      .optional()
+      .refine(
+        (url) => {
+          // If imageUrl is provided without fileKey, it should be a Firebase Storage URL
+          // If empty/undefined, it's valid (optional field)
+          if (!url) return true;
+          // Allow Firebase Storage URLs
+          return (
+            url.includes("firebasestorage.googleapis.com") ||
+            url.includes("storage.googleapis.com") ||
+            url.startsWith("/")
+          ); // Allow local/public paths as fallback
+        },
+        {
+          message: "Image URL must be from Firebase Storage or a local path",
+        }
+      ),
+    fileKey: z.string().optional(), // Firebase Storage path for question image
+    videoUrl: z.string().optional(),
+    points: z.number().int().positive().default(1),
+    options: z
+      .array(questionOptionSchema)
+      .min(2, "Question must have at least 2 options"),
+  })
+  .refine((data) => !(data.imageUrl && data.videoUrl), {
+    message: "Question cannot have both imageUrl and videoUrl",
+    path: ["imageUrl"],
+  });
+
+// quizCreateSchema, quizUpdateSchema, quizFinishSchema are re-exported from @skill-learn/lib
+
+export const userUpdateSchema = libSchemas.userUpdateSchemaBase.extend({
   reportsToUserId: z
     .union([objectIdSchema, z.literal("")])
     .optional()

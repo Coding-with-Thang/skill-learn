@@ -1,140 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth.js";
-
-// Default features to seed
-const DEFAULT_FEATURES = [
-  {
-    key: "games",
-    name: "Games",
-    description: "Mini-games and gamification activities for user engagement",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Gamepad2",
-    sortOrder: 1,
-  },
-  {
-    key: "course_quizzes",
-    name: "Course Quizzes",
-    description: "Quizzes and assessments for training courses",
-    category: "learning",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "FileQuestion",
-    sortOrder: 2,
-  },
-  {
-    key: "leaderboards",
-    name: "Leaderboards",
-    description: "Competitive leaderboards showing top performers",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Trophy",
-    sortOrder: 3,
-  },
-  {
-    key: "rewards_store",
-    name: "Rewards Store",
-    description: "Allow users to redeem points for rewards",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Gift",
-    sortOrder: 4,
-  },
-  {
-    key: "achievements",
-    name: "Achievements & Badges",
-    description: "Achievement badges and milestones for users",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Award",
-    sortOrder: 5,
-  },
-  {
-    key: "streaks",
-    name: "Daily Streaks",
-    description: "Track and reward consecutive daily activity",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Flame",
-    sortOrder: 6,
-  },
-  {
-    key: "training_courses",
-    name: "Training Courses",
-    description: "Video and document-based training courses",
-    category: "learning",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "GraduationCap",
-    sortOrder: 7,
-  },
-  {
-    key: "point_system",
-    name: "Point System",
-    description: "Points earning and tracking for user activities",
-    category: "gamification",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Coins",
-    sortOrder: 8,
-  },
-  {
-    key: "categories",
-    name: "Content Categories",
-    description: "Organize content into categories",
-    category: "learning",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "FolderTree",
-    sortOrder: 9,
-  },
-  {
-    key: "user_stats",
-    name: "User Statistics",
-    description: "Detailed performance analytics for users",
-    category: "analytics",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "BarChart3",
-    sortOrder: 10,
-  },
-  {
-    key: "audit_logs",
-    name: "Audit Logs",
-    description: "Track administrative actions and changes",
-    category: "admin",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "ScrollText",
-    sortOrder: 11,
-  },
-  {
-    key: "custom_roles",
-    name: "Custom Roles",
-    description: "Create and manage custom permission roles",
-    category: "admin",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Shield",
-    sortOrder: 12,
-  },
-  {
-    key: "flash_cards",
-    name: "Flash Cards",
-    description: "Spaced repetition flash cards for learning",
-    category: "learning",
-    defaultEnabled: true,
-    isActive: true,
-    icon: "Layers",
-    sortOrder: 13,
-  },
-];
+import { DEFAULT_FEATURES } from "@skill-learn/lib/constants/defaultFeatures.js";
 
 /**
  * POST /api/features/seed
@@ -153,7 +20,7 @@ export async function POST(request) {
 
     // Filter out features that already exist
     const newFeatures = DEFAULT_FEATURES.filter(
-      (f) => !existingKeys.has(f.key)
+      (f) => !existingKeys.has(f.key),
     );
 
     if (newFeatures.length === 0) {
@@ -181,7 +48,7 @@ export async function POST(request) {
     console.error("Error seeding features:", error);
     return NextResponse.json(
       { error: "Failed to seed features" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -204,7 +71,7 @@ export async function GET(request) {
     console.error("Error getting seed features:", error);
     return NextResponse.json(
       { error: "Failed to get seed features" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -6,6 +6,7 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest.js";
 import { categoryCreateSchema } from "@/lib/zodSchemas";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
+import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 
 // Get all categories
 export async function GET(request) {
@@ -21,18 +22,30 @@ export async function GET(request) {
         // CRITICAL: Filter categories by tenant or global content using standardized utility
         const whereClause = buildTenantContentFilter(tenantId);
 
-        // Fetch all categories with quiz count (filtered by tenant)
-        const categories = await prisma.category.findMany({
+        // Fetch all categories with quiz and course counts (filtered by tenant)
+        const rows = await prisma.category.findMany({
             where: whereClause,
             include: {
                 _count: {
-                    select: { quizzes: true },
+                    select: { quizzes: true, courses: true },
                 },
             },
             orderBy: {
                 name: "asc",
             },
         });
+
+        // Resolve imageUrl from fileKey when present (signed URL)
+        const categories = await Promise.all(
+            rows.map(async (c) => {
+                let imageUrl = c.imageUrl ?? null;
+                if (c.fileKey) {
+                    const url = await getSignedUrl(c.fileKey, 7);
+                    if (url) imageUrl = url;
+                }
+                return { ...c, imageUrl };
+            })
+        );
 
         return successResponse({ categories });
     } catch (error) {
@@ -59,6 +72,7 @@ export async function POST(request) {
                 name: data.name,
                 description: data.description,
                 imageUrl: data.imageUrl,
+                fileKey: data.fileKey ?? undefined,
                 isActive: data.isActive ?? true,
                 tenantId: tenantId ?? undefined,
                 isGlobal: tenantId ? false : true,
@@ -67,6 +81,12 @@ export async function POST(request) {
 
         return successResponse({ category });
     } catch (error) {
+        if (error.code === "P2002") {
+            return NextResponse.json(
+                { error: "A category with this name already exists." },
+                { status: 400 }
+            );
+        }
         return handleApiError(error);
     }
 }

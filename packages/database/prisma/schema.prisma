@@ -69,9 +69,10 @@ model User {
 
 model Category {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  name          String         @unique
+  name          String
   description   String?
   imageUrl      String?
+  fileKey       String?        // Storage path for uploaded image (tenant-scoped); signed URL resolved when serving
   isActive      Boolean        @default(true)
   tenantId      String?        @db.ObjectId // Multi-tenant: category belongs to ONE tenant (null = global)
   tenant        Tenant?        @relation(fields: [tenantId], references: [id])
@@ -82,6 +83,8 @@ model Category {
   categoryStats CategoryStat[]
   courses       Course[]
 
+  // Name unique per tenant (and per global when tenantId is null)
+  @@unique([tenantId, name])
   // INDEXES FOR CATEGORY QUERIES
   @@index([isActive]) // Filter active categories
   @@index([isActive, name]) // Active categories sorted by name
@@ -321,7 +324,38 @@ model Course {
   updatedAt          DateTime     @updatedAt
   userId             String?      @db.ObjectId
   user               User?        @relation(fields: [userId], references: [id])
-  chapters           CourseChapter[]
+  chapters           Chapter[]
+  courseChapters     CourseChapter[]
+}
+
+model Chapter {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  position     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lessons   Lesson[]
+
+  @@index([courseId])
+  @@index([courseId, position])
+  @@map("chapters")
+}
+
+model Lesson {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chapterId String   @db.ObjectId
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @default("") // HTML or markdown content
+  position     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chapterId])
+  @@index([chapterId, position])
+  @@map("lessons")
 }
 
 enum CourseStatus {

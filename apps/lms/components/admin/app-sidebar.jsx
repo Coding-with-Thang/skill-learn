@@ -15,6 +15,7 @@ import {
   Shield,
   ToggleLeft,
   Users,
+  ChartBarStacked,
 } from "lucide-react";
 import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore.js";
 
@@ -47,6 +48,18 @@ const getNavData = () => ({
           isActive: true,
         },
         {
+          title: "Categories",
+          url: "/dashboard/categories",
+          icon: ChartBarStacked,
+          feature: "categories",
+          items: [
+            {
+              title: "Manage Categories",
+              url: "/dashboard/categories",
+            },
+          ],
+        },
+        {
           title: "Courses",
           url: "/dashboard/courses",
           icon: BookOpen,
@@ -68,10 +81,6 @@ const getNavData = () => ({
           icon: FileQuestion,
           feature: "course_quizzes",
           items: [
-            {
-              title: "Categories",
-              url: "/dashboard/categories",
-            },
             {
               title: "Manage Quizzes",
               url: "/dashboard/quizzes",

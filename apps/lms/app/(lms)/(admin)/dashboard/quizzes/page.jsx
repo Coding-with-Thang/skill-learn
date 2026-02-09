@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import Link from 'next/link'
 import { useDebounce } from '@skill-learn/lib/hooks/useDebounce.js'
 import { useRouter } from 'next/navigation'
 import {
@@ -219,10 +220,6 @@ export default function QuizzesAdminPage() {
     setSelectedQuizzes([])
   }
 
-  const handleCreateQuiz = () => {
-    router.push('/dashboard/quizzes/quiz-manager')
-  }
-
   const handleEditQuiz = (quizId) => {
     router.push(`/dashboard/quizzes/quiz-manager?id=${quizId}`)
   }
@@ -284,9 +281,11 @@ export default function QuizzesAdminPage() {
               <CardTitle>Quizzes</CardTitle>
               <CardDescription>Manage your quizzes here</CardDescription>
             </div>
-            <Button onClick={handleCreateQuiz}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Quiz
+            <Button asChild>
+              <Link href="/dashboard/quizzes/quiz-manager">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Quiz
+              </Link>
             </Button>
           </div>
         </CardHeader>
@@ -483,9 +482,9 @@ export default function QuizzesAdminPage() {
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between">
+          <div className="mt-4 flex items-center justify-between text-nowrap">
             <div className="text-sm text-muted-foreground">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} quizzes
+              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} quizzes
             </div>
             <Pagination>
               <PaginationContent>

@@ -21,11 +21,20 @@ import { QUIZ_CONFIG } from "@/config/constants"
 import { quizCreateSchema, quizUpdateSchema } from "@/lib/zodSchemas"
 import {
   Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
   FormInput,
   FormSelect,
   FormTextarea,
-  FormSwitch,
 } from "@skill-learn/ui/components/form-components"
+import { Input } from "@skill-learn/ui/components/input"
+import { Checkbox } from "@skill-learn/ui/components/checkbox"
+import { Uploader } from "@skill-learn/ui/components/file-uploader"
+import { AdminSwitch } from "@/components/admin/AdminSwitch"
 
 export default function QuizBuilder({ quizId = null }) {
   const router = useRouter()
@@ -63,6 +72,7 @@ export default function QuizBuilder({ quizId = null }) {
       title: "",
       description: "",
       imageUrl: "",
+      fileKey: "",
       categoryId: "",
       timeLimit: 0,
       passingScore: QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
@@ -129,7 +139,8 @@ export default function QuizBuilder({ quizId = null }) {
   const fetchQuiz = useCallback(async () => {
     try {
       const response = await api.get(`/admin/quizzes/${quizId}`)
-      const quizData = response.data?.data || response.data
+      const responseData = response.data?.data || response.data
+      const quizData = responseData?.quiz || responseData
       if (!quizData.questions || !Array.isArray(quizData.questions)) {
         quizData.questions = []
       }
@@ -137,6 +148,7 @@ export default function QuizBuilder({ quizId = null }) {
         title: quizData.title || "",
         description: quizData.description || "",
         imageUrl: quizData.imageUrl || "",
+        fileKey: quizData.fileKey || "",
         categoryId: quizData.categoryId || "",
         timeLimit: quizData.timeLimit || 0,
         passingScore: quizData.passingScore || QUIZ_CONFIG.DEFAULT_PASSING_SCORE,
@@ -238,6 +250,7 @@ export default function QuizBuilder({ quizId = null }) {
         toast.success("Quiz created successfully")
       }
 
+      router.refresh()
       router.push("/dashboard/quizzes")
     } catch (error) {
       handleErrorWithNotification(error, "Failed to save quiz")
@@ -274,6 +287,24 @@ export default function QuizBuilder({ quizId = null }) {
     toast.info(`Question ${index + 1} removed`)
   }
 
+  const handleAddOption = (qIndex) => {
+    const options = form.getValues(`questions.${qIndex}.options`) || []
+    form.setValue(`questions.${qIndex}.options`, [
+      ...options,
+      { text: "", isCorrect: false },
+    ])
+  }
+
+  const handleRemoveOption = (qIndex, oIndex) => {
+    const options = form.getValues(`questions.${qIndex}.options`) || []
+    if (options.length <= 2) {
+      toast.error("Each question must have at least 2 options")
+      return
+    }
+    const next = options.filter((_, i) => i !== oIndex)
+    form.setValue(`questions.${qIndex}.options`, next)
+  }
+
   const handleQuestionChange = (index, field, value) => {
     setQuiz(prev => ({
       ...prev,
@@ -294,48 +325,6 @@ export default function QuizBuilder({ quizId = null }) {
         }
         // Otherwise, just update the field
         return { ...q, [field]: value };
-      })
-    }))
-  }
-
-  const handleAddOption = (questionIndex) => {
-    const questions = quiz.questions || []
-    const question = questions[questionIndex]
-    if (!question) return
-
-    if (!question.options || question.options.length >= 6) {
-      toast.error("Maximum 6 options allowed per question")
-      return
-    }
-
-    setQuiz(prev => ({
-      ...prev,
-      questions: (prev.questions || []).map((q, i) => {
-        if (i !== questionIndex) return q
-        return {
-          ...q,
-          options: [...(q.options || []), { text: "", isCorrect: false }]
-        }
-      })
-    }))
-  }
-
-  const handleRemoveOption = (questionIndex, optionIndex) => {
-    const questions = quiz.questions || []
-    const question = questions[questionIndex]
-    if (!question || !question.options || question.options.length <= 2) {
-      toast.error("Questions must have at least 2 options")
-      return
-    }
-
-    setQuiz(prev => ({
-      ...prev,
-      questions: (prev.questions || []).map((q, i) => {
-        if (i !== questionIndex) return q
-        return {
-          ...q,
-          options: q.options.filter((_, oi) => oi !== optionIndex)
-        }
       })
     }))
   }
@@ -382,7 +371,21 @@ export default function QuizBuilder({ quizId = null }) {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit, (errors) => {
+            const getMessage = (obj) => {
+              if (!obj || typeof obj !== "object") return null
+              if (typeof obj.message === "string") return obj.message
+              for (const v of Object.values(obj)) {
+                const msg = getMessage(v)
+                if (msg) return msg
+              }
+              return null
+            }
+            const message = getMessage(errors) || "Please fill in required fields (e.g. Title, Category) and add at least one question with text and options."
+            toast.error(message)
+          })}
+        >
           {/* Quiz Details Card */}
           <Card className="mb-6">
             <CardHeader>
@@ -410,6 +413,34 @@ export default function QuizBuilder({ quizId = null }) {
                 rows={3}
               />
 
+              {/* Thumbnail */}
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quiz thumbnail</FormLabel>
+                    <FormControl>
+                      <Uploader
+                        value={field.value}
+                        onChange={field.onChange}
+                        name="imageUrl"
+                        api={api}
+                        uploadEndpoint="/api/admin/upload"
+                        mediaListEndpoint="/api/admin/media"
+                        onUploadComplete={(upload) => {
+                          form.setValue("fileKey", upload?.path ?? "", { shouldValidate: true })
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Upload an image, paste a URL, or choose from existing media.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Quiz Settings */}
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
@@ -430,24 +461,66 @@ export default function QuizBuilder({ quizId = null }) {
               </div>
 
               {/* Active Status */}
-              <FormSwitch
+              <FormField
+                control={form.control}
                 name="isActive"
-                label="Active"
-                description="Make this quiz available for users"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Active</FormLabel>
+                      <FormDescription>Make this quiz available for users</FormDescription>
+                    </div>
+                    <FormControl>
+                      <AdminSwitch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
 
               {/* Review Settings */}
               <div className="grid grid-cols-2 gap-4">
-                <FormSwitch
+                <FormField
+                  control={form.control}
                   name="showQuestionReview"
-                  label="Show Question Review"
-                  description="Allow users to review questions after quiz"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Show Question Review</FormLabel>
+                        <FormDescription>Allow users to review questions after quiz</FormDescription>
+                      </div>
+                      <FormControl>
+                        <AdminSwitch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <FormSwitch
+                <FormField
+                  control={form.control}
                   name="showCorrectAnswers"
-                  label="Show Correct Answers"
-                  description="Display correct answers for incorrect attempts"
-                  disabled={!watchedShowQuestionReview}
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Show Correct Answers</FormLabel>
+                        <FormDescription>Display correct answers for incorrect attempts</FormDescription>
+                      </div>
+                      <FormControl>
+                        <AdminSwitch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={!watchedShowQuestionReview}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
             </CardContent>
@@ -488,10 +561,95 @@ export default function QuizBuilder({ quizId = null }) {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Question editing will be implemented here. Currently using state-based implementation below.
-                  </p>
+                <CardContent className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name={`questions.${qIndex}.text`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Question text</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Enter the question"
+                            className="font-medium"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div>
+                        <FormLabel className="text-sm block">Answer options</FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Enter each option and check the correct answer(s). Minimum 2 options.
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAddOption(qIndex)}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add option
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      {(form.watch(`questions.${qIndex}.options`) || []).map((_, oIndex) => (
+                        <div
+                          key={oIndex}
+                          className="flex items-center gap-3 gap-y-2 flex-wrap"
+                        >
+                          <FormField
+                            control={form.control}
+                            name={`questions.${qIndex}.options.${oIndex}.text`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1 min-w-[200px]">
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder={`Option ${oIndex + 1}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`questions.${qIndex}.options.${oIndex}.isCorrect`}
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-center gap-2 space-y-0 shrink-0">
+                                <FormControl>
+                                  <Checkbox
+                                    checked={!!field.value}
+                                    onCheckedChange={field.onChange}
+                                  />
+                                </FormControl>
+                                <FormLabel className="text-sm font-normal cursor-pointer">
+                                  Correct
+                                </FormLabel>
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveOption(qIndex, oIndex)}
+                            disabled={(form.watch(`questions.${qIndex}.options`) || []).length <= 2}
+                            className="text-muted-foreground hover:text-destructive shrink-0"
+                            aria-label="Remove option"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ))}

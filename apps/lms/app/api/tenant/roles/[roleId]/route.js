@@ -5,6 +5,13 @@ import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/erro
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions.js";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync.js";
 
+const MAX_TX_RETRIES = 3;
+const TX_RETRY_DELAY_MS = 100;
+
+function isRetryablePrismaError(e) {
+  return e?.code === "P2034" || e?.code === "P2024";
+}
+
 /**
  * GET /api/tenant/roles/[roleId]
  * Get a single role
@@ -126,48 +133,61 @@ export async function PUT(request, { params }) {
       }
     }
 
-    // Update in transaction
-    const role = await prisma.$transaction(async (tx) => {
-      await tx.tenantRole.update({
-        where: { id: roleId },
-        data: {
-          ...(roleAlias !== undefined && { roleAlias }),
-          ...(description !== undefined && { description }),
-          ...(slotPosition !== undefined && { slotPosition }),
-          ...(isActive !== undefined && { isActive }),
-        },
-      });
-
-      // Update permissions if provided
-      if (permissionIds !== undefined) {
-        await tx.tenantRolePermission.deleteMany({
-          where: { tenantRoleId: roleId },
-        });
-
-        if (permissionIds.length > 0) {
-          await tx.tenantRolePermission.createMany({
-            data: permissionIds.map((permId) => ({
-              tenantRoleId: roleId,
-              permissionId: permId,
-            })),
-          });
-        }
-      }
-
-      return tx.tenantRole.findUnique({
-        where: { id: roleId },
-        include: {
-          tenantRolePermissions: {
-            include: {
-              permission: {
-                select: { id: true, name: true, displayName: true, category: true },
-              },
+    // Update in transaction with retry (avoids P2034 when ClerkSync runs concurrently)
+    let role;
+    let lastError;
+    for (let attempt = 0; attempt < MAX_TX_RETRIES; attempt++) {
+      try {
+        role = await prisma.$transaction(async (tx) => {
+          await tx.tenantRole.update({
+            where: { id: roleId },
+            data: {
+              ...(roleAlias !== undefined && { roleAlias }),
+              ...(description !== undefined && { description }),
+              ...(slotPosition !== undefined && { slotPosition }),
+              ...(isActive !== undefined && { isActive }),
             },
-          },
-          _count: { select: { userRoles: true } },
-        },
-      });
-    });
+          });
+
+          if (permissionIds !== undefined) {
+            await tx.tenantRolePermission.deleteMany({
+              where: { tenantRoleId: roleId },
+            });
+
+            if (permissionIds.length > 0) {
+              await tx.tenantRolePermission.createMany({
+                data: permissionIds.map((permId) => ({
+                  tenantRoleId: roleId,
+                  permissionId: permId,
+                })),
+              });
+            }
+          }
+
+          return tx.tenantRole.findUnique({
+            where: { id: roleId },
+            include: {
+              tenantRolePermissions: {
+                include: {
+                  permission: {
+                    select: { id: true, name: true, displayName: true, category: true },
+                  },
+                },
+              },
+              _count: { select: { userRoles: true } },
+            },
+          });
+        });
+        break;
+      } catch (e) {
+        lastError = e;
+        if (attempt < MAX_TX_RETRIES - 1 && isRetryablePrismaError(e)) {
+          await new Promise((r) => setTimeout(r, TX_RETRY_DELAY_MS * (attempt + 1)));
+          continue;
+        }
+        throw e;
+      }
+    }
 
     // Sync users with this role to Clerk
     if (permissionIds !== undefined) {

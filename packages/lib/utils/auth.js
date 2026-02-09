@@ -84,6 +84,56 @@ export async function requireAdmin(tenantId = null) {
   };
 }
 
+/** Permission names for media browse/upload (tenant-scoped). */
+const MEDIA_PERMISSIONS = ['media.browse', 'media.upload'];
+
+/**
+ * Require admin OR media browse/upload permission for API routes (tenant-scoped).
+ * Use for upload and media list so tenant admins or users with media permission only see their tenant's media.
+ * @returns {Promise<{userId: string, user: object, tenantId: string}>} The authenticated user and tenant (tenantId required)
+ * @returns {NextResponse} Returns 401/403/400 if not authorized or missing tenant
+ */
+export async function requireAdminOrMediaAccess() {
+  const authResult = await requireAuth();
+  if (authResult instanceof NextResponse) {
+    return authResult;
+  }
+  const userId = authResult;
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true, tenantId: true },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const tenantId = user.tenantId;
+  if (!tenantId) {
+    return NextResponse.json(
+      { error: "Tenant context required", message: "No tenant assigned. Complete onboarding first." },
+      { status: 400 }
+    );
+  }
+
+  const adminPermissions = [
+    'users.create', 'users.update', 'users.delete', 'dashboard.admin',
+    'dashboard.manager', 'roles.assign', 'roles.create', 'settings.update', 'flashcards.manage_tenant',
+  ];
+  const hasAdmin = await hasAnyPermission(userId, adminPermissions, tenantId);
+  const hasMedia = await hasAnyPermission(userId, MEDIA_PERMISSIONS, tenantId);
+
+  if (!hasAdmin && !hasMedia) {
+    return NextResponse.json(
+      { error: "Unauthorized", message: "Admin or media browse/upload permission required" },
+      { status: 403 }
+    );
+  }
+
+  return { userId, user, tenantId };
+}
+
 /**
  * Require admin permissions for server actions (tenant-based RBAC only).
  * Same permission set as requireAdmin; throws instead of returning NextResponse.

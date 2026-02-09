@@ -22,8 +22,10 @@ import {
   CardContent,
 } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
-import { useState, useMemo, useEffect } from "react";
-import { GripVertical, ChevronDown, ChevronRight, Trash2, Plus } from "lucide-react";
+import { Input } from "@skill-learn/ui/components/input";
+import { useState, useMemo, useEffect, useRef } from "react";
+import Link from "next/link";
+import { GripVertical, ChevronDown, ChevronRight, Trash2, Plus, Pencil, Check } from "lucide-react";
 
 function arrayMove(items, fromIndex, toIndex) {
   const arr = [...items];
@@ -38,6 +40,7 @@ export default function CourseStructure({
   mutationPending = false,
   onDeleteChapter,
   onAddChapter,
+  onRenameChapter,
   onReorderChapters,
   onAddLesson,
   onDeleteLesson,
@@ -52,7 +55,7 @@ export default function CourseStructure({
     useSensor(KeyboardSensor)
   );
 
-  function SortableLessonItem({ lesson, chapterId, onDelete, disabled }) {
+  function SortableLessonItem({ lesson, chapterId, courseId, onDelete, disabled }) {
     const {
       attributes,
       listeners,
@@ -83,7 +86,16 @@ export default function CourseStructure({
         >
           <GripVertical className="size-4" />
         </button>
-        <span className="flex-1 truncate">{lesson.title}</span>
+        {courseId ? (
+          <Link
+            href={`/dashboard/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}/edit`}
+            className="flex-1 truncate text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
+          >
+            {lesson.title}
+          </Link>
+        ) : (
+          <span className="flex-1 truncate">{lesson.title}</span>
+        )}
         {onDelete && (
           <button
             type="button"
@@ -102,7 +114,7 @@ export default function CourseStructure({
     );
   }
 
-  function SortableChapterItem({ chapter, isOpen, onToggle, onDelete, disabled }) {
+  function SortableChapterItem({ chapter, isOpen, onToggle, onDelete, onRenameChapter, disabled }) {
     const {
       attributes,
       listeners,
@@ -121,7 +133,7 @@ export default function CourseStructure({
       () =>
         (chapter.lessons ?? [])
           .slice()
-          .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
+          .sort((a, b) => (a.position ?? a.order ?? 0) - (b.position ?? b.order ?? 0)),
       [chapter.lessons]
     );
     const lessonIds = useMemo(() => lessons.map((l) => l.id), [lessons]);
@@ -142,6 +154,49 @@ export default function CourseStructure({
       useSensor(TouchSensor, { activationConstraint: { distance: 8 } }),
       useSensor(KeyboardSensor)
     );
+
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [editTitle, setEditTitle] = useState(chapter.title);
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+      setEditTitle(chapter.title);
+    }, [chapter.title]);
+
+    useEffect(() => {
+      if (isEditingTitle && inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, [isEditingTitle]);
+
+    const handleStartEdit = (e) => {
+      e.stopPropagation();
+      if (disabled || !onRenameChapter) return;
+      setEditTitle(chapter.title);
+      setIsEditingTitle(true);
+    };
+
+    const handleSaveTitle = () => {
+      if (!isEditingTitle) return;
+      const trimmed = editTitle.trim();
+      if (trimmed && trimmed !== chapter.title) {
+        onRenameChapter(chapter.id, trimmed);
+      }
+      setIsEditingTitle(false);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSaveTitle();
+      }
+      if (e.key === "Escape") {
+        setEditTitle(chapter.title);
+        setIsEditingTitle(false);
+        inputRef.current?.blur();
+      }
+    };
 
     return (
       <div
@@ -172,7 +227,48 @@ export default function CourseStructure({
               <ChevronRight className="size-4" />
             )}
           </button>
-          <span className="font-medium flex-1 truncate">{chapter.title}</span>
+          {isEditingTitle ? (
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              <Input
+                ref={inputRef}
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onBlur={handleSaveTitle}
+                onKeyDown={handleKeyDown}
+                className="h-8 flex-1 min-w-0"
+                disabled={disabled}
+                onClick={(e) => e.stopPropagation()}
+                aria-label="Chapter title"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSaveTitle();
+                }}
+                className="p-1.5 shrink-0 rounded text-primary hover:bg-primary/10 disabled:opacity-50 disabled:pointer-events-none"
+                aria-label="Save chapter title"
+                disabled={disabled}
+              >
+                <Check className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              <span className="font-medium truncate">{chapter.title}</span>
+              {onRenameChapter && (
+                <button
+                  type="button"
+                  onClick={handleStartEdit}
+                  className="p-0.5 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:pointer-events-none"
+                  aria-label="Edit chapter title"
+                  disabled={disabled}
+                >
+                  <Pencil className="size-3.5" />
+                </button>
+              )}
+            </div>
+          )}
           <span className="text-sm text-muted-foreground shrink-0">
             {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
           </span>
@@ -209,6 +305,7 @@ export default function CourseStructure({
                         key={lesson.id}
                         lesson={lesson}
                         chapterId={chapter.id}
+                        courseId={courseId}
                         onDelete={onDeleteLesson}
                         disabled={disabled}
                       />
@@ -237,15 +334,18 @@ export default function CourseStructure({
   }
 
   useEffect(() => {
-    if (chapters.length > 0) {
-      setOpenChapters((prev) => {
-        const next = { ...prev };
-        chapters.forEach((ch) => {
-          if (next[ch.id] === undefined) next[ch.id] = true;
-        });
-        return next;
+    if (chapters.length === 0) return;
+    setOpenChapters((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      chapters.forEach((ch) => {
+        if (next[ch.id] === undefined) {
+          next[ch.id] = true;
+          changed = true;
+        }
       });
-    }
+      return changed ? next : prev;
+    });
   }, [chapters]);
 
   const chapterIds = useMemo(() => chapters.map((ch) => ch.id), [chapters]);
@@ -313,6 +413,7 @@ export default function CourseStructure({
                   isOpen={openChapters[chapter.id] ?? true}
                   onToggle={() => toggleChapter(chapter.id)}
                   onDelete={onDeleteChapter}
+                  onRenameChapter={onRenameChapter}
                   disabled={mutationPending}
                 />
               ))}

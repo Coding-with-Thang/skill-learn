@@ -31,7 +31,7 @@ import slugify from 'slugify';
 import { RichTextEditor } from "@/components/rich-text-editor/Editor";
 import { Uploader } from "@skill-learn/ui/components/file-uploader";
 import { toast } from "sonner";
-import axios from "axios";
+import api from "@skill-learn/lib/utils/axios.js";
 
 export default function CreateCoursePage() {
     const [categories, setCategories] = useState([]);
@@ -79,7 +79,7 @@ export default function CreateCoursePage() {
         startTransition(async () => {
 
             try {
-                const response = await axios.post('/api/admin/courses/create', values);
+                const response = await api.post('/admin/courses/create', values);
                 const data = response?.data;
                 // API returns { success: true, data: { status: 'success', ... } }
                 const isSuccess = data?.success === true || data?.data?.status === 'success';
@@ -87,6 +87,7 @@ export default function CreateCoursePage() {
                 if (isSuccess) {
                     toast.success('Course created successfully');
                     form.reset();
+                    router.refresh();
                     router.push('/dashboard/courses');
                     return;
                 } else if (data?.data?.status === 'error') {
@@ -221,10 +222,14 @@ export default function CreateCoursePage() {
                                     <FormItem className="full-w">
                                         <FormLabel>Thumbnail Image</FormLabel>
                                         <FormControl>
-                                            <Uploader onChange={field.onChange} value={field.value} name={field.name}
+                                            <Uploader
+                                                onChange={field.onChange}
+                                                value={field.value}
+                                                name={field.name}
+                                                api={api}
+                                                mediaListEndpoint="/api/admin/media"
                                                 onUploadComplete={(upload) => {
                                                     // upload: { url, path }
-                                                    // store storage path as fileKey for database
                                                     form.setValue('fileKey', upload?.path || '', { shouldValidate: true });
                                                 }}
                                             />

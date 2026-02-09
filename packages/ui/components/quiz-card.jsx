@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { CheckCircle, Circle, Clock } from "lucide-react"
 import { cn } from "@skill-learn/lib/utils.js"
 import { EnhancedButton } from "./enhanced-button"
@@ -31,6 +32,18 @@ export function QuizCard({
             ? "border-green-200 dark:border-green-900/30 bg-green-50/50 dark:bg-green-900/10"
             : "border-border hover:border-brand-teal/50"
         )}>
+          {/* Thumbnail */}
+          {quiz.imageUrl && (
+            <div className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden">
+              <Image
+                src={quiz.imageUrl}
+                alt={quiz.title}
+                fill
+                sizes="128px"
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+          )}
 
           {/* Content */}
           <div className="flex-1 min-w-0">
@@ -84,12 +97,26 @@ export function QuizCard({
       onClick={onClick}
     >
       <div className={cn(
-        "relative rounded-xl border bg-card p-5 hover:shadow-lg transition-all duration-300",
+        "relative rounded-xl border bg-card overflow-hidden hover:shadow-lg transition-all duration-300",
         isCompleted
           ? "border-green-200 dark:border-green-900/30 bg-green-50/50 dark:bg-green-900/10"
           : "border-border hover:border-brand-teal/50"
       )}>
+        {/* Thumbnail */}
+        {quiz.imageUrl && (
+          <div className="relative h-48 overflow-hidden">
+            <Image
+              src={quiz.imageUrl}
+              alt={quiz.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
+        )}
+
         {/* Content */}
+        <div className="p-5">
         <h4 className="font-bold text-foreground group-hover:text-brand-teal transition-colors line-clamp-2 mb-2">
           {quiz.title}
         </h4>
@@ -126,6 +153,7 @@ export function QuizCard({
         >
           {isCompleted ? "Retake Quiz" : "Start Quiz"}
         </EnhancedButton>
+        </div>
       </div>
     </motion.div>
   )

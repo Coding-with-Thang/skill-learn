@@ -39,7 +39,7 @@ function DialogOverlay({
     (<DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[100] bg-black/50 pointer-events-none",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[10050] bg-black/50 pointer-events-none",
         className
       )}
       {...props} />)
@@ -149,7 +149,7 @@ function DialogContent({
         ref={contentRef}
         data-slot="dialog-content"
         className={cn(
-          "fixed z-[101] grid w-[95vw] max-w-lg gap-4 border bg-background p-6 shadow-lg rounded-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 data-[state=open]:visible data-[state=closed]:invisible sm:w-full sm:rounded-lg",
+          "fixed z-[10051] grid w-[95vw] max-w-lg gap-4 border bg-background p-6 shadow-lg rounded-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:opacity-100 data-[state=closed]:opacity-0 data-[state=open]:visible data-[state=closed]:invisible sm:w-full sm:rounded-lg",
           className
         )}
         style={{

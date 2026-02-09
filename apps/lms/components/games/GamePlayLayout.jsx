@@ -22,7 +22,12 @@ import { Button } from "@skill-learn/ui/components/button";
 import { Progress } from "@skill-learn/ui/components/progress";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { useUser } from "@clerk/nextjs";
-import Image from 'next/image';
+import Image from "next/image";
+
+// Inline placeholder so next/image never hits optimizer with API (avoids "received null" errors)
+const PLACEHOLDER_SRC =
+  "data:image/svg+xml," +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#9ca3af"/></svg>');
 
 const GamePlayLayout = ({
   children,
@@ -135,7 +140,7 @@ const GamePlayLayout = ({
                     <div className="flex items-center gap-3">
                       <div className="relative">
                         <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-2 ring-slate-100">
-                          <Image src={player.avatar || "/api/placeholder/40/40"} alt={player.name} width={40} height={40} className="object-cover" />
+                          <Image src={player.avatar || PLACEHOLDER_SRC} alt={player.name} width={40} height={40} className="object-cover" unoptimized />
                         </div>
                         <div className={`absolute -top-1 -left-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md ${idx === 0 ? 'bg-yellow-400' : idx === 1 ? 'bg-slate-300' : 'bg-amber-600'
                           }`}>
@@ -170,7 +175,7 @@ const GamePlayLayout = ({
                 "{tip}"
               </p>
               <div className="mt-4 flex justify-end opacity-20">
-                <Image src="/api/placeholder/60/60" alt="Mascot" width={40} height={40} className="grayscale" />
+                <Image src={PLACEHOLDER_SRC} alt="Mascot" width={40} height={40} className="grayscale" unoptimized />
               </div>
             </CardContent>
           </Card>

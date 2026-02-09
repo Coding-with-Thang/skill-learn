@@ -1,9 +1,19 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
-import { Dialog, DialogContent } from "@skill-learn/ui/components/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@skill-learn/ui/components/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@skill-learn/ui/components/alert-dialog"
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore.js"
 import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore.js"
 import UserDetails from "@/components/user/UserDetails"
@@ -32,6 +42,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
   const [errorUsers, setErrorUsers] = useState(null)
+  const [userToDelete, setUserToDelete] = useState(null)
 
   const filteredUsers = useMemo(() => {
     if (!users) return [];
@@ -76,7 +87,7 @@ export default function UsersPage() {
         await useUsersStore.getState().createUser(formData)
       }
       setShowForm(false)
-      fetchUsers()
+      await fetchUsers(true)
     } catch (error) {
       setErrorUsers(error.response?.data?.error || 'An error occurred')
     }
@@ -87,15 +98,19 @@ export default function UsersPage() {
     setShowForm(true)
   }
 
-  const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user?')) {
-      return
-    }
+  const handleDeleteClick = (user) => {
+    setUserToDelete(user)
+  }
 
+  const handleDeleteConfirm = async (user) => {
+    if (!user) return
     try {
-      await useUsersStore.getState().deleteUser(userId)
+      await useUsersStore.getState().deleteUser(user.id)
+      setUserToDelete(null)
+      await fetchUsers(true)
     } catch (error) {
       setErrorUsers(error.response?.data?.error || 'Failed to delete user')
+      setUserToDelete(null)
     }
   }
 
@@ -104,7 +119,7 @@ export default function UsersPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">User Management</h1>
         <div className="flex gap-3">
-          <Button onClick={() => setShowForm(true)} variant="default">Add User</Button>
+          <Button type="button" onClick={() => { setEditingUser(null); setShowForm(true); }} variant="default">Add User</Button>
         </div>
       </div>
 
@@ -114,25 +129,55 @@ export default function UsersPage() {
         </div>
       )}
 
-      <Dialog open={showForm} onOpenChange={(open) => {
-        if (!open) {
-          setEditingUser(null)
-          setErrorUsers(null)
-        }
-        setShowForm(open)
-      }}>
+      <Dialog
+        open={showForm}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowForm(false)
+            setEditingUser(null)
+            setErrorUsers(null)
+          }
+        }}
+      >
         <DialogContent>
-          <h2 className="text-lg font-bold mb-4">{editingUser ? 'Edit' : 'Create'} User</h2>
-          <UserForm
-            user={editingUser}
-            onSuccess={async () => {
-              setShowForm(false)
-              setEditingUser(null)
-              await fetchUsers()
-            }}
-          />
+          {showForm && (
+            <>
+              <DialogHeader className="mb-4">
+                <DialogTitle className="text-lg font-bold">{editingUser ? 'Edit' : 'Create'} User</DialogTitle>
+              </DialogHeader>
+              <UserForm
+                key={editingUser ? String(editingUser.id) : 'new'}
+                user={editingUser}
+                onSuccess={async () => {
+                  setShowForm(false)
+                  setEditingUser(null)
+                  await fetchUsers(true)
+                }}
+              />
+            </>
+          )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={userToDelete !== null} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName} (${userToDelete.username})` : 'this user'}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row justify-center sm:justify-center">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleDeleteConfirm(userToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <UserFilters
         onFilterChange={(type, value) => {
@@ -179,11 +224,11 @@ export default function UsersPage() {
                 </td>
                 <td className="p-4">{user.tenantRole || 'No role'}</td>
                 <td className="p-4 space-x-4">
-                  <Button onClick={() => handleEdit(user)} variant="secondary">
+                  <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
                     Edit
                   </Button>
                   {canDeleteUsers && (
-                    <Button onClick={() => handleDelete(user.id)} variant="destructive">
+                    <Button type="button" onClick={() => handleDeleteClick(user)} variant="destructive">
                       Delete
                     </Button>
                   )}
@@ -203,6 +248,11 @@ export default function UsersPage() {
 
       <Dialog open={selectedUser !== null} onOpenChange={() => setSelectedUser(null)}>
         <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : 'User details'}
+            </DialogTitle>
+          </DialogHeader>
           <UserDetails user={selectedUser} />
         </DialogContent>
       </Dialog>
