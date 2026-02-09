@@ -81,6 +81,8 @@ export default function EditLessonPage() {
       }
     };
     fetchLesson();
+    // form.reset in effect is intentional; form omitted to avoid effect loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, chapterId, lessonId, router]);
 
   const onSubmit = async (values) => {

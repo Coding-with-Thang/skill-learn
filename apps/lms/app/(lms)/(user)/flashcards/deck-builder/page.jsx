@@ -100,7 +100,7 @@ export default function DeckBuilderPage() {
       }
     };
     load();
-  }, [deckId]);
+  }, [deckId, setDeckDescription, setDeckName, setSelectedCards]);
 
   const maxCards = limits.maxCardsPerDeck < 0 ? Infinity : limits.maxCardsPerDeck;
   const atCardLimit = getSelectedIds().length >= maxCards;

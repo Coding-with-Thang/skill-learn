@@ -1,14 +1,16 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { ChevronDown, ChevronRight, BookOpen, FileText } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
 
 /**
  * Read-only course outline for learners: chapters and lessons.
  * Chapters are expandable/collapsible. Lessons are listed under each chapter.
+ * If courseId is provided, lesson titles link to /courses/[courseId]/lessons/[lessonId].
  */
-export default function CourseOutline({ chapters = [], className }) {
+export default function CourseOutline({ chapters = [], courseId, className }) {
   const [openChapters, setOpenChapters] = useState({});
 
   const sortedChapters = useMemo(
@@ -17,6 +19,17 @@ export default function CourseOutline({ chapters = [], className }) {
         (a, b) => (a.position ?? 0) - (b.position ?? 0)
       ),
     [chapters]
+  );
+
+  const chaptersWithSortedLessons = useMemo(
+    () =>
+      sortedChapters.map((ch) => ({
+        ...ch,
+        sortedLessons: [...(ch.lessons ?? [])].sort(
+          (a, b) => (a.position ?? 0) - (b.position ?? 0)
+        ),
+      })),
+    [sortedChapters]
   );
 
   const toggleChapter = (chapterId) => {
@@ -36,17 +49,6 @@ export default function CourseOutline({ chapters = [], className }) {
       </div>
     );
   }
-
-  const chaptersWithSortedLessons = useMemo(
-    () =>
-      sortedChapters.map((ch) => ({
-        ...ch,
-        sortedLessons: [...(ch.lessons ?? [])].sort(
-          (a, b) => (a.position ?? 0) - (b.position ?? 0)
-        ),
-      })),
-    [sortedChapters]
-  );
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -86,12 +88,24 @@ export default function CourseOutline({ chapters = [], className }) {
               <ul className="border-t border-border bg-muted/20">
                 {lessons.map((lesson, lessonIndex) => (
                   <li key={lesson.id}>
-                    <div className="flex items-center gap-3 pl-4 pr-4 py-2.5 text-sm text-muted-foreground border-b border-border/50 last:border-b-0">
-                      <FileText className="h-4 w-4 shrink-0 opacity-70" />
-                      <span className="flex-1">
-                        {chapterIndex + 1}.{lessonIndex + 1} {lesson.title}
-                      </span>
-                    </div>
+                    {courseId ? (
+                      <Link
+                        href={`/courses/${courseId}/lessons/${lesson.id}`}
+                        className="flex items-center gap-3 pl-4 pr-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 border-b border-border/50 last:border-b-0 transition-colors"
+                      >
+                        <FileText className="h-4 w-4 shrink-0 opacity-70" />
+                        <span className="flex-1">
+                          {chapterIndex + 1}.{lessonIndex + 1} {lesson.title}
+                        </span>
+                      </Link>
+                    ) : (
+                      <div className="flex items-center gap-3 pl-4 pr-4 py-2.5 text-sm text-muted-foreground border-b border-border/50 last:border-b-0">
+                        <FileText className="h-4 w-4 shrink-0 opacity-70" />
+                        <span className="flex-1">
+                          {chapterIndex + 1}.{lessonIndex + 1} {lesson.title}
+                        </span>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

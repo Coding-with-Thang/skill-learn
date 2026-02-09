@@ -82,6 +82,7 @@ export default function FlashCardsImportPage() {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- categoryId omitted to avoid refetch on category change
   }, []);
 
   useEffect(() => {

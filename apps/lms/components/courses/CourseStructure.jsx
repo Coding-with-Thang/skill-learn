@@ -46,7 +46,7 @@ export default function CourseStructure({
   onDeleteLesson,
   onReorderLessons,
 }) {
-  const chapters = course?.chapters ?? [];
+  const chapters = useMemo(() => course?.chapters ?? [], [course?.chapters]);
   const [openChapters, setOpenChapters] = useState({});
 
   const sensors = useSensors(

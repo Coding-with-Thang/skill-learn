@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, BookOpen, Clock } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, Play } from "lucide-react";
 import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
 import { buttonVariants } from "@skill-learn/ui/components/button";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
@@ -13,14 +13,51 @@ import { Loader } from "@skill-learn/ui/components/loader";
 import { extractTextFromProseMirror } from "@skill-learn/lib/utils.js";
 import api from "@skill-learn/lib/utils/axios.js";
 
+function getFirstLessonId(chapters) {
+  if (!Array.isArray(chapters) || chapters.length === 0) return null;
+  const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  for (const ch of sorted) {
+    const lessons = [...(ch.lessons ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    if (lessons.length > 0) return lessons[0].id;
+  }
+  return null;
+}
+
+function getFirstIncompleteLessonId(chapters, completedLessonIds) {
+  const set = new Set(completedLessonIds ?? []);
+  if (!Array.isArray(chapters)) return null;
+  const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  for (const ch of sorted) {
+    const lessons = [...(ch.lessons ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    for (const l of lessons) {
+      if (!set.has(l.id)) return l.id;
+    }
+  }
+  return null;
+}
+
 export default function CoursePage() {
   const params = useParams();
   const router = useRouter();
   const courseId = params?.courseId;
 
   const [course, setCourse] = useState(null);
+  const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const firstLessonId = useMemo(() => getFirstLessonId(course?.chapters ?? []), [course?.chapters]);
+  const firstIncompleteId = useMemo(
+    () => getFirstIncompleteLessonId(course?.chapters ?? [], progress?.completedLessonIds ?? []),
+    [course?.chapters, progress?.completedLessonIds]
+  );
+  const startOrContinueHref =
+    firstIncompleteId
+      ? `/courses/${courseId}/lessons/${firstIncompleteId}`
+      : firstLessonId
+        ? `/courses/${courseId}/lessons/${firstLessonId}`
+        : null;
+  const isCourseCompleted = !!progress?.courseCompleted;
 
   useEffect(() => {
     if (!courseId) return;
@@ -56,6 +93,17 @@ export default function CoursePage() {
 
     return () => { cancelled = true; };
   }, [courseId, router]);
+
+  useEffect(() => {
+    if (!courseId || !course) return;
+    api
+      .get(`/user/courses/${courseId}/progress`)
+      .then((res) => {
+        const data = res.data?.data ?? res.data;
+        setProgress(data ?? null);
+      })
+      .catch(() => setProgress(null));
+  }, [courseId, course]);
 
   if (!courseId) {
     return (
@@ -148,6 +196,21 @@ export default function CoursePage() {
                         </span>
                       )}
                     </div>
+                    {startOrContinueHref && (
+                      <div className="mt-4">
+                        <Link
+                          href={startOrContinueHref}
+                          className={buttonVariants({ size: "lg" }) + " gap-2"}
+                        >
+                          <Play className="h-5 w-5" />
+                          {isCourseCompleted
+                            ? "Review course"
+                            : firstIncompleteId
+                              ? "Continue"
+                              : "Start course"}
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 </header>
 
@@ -169,7 +232,7 @@ export default function CoursePage() {
 
                 {/* Course structure: chapters and lessons */}
                 <section>
-                  <CourseOutline chapters={course.chapters} />
+                  <CourseOutline chapters={course.chapters} courseId={courseId} />
                 </section>
               </article>
             </>

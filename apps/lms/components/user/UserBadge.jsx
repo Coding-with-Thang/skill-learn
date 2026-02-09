@@ -60,7 +60,6 @@ export default function UserBadge() {
     );
   }
 
-  // eslint-disable-next-line @next/next/no-page-custom-font
   return (
     <div
       className="relative min-h-[50rem] h-full w-full flex flex-col items-center justify-center overflow-hidden animate-fadeIn bg-gradient-to-br from-primary to-secondary border-8 border-border rounded-[32px] shadow-xl outline-dashed outline-2 outline-ring outline-offset-8"

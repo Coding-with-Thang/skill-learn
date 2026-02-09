@@ -87,6 +87,8 @@ export default function CreateFlashCardPage() {
       })
       .catch(() => toast.error("Failed to load data"))
       .finally(() => setLoading(false));
+    // Intentionally run once on mount to load categories/limits
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getValidCards = () => {

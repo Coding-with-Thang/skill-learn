@@ -75,9 +75,12 @@ const TicTacToe = () => {
   const difficultyRef = useRef(difficulty);
   const winnerRef = useRef(winner);
   const isXNextRef = useRef(isXNext);
-  difficultyRef.current = difficulty;
-  winnerRef.current = winner;
-  isXNextRef.current = isXNext;
+
+  useEffect(() => {
+    difficultyRef.current = difficulty;
+    winnerRef.current = winner;
+    isXNextRef.current = isXNext;
+  }, [difficulty, winner, isXNext]);
 
   const handleDifficultyChange = useCallback((v) => {
     if (v === "easy" || v === "hard") setDifficulty(v);

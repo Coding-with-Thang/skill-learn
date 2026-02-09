@@ -51,6 +51,8 @@ model User {
   flashCardProgress FlashCardProgress[]
   flashCardDecks  FlashCardDeck[]
   categoryPriorityUser CategoryPriorityUser[]
+  courseProgress  CourseProgress[]
+  lessonProgress  LessonProgress[]
   // Note: userRoles relation removed - UserRole.userId is Clerk ID (String), not User.id (ObjectId)
   // Query user roles by matching User.clerkId with UserRole.userId in application code
 
@@ -326,6 +328,7 @@ model Course {
   user               User?        @relation(fields: [userId], references: [id])
   chapters           Chapter[]
   courseChapters     CourseChapter[]
+  courseProgress     CourseProgress[]
 }
 
 model Chapter {
@@ -349,9 +352,12 @@ model Lesson {
   chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   title     String
   content   String   @default("") // HTML or markdown content
+  videoUrl  String?  // Video URL for lesson (e.g. hosted or YouTube)
   position     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  lessonProgress LessonProgress[]
 
   @@index([chapterId])
   @@index([chapterId, position])
@@ -394,6 +400,38 @@ model CourseLesson {
   @@index([courseChapterId])
   @@index([position])
   @@map("course_lessons")
+}
+
+// User progress for courses (learner-facing)
+model CourseProgress {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String    @db.ObjectId
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedAt DateTime? // Set when user clicks "Complete course"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("course_progress")
+}
+
+model LessonProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String   @db.ObjectId
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@map("lesson_progress")
 }
 
 // ============================================
