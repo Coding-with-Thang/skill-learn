@@ -234,6 +234,7 @@ notes.md
 /archive
 /docs/audits
 /scripts
+!/scripts/
 !scripts/should-build-*.sh
 *.bak
 *.backup
