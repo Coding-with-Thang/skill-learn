@@ -2,6 +2,7 @@
 
 import { courseSchema } from "@/lib/zodSchemas";
 import { prisma } from '@skill-learn/database';
+import { isCourseSlugTakenInTenant } from "@/lib/courses.js";
 
 /**
  * Create a new course (tenant-scoped).
@@ -16,7 +17,6 @@ export async function createCourse(data, userId, tenantId = null) {
         const validation = courseSchema.safeParse(data);
 
         if (!validation.success) {
-            // include zod errors for better debugging on the client
             return {
                 status: "error",
                 message: "Invalid Form Data",
@@ -31,8 +31,16 @@ export async function createCourse(data, userId, tenantId = null) {
             };
         }
 
-        // Build a clean payload for Prisma. Don't spread validation.data directly
-        // because it may contain fields not present on the Course model (e.g. imageUrl).
+        const slug = validation.data.slug;
+        const taken = await isCourseSlugTakenInTenant({ slug, tenantId: tenantId ?? null });
+        if (taken) {
+            return {
+                status: "error",
+                message: "A course with this slug already exists in your organization.",
+                details: { fieldErrors: { slug: ["This slug is already in use."] } },
+            };
+        }
+
         const payload = {
             title: validation.data.title,
             description: validation.data.description,
@@ -40,7 +48,7 @@ export async function createCourse(data, userId, tenantId = null) {
             duration: validation.data.duration,
             categoryId: validation.data.category,
             excerptDescription: validation.data.excerptDescription,
-            slug: validation.data.slug,
+            slug,
             status: validation.data.status,
             userId: userId,
             ...(tenantId && { tenantId, isGlobal: false }),

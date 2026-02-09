@@ -31,8 +31,13 @@ function getAllLessons(chapters) {
   });
 }
 
-function getPrevNext(flatLessons, currentLessonId) {
-  const idx = flatLessons.findIndex((l) => l.id === currentLessonId);
+function lessonSlugOrId(l) {
+  return l?.slug ?? l?.id;
+}
+
+function getPrevNext(flatLessons, currentLesson) {
+  if (!currentLesson) return { prev: null, next: null };
+  const idx = flatLessons.findIndex((l) => l.id === currentLesson.id);
   if (idx === -1) return { prev: null, next: null };
   return {
     prev: idx > 0 ? flatLessons[idx - 1] : null,
@@ -43,8 +48,8 @@ function getPrevNext(flatLessons, currentLessonId) {
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
-  const courseId = params?.courseId;
-  const lessonId = params?.lessonId;
+  const courseSlug = params?.courseSlug;
+  const lessonSlug = params?.lessonSlug;
 
   const [course, setCourse] = useState(null);
   const [progress, setProgress] = useState(null);
@@ -54,13 +59,14 @@ export default function LessonPage() {
 
   const flatLessons = useMemo(() => getAllLessons(course?.chapters ?? []), [course?.chapters]);
   const currentLesson = useMemo(
-    () => flatLessons.find((l) => l.id === lessonId),
-    [flatLessons, lessonId]
+    () => flatLessons.find((l) => (l.slug ?? l.id) === lessonSlug),
+    [flatLessons, lessonSlug]
   );
   const { prev, next } = useMemo(
-    () => getPrevNext(flatLessons, lessonId),
-    [flatLessons, lessonId]
+    () => getPrevNext(flatLessons, currentLesson),
+    [flatLessons, currentLesson]
   );
+  const courseSlugForLinks = course?.slug ?? course?.id ?? courseSlug;
   const totalLessons = flatLessons.length;
   const completedCount = progress?.completedLessonIds?.length ?? 0;
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
@@ -70,9 +76,9 @@ export default function LessonPage() {
     (isLastLesson || allLessonsCompleted) && !progress?.courseCompleted;
 
   const fetchCourse = useCallback(async () => {
-    if (!courseId) return;
+    if (!courseSlug) return;
     try {
-      const res = await api.get(`/courses/${courseId}`);
+      const res = await api.get(`/courses/${courseSlug}`);
       const data = res.data?.data ?? res.data;
       const c = data?.course ?? res.data?.course;
       setCourse(c || null);
@@ -80,79 +86,88 @@ export default function LessonPage() {
       if (e?.response?.status === 404) setCourse(null);
       else console.error(e);
     }
-  }, [courseId]);
+  }, [courseSlug]);
 
   const fetchProgress = useCallback(async () => {
-    if (!courseId) return;
+    if (!course?.id) return;
     try {
-      const res = await api.get(`/user/courses/${courseId}/progress`);
+      const res = await api.get(`/user/courses/${course.id}/progress`);
       const data = res.data?.data ?? res.data;
-      setProgress(data || null);
+      setProgress(data ?? null);
     } catch (e) {
       setProgress(null);
     }
-  }, [courseId]);
+  }, [course?.id]);
 
   useEffect(() => {
-    if (!courseId || !lessonId) return;
+    if (!courseSlug || !lessonSlug) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([
-      api.get(`/courses/${courseId}`).then((r) => {
-        if (cancelled) return;
-        const d = r.data?.data ?? r.data;
-        setCourse(d?.course ?? r.data?.course ?? null);
-      }),
-      api.get(`/user/courses/${courseId}/progress`).then((r) => {
-        if (cancelled) return;
-        const d = r.data?.data ?? r.data;
-        setProgress(d ?? null);
-      }),
-    ]).catch(() => { }).finally(() => {
+    api.get(`/courses/${courseSlug}`).then((r) => {
+      if (cancelled) return;
+      const d = r.data?.data ?? r.data;
+      const c = d?.course ?? r.data?.course ?? null;
+      setCourse(c || null);
+      if (c?.id) {
+        return api.get(`/user/courses/${c.id}/progress`).then((pr) => {
+          if (cancelled) return;
+          const pd = pr.data?.data ?? pr.data;
+          setProgress(pd ?? null);
+        }).catch(() => { if (!cancelled) setProgress(null); });
+      }
+    }).catch(() => {}).finally(() => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [courseId, lessonId]);
+  }, [courseSlug, lessonSlug]);
+
+  useEffect(() => {
+    if (!course?.id) return;
+    api.get(`/user/courses/${course.id}/progress`).then((r) => {
+      const d = r.data?.data ?? r.data;
+      setProgress(d ?? null);
+    }).catch(() => setProgress(null));
+  }, [course?.id]);
 
   const markLessonComplete = useCallback(async () => {
-    if (!courseId || !lessonId) return;
+    if (!course?.id || !currentLesson?.id) return;
     try {
-      await api.post(`/user/courses/${courseId}/lessons/${lessonId}/complete`);
+      await api.post(`/user/courses/${course.id}/lessons/${currentLesson.id}/complete`);
       await fetchProgress();
     } catch (e) {
       console.error("Failed to mark lesson complete", e);
     }
-  }, [courseId, lessonId, fetchProgress]);
+  }, [course?.id, currentLesson?.id, fetchProgress]);
 
   const handleVideoEnded = useCallback(() => {
     markLessonComplete();
   }, [markLessonComplete]);
 
   const handleCompleteCourse = useCallback(async () => {
-    if (!courseId) return;
+    if (!course?.id) return;
     setCompletingCourse(true);
     try {
-      await api.post(`/user/courses/${courseId}/complete`);
+      await api.post(`/user/courses/${course.id}/complete`);
       await fetchProgress();
     } catch (e) {
       console.error("Failed to complete course", e);
     } finally {
       setCompletingCourse(false);
     }
-  }, [courseId, fetchProgress]);
+  }, [course?.id, fetchProgress]);
 
   const goPrev = useCallback(() => {
-    if (prev) router.push(`/courses/${courseId}/lessons/${prev.id}`);
-  }, [prev, courseId, router]);
+    if (prev) router.push(`/courses/${courseSlugForLinks}/lessons/${lessonSlugOrId(prev)}`);
+  }, [prev, courseSlugForLinks, router]);
 
   const goNext = useCallback(() => {
     if (next) {
       markLessonComplete();
-      router.push(`/courses/${courseId}/lessons/${next.id}`);
+      router.push(`/courses/${courseSlugForLinks}/lessons/${lessonSlugOrId(next)}`);
     }
-  }, [next, courseId, router, markLessonComplete]);
+  }, [next, courseSlugForLinks, router, markLessonComplete]);
 
-  if (!courseId || !lessonId) {
+  if (!courseSlug || !lessonSlug) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground">
         Invalid course or lesson
@@ -206,12 +221,12 @@ export default function LessonPage() {
                       </div>
                       <ul className="space-y-0.5">
                         {lessons.map((lesson) => {
-                          const isCurrent = lesson.id === lessonId;
+                          const isCurrent = lesson.id === currentLesson?.id;
                           const completed = completedIds.includes(lesson.id);
                           return (
                             <li key={lesson.id}>
                               <Link
-                                href={`/courses/${courseId}/lessons/${lesson.id}`}
+                                href={`/courses/${courseSlugForLinks}/lessons/${lessonSlugOrId(lesson)}`}
                                 className={cn(
                                   "flex items-center gap-2 px-3 py-2 rounded-4xld text-sm transition-colors",
                                   isCurrent
@@ -244,12 +259,12 @@ export default function LessonPage() {
             <BreadCrumbCom
               crumbs={[
                 { name: "Training", href: "/training" },
-                { name: course?.title ?? "Course", href: `/courses/${courseId}` },
+                { name: course?.title ?? "Course", href: `/courses/${courseSlugForLinks}` },
               ]}
               endtrail={currentLesson?.title ?? "Lesson"}
             />
             <Link
-              href={`/courses/${courseId}`}
+              href={`/courses/${courseSlugForLinks}`}
               className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" />

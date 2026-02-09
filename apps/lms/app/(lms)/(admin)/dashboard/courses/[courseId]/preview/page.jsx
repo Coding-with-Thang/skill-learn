@@ -7,11 +7,18 @@ import { Button } from "@skill-learn/ui/components/button"
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Clock, BookOpen } from "lucide-react";
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant.js";
+import { resolveCourseId } from "@/lib/courses.js";
 
-async function getCourse(courseId, tenantId) {
+function looksLikeObjectId(str) {
+  return typeof str === "string" && /^[a-f0-9]{24}$/i.test(str);
+}
+
+async function getCourse(courseIdOrSlug, tenantId) {
     const tenantFilter = buildTenantContentFilter(tenantId ?? null, {});
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) return null;
     const course = await prisma.course.findFirst({
         where: { id: courseId, ...tenantFilter },
         include: { category: true },
@@ -32,15 +39,20 @@ async function getCourse(courseId, tenantId) {
 }
 
 export default async function PreviewCoursePage({ params }) {
-    const { courseId } = await params;
+    const { courseId: courseIdOrSlug } = await params;
     const context = await getTenantContext();
     if (context instanceof Response) {
         notFound();
     }
-    const course = await getCourse(courseId, context.tenantId);
+    const course = await getCourse(courseIdOrSlug, context.tenantId);
 
     if (!course) {
         notFound();
+    }
+
+    // Use slug in URL when available: redirect if current URL has id instead of slug
+    if (course.slug && looksLikeObjectId(courseIdOrSlug) && courseIdOrSlug === course.id) {
+        redirect(`/dashboard/courses/${course.slug}/preview`);
     }
 
     return (
@@ -105,7 +117,7 @@ export default async function PreviewCoursePage({ params }) {
 
                     <div className="mt-8 flex gap-4">
                         <Link
-                            href={`/dashboard/courses/${courseId}/edit`}
+                            href={`/dashboard/courses/${course.slug ?? course.id}/edit`}
                             className={buttonVariants()}
                         >
                             Edit Course

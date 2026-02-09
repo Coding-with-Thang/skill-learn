@@ -23,7 +23,8 @@ import { Button } from "@skill-learn/ui/components/button"
 import { MoreVertical, Pencil, Eye, Trash2, Loader2 } from "lucide-react"
 import Link from "next/link";
 
-export default function CourseActions({ courseId }) {
+export default function CourseActions({ courseId, courseSlug }) {
+  const slugOrId = courseSlug ?? courseId;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function CourseActions({ courseId }) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await axios.delete(`/api/admin/courses/${courseId}`);
+          const response = await axios.delete(`/api/admin/courses/${slugOrId}`);
       if (response.data?.status === 'success') {
         toast.success('Course deleted successfully');
         setShowDeleteDialog(false);
@@ -57,13 +58,13 @@ export default function CourseActions({ courseId }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/courses/${courseId}/edit`}>
+            <Link href={`/dashboard/courses/${slugOrId}/edit`}>
               <Pencil className="size-4 mr-2" />
               Edit Course
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href={`/dashboard/courses/${courseId}/preview`}>
+            <Link href={`/dashboard/courses/${slugOrId}/preview`}>
               <Eye className="size-4 mr-2" />
               Preview
             </Link>

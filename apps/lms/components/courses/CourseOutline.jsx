@@ -8,9 +8,11 @@ import { cn } from "@skill-learn/lib/utils.js";
 /**
  * Read-only course outline for learners: chapters and lessons.
  * Chapters are expandable/collapsible. Lessons are listed under each chapter.
- * If courseId is provided, lesson titles link to /courses/[courseId]/lessons/[lessonId].
+ * If courseSlug is provided, lesson titles link to /courses/[courseSlug]/lessons/[lessonSlug].
+ * Supports courseId for backwards compatibility (treated as courseSlug for the URL).
  */
-export default function CourseOutline({ chapters = [], courseId, className }) {
+export default function CourseOutline({ chapters = [], courseSlug: courseSlugProp, courseId, className }) {
+  const courseSlug = courseSlugProp ?? courseId;
   const [openChapters, setOpenChapters] = useState({});
 
   const sortedChapters = useMemo(
@@ -88,9 +90,9 @@ export default function CourseOutline({ chapters = [], courseId, className }) {
               <ul className="border-t border-border bg-muted/20">
                 {lessons.map((lesson, lessonIndex) => (
                   <li key={lesson.id}>
-                    {courseId ? (
+                    {courseSlug ? (
                       <Link
-                        href={`/courses/${courseId}/lessons/${lesson.id}`}
+                        href={`/courses/${courseSlug}/lessons/${lesson.slug ?? lesson.id}`}
                         className="flex items-center gap-3 pl-4 pr-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 border-b border-border/50 last:border-b-0 transition-colors"
                       >
                         <FileText className="h-4 w-4 shrink-0 opacity-70" />

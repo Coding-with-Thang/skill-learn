@@ -622,7 +622,7 @@ export default function TrainingPage() {
                         key={course.id}
                         course={course}
                         variant={viewMode}
-                        onClick={() => router.push(`/courses/${course.id}`)}
+                        onClick={() => router.push(`/courses/${course.slug ?? course.id}`)}
                       />
                     ))}
                   </div>

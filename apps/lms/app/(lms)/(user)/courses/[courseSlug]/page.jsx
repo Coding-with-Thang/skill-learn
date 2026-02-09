@@ -13,24 +13,28 @@ import { Loader } from "@skill-learn/ui/components/loader";
 import { extractTextFromProseMirror } from "@skill-learn/lib/utils.js";
 import api from "@skill-learn/lib/utils/axios.js";
 
-function getFirstLessonId(chapters) {
+function lessonSlugOrId(lesson) {
+  return lesson?.slug ?? lesson?.id;
+}
+
+function getFirstLessonSlug(chapters) {
   if (!Array.isArray(chapters) || chapters.length === 0) return null;
   const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   for (const ch of sorted) {
     const lessons = [...(ch.lessons ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
-    if (lessons.length > 0) return lessons[0].id;
+    if (lessons.length > 0) return lessonSlugOrId(lessons[0]);
   }
   return null;
 }
 
-function getFirstIncompleteLessonId(chapters, completedLessonIds) {
+function getFirstIncompleteLessonSlug(chapters, completedLessonIds) {
   const set = new Set(completedLessonIds ?? []);
   if (!Array.isArray(chapters)) return null;
   const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   for (const ch of sorted) {
     const lessons = [...(ch.lessons ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
     for (const l of lessons) {
-      if (!set.has(l.id)) return l.id;
+      if (!set.has(l.id)) return lessonSlugOrId(l);
     }
   }
   return null;
@@ -39,35 +43,36 @@ function getFirstIncompleteLessonId(chapters, completedLessonIds) {
 export default function CoursePage() {
   const params = useParams();
   const router = useRouter();
-  const courseId = params?.courseId;
+  const courseSlug = params?.courseSlug;
 
   const [course, setCourse] = useState(null);
   const [progress, setProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const firstLessonId = useMemo(() => getFirstLessonId(course?.chapters ?? []), [course?.chapters]);
-  const firstIncompleteId = useMemo(
-    () => getFirstIncompleteLessonId(course?.chapters ?? [], progress?.completedLessonIds ?? []),
+  const courseSlugForLinks = course?.slug ?? course?.id ?? courseSlug;
+  const firstLessonSlug = useMemo(() => getFirstLessonSlug(course?.chapters ?? []), [course?.chapters]);
+  const firstIncompleteSlug = useMemo(
+    () => getFirstIncompleteLessonSlug(course?.chapters ?? [], progress?.completedLessonIds ?? []),
     [course?.chapters, progress?.completedLessonIds]
   );
   const startOrContinueHref =
-    firstIncompleteId
-      ? `/courses/${courseId}/lessons/${firstIncompleteId}`
-      : firstLessonId
-        ? `/courses/${courseId}/lessons/${firstLessonId}`
+    firstIncompleteSlug
+      ? `/courses/${courseSlugForLinks}/lessons/${firstIncompleteSlug}`
+      : firstLessonSlug
+        ? `/courses/${courseSlugForLinks}/lessons/${firstLessonSlug}`
         : null;
   const isCourseCompleted = !!progress?.courseCompleted;
 
   useEffect(() => {
-    if (!courseId) return;
+    if (!courseSlug) return;
 
     let cancelled = false;
     setLoading(true);
     setError(null);
 
     api
-      .get(`/courses/${courseId}`)
+      .get(`/courses/${courseSlug}`)
       .then((res) => {
         if (cancelled) return;
         const data = res.data?.data ?? res.data;
@@ -92,20 +97,20 @@ export default function CoursePage() {
       });
 
     return () => { cancelled = true; };
-  }, [courseId, router]);
+  }, [courseSlug, router]);
 
   useEffect(() => {
-    if (!courseId || !course) return;
+    if (!course || !course.id) return;
     api
-      .get(`/user/courses/${courseId}/progress`)
+      .get(`/user/courses/${course.id}/progress`)
       .then((res) => {
         const data = res.data?.data ?? res.data;
         setProgress(data ?? null);
       })
       .catch(() => setProgress(null));
-  }, [courseId, course]);
+  }, [course?.id, course]);
 
-  if (!courseId) {
+  if (!courseSlug) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center text-muted-foreground">
         Invalid course
@@ -205,7 +210,7 @@ export default function CoursePage() {
                           <Play className="h-5 w-5" />
                           {isCourseCompleted
                             ? "Review course"
-                            : firstIncompleteId
+                            : firstIncompleteSlug
                               ? "Continue"
                               : "Start course"}
                         </Link>
@@ -232,7 +237,7 @@ export default function CoursePage() {
 
                 {/* Course structure: chapters and lessons */}
                 <section>
-                  <CourseOutline chapters={course.chapters} courseId={courseId} />
+                  <CourseOutline chapters={course.chapters} courseSlug={courseSlugForLinks} />
                 </section>
               </article>
             </>

@@ -150,7 +150,7 @@ export default function AboutPage() {
                         {/* Right Content */}
                         <div className="space-y-10">
                             <div className="space-y-6">
-                                <h2 className="text-brand-teal md:text-6xl font-bold leading-tight tracking-tight text-[#1a2b3b]">
+                                <h2 className="md:text-6xl font-bold leading-tight tracking-tight text-[#1a2b3b]">
                                     Humanizing Tech<br />
                                     <span className="text-[#00a884]">with Purpose.</span>
                                 </h2>
