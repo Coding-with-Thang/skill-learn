@@ -16,7 +16,8 @@
     "turbo": "^2.7.5"
   },
   "overrides": {
-    "fast-xml-parser": "^5.3.4"
+    "fast-xml-parser": "^5.3.4",
+    "next": "16.1.6"
   },
   "engines": {
     "node": ">=20.9.0",
