@@ -10,8 +10,7 @@
     "prisma:seed": "node prisma/seed.js",
     "prisma:migrate": "npx prisma@6.19.2 migrate dev --schema=./prisma/schema.prisma",
     "prisma:studio": "npx prisma@6.19.2 studio --schema=./prisma/schema.prisma",
-    "prisma:push": "node scripts/db-push.js",
-    "migrate:games-global": "node prisma/migrations/make_games_global.js"
+    "prisma:push": "node scripts/db-push.js"
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
