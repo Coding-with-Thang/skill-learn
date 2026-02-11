@@ -303,21 +303,17 @@ export default function LessonPage() {
               Lesson not found
             </div>
           ) : (
-            <div className="flex-1 p-4 md:p-6 flex flex-col">
-              <h1 className="text-xl font-semibold text-foreground mb-4">
-                {currentLesson.title}
-              </h1>
-
-              <div className="flex-1 min-h-0">
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 min-h-0 flex flex-col bg-black">
                 <LessonVideoPlayer
                   src={currentLesson.videoUrl}
-                  className="max-w-4xl"
+                  className="flex-1 min-h-0 w-full"
                   onEnded={handleVideoEnded}
                 />
               </div>
 
               {/* Next / Previous */}
-              <div className="flex items-center justify-between gap-4 mt-6 max-w-4xl">
+              <div className="flex items-center justify-between gap-4 mt-6 max-w-4xl px-4 md:px-6 shrink-0">
                 <Button
                   variant="outline"
                   onClick={goPrev}
@@ -360,7 +356,7 @@ export default function LessonPage() {
 
               {/* Complete course block when all done but not yet marked */}
               {allLessonsCompleted && showCompleteButton && (
-                <div className="mt-6 p-4 rounded-lg border border-border bg-muted/30 max-w-4xl">
+                <div className="mt-6 p-4 rounded-lg border border-border bg-muted/30 max-w-4xl px-4 md:px-6">
                   <p className="text-sm text-muted-foreground mb-2">
                     You&apos;ve watched all lessons. Mark this course as complete to track your
                     achievement.

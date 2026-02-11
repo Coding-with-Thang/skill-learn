@@ -4,13 +4,14 @@ import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, BookOpen, Clock, Play } from "lucide-react";
+import { ArrowLeft, ArrowRight, Clock, Play, Star, CheckCircle2, Zap } from "lucide-react";
 import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
 import { buttonVariants } from "@skill-learn/ui/components/button";
+import { Progress } from "@skill-learn/ui/components/progress";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import CourseOutline from "@/components/courses/CourseOutline";
 import { Loader } from "@skill-learn/ui/components/loader";
-import { extractTextFromProseMirror } from "@skill-learn/lib/utils.js";
+import { extractTextFromProseMirror, cn } from "@skill-learn/lib/utils.js";
 import api from "@skill-learn/lib/utils/axios.js";
 
 function lessonSlugOrId(lesson) {
@@ -40,6 +41,30 @@ function getFirstIncompleteLessonSlug(chapters, completedLessonIds) {
   return null;
 }
 
+function getNextLessonLabel(chapters, targetSlugOrId) {
+  if (!targetSlugOrId || !Array.isArray(chapters)) return null;
+  const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  for (let ci = 0; ci < sorted.length; ci++) {
+    const lessons = [...(sorted[ci].lessons ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+    for (let li = 0; li < lessons.length; li++) {
+      if ((lessons[li].slug ?? lessons[li].id) === targetSlugOrId) {
+        return `${ci + 1}.${li + 1} ${lessons[li].title}`;
+      }
+    }
+  }
+  return null;
+}
+
+function formatDuration(minutes) {
+  if (minutes == null) return null;
+  if (minutes >= 60) {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+  return `${minutes} min`;
+}
+
 export default function CoursePage() {
   const params = useParams();
   const router = useRouter();
@@ -63,6 +88,11 @@ export default function CoursePage() {
         ? `/courses/${courseSlugForLinks}/lessons/${firstLessonSlug}`
         : null;
   const isCourseCompleted = !!progress?.courseCompleted;
+  const nextLessonLabel = useMemo(
+    () => getNextLessonLabel(course?.chapters ?? [], firstIncompleteSlug ?? firstLessonSlug),
+    [course?.chapters, firstIncompleteSlug, firstLessonSlug]
+  );
+  const progressPercent = progress?.progressPercent ?? 0;
 
   useEffect(() => {
     if (!courseSlug) return;
@@ -153,93 +183,143 @@ export default function CoursePage() {
 
           {course && !loading && (
             <>
-              <div className="mt-4 mb-6">
+              <div className="mt-4 mb-2">
                 <Link
                   href="/training"
-                  className={buttonVariants({ variant: "ghost", size: "sm" })}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="h-4 w-4" />
                   Back to Training
                 </Link>
               </div>
 
-              <article className="max-w-4xl mx-auto">
-                {/* Hero */}
-                <header className="rounded-xl border border-border bg-card overflow-hidden mb-8">
-                  <div className="relative w-full aspect-video max-h-[320px] bg-muted">
-                    <Image
-                      src={course.imageUrl || "/placeholder-course.jpg"}
-                      alt={course.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 1024px"
-                      priority
-                    />
-                  </div>
-                  <div className="p-6 sm:p-8">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-                      {course.title}
-                    </h1>
-                    {course.excerptDescription && (
-                      <p className="text-muted-foreground text-lg mb-4">
-                        {course.excerptDescription}
-                      </p>
+              <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 mt-6">
+                {/* Left content column */}
+                <article className="flex-1 min-w-0 max-w-3xl">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                    {course.title}
+                  </h1>
+                  {course.excerptDescription && (
+                    <p className="text-muted-foreground text-base mb-4">
+                      {course.excerptDescription}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
+                    {course.duration != null && (
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 shrink-0" />
+                        {formatDuration(course.duration)} Total
+                      </span>
                     )}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      {course.category?.name && (
-                        <span className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          {course.category.name}
-                        </span>
-                      )}
-                      {(course.duration != null || course.duration === 0) && (
-                        <span className="flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          {course.duration >= 60
-                            ? `${Math.floor(course.duration / 60)}h ${course.duration % 60 ? `${course.duration % 60}m` : ""}`.trim()
-                            : `${course.duration} min`}
-                        </span>
-                      )}
-                    </div>
-                    {startOrContinueHref && (
-                      <div className="mt-4">
-                        <Link
-                          href={startOrContinueHref}
-                          className={buttonVariants({ size: "lg" }) + " gap-2"}
-                        >
-                          <Play className="h-5 w-5" />
-                          {isCourseCompleted
-                            ? "Review course"
-                            : firstIncompleteSlug
-                              ? "Continue"
-                              : "Start course"}
-                        </Link>
-                      </div>
-                    )}
+                    <span className="flex items-center gap-2">
+                      <Star className="h-4 w-4 shrink-0 fill-amber-400 text-amber-400" />
+                      4.9 (2.1k reviews)
+                    </span>
                   </div>
-                </header>
 
-                {/* Description */}
-                {course.description && (
                   <section className="mb-8">
                     <h2 className="text-lg font-semibold text-foreground mb-3">
                       About this course
                     </h2>
-                    <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground">
-                      <p className="whitespace-pre-wrap">
-                        {extractTextFromProseMirror(course.description) ||
-                          course.excerptDescription ||
-                          "No description available."}
-                      </p>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                      {extractTextFromProseMirror(course.description) ||
+                        course.excerptDescription ||
+                        "This comprehensive curriculum is designed for professionals looking to enhance their skills."}
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                      {[
+                        "Master key concepts and techniques",
+                        "Apply practical frameworks immediately",
+                        "Build confidence through practice",
+                        "Track your progress and outcomes",
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--success)]" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
                     </div>
                   </section>
-                )}
 
-                {/* Course structure: chapters and lessons */}
-                <section>
-                  <CourseOutline chapters={course.chapters} courseSlug={courseSlugForLinks} />
-                </section>
-              </article>
+                  <section>
+                    <CourseOutline
+                      chapters={course.chapters}
+                      courseSlug={courseSlugForLinks}
+                      completedLessonIds={progress?.completedLessonIds ?? []}
+                    />
+                  </section>
+                </article>
+
+                {/* Right sticky column */}
+                <aside className="w-full lg:w-[320px] shrink-0">
+                  <div className="lg:sticky lg:top-6 space-y-4">
+                    {/* Course preview card */}
+                    <div className="rounded-xl border border-border bg-card shadow-theme-md overflow-hidden">
+                      <div className="relative aspect-video bg-muted">
+                        <span className="absolute left-3 top-3 rounded-md bg-[var(--success)] px-2 py-0.5 text-xs font-medium text-[var(--success-foreground)]">
+                          PREVIEW AVAILABLE
+                        </span>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[var(--secondary)] shadow-theme">
+                            <Play className="h-6 w-6 ml-0.5" fill="currentColor" />
+                          </div>
+                        </div>
+                        <Image
+                          src={course.imageUrl || "/placeholder-course.jpg"}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          sizes="320px"
+                        />
+                      </div>
+                      <div className="p-4">
+                        {startOrContinueHref && (
+                          <Link
+                            href={startOrContinueHref}
+                            className={cn(
+                              "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white transition-opacity hover:opacity-95",
+                              "bg-gradient-to-r from-[var(--secondary)] to-[var(--info)]"
+                            )}
+                          >
+                            {isCourseCompleted
+                              ? "Review course"
+                              : firstIncompleteSlug
+                                ? "Continue Learning"
+                                : "Start course"}
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        )}
+                        {nextLessonLabel && (
+                          <p className="mt-3 text-xs text-muted-foreground text-center">
+                            Next Lesson: {nextLessonLabel}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Progress card */}
+                    <div className="rounded-xl border border-border bg-card shadow-theme-md p-4">
+                      <div className="flex items-baseline justify-between mb-2">
+                        <h3 className="text-sm font-semibold text-foreground">
+                          Course Progress
+                        </h3>
+                        <span className="text-sm font-medium text-foreground">
+                          {progressPercent}%
+                        </span>
+                      </div>
+                      <Progress
+                        value={progressPercent}
+                        className="h-2 rounded-full"
+                        indicatorClassName="bg-gradient-to-r from-[var(--secondary)] to-[var(--info)] rounded-full"
+                      />
+                      <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Zap className="h-3.5 w-3.5 shrink-0" />
+                        Last active —
+                      </p>
+                    </div>
+                  </div>
+                </aside>
+              </div>
             </>
           )}
         </div>

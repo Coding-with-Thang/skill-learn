@@ -363,14 +363,14 @@ className="bg-gradient-teal"
 
 ### Common Replacements
 
-| Hard-Coded Value  | Theme Variable           | Tailwind Class              |
-| ----------------- | ------------------------ | --------------------------- |
-| `#155d59`         | `var(--brand-teal)`      | `bg-brand-teal`             |
-| `#1B1B53`         | `var(--brand-dark-blue)` | `bg-brand-dark-blue`        |
-| `#0F172A`         | `var(--background)`      | `bg-background` (dark mode) |
-| `#ff6f61`         | `var(--game-primary)`    | `bg-game-primary`           |
-| `#ffd700`         | `var(--reward-gold)`     | `text-reward-gold`          |
-| `rgba(0,0,0,0.1)` | `var(--shadow-md)`       | `shadow-theme-md`           |
+| Hard-Coded Value  | Theme Variable           | Tailwind Class               |
+| ----------------- | ------------------------ | ---------------------------- |
+| `#155d59`         | `var(--brand-teal)`      | `bg-brand-teal`              |
+| `#1B1B53`         | `var(--brand-dark-blue)` | `bg-brand-dark-blue`         |
+| `#0F172A`         | `var(--background)`      | `bg-background` (dark mode)  |
+| `#ff6f61`         | `var(--game-primary)`    | `bg-game-primary`            |
+| `#ffd700`         | `var(--reward-gold)`     | `text-reward-gold` |
+| `rgba(0,0,0,0.1)` | `var(--shadow-md)`       | `shadow-theme-md`            |
 
 ## Examples
 

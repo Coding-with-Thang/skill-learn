@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, SkipBack, Settings, Subtitles } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils.js";
 
 const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
@@ -90,6 +90,12 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
     [isYouTube]
   );
 
+  const skipBack = useCallback(() => {
+    if (isYouTube || !videoRef.current) return;
+    videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 10);
+    setCurrentTime(videoRef.current.currentTime);
+  }, [isYouTube]);
+
   const toggleFullscreen = useCallback(() => {
     if (!containerRef.current) return;
     if (!document.fullscreenElement) {
@@ -177,73 +183,92 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
     <div
       ref={containerRef}
       className={cn(
-        "relative w-full rounded-lg overflow-hidden bg-black group",
+        "relative w-full min-h-0 flex flex-col overflow-hidden bg-black group",
         className
       )}
       onMouseEnter={() => setHoverControls(true)}
       onMouseLeave={() => setHoverControls(false)}
     >
-      <video
-        ref={videoRef}
-        src={src}
-        className="w-full aspect-video object-contain"
-        playsInline
-        onClick={togglePlay}
-        onDoubleClick={toggleFullscreen}
-      />
-
-      {/* Progress bar - always visible at bottom */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-1 bg-black/50 cursor-pointer"
-        onClick={seek}
-        role="slider"
-        aria-label="Seek"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={progressPct}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowLeft" && videoRef.current) {
-            videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
-          }
-          if (e.key === "ArrowRight" && videoRef.current) {
-            videoRef.current.currentTime = Math.min(
-              duration,
-              videoRef.current.currentTime + 5
-            );
-          }
-        }}
-      >
-        <div
-          className="h-full bg-brand-teal transition-all"
-          style={{ width: `${progressPct}%` }}
+      <div className="relative flex-1 min-h-0 flex items-center justify-center">
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full h-full object-contain"
+          playsInline
+          onClick={togglePlay}
+          onDoubleClick={toggleFullscreen}
         />
+
+        {/* Large centered play button when paused */}
+        {!playing && (
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="absolute inset-0 flex items-center justify-center z-10 rounded-none bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            aria-label="Play"
+          >
+            <span className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg hover:bg-white/95 transition-colors">
+              <Play className="h-10 w-10 text-black fill-black ml-1" />
+            </span>
+          </button>
+        )}
       </div>
 
-      {/* Controls bar */}
+      {/* Translucent dark overlay + controls bar at bottom */}
       <div
         className={cn(
-          "absolute bottom-1 left-0 right-0 flex items-center gap-2 px-3 py-2 bg-linear-to-t from-black/90 to-transparent transition-opacity",
+          "absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/90 to-transparent pt-8 pb-2 px-4 flex flex-col gap-2 transition-opacity",
           hoverControls || !playing ? "opacity-100" : "opacity-0"
         )}
       >
-        <button
-          type="button"
-          onClick={togglePlay}
-          className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
-          aria-label={playing ? "Pause" : "Play"}
+        {/* Progress bar - blue, full width */}
+        <div
+          className="h-1 w-full bg-white/30 rounded-full cursor-pointer overflow-hidden"
+          onClick={seek}
+          role="slider"
+          aria-label="Seek"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progressPct}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft" && videoRef.current) {
+              videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
+            }
+            if (e.key === "ArrowRight" && videoRef.current) {
+              videoRef.current.currentTime = Math.min(
+                duration,
+                videoRef.current.currentTime + 5
+              );
+            }
+          }}
         >
-          {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-        </button>
+          <div
+            className="h-full bg-blue-500 transition-all"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
 
-        <span className="text-white/90 text-sm tabular-nums">
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </span>
+        {/* Controls row: play, rewind, volume, time, speed, captions, settings, fullscreen */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={togglePlay}
+            className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
+            aria-label={playing ? "Pause" : "Play"}
+          >
+            {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </button>
 
-        <div className="flex-1" />
+          <button
+            type="button"
+            onClick={skipBack}
+            className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
+            aria-label="Rewind 10 seconds"
+          >
+            <SkipBack className="h-5 w-5" />
+          </button>
 
-        {/* Volume */}
-        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={toggleMute}
@@ -256,8 +281,9 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
               <Volume2 className="h-5 w-5" />
             )}
           </button>
+
           <div
-            className="w-20 h-1.5 bg-white/30 rounded-full cursor-pointer overflow-hidden"
+            className="w-16 h-1.5 bg-white/30 rounded-full cursor-pointer overflow-hidden shrink-0"
             onClick={setVol}
             role="slider"
             aria-label="Volume"
@@ -270,58 +296,79 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
               style={{ width: `${(muted ? 0 : volume) * 100}%` }}
             />
           </div>
-        </div>
 
-        {/* Playback rate */}
-        <div className="relative">
+          <div className="flex-1 min-w-0" />
+
+          <span className="text-white/90 text-sm tabular-nums shrink-0">
+            {formatTime(currentTime)} &nbsp; {formatTime(duration)}
+          </span>
+
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowRateMenu((s) => !s)}
+              className="flex items-center gap-1 px-2 py-1.5 rounded text-white/90 text-sm hover:bg-white/20"
+            >
+              <span className="text-xs font-medium">SPEED</span>
+              <span>{playbackRate}x</span>
+            </button>
+            {showRateMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  aria-hidden
+                  onClick={() => setShowRateMenu(false)}
+                />
+                <div className="absolute bottom-full left-0 mb-1 py-1 bg-black/95 rounded shadow-lg z-2000 min-w-[80px]">
+                  {PLAYBACK_RATES.map((rate) => (
+                    <button
+                      key={rate}
+                      type="button"
+                      onClick={() => {
+                        if (videoRef.current) {
+                          videoRef.current.playbackRate = rate;
+                          setPlaybackRate(rate);
+                          setShowRateMenu(false);
+                        }
+                      }}
+                      className={cn(
+                        "w-full px-3 py-1.5 text-left text-sm text-white hover:bg-white/20",
+                        playbackRate === rate && "bg-white/20"
+                      )}
+                    >
+                      {rate}x
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
           <button
             type="button"
-            onClick={() => setShowRateMenu((s) => !s)}
-            className="flex items-center gap-1 px-2 py-1.5 rounded text-white/90 text-sm hover:bg-white/20"
+            className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
+            aria-label="Captions"
           >
-            <RotateCcw className="h-4 w-4" />
-            <span>{playbackRate}x</span>
+            <Subtitles className="h-5 w-5" />
           </button>
-          {showRateMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-10"
-                aria-hidden
-                onClick={() => setShowRateMenu(false)}
-              />
-              <div className="absolute bottom-full left-0 mb-1 py-1 bg-black/95 rounded shadow-lg z-2000 min-w-[80px]">
-                {PLAYBACK_RATES.map((rate) => (
-                  <button
-                    key={rate}
-                    type="button"
-                    onClick={() => {
-                      if (videoRef.current) {
-                        videoRef.current.playbackRate = rate;
-                        setPlaybackRate(rate);
-                        setShowRateMenu(false);
-                      }
-                    }}
-                    className={cn(
-                      "w-full px-3 py-1.5 text-left text-sm text-white hover:bg-white/20",
-                      playbackRate === rate && "bg-white/20"
-                    )}
-                  >
-                    {rate}x
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
 
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="p-1.5 rounded text-white hover:bg-white/20"
-          aria-label="Fullscreen"
-        >
-          <Maximize className="h-5 w-5" />
-        </button>
+          <button
+            type="button"
+            className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
+            aria-label="Settings"
+          >
+            <Settings className="h-5 w-5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
+            aria-label="Fullscreen"
+          >
+            <Maximize className="h-5 w-5" />
+          </button>
+        </div>
       </div>
     </div>
   );

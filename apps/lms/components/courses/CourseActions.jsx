@@ -32,7 +32,7 @@ export default function CourseActions({ courseId, courseSlug }) {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-          const response = await axios.delete(`/api/admin/courses/${slugOrId}`);
+      const response = await axios.delete(`/api/admin/courses/${slugOrId}`);
       if (response.data?.status === 'success') {
         toast.success('Course deleted successfully');
         setShowDeleteDialog(false);

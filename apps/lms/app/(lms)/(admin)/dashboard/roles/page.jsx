@@ -50,7 +50,7 @@ export default function RolesPage() {
   const createRole = useRolesStore((state) => state.createRole);
   const updateRole = useRolesStore((state) => state.updateRole);
   const deleteRole = useRolesStore((state) => state.deleteRole);
-  
+
   // Get store instance for accessing updated state after mutations
   const rolesStore = useRolesStore.getState();
 
