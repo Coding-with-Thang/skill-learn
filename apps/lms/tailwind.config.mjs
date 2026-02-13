@@ -5,9 +5,9 @@ const defaultFontMono = ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "C
 const config = {
   darkMode: "class",
   content: [
-    "./app/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
-    "../../packages/ui/components/**/*.{js,jsx}", // Include UI package
+    "./app/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}",
+    "../../packages/ui/components/**/*.{js,jsx,ts,tsx}", // Include UI package
   ],
   theme: {
     extend: {

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The font system has been centralized to provide a single source of truth for all typography in the application. This makes it easy to change fonts globally and ensures consistency across the entire project.
+The font system uses Next.js font optimization (`next/font`) to load and configure typography. Fonts are defined in the root layout and exposed as CSS variables for consistent usage across the application.
 
 ## Font Configuration
 
@@ -12,10 +12,10 @@ The font system has been centralized to provide a single source of truth for all
 - **Monospace**: JetBrains Mono - Developer-friendly with excellent readability
 - **Display**: Poppins - Modern, friendly, and great for headings
 
-### Font Files
+### Configuration Location
 
-- `src/config/fonts.js` - Central font configuration
-- `src/lib/fonts.js` - Font utilities and helper functions
+- **Layout**: `apps/lms/app/layout.tsx` - Fonts loaded via `next/font/google`
+- **CSS Variables**: `--font-sans`, `--font-mono`, `--font-display` applied to body
 
 ## Usage
 
@@ -36,55 +36,29 @@ The font system has been centralized to provide a single source of truth for all
 <div className="font-extrabold">Extra bold text</div>
 ```
 
-### Using Typography Utilities
-
-```jsx
-import { typography } from '@/lib/fonts'
-
-// Pre-defined typography combinations
-<h1 className={typography.h1}>Main Heading</h1>
-<h2 className={typography.h2}>Section Heading</h2>
-<p className={typography.body}>Body text</p>
-<code className={typography.code}>Inline code</code>
-```
-
-### Using Helper Functions
-
-```jsx
-import { getFontClasses } from "@/lib/fonts";
-
-// Custom font combinations
-<div className={getFontClasses("display", "bold", "2xl", "tight")}>
-  Custom heading
-</div>;
-```
-
 ## Changing Fonts Globally
 
 To change fonts across the entire application:
 
-1. **Update the font configuration** in `src/config/fonts.js`:
+1. **Update the layout** in `apps/lms/app/layout.tsx`:
 
-   ```javascript
-   export const fonts = {
-     sans: ["Your New Font", "fallback", "fonts"],
-     // ... other font families
-   };
+   ```typescript
+   import { YourFont } from "next/font/google";
+
+   const yourFont = YourFont({
+     subsets: ["latin"],
+     variable: "--font-sans", // or --font-mono, --font-display
+     display: "swap",
+   });
    ```
 
-2. **Update CSS variables** in `src/app/globals.css`:
+2. **Add the variable to the body** in the layout:
 
-   ```css
-   --font-sans: Your New Font, fallback, fonts;
+   ```tsx
+   <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased ...`}>
    ```
 
-3. **Update Google Fonts import** in `src/app/layout.jsx` if using web fonts:
-   ```html
-   <link
-     href="https://fonts.googleapis.com/css2?family=Your+New+Font:wght@300;400;500;600;700&display=swap"
-     rel="stylesheet"
-   />
-   ```
+3. **Update Tailwind config** if the CSS variable name changes
 
 ## Font Loading
 

@@ -7,7 +7,7 @@
 
 ## Overview
 
-All magic numbers and hardcoded values have been extracted to `src/constants/index.js` for better maintainability and configurability.
+Magic numbers and hardcoded values are centralized in `apps/lms/config/constants.ts` for better maintainability.
 
 ---
 
@@ -15,8 +15,8 @@ All magic numbers and hardcoded values have been extracted to `src/constants/ind
 
 ### Score Thresholds
 
-```javascript
-import { SCORE_THRESHOLDS } from "@/constants";
+```typescript
+import { SCORE_THRESHOLDS } from "@/config/constants";
 
 // Usage
 if (score >= SCORE_THRESHOLDS.EXCELLENT) {
@@ -39,15 +39,15 @@ if (score >= SCORE_THRESHOLDS.EXCELLENT) {
 
 **Used in:**
 
-- `src/components/features/user/QuizStats.jsx`
-- `src/components/features/user/UserStats.jsx`
+- `apps/lms/components/user/QuizStats.tsx`
+- `apps/lms/components/user/UserStats.tsx`
 
 ---
 
 ### Cache Durations
 
-```javascript
-import { CACHE_DURATIONS } from "@/constants";
+```typescript
+import { CACHE_DURATIONS } from "@/config/constants";
 
 // Usage
 const cacheDuration = CACHE_DURATIONS.CATEGORIES; // 1 hour
@@ -55,21 +55,21 @@ const cacheDuration = CACHE_DURATIONS.CATEGORIES; // 1 hour
 
 **Values (milliseconds):**
 
-- `CATEGORIES`: 60 _ 60 _ 1000 (1 hour)
-- `REWARDS`: 5 _ 60 _ 1000 (5 minutes)
-- `POINTS`: 1 _ 60 _ 1000 (1 minute)
-- `DEFAULT`: 5 _ 60 _ 1000 (5 minutes)
+- `CATEGORIES`: 60 × 60 × 1000 (1 hour)
+- `REWARDS`: 5 × 60 × 1000 (5 minutes)
+- `POINTS`: 1 × 60 × 1000 (1 minute)
+- `DEFAULT`: 5 × 60 × 1000 (5 minutes)
 
 **Used in:**
 
-- `src/utils/axios.js`
+- API configuration in `@skill-learn/lib`
 
 ---
 
 ### Retry Configuration
 
 ```javascript
-import { RETRY_CONFIG } from "@/constants";
+import { RETRY_CONFIG } from "@/config/constants";
 
 // Usage
 if (retryCount < RETRY_CONFIG.MAX_RETRIES) {
@@ -88,15 +88,14 @@ if (retryCount < RETRY_CONFIG.MAX_RETRIES) {
 
 **Used in:**
 
-- `src/utils/axios.js`
-- `src/lib/hooks/useUserRole.js`
+- API configuration and role hooks in `@skill-learn/lib`
 
 ---
 
 ### Rate Limiting
 
 ```javascript
-import { RATE_LIMIT } from "@/constants";
+import { RATE_LIMIT } from "@/config/constants";
 
 // Usage
 const windowMs = RATE_LIMIT.WINDOW_MS;
@@ -111,14 +110,14 @@ const maxRequests = RATE_LIMIT.MAX_REQUESTS;
 
 **Used in:**
 
-- `src/utils/rateLimit.js`
+- Rate limiting utilities in `@skill-learn/lib`
 
 ---
 
 ### Animation
 
 ```javascript
-import { ANIMATION } from "@/constants";
+import { ANIMATION } from "@/config/constants";
 
 // Usage
 const duration = ANIMATION.DURATION_MS;
@@ -132,14 +131,14 @@ const steps = ANIMATION.STEPS;
 
 **Used in:**
 
-- `src/components/features/user/PointsRewardsWidget.jsx`
+- `apps/lms/components/user/PointsRewardsWidget.tsx`
 
 ---
 
 ### UI Constants
 
 ```javascript
-import { UI } from "@/constants";
+import { UI } from "@/config/constants";
 
 // Usage
 const maxPercentage = UI.MAX_PERCENTAGE;
@@ -155,17 +154,17 @@ const dots = Array(UI.STREAK_DISPLAY_DOTS);
 
 **Used in:**
 
-- `src/app/quiz/page.jsx`
-- `src/app/rewards/page.jsx`
-- `src/components/features/user/UserStats.jsx`
-- `src/components/features/user/PointsRewardsWidget.jsx`
+- `apps/lms/app/(lms)/(user)/quiz/page.tsx`
+- `apps/lms/app/(lms)/(user)/rewards/page.tsx`
+- `apps/lms/components/user/UserStats.tsx`
+- `apps/lms/components/user/PointsRewardsWidget.tsx`
 
 ---
 
 ### Store Configuration
 
 ```javascript
-import { STORE } from "@/constants";
+import { STORE } from "@/config/constants";
 
 // Usage
 const cooldown = STORE.FETCH_COOLDOWN;
@@ -177,14 +176,14 @@ const cooldown = STORE.FETCH_COOLDOWN;
 
 **Used in:**
 
-- `src/app/store/pointsStore.js`
+- `@skill-learn/lib/stores/pointsStore`
 
 ---
 
 ### Quiz Configuration
 
 ```javascript
-import { QUIZ_CONFIG } from "@/constants";
+import { QUIZ_CONFIG } from "@/config/constants";
 
 // Usage
 const defaultPassingScore = QUIZ_CONFIG.DEFAULT_PASSING_SCORE;
@@ -199,11 +198,11 @@ const pointsPerAnswer = QUIZ_CONFIG.POINTS_PER_CORRECT_ANSWER;
 
 **Used in:**
 
-- `src/components/features/admin/QuizBuilder.jsx`
-- `src/app/quiz/page.jsx`
-- `src/app/api/admin/quizzes/route.js`
+- `apps/lms/components/admin/QuizBuilder.tsx`
+- `apps/lms/app/(lms)/(user)/quiz/page.tsx`
+- `apps/lms/app/api/admin/quizzes/route.ts`
 
-**Note:** These values should match `DEFAULT_SETTINGS` in `src/lib/actions/settings.js`:
+**Note:** These values should match `DEFAULT_SETTINGS` in `apps/lms/lib/actions/settings.ts`:
 
 - `DEFAULT_PASSING_SCORE` should match `DEFAULT_SETTINGS.DEFAULT_PASSING_SCORE`
 - `POINTS_PER_CORRECT_ANSWER` should match `DEFAULT_SETTINGS.POINTS_FOR_PASSING_QUIZ`
@@ -213,7 +212,7 @@ const pointsPerAnswer = QUIZ_CONFIG.POINTS_PER_CORRECT_ANSWER;
 ### File Upload Configuration
 
 ```javascript
-import { FILE_UPLOAD } from "@/constants";
+import { FILE_UPLOAD } from "@/config/constants";
 
 // Usage
 const expiresAt =
@@ -226,8 +225,8 @@ const expiresAt =
 
 **Used in:**
 
-- `src/app/api/admin/upload/route.js`
-- `src/app/api/admin/courses/upload/route.js`
+- `apps/lms/app/api/admin/upload/route.ts`
+- `apps/lms/app/api/admin/courses/upload/route.ts`
 
 ---
 
@@ -290,8 +289,8 @@ The following constants should ideally be configurable via system settings (stor
 
 ✅ **Good:**
 
-```javascript
-import { SCORE_THRESHOLDS } from "@/constants";
+```typescript
+import { SCORE_THRESHOLDS } from "@/config/constants";
 
 if (score >= SCORE_THRESHOLDS.PASSING) {
   // ...
@@ -312,7 +311,7 @@ if (score >= 70) {
 
 ```javascript
 import { getSystemSetting } from "@/lib/actions/settings";
-import { QUIZ_CONFIG } from "@/constants";
+import { QUIZ_CONFIG } from "@/config/constants";
 
 // Try to get from system settings first, fallback to constant
 const passingScore =
@@ -330,7 +329,7 @@ const passingScore = 70; // Hardcoded
 
 When adding new constants:
 
-1. Add to `src/constants/index.js`
+1. Add to `apps/lms/config/constants.ts`
 2. Update this documentation
 3. Add JSDoc comments explaining the constant's purpose
 4. Consider if it should be configurable via system settings
@@ -355,7 +354,7 @@ Constants are grouped by domain:
 
 When extracting magic numbers to constants:
 
-- [ ] Add constant to `src/constants/index.js`
+- [ ] Add constant to `apps/lms/config/constants.ts`
 - [ ] Replace all hardcoded values with constant
 - [ ] Update imports in affected files
 - [ ] Verify no linter errors

@@ -8,12 +8,12 @@ All API routes should use the standardized error handling utilities to ensure co
 
 ## Standardized Error Handler
 
-The `handleApiError` function from `@/lib/utils/errorHandler` provides consistent error handling:
+The `handleApiError` function from `@skill-learn/lib/utils/errorHandler` provides consistent error handling:
 
-```javascript
-import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+```typescript
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 
-export async function GET(request) {
+export async function GET(request: Request) {
   try {
     // Your route logic here
     return NextResponse.json({ data: "success" });
@@ -27,8 +27,8 @@ export async function GET(request) {
 
 Use `AppError` for structured errors:
 
-```javascript
-import { AppError, ErrorType } from "@/lib/utils/errorHandler";
+```typescript
+import { AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 
 // Validation error
 throw new AppError("Invalid input", ErrorType.VALIDATION, { status: 400 });
@@ -58,7 +58,7 @@ All error responses follow this structure:
 
 ### Before (Inconsistent Patterns)
 
-```javascript
+```typescript
 // Pattern 1: Direct NextResponse
 catch (error) {
   return NextResponse.json({ error: "Error message" }, { status: 500 });
@@ -82,10 +82,10 @@ catch (error) {
 
 ### After (Standardized Pattern)
 
-```javascript
-import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+```typescript
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 
-export async function GET(request) {
+export async function GET(request: Request) {
   try {
     // Validation
     if (!requiredField) {
@@ -129,10 +129,10 @@ export async function GET(request) {
 
 ### Simple Route
 
-```javascript
+```typescript
 import { NextResponse } from "next/server";
-import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
-import { requireAuth } from "@/lib/utils/auth";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { requireAuth } from "@skill-learn/lib/utils/auth";
 
 export async function GET(request) {
   try {
@@ -151,11 +151,11 @@ export async function GET(request) {
 
 ### Route with Validation
 
-```javascript
+```typescript
 import { NextResponse } from "next/server";
-import { handleApiError, AppError, ErrorType } from "@/lib/utils/errorHandler";
+import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
 

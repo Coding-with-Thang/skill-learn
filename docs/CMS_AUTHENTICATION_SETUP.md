@@ -61,7 +61,7 @@ The promoted user must already have a Clerk account (e.g. from signing up on the
 
 ### 1. CMS Sign-In Page
 
-- **Location:** `apps/cms/app/cms/sign-in/[[...sign-in]]/page.jsx`
+- **Location:** `apps/cms/app/cms/sign-in/[[...sign-in]]/page.tsx`
 - **Purpose:** Clerk sign-in component for CMS
 - **Features:**
   - Only allows existing super admins to sign in
@@ -70,7 +70,7 @@ The promoted user must already have a Clerk account (e.g. from signing up on the
 
 ### 2. Updated Webhook
 
-- **Location:** `apps/lms/app/api/webhooks/route.js`
+- **Location:** `apps/lms/app/api/webhooks/route.ts`
 - **Changes:**
   - Handles `user.created` and `user.updated` events
   - Syncs email field to database
@@ -107,13 +107,13 @@ The promoted user must already have a Clerk account (e.g. from signing up on the
 
 ### Step 1: Create Your First Super Admin
 
-Use the setup script:
+Use a one-off setup script to set super admin in Clerk. The script is not in the repo; see **CMS_ACCESS_DEVELOPMENT.md** for a copy-paste example you can save as `scripts/setup-super-admin.js` and run with:
 
 ```bash
 node scripts/setup-super-admin.js <your-email>
 ```
 
-This will:
+That will:
 
 - Find your user in Clerk
 - Set `publicMetadata.role = "super_admin"`
@@ -121,7 +121,7 @@ This will:
 
 ### Step 2: Test Sign-In
 
-1. Visit: `http://localhost:3000/cms/sign-in`
+1. Visit: `http://localhost:3001/cms/sign-in`
 2. Sign in with your super admin account
 3. You should be redirected to `/cms/tenants`
 

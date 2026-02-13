@@ -22,7 +22,7 @@ We've successfully elevated your theme system to be **consistent, maintainable, 
 - ✅ Added comprehensive border radius variables
 - ✅ Added transition timing variables
 
-#### `packages/ui/components/ThemeSwitcher.jsx` - Simplified
+#### ThemeSwitcher - Simplified
 
 - ✅ Removed Ocean and Sunset theme options
 - ✅ Now only toggles between Light and Dark modes
@@ -63,13 +63,6 @@ We've successfully elevated your theme system to be **consistent, maintainable, 
 - Migration strategy
 - Testing & validation approach
 - Timeline and success metrics
-
-#### `hard-coded-colors-report.md` - Audit Report
-
-- Complete list of 35+ files with hard-coded colors
-- Organized by component type
-- Specific color values and locations
-- Recommendations for improvement
 
 ## 🎨 New Color System Features
 
@@ -241,7 +234,7 @@ Ready-to-use helper classes:
 ### Migration Process for Each Component
 
 1. **Identify** hard-coded colors using the audit report
-2. **Reference** the COLOR_MIGRATION_REFERENCE.md for replacements
+2. **Reference** COLOR_MIGRATION_REFERENCE.md for replacements
 3. **Update** the component with theme variables
 4. **Test** in both light and dark modes
 5. **Verify** all interactive states (hover, active, focus)
@@ -259,7 +252,7 @@ git checkout -b migrate/landing-hero-section
 # - Verify all states
 
 # 3. Commit changes
-git add apps/lms/components/landing/HeroSection.jsx
+git add apps/lms/components/landing/HeroSection.tsx
 git commit -m "feat: migrate HeroSection to theme system
 
 - Replace hard-coded teal colors with brand-teal
@@ -289,8 +282,7 @@ For each migrated component:
 
 - **Full Documentation**: `THEME_SYSTEM.md`
 - **Migration Reference**: `COLOR_MIGRATION_REFERENCE.md`
-- **Implementation Plan**: `THEME_SYSTEM_ELEVATION_PLAN.md`
-- **Color Audit**: `hard-coded-colors-report.md`
+- **Quick Start**: `THEME_QUICK_START.md`
 
 ## 🎯 Success Metrics
 

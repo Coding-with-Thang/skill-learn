@@ -89,7 +89,8 @@ async function setupSuperAdmin(email) {
   console.log(`✅ Super admin access granted to ${email}`);
 }
 
-// Run: node scripts/dev-setup-super-admin.js your-email@example.com
+// Save as scripts/dev-setup-super-admin.js (or setup-super-admin.js), then run:
+// node scripts/dev-setup-super-admin.js your-email@example.com
 setupSuperAdmin(process.argv[2]);
 ```
 

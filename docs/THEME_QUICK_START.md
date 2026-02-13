@@ -47,11 +47,9 @@ Your project now has a **comprehensive, theme-aware color system** that supports
 
 | Document                                                               | Purpose                                        |
 | ---------------------------------------------------------------------- | ---------------------------------------------- |
-| **[THEME_SYSTEM_SUMMARY.md](./THEME_SYSTEM_SUMMARY.md)**               | Start here! Overview of changes and next steps |
+| **[THEME_SYSTEM_SUMMARY.md](./THEME_SYSTEM_SUMMARY.md)**               | Overview of changes and next steps             |
 | **[THEME_SYSTEM.md](./THEME_SYSTEM.md)**                               | Complete developer documentation               |
 | **[COLOR_MIGRATION_REFERENCE.md](./COLOR_MIGRATION_REFERENCE.md)**     | Quick reference for migrating colors           |
-| **[THEME_SYSTEM_ELEVATION_PLAN.md](./THEME_SYSTEM_ELEVATION_PLAN.md)** | Detailed implementation plan                   |
-| **[hard-coded-colors-report.md](./hard-coded-colors-report.md)**       | Audit of existing hard-coded colors            |
 
 ## 🎯 Key Features
 
@@ -89,7 +87,7 @@ className = "shadow-theme-md"; // Theme-aware shadow
 
 ### 1. Find Hard-Coded Colors
 
-Check `hard-coded-colors-report.md` for your component.
+Search your component for hex values (`#`), `rgba(`, or `bg-[#` patterns.
 
 ### 2. Replace with Theme Variables
 
@@ -143,7 +141,7 @@ git commit -m "feat: migrate ComponentName to theme system"
 - `bg-warning` / `text-warning-foreground`
 - `bg-error` / `text-error-foreground`
 - `bg-info` / `text-info-foreground`
-- `bg-destructive` / `text-brand-tealestructive-foreground`
+- `bg-destructive` / `text-destructive-foreground`
 
 ### Game
 
@@ -222,6 +220,6 @@ import ThemeSystemDemo from "@/components/ThemeSystemDemo";
 
 ## 🎉 You're Ready!
 
-Start migrating components using the theme system. Begin with high-priority components and work your way through the list in `THEME_SYSTEM_SUMMARY.md`.
+Start migrating components using the theme system. Use `COLOR_MIGRATION_REFERENCE.md` for replacements.
 
 **Happy theming! 🎨**
