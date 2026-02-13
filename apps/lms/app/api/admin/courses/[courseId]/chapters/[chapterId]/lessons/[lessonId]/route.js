@@ -3,15 +3,31 @@ import { prisma } from "@skill-learn/database";
 import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
+import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
+import { resolveCourseId, generateUniqueLessonSlug } from "@/lib/courses.js";
 
-// Get a single lesson (for edit page). Lesson is found by lessonId + courseId so a wrong/stale chapterId in the URL still resolves.
+// Resolve lesson by id or slug within a course
+function lessonWhere(courseId, lessonIdOrSlug) {
+  const isId = /^[a-f0-9]{24}$/i.test(lessonIdOrSlug);
+  return {
+    ...(isId ? { id: lessonIdOrSlug } : { slug: lessonIdOrSlug }),
+    chapter: { courseId },
+  };
+}
+
+// Get a single lesson (for edit page). Params may be id or slug; chapterId in URL is ignored for lookup.
 export async function GET(request, { params }) {
   try {
-    const { courseId, lessonId } = await params;
-    if (!courseId || !lessonId) {
+    const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
+    if (!courseIdOrSlug || !lessonIdOrSlug) {
       throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
         status: 400,
       });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
     const authResult = await requireCanEditCourse(courseId);
     if (authResult instanceof NextResponse) {
@@ -19,13 +35,10 @@ export async function GET(request, { params }) {
     }
 
     const lesson = await prisma.lesson.findFirst({
-      where: {
-        id: lessonId,
-        chapter: { courseId },
-      },
+      where: lessonWhere(courseId, lessonIdOrSlug),
       include: {
         chapter: {
-          select: { id: true, title: true, courseId: true },
+          select: { id: true, title: true, slug: true, courseId: true },
         },
       },
     });
@@ -39,14 +52,19 @@ export async function GET(request, { params }) {
   }
 }
 
-// Update a lesson (title, content, position). Resolve by lessonId + courseId so URL chapterId can be wrong/stale.
+// Update a lesson (title, content, position). Params may be id or slug.
 export async function PATCH(request, { params }) {
   try {
-    const { courseId, lessonId } = await params;
-    if (!courseId || !lessonId) {
+    const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
+    if (!courseIdOrSlug || !lessonIdOrSlug) {
       throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
         status: 400,
       });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
     const authResult = await requireCanEditCourse(courseId);
     if (authResult instanceof NextResponse) {
@@ -54,10 +72,7 @@ export async function PATCH(request, { params }) {
     }
 
     const lesson = await prisma.lesson.findFirst({
-      where: {
-        id: lessonId,
-        chapter: { courseId },
-      },
+      where: lessonWhere(courseId, lessonIdOrSlug),
     });
     if (!lesson) {
       throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
@@ -81,6 +96,12 @@ export async function PATCH(request, { params }) {
         });
       }
       data.title = trimmed;
+      data.slug = await generateUniqueLessonSlug(
+        prisma,
+        effectiveChapterId,
+        trimmed,
+        lesson.id
+      );
     }
     if (body?.content !== undefined) data.content = String(body.content ?? "");
     if (body?.videoUrl !== undefined) data.videoUrl = body.videoUrl ? String(body.videoUrl).trim() : null;
@@ -99,7 +120,7 @@ export async function PATCH(request, { params }) {
     }
 
     const updated = await prisma.lesson.update({
-      where: { id: lessonId },
+      where: { id: lesson.id },
       data,
     });
 
@@ -112,14 +133,19 @@ export async function PATCH(request, { params }) {
   }
 }
 
-// Delete a lesson. Resolve by lessonId + courseId so URL chapterId can be wrong/stale.
+// Delete a lesson. Params may be id or slug.
 export async function DELETE(request, { params }) {
   try {
-    const { courseId, lessonId } = await params;
-    if (!courseId || !lessonId) {
+    const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
+    if (!courseIdOrSlug || !lessonIdOrSlug) {
       throw new AppError("Course ID and Lesson ID are required", ErrorType.VALIDATION, {
         status: 400,
       });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
     const authResult = await requireCanEditCourse(courseId);
     if (authResult instanceof NextResponse) {
@@ -127,17 +153,14 @@ export async function DELETE(request, { params }) {
     }
 
     const lesson = await prisma.lesson.findFirst({
-      where: {
-        id: lessonId,
-        chapter: { courseId },
-      },
+      where: lessonWhere(courseId, lessonIdOrSlug),
     });
     if (!lesson) {
       throw new AppError("Lesson not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
     await prisma.lesson.delete({
-      where: { id: lessonId },
+      where: { id: lesson.id },
     });
 
     return successResponse({

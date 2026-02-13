@@ -657,6 +657,7 @@ export default function EditCoursePage() {
                         <CourseStructure
                             course={course}
                             courseId={courseId}
+                            courseSlug={course?.slug ?? courseId}
                             mutationPending={structureMutationPending}
                             onDeleteChapter={(chapter) => setChapterToDelete(chapter)}
                             onAddChapter={openAddChapterDialog}

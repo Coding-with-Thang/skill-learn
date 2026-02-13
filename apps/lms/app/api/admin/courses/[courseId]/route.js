@@ -3,21 +3,29 @@ import { prisma } from "@skill-learn/database";
 import { courseSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage.js";
 import { requireCanEditCourse } from "@skill-learn/lib/utils/auth.js";
+import { getTenantId } from "@skill-learn/lib/utils/tenant.js";
 import {
   handleApiError,
   AppError,
   ErrorType,
 } from "@skill-learn/lib/utils/errorHandler.js";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper.js";
-import { getCourseWithChaptersAndLessons } from "@/lib/courses.js";
+import { getCourseWithChaptersAndLessons, resolveCourseId, isCourseSlugTakenInTenant } from "@/lib/courses.js";
 
-// Get a specific course (with chapters and lessons)
+// Get a specific course (with chapters and lessons). courseId param may be id or slug.
 export async function GET(request, { params }) {
   try {
-    const { courseId } = await params;
-    if (!courseId) {
+    const { courseId: courseIdOrSlug } = await params;
+    if (!courseIdOrSlug) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
+      });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, {
+        status: 404,
       });
     }
     const authResult = await requireCanEditCourse(courseId);
@@ -53,13 +61,20 @@ export async function GET(request, { params }) {
   }
 }
 
-// Update a course
+// Update a course. courseId param may be id or slug.
 export async function PUT(request, { params }) {
   try {
-    const { courseId } = await params;
-    if (!courseId) {
+    const { courseId: courseIdOrSlug } = await params;
+    if (!courseIdOrSlug) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
+      });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, {
+        status: 404,
       });
     }
     const authResult = await requireCanEditCourse(courseId);
@@ -69,7 +84,6 @@ export async function PUT(request, { params }) {
 
     const data = await request.json();
 
-    // Validate the data
     const validation = courseSchema.safeParse(data);
 
     if (!validation.success) {
@@ -79,7 +93,6 @@ export async function PUT(request, { params }) {
       });
     }
 
-    // Check if course exists
     const existingCourse = await prisma.course.findUnique({
       where: { id: courseId },
     });
@@ -90,7 +103,19 @@ export async function PUT(request, { params }) {
       });
     }
 
-    // Update course
+    const newSlug = validation.data.slug;
+    const slugTaken = await isCourseSlugTakenInTenant({
+      slug: newSlug,
+      tenantId: existingCourse.tenantId ?? null,
+      excludeCourseId: courseId,
+    });
+    if (slugTaken) {
+      throw new AppError("A course with this slug already exists in your organization.", ErrorType.VALIDATION, {
+        status: 400,
+        details: { fieldErrors: { slug: ["This slug is already in use."] } },
+      });
+    }
+
     const course = await prisma.course.update({
       where: { id: courseId },
       data: {
@@ -117,13 +142,20 @@ export async function PUT(request, { params }) {
   }
 }
 
-// Delete a course
+// Delete a course. courseId param may be id or slug.
 export async function DELETE(request, { params }) {
   try {
-    const { courseId } = await params;
-    if (!courseId) {
+    const { courseId: courseIdOrSlug } = await params;
+    if (!courseIdOrSlug) {
       throw new AppError("Course ID is required", ErrorType.VALIDATION, {
         status: 400,
+      });
+    }
+    const tenantId = await getTenantId();
+    const courseId = await resolveCourseId(courseIdOrSlug, tenantId ?? undefined);
+    if (!courseId) {
+      throw new AppError("Course not found", ErrorType.NOT_FOUND, {
+        status: 404,
       });
     }
     const authResult = await requireCanEditCourse(courseId);

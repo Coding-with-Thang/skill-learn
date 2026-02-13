@@ -80,7 +80,7 @@ const CONTENT = {
     floating: { icon: Target, color: "text-rose-500", pos: "top-1/2 -right-14 -translate-y-1/2" }
   },
   Rewards: {
-    badge: "Incentivized Growth",
+    badge: "Incentivize Growth",
     title: "Celebrate Every",
     titleAccent: "Milestone",
     description: "People thrive on recognition. Skill-Learn allows you to reward your team with digital badges, tangible rewards, and public shoutouts that drive morale and excellence.",
@@ -197,7 +197,7 @@ export default function VersatilePlatform() {
               {/* Main Card Container */}
               <div className="bg-white rounded-[2.5rem] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group max-w-md mx-auto">
                 {/* Platform Frame UI */}
-                <div className="bg-slate-50/50 rounded-[2rem] p-6 lg:p-8 min-h-[300px] flex flex-col justify-center gap-3">
+                <div className="bg-slate-50/50 rounded-4xl p-6 lg:p-8 min-h-[300px] flex flex-col justify-center gap-3">
                   {CONTENT[activeTab].items.map((item, idx) => {
                     const ItemIcon = item.icon;
                     return (
@@ -249,7 +249,7 @@ export default function VersatilePlatform() {
 
       {/* Bottom Sticky-style Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 lg:mt-16">
-        <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white border border-slate-100 rounded-[1.5rem] shadow-[0_15px_40px_rgba(0,0,0,0.02)] gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white border border-slate-100 rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.02)] gap-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
               <Rocket className="w-5 h-5 text-white" />

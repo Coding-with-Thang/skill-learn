@@ -317,7 +317,7 @@ model Course {
   categoryId         String       @db.ObjectId
   category           Category     @relation(fields: [categoryId], references: [id])
   excerptDescription String
-  slug               String       @unique
+  slug               String
   status             CourseStatus @default(Draft)
   tenantId           String?      @db.ObjectId // Multi-tenant: course belongs to ONE tenant (null = global)
   tenant             Tenant?      @relation(fields: [tenantId], references: [id])
@@ -329,6 +329,8 @@ model Course {
   chapters           Chapter[]
   courseChapters     CourseChapter[]
   courseProgress     CourseProgress[]
+
+  @@unique([tenantId, slug]) // Slug unique within a tenant (and among global courses when tenantId is null)
 }
 
 model Chapter {
@@ -336,11 +338,13 @@ model Chapter {
   courseId  String   @db.ObjectId
   course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   title     String
-  position     Int      @default(0)
+  slug      String?  // Unique per course (not per tenant); set on create/update via generateUniqueChapterSlug
+  position  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   lessons   Lesson[]
 
+  @@index([courseId, slug])
   @@index([courseId])
   @@index([courseId, position])
   @@map("chapters")
@@ -351,14 +355,16 @@ model Lesson {
   chapterId String   @db.ObjectId
   chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   title     String
+  slug      String?  // Unique per chapter; set on create/update via generateUniqueLessonSlug
   content   String   @default("") // HTML or markdown content
   videoUrl  String?  // Video URL for lesson (e.g. hosted or YouTube)
-  position     Int      @default(0)
+  position  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   lessonProgress LessonProgress[]
 
+  @@index([chapterId, slug])
   @@index([chapterId])
   @@index([chapterId, position])
   @@map("lessons")

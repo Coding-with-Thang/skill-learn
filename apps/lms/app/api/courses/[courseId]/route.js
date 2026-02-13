@@ -18,7 +18,8 @@ export async function GET(request, { params }) {
       });
     }
 
-    const course = await getCourseWithChaptersAndLessons(courseId);
+    const tenantId = await getTenantId();
+    const course = await getCourseWithChaptersAndLessons(courseId, tenantId ?? undefined);
 
     if (!course) {
       throw new AppError("Course not found", ErrorType.NOT_FOUND, {
@@ -33,7 +34,6 @@ export async function GET(request, { params }) {
       });
     }
 
-    const tenantId = await getTenantId();
     const allowed = tenantId
       ? course.tenantId === tenantId || (course.isGlobal && !course.tenantId)
       : course.isGlobal && !course.tenantId;

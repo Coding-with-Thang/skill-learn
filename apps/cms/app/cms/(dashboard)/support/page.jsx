@@ -122,7 +122,7 @@ export default function SupportPage() {
               >
                 <div className="flex items-start gap-4">
                   <div className={`mt-1 h-2 w-2 rounded-full ${ticket.status === 'open' ? 'bg-blue-500' :
-                      ticket.status === 'in_progress' ? 'bg-orange-500' : 'bg-green-500'
+                    ticket.status === 'in_progress' ? 'bg-orange-500' : 'bg-green-500'
                     }`} />
                   <div>
                     <div className="flex items-center gap-2">

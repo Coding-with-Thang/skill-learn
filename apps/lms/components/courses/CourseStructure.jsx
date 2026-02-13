@@ -37,6 +37,7 @@ function arrayMove(items, fromIndex, toIndex) {
 export default function CourseStructure({
   course,
   courseId,
+  courseSlug,
   mutationPending = false,
   onDeleteChapter,
   onAddChapter,
@@ -46,6 +47,7 @@ export default function CourseStructure({
   onDeleteLesson,
   onReorderLessons,
 }) {
+  const slugOrId = courseSlug ?? courseId;
   const chapters = useMemo(() => course?.chapters ?? [], [course?.chapters]);
   const [openChapters, setOpenChapters] = useState({});
 
@@ -55,7 +57,9 @@ export default function CourseStructure({
     useSensor(KeyboardSensor)
   );
 
-  function SortableLessonItem({ lesson, chapterId, courseId, onDelete, disabled }) {
+  function SortableLessonItem({ lesson, chapter, courseId, courseSlug, onDelete, disabled }) {
+    const chapterSlugOrId = chapter?.slug ?? chapter?.id;
+    const lessonSlugOrId = lesson?.slug ?? lesson?.id;
     const {
       attributes,
       listeners,
@@ -63,7 +67,7 @@ export default function CourseStructure({
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: lesson.id, data: { type: "Lesson", lesson, chapterId }, disabled });
+    } = useSortable({ id: lesson.id, data: { type: "Lesson", lesson, chapterId: chapter?.id }, disabled });
 
     const style = {
       transform: CSS.Translate.toString(transform),
@@ -86,9 +90,9 @@ export default function CourseStructure({
         >
           <GripVertical className="size-4" />
         </button>
-        {courseId ? (
+        {(courseSlug ?? courseId) ? (
           <Link
-            href={`/dashboard/courses/${courseId}/chapters/${chapterId}/lessons/${lesson.id}/edit`}
+            href={`/dashboard/courses/${courseSlug ?? courseId}/chapters/${chapterSlugOrId}/lessons/${lessonSlugOrId}/edit`}
             className="flex-1 truncate text-muted-foreground hover:text-foreground hover:underline focus:outline-none focus:underline"
           >
             {lesson.title}
@@ -101,7 +105,7 @@ export default function CourseStructure({
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              if (!disabled) onDelete(chapterId, lesson);
+              if (!disabled) onDelete(chapter?.id, lesson);
             }}
             className="text-muted-foreground hover:text-brand-tealestructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
             aria-label="Delete lesson"
@@ -304,8 +308,9 @@ export default function CourseStructure({
                       <SortableLessonItem
                         key={lesson.id}
                         lesson={lesson}
-                        chapterId={chapter.id}
+                        chapter={chapter}
                         courseId={courseId}
+                        courseSlug={slugOrId}
                         onDelete={onDeleteLesson}
                         disabled={disabled}
                       />

@@ -611,143 +611,143 @@ export default function QuizScreenPage() {
     const progressPercentage = ((currentIndex + 1) / shuffledQuestionsMemo.length) * 100;
 
     return (
-        <FeatureGate 
-            feature="course_quizzes" 
+        <FeatureGate
+            feature="course_quizzes"
             featureName="Course Quizzes"
             fallback={<FeatureDisabledPage featureName="Course Quizzes" />}
         >
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-            {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-10 px-6 py-4 shadow-sm">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-                    {/* Left: Quiz Info */}
-                    <div className="flex items-center gap-4 w-full md:w-auto">
-                        <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
-                            <GraduationCap className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900 leading-tight">{selectedQuiz?.title}</h1>
-                            <p className="text-sm text-muted-foreground">{selectedQuiz?.description || "Assessment"}</p>
-                        </div>
-                    </div>
-
-                    {/* Center: Progress */}
-                    <div className="flex-1 w-full md:max-w-xl flex flex-col gap-2">
-                        <div className="flex justify-between text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                            <span>Question {currentIndex + 1} of {shuffledQuestionsMemo.length}</span>
-                            <span>{Math.round(progressPercentage)}% completed</span>
-                        </div>
-                        <Progress value={progressPercentage} className="h-2" />
-                    </div>
-
-                    {/* Right: Timer & Exit */}
-                    <div className="flex items-center gap-4 w-full md:w-auto justify-end">
-                        {selectedQuiz?.timeLimit && (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200 font-mono text-sm font-medium">
-                                <Clock className="w-4 h-4 text-gray-500" />
-                                <span>{formatTime(timeRemaining)}</span>
+            <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+                {/* Header */}
+                <header className="bg-white border-b sticky top-0 z-10 px-6 py-4 shadow-sm">
+                    <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                        {/* Left: Quiz Info */}
+                        <div className="flex items-center gap-4 w-full md:w-auto">
+                            <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
+                                <GraduationCap className="w-6 h-6" />
                             </div>
+                            <div>
+                                <h1 className="text-lg font-bold text-gray-900 leading-tight">{selectedQuiz?.title}</h1>
+                                <p className="text-sm text-muted-foreground">{selectedQuiz?.description || "Assessment"}</p>
+                            </div>
+                        </div>
+
+                        {/* Center: Progress */}
+                        <div className="flex-1 w-full md:max-w-xl flex flex-col gap-2">
+                            <div className="flex justify-between text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                <span>Question {currentIndex + 1} of {shuffledQuestionsMemo.length}</span>
+                                <span>{Math.round(progressPercentage)}% completed</span>
+                            </div>
+                            <Progress value={progressPercentage} className="h-2" />
+                        </div>
+
+                        {/* Right: Timer & Exit */}
+                        <div className="flex items-center gap-4 w-full md:w-auto justify-end">
+                            {selectedQuiz?.timeLimit && (
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200 font-mono text-sm font-medium">
+                                    <Clock className="w-4 h-4 text-gray-500" />
+                                    <span>{formatTime(timeRemaining)}</span>
+                                </div>
+                            )}
+                            <Button variant="ghost" className="hidden md:flex items-center gap-2 text-gray-500 hover:text-red-500" onClick={handleSaveAndExit}>
+                                <X className="w-5 h-5" />
+                                Save & Exit
+                            </Button>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content */}
+                <main className="flex-1 max-w-4xl mx-auto w-full p-6 md:p-12 flex flex-col">
+                    <div className={`transition-all duration-300 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+                        {/* Question Section */}
+                        {currentQuestion && (
+                            <>
+                                <div className="mb-2">
+                                    <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wider">
+                                        Multiple Choice
+                                    </span>
+                                </div>
+
+                                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
+                                    {currentQuestion.text || "Question text not available"}
+                                </h2>
+                                <p className="text-gray-500 mb-8">Select all that apply.</p>
+
+                                <QuestionMedia question={currentQuestion} />
+
+                                {/* Options */}
+                                <div className="space-y-4">
+                                    {shuffledOptions && shuffledOptions.length > 0 ? (
+                                        shuffledOptions.map((option) => {
+                                            const isSelected = selectedOptions.includes(option.id);
+                                            return (
+                                                <div
+                                                    key={option.id}
+                                                    onClick={() => !isTransitioning && toggleOption(option)}
+                                                    className={cn(
+                                                        "group relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                                                        isSelected
+                                                            ? "border-blue-500 bg-blue-50 shadow-md"
+                                                            : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
+                                                    )}
+                                                >
+                                                    <div className={cn(
+                                                        "flex items-center justify-center w-6 h-6 rounded border-2 mr-4 transition-colors",
+                                                        isSelected
+                                                            ? "bg-blue-500 border-blue-500 text-white"
+                                                            : "border-gray-300 bg-white group-hover:border-gray-400"
+                                                    )}>
+                                                        {isSelected && <Check className="w-4 h-4" />}
+                                                    </div>
+                                                    <span className={cn(
+                                                        "text-lg font-medium",
+                                                        isSelected ? "text-blue-900" : "text-gray-700"
+                                                    )}>
+                                                        {option.text}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })
+                                    ) : (
+                                        <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
+                                            <p className="text-lg font-medium">No options available for this question.</p>
+                                            <p className="text-sm mt-2">Please contact support if this issue persists.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
                         )}
-                        <Button variant="ghost" className="hidden md:flex items-center gap-2 text-gray-500 hover:text-red-500" onClick={handleSaveAndExit}>
-                            <X className="w-5 h-5" />
-                            Save & Exit
+                    </div>
+                </main>
+
+                {/* Footer */}
+                <footer className="bg-white border-t p-6 sticky bottom-0 z-10">
+                    <div className="max-w-4xl mx-auto flex items-center justify-between">
+                        <Button
+                            variant="outline"
+                            onClick={handlePrevQuestion}
+                            disabled={currentIndex === 0 || isTransitioning}
+                            className="px-6 py-6 text-base font-semibold border-gray-300 text-gray-700 hover:bg-gray-50"
+                        >
+                            <ChevronLeft className="w-5 h-5 mr-2" />
+                            Previous
+                        </Button>
+
+                        <div className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            Auto-saved
+                        </div>
+
+                        <Button
+                            onClick={handleNextQuestion}
+                            disabled={selectedOptions.length === 0 || isTransitioning}
+                            className="px-8 py-6 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
+                        >
+                            {currentIndex === shuffledQuestionsMemo.length - 1 ? "Finish Quiz" : "Next Question"}
+                            <ChevronRight className="w-5 h-5 ml-2" />
                         </Button>
                     </div>
-                </div>
-            </header>
-
-            {/* Main Content */}
-            <main className="flex-1 max-w-4xl mx-auto w-full p-6 md:p-12 flex flex-col">
-                <div className={`transition-all duration-300 ease-in-out ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-                    {/* Question Section */}
-                    {currentQuestion && (
-                        <>
-                            <div className="mb-2">
-                                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wider">
-                                    Multiple Choice
-                                </span>
-                            </div>
-
-                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
-                                {currentQuestion.text || "Question text not available"}
-                            </h2>
-                            <p className="text-gray-500 mb-8">Select all that apply.</p>
-
-                            <QuestionMedia question={currentQuestion} />
-
-                            {/* Options */}
-                            <div className="space-y-4">
-                                {shuffledOptions && shuffledOptions.length > 0 ? (
-                                    shuffledOptions.map((option) => {
-                                        const isSelected = selectedOptions.includes(option.id);
-                                        return (
-                                            <div
-                                                key={option.id}
-                                                onClick={() => !isTransitioning && toggleOption(option)}
-                                                className={cn(
-                                                    "group relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all duration-200",
-                                                    isSelected
-                                                        ? "border-blue-500 bg-blue-50 shadow-md"
-                                                        : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "flex items-center justify-center w-6 h-6 rounded border-2 mr-4 transition-colors",
-                                                    isSelected
-                                                        ? "bg-blue-500 border-blue-500 text-white"
-                                                        : "border-gray-300 bg-white group-hover:border-gray-400"
-                                                )}>
-                                                    {isSelected && <Check className="w-4 h-4" />}
-                                                </div>
-                                                <span className={cn(
-                                                    "text-lg font-medium",
-                                                    isSelected ? "text-blue-900" : "text-gray-700"
-                                                )}>
-                                                    {option.text}
-                                                </span>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
-                                        <p className="text-lg font-medium">No options available for this question.</p>
-                                        <p className="text-sm mt-2">Please contact support if this issue persists.</p>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="bg-white border-t p-6 sticky bottom-0 z-10">
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
-                    <Button
-                        variant="outline"
-                        onClick={handlePrevQuestion}
-                        disabled={currentIndex === 0 || isTransitioning}
-                        className="px-6 py-6 text-base font-semibold border-gray-300 text-gray-700 hover:bg-gray-50"
-                    >
-                        <ChevronLeft className="w-5 h-5 mr-2" />
-                        Previous
-                    </Button>
-
-                    <div className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest">
-                        Auto-saved
-                    </div>
-
-                    <Button
-                        onClick={handleNextQuestion}
-                        disabled={selectedOptions.length === 0 || isTransitioning}
-                        className="px-8 py-6 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
-                    >
-                        {currentIndex === shuffledQuestionsMemo.length - 1 ? "Finish Quiz" : "Next Question"}
-                        <ChevronRight className="w-5 h-5 ml-2" />
-                    </Button>
-                </div>
-            </footer>
-        </div>
+                </footer>
+            </div>
         </FeatureGate>
     )
 }

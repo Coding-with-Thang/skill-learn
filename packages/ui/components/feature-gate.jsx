@@ -16,9 +16,9 @@ import Link from 'next/link'
  * @param {boolean} [props.showDisabledMessage=true] - Whether to show disabled message or nothing
  * @param {string} [props.featureName] - Display name of the feature for the disabled message
  */
-export function FeatureGate({ 
-  feature, 
-  children, 
+export function FeatureGate({
+  feature,
+  children,
   fallback,
   showDisabledMessage = true,
   featureName,
@@ -37,14 +37,14 @@ export function FeatureGate({
     if (fallback) {
       return fallback
     }
-    
+
     if (!showDisabledMessage) {
       return null
     }
 
     return (
-      <FeatureDisabledMessage 
-        featureName={featureName || feature} 
+      <FeatureDisabledMessage
+        featureName={featureName || feature}
       />
     )
   }
@@ -55,7 +55,7 @@ export function FeatureGate({
 /**
  * FeatureDisabledMessage component - Shows a message when a feature is disabled
  */
-export function FeatureDisabledMessage({ 
+export function FeatureDisabledMessage({
   featureName = 'This feature',
   title,
   description,
@@ -75,11 +75,11 @@ export function FeatureDisabledMessage({
           <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-6">
             <Lock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
           </div>
-          
+
           <h2 className="text-xl font-semibold mb-2">
             {title || `${displayName} is Not Available`}
           </h2>
-          
+
           <p className="text-muted-foreground mb-6">
             {description || `The ${displayName.toLowerCase()} feature is currently disabled for your organization.`}
           </p>
@@ -111,7 +111,7 @@ export function FeatureDisabledMessage({
 /**
  * FeatureDisabledPage component - Full page version for route-level feature gating
  */
-export function FeatureDisabledPage({ 
+export function FeatureDisabledPage({
   featureName = 'This feature',
   title,
   description,
@@ -128,11 +128,11 @@ export function FeatureDisabledPage({
           <div className="mx-auto w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-8">
             <Lock className="h-10 w-10 text-amber-600 dark:text-amber-400" />
           </div>
-          
+
           <h1 className="text-2xl font-bold mb-3">
             {title || `${displayName} is Not Available`}
           </h1>
-          
+
           <p className="text-muted-foreground text-lg mb-8">
             {description || `The ${displayName.toLowerCase()} feature is currently disabled for your organization.`}
           </p>
@@ -176,8 +176,8 @@ export function FeatureDisabledPage({
 export function withFeatureGate(Component, feature, featureName) {
   return function FeatureGatedComponent(props) {
     return (
-      <FeatureGate 
-        feature={feature} 
+      <FeatureGate
+        feature={feature}
         featureName={featureName}
         fallback={<FeatureDisabledPage featureName={featureName || feature} />}
       >

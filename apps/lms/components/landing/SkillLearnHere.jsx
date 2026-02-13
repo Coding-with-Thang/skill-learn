@@ -99,7 +99,7 @@ export default function SkillLearnHere() {
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative w-full max-w-md aspect-[4/3] bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md aspect-\s3 bg-white rounded-[2.5rem] p-8 shadow-2xl overflow-hidden"
             >
               {/* Header */}
               <div className="flex justify-between items-start mb-8">

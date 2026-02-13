@@ -12,7 +12,7 @@ export default function OnboardingStartPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
-  
+
   const [status, setStatus] = useState("validating"); // validating, success, error, no_session
   const [sessionData, setSessionData] = useState(null);
   const [error, setError] = useState(null);
@@ -31,7 +31,7 @@ export default function OnboardingStartPage() {
   const validateSession = async () => {
     try {
       setStatus("validating");
-      
+
       const response = await fetch(`/api/onboarding/validate-session?session_id=${sessionId}`);
       const data = await response.json();
 
@@ -137,18 +137,18 @@ export default function OnboardingStartPage() {
           >
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </motion.div>
-          
+
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
             Payment Successful! 🎉
           </h1>
-          
+
           <p className="text-gray-600 mb-2">
             Thank you for subscribing to{" "}
             <span className="font-semibold text-gray-900">
               {sessionData?.planName || "Skill-Learn Pro"}
             </span>
           </p>
-          
+
           <p className="text-sm text-gray-500 mb-8">
             Let&apos;s set up your account and workspace.
           </p>

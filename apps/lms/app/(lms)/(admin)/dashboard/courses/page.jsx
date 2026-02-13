@@ -114,7 +114,7 @@ export default async function CoursesPage({ searchParams }) {
                             <Card key={course.id} className="relative overflow-visible flex flex-col h-full">
                                 {/*Absolute Dropdown*/}
                                 <div className="absolute top-2 right-2 z-30">
-                                    <CourseActions courseId={course.id} />
+                                    <CourseActions courseId={course.id} courseSlug={course.slug} />
                                 </div>
                                 {/* Thumbnail (flush to top and sides, no rounded corners) */}
                                 <div className="h-40 w-full overflow-hidden bg-muted rounded-t-lg shrink-0 relative">
@@ -151,7 +151,7 @@ export default async function CoursesPage({ searchParams }) {
                                     </div>
 
                                     <div className="mt-3">
-                                        <CourseEditLink courseId={course.id} href={`/dashboard/courses/${course.id}/edit`} previewUrl={course.thumbnailUrl} className={buttonVariants({
+                                        <CourseEditLink courseId={course.id} href={`/dashboard/courses/${course.slug ?? course.id}/edit`} previewUrl={course.thumbnailUrl} className={buttonVariants({
                                             className: "w-full justify-center mt-2",
                                         })}>
                                             Edit Course <ArrowRight className="ml-2" />

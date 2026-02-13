@@ -24,8 +24,8 @@ This file provides quick reference for migrating hard-coded colors to theme vari
 
 ### Reward Colors
 
-| Hard-Coded | CSS Variable           | Tailwind Class       |
-| ---------- | ---------------------- | -------------------- |
+| Hard-Coded | CSS Variable           | Tailwind Class                 |
+| ---------- | ---------------------- | ------------------------------ |
 | `#ffd700`  | `var(--reward-gold)`   | `text-reward-gold`   |
 | `#c0c0c0`  | `var(--reward-silver)` | `text-reward-silver` |
 | `#cd7f32`  | `var(--reward-bronze)` | `text-reward-bronze` |

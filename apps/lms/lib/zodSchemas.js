@@ -37,6 +37,17 @@ export const courseStatus = z.enum(["Draft", "Published", "Achieved"]);
 // Array of course status values for UI components
 export const courseStatusOptions = ["Draft", "Published", "Achieved"];
 
+// Slug: lowercase, letters, numbers, hyphens only; 1–100 chars
+const slugSchema = z
+  .string()
+  .min(1, "Slug is required")
+  .max(100, "Slug must be less than 100 characters")
+  .transform((s) => s.trim().toLowerCase())
+  .refine(
+    (s) => /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s),
+    "Slug must contain only lowercase letters, numbers, and hyphens (e.g. my-course-name)"
+  );
+
 // Course schemas
 export const courseSchema = z.object({
   title: z
@@ -53,10 +64,7 @@ export const courseSchema = z.object({
     .string()
     .min(10, "Excerpt description must be at least 10 characters")
     .max(200, "Excerpt description must be less than 200 characters"),
-  slug: z
-    .string()
-    .min(5, "Slug must be at least 5 characters")
-    .max(100, "Slug must be less than 100 characters"),
+  slug: slugSchema,
   // fileKey corresponds to a stored file identifier required by Prisma schema
   fileKey: z.string().optional(),
 });
@@ -78,10 +86,7 @@ export const courseUpdateSchema = z.object({
     .string()
     .min(10, "Excerpt description must be at least 10 characters")
     .max(200, "Excerpt description must be less than 200 characters"),
-  slug: z
-    .string()
-    .min(5, "Slug must be at least 5 characters")
-    .max(100, "Slug must be less than 100 characters"),
+  slug: slugSchema,
 });
 
 // Chapter schemas
