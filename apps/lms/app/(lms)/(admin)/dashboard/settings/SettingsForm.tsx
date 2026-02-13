@@ -128,13 +128,14 @@ export default function SettingsForm({ initialSettings }) {
 
       // We need to loop through each dirty field and update it
       const updatePromises = dirtyFields.map(key => {
-        let settingInfo = null
+        let settingInfo: { key: string; label: string; description: string } | null = null
         Object.values(SETTING_CATEGORIES).forEach(cat => {
-          const found = cat.settings.find(s => s.key === key)
+          const found = cat.settings.find((s: { key: string; label: string; description: string }) => s.key === key)
           if (found) settingInfo = found
         })
 
-        return updateSystemSetting(key, data[key], settingInfo?.description || "")
+        const desc = settingInfo && typeof (settingInfo as { description?: string }).description === 'string' ? (settingInfo as { description: string }).description : '';
+        return updateSystemSetting(key, data[key], desc || null)
       })
 
       await Promise.all(updatePromises)

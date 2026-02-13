@@ -244,7 +244,7 @@ export default function LeaderboardPage() {
     >
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <BreadCrumbCom endtrail="Leaderboard" />
+          <BreadCrumbCom crumbs={[]} endtrail="Leaderboard" />
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">

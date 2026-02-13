@@ -50,12 +50,25 @@ import {
   PaginationPrevious,
 } from "@skill-learn/ui/components/pagination"
 
+type QuizItem = {
+  id: string
+  title: string
+  description?: string
+  isActive: boolean
+  category: { id: string; name: string }
+  questions?: unknown[]
+  createdAt?: string
+  timeLimit?: number
+  passingScore?: number
+}
+type CategoryItem = { id: string; name: string }
+
 export default function QuizzesAdminPage() {
   const router = useRouter()
-  const [quizzes, setQuizzes] = useState([])
+  const [quizzes, setQuizzes] = useState<QuizItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedQuizzes, setSelectedQuizzes] = useState([])
+  const [error, setError] = useState<string | null>(null)
+  const [selectedQuizzes, setSelectedQuizzes] = useState<string[]>([])
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' })
   const [filters, setFilters] = useState({
     search: '',
@@ -69,7 +82,7 @@ export default function QuizzesAdminPage() {
   useEffect(() => {
     setFilters(prev => ({ ...prev, search: debouncedSearch }))
   }, [debouncedSearch])
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<CategoryItem[]>([])
   const [pagination, setPagination] = useState({
     currentPage: 1,
     itemsPerPage: 10,
@@ -80,9 +93,8 @@ export default function QuizzesAdminPage() {
       const response = await api.get('/admin/categories')
       // Safely extract categories array
       const cats = response.data?.categories || response.data?.data || response.data || []
-      setCategories(Array.isArray(cats) ? cats : [])
-    } catch (error) {
-      console.error('Failed to fetch categories:', error)
+      setCategories((Array.isArray(cats) ? cats : []) as CategoryItem[])
+    } catch {
       setCategories([])
     }
   }, [])
@@ -92,16 +104,14 @@ export default function QuizzesAdminPage() {
       const response = await api.get('/admin/quizzes')
       // Extract quizzes from response structure (handling potential wrappers)
       const parts = response.data?.quizzes || response.data?.data?.quizzes || []
-      setQuizzes(parts)
+      setQuizzes((Array.isArray(parts) ? parts : []) as QuizItem[])
       setError(null)
-    } catch (error) {
-      console.error('Failed to fetch quizzes:', error)
-      if (error.response?.status === 401) {
-        // User is not authenticated
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number } }
+      if (e.response?.status === 401) {
         router.push('/sign-in?redirect=/dashboard/quizzes')
         return
-      } else if (error.response?.status === 403) {
-        // User is authenticated but doesn't have required permissions
+      } else if (e.response?.status === 403) {
         setError('You do not have permission to access this page. Please contact an administrator.')
       } else {
         setError('Failed to load quizzes. Please try again.')
@@ -116,18 +126,18 @@ export default function QuizzesAdminPage() {
     fetchCategories()
   }, [fetchQuizzes, fetchCategories])
 
-  const handleSort = (key) => {
+  const handleSort = (key: string) => {
     setSortConfig({
       key,
       direction: sortConfig.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc'
     })
   }
 
-  const handleFilter = (key, value) => {
+  const handleFilter = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }
 
-  const handleSelectAll = (checked) => {
+  const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedQuizzes(filteredQuizzes.map(quiz => quiz.id))
     } else {
@@ -135,7 +145,7 @@ export default function QuizzesAdminPage() {
     }
   }
 
-  const handleSelectQuiz = (quizId) => {
+  const handleSelectQuiz = (quizId: string) => {
     setSelectedQuizzes(prev => {
       if (prev.includes(quizId)) {
         return prev.filter(id => id !== quizId)
@@ -165,8 +175,7 @@ export default function QuizzesAdminPage() {
       ))
       await fetchQuizzes()
       setSelectedQuizzes([])
-    } catch (error) {
-      console.error('Failed to update quizzes:', error)
+    } catch {
       alert('Failed to update quizzes. Please try again.')
     }
   }
@@ -179,7 +188,7 @@ export default function QuizzesAdminPage() {
       const matchesStatus = filters.status === 'all' ||
         (filters.status === 'active' && quiz.isActive) ||
         (filters.status === 'inactive' && !quiz.isActive)
-      const matchesCategory = filters.category === 'all' || quiz.category.id === filters.category
+      const matchesCategory = filters.category === 'all' || (quiz.category?.id ?? '') === filters.category
 
       return matchesSearch && matchesStatus && matchesCategory
     })
@@ -189,14 +198,16 @@ export default function QuizzesAdminPage() {
         return direction * a.title.localeCompare(b.title)
       }
       if (sortConfig.key === 'category') {
-        return direction * a.category.name.localeCompare(b.category.name)
+        return direction * (a.category?.name ?? '').localeCompare(b.category?.name ?? '')
       }
       if (sortConfig.key === 'questions') {
         const aLength = a.questions?.length || 0
         const bLength = b.questions?.length || 0
         return direction * (aLength - bLength)
       }
-      return direction * (new Date(a[sortConfig.key]) - new Date(b[sortConfig.key]))
+      const aVal = (a as Record<string, unknown>)[sortConfig.key]
+      const bVal = (b as Record<string, unknown>)[sortConfig.key]
+      return direction * (new Date(String(aVal ?? 0)).getTime() - new Date(String(bVal ?? 0)).getTime())
     })
 
   // Pagination calculations
@@ -206,13 +217,13 @@ export default function QuizzesAdminPage() {
   const endIndex = startIndex + pagination.itemsPerPage
   const paginatedQuizzes = filteredQuizzes.slice(startIndex, endIndex)
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, currentPage: page }))
     // Reset selected quizzes when changing pages
     setSelectedQuizzes([])
   }
 
-  const handleItemsPerPageChange = (value) => {
+  const handleItemsPerPageChange = (value: string) => {
     setPagination(prev => ({
       itemsPerPage: parseInt(value),
       currentPage: 1, // Reset to first page when changing items per page
@@ -220,22 +231,21 @@ export default function QuizzesAdminPage() {
     setSelectedQuizzes([])
   }
 
-  const handleEditQuiz = (quizId) => {
+  const handleEditQuiz = (quizId: string) => {
     router.push(`/dashboard/quizzes/quiz-manager?id=${quizId}`)
   }
 
-  const handleViewQuiz = (quizId) => {
+  const handleViewQuiz = (quizId: string) => {
     router.push(`/quiz/start/${quizId}`)
   }
 
-  const handleDeleteQuiz = async (quizId) => {
+  const handleDeleteQuiz = async (quizId: string) => {
     if (!window.confirm('Are you sure you want to delete this quiz?')) return
 
     try {
       await api.delete(`/admin/quizzes/${quizId}`)
-      await fetchQuizzes() // Refresh the list
-    } catch (error) {
-      console.error('Failed to delete quiz:', error)
+      await fetchQuizzes()
+    } catch {
       alert('Failed to delete quiz. Please try again.')
     }
   }
@@ -257,7 +267,7 @@ export default function QuizzesAdminPage() {
           </CardHeader>
           <CardContent>
             <p className="text-red-500 mb-4">{error}</p>
-            {error.includes('permission') ? (
+            {(error && error.includes('permission')) ? (
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
                 Return to Dashboard
               </Button>
@@ -440,7 +450,7 @@ export default function QuizzesAdminPage() {
                     <TableCell>{quiz.category.name}</TableCell>
                     <TableCell>{quiz.questions?.length || 0}</TableCell>
                     <TableCell>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</TableCell>
-                    <TableCell>{quiz.passingScore}%</TableCell>
+                    <TableCell>{quiz.passingScore != null ? `${quiz.passingScore}%` : '-'}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {quiz.isActive ? 'Active' : 'Inactive'}

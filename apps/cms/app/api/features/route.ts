@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 
@@ -6,7 +6,7 @@ import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
  * GET /api/features
  * Get all global feature definitions
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -81,7 +81,8 @@ export async function GET(request) {
     });
 
     // Group by category
-    const groupedByCategory = featuresWithCounts.reduce((acc, feature) => {
+    type FeatureItem = (typeof featuresWithCounts)[number];
+    const groupedByCategory = featuresWithCounts.reduce<Record<string, FeatureItem[]>>((acc, feature) => {
       const category = feature.category || "general";
       if (!acc[category]) {
         acc[category] = [];
@@ -107,7 +108,7 @@ export async function GET(request) {
  * POST /api/features
  * Create a new global feature
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

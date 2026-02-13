@@ -30,8 +30,8 @@ async function getCourse(courseIdOrSlug, tenantId) {
         try {
             const url = await getSignedUrl(course.fileKey)
             if (url) thumbnailUrl = url
-        } catch (err) {
-            console.warn('thumbnail fetch failed for', course.id, err?.message || err)
+        } catch (err: unknown) {
+            console.warn('thumbnail fetch failed for', course.id, err instanceof Error ? err.message : err)
         }
     }
 

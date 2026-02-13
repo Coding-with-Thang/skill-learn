@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import { ArrowRight, Sparkles, Heart, Zap, Coffee, Infinity, Rocket, Grid3X3 } from 'lucide-react';
 import { Dancing_Script } from 'next/font/google';
-import profileShot from '../../../../../public/profile.png'
-import businessLady from '../../../../../public/business.jpg'
+// Placeholder images (add profile.png and business.jpg to apps/lms/public to use your own)
+const profileShot = 'https://images.unsplash.com/photo-1708531375354-484e4ac78453?w=500&auto=format&fit=crop&q=60';
+const businessLady = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=60';
 import { useRouter } from 'next/navigation';
 
 const dancingScript = Dancing_Script({

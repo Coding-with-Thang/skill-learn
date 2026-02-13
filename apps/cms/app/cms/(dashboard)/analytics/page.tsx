@@ -64,12 +64,13 @@ export default function AnalyticsPage() {
         // Extract subscription distribution from API response
         const distribution = response.data?.subscriptionDistribution || []
         setSubscriptionData(distribution)
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching subscription data:', err)
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+        const ax = err as { response?: { status?: number; data?: { error?: string } }; message?: string }
+        if (ax.response?.status === 401 || ax.response?.status === 403) {
+          setError(ax.response?.data?.error || 'Unauthorized - Super admin access required')
         } else {
-          setError(err.response?.data?.error || err.message || 'Failed to load subscription data')
+          setError(ax.response?.data?.error || ax.message || 'Failed to load subscription data')
         }
         // Fallback to empty array on error
         setSubscriptionData([])

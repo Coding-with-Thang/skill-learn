@@ -20,7 +20,11 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import LessonVideoPlayer from "@/components/courses/LessonVideoPlayer";
 import { Loader } from "@skill-learn/ui/components/loader";
 
-function getAllLessons(chapters) {
+type ChapterShape = { id?: string; title?: string; position?: number; lessons?: { id?: string; slug?: string; title?: string; position?: number; videoUrl?: string }[] };
+type CourseShape = { id?: string; slug?: string; title?: string; chapters?: ChapterShape[] };
+type ProgressShape = { completedLessonIds?: string[]; courseCompleted?: boolean };
+
+function getAllLessons(chapters: ChapterShape[]) {
   if (!Array.isArray(chapters)) return [];
   const sorted = [...chapters].sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
   return sorted.flatMap((ch) => {
@@ -51,8 +55,8 @@ export default function LessonPage() {
   const courseSlug = params?.courseSlug;
   const lessonSlug = params?.lessonSlug;
 
-  const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(null);
+  const [course, setCourse] = useState<CourseShape | null>(null);
+  const [progress, setProgress] = useState<ProgressShape | null>(null);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [completingCourse, setCompletingCourse] = useState(false);
@@ -81,9 +85,10 @@ export default function LessonPage() {
       const res = await api.get(`/courses/${courseSlug}`);
       const data = res.data?.data ?? res.data;
       const c = data?.course ?? res.data?.course;
-      setCourse(c || null);
-    } catch (e) {
-      if (e?.response?.status === 404) setCourse(null);
+      setCourse((c ?? null) as CourseShape | null);
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number } };
+      if (err?.response?.status === 404) setCourse(null);
       else console.error(e);
     }
   }, [courseSlug]);
@@ -222,7 +227,7 @@ export default function LessonPage() {
                       <ul className="space-y-0.5">
                         {lessons.map((lesson) => {
                           const isCurrent = lesson.id === currentLesson?.id;
-                          const completed = completedIds.includes(lesson.id);
+                          const completed = completedIds.includes(lesson.id ?? '');
                           return (
                             <li key={lesson.id}>
                               <Link
@@ -240,7 +245,7 @@ export default function LessonPage() {
                                 ) : (
                                   <span className="w-4 h-4 shrink-0 rounded-full border border-current opacity-50" />
                                 )}
-                                <span className="truncate">{lesson.title}</span>
+                                <span className="truncate">{(lesson as { title?: string }).title}</span>
                               </Link>
                             </li>
                           );
@@ -306,8 +311,9 @@ export default function LessonPage() {
             <div className="flex-1 flex flex-col min-h-0">
               <div className="flex-1 min-h-0 flex flex-col bg-black">
                 <LessonVideoPlayer
-                  src={currentLesson.videoUrl}
+                  src={(currentLesson as { videoUrl?: string }).videoUrl}
                   className="flex-1 min-h-0 w-full"
+                  onProgress={() => {}}
                   onEnded={handleVideoEnded}
                 />
               </div>

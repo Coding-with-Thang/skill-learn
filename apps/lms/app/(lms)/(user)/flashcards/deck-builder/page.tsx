@@ -20,6 +20,9 @@ import { Check, Plus } from "lucide-react";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import { toast } from "sonner";
 
+type CardItem = { id: string; categoryId?: string; category?: { id: string }; question?: string; answer?: string; source?: string };
+type CategoryItem = { id: string; name: string };
+
 export default function DeckBuilderPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -28,8 +31,8 @@ export default function DeckBuilderPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState([]);
-  const [cardsByCategory, setCardsByCategory] = useState({});
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [cardsByCategory, setCardsByCategory] = useState<Record<string, CardItem[]>>({});
 
   const {
     selectedCardIds,
@@ -72,15 +75,15 @@ export default function DeckBuilderPage() {
         const maxDecks = limitsObj?.maxDecks ?? -1;
         const maxCardsPerDeck = limitsObj?.maxCardsPerDeck ?? -1;
 
-        setCategories(cats);
+        setCategories((Array.isArray(cats) ? cats : []) as CategoryItem[]);
         setLimits({
           maxDecks,
           maxCardsPerDeck,
           canCreateDeck: raw.canCreateDeck !== false,
         });
 
-        const byCat = {};
-        cards.forEach((c) => {
+        const byCat: Record<string, CardItem[]> = {};
+        (Array.isArray(cards) ? cards : []).forEach((c: CardItem) => {
           const catId = c.categoryId ?? c.category?.id;
           if (!catId) return;
           if (!byCat[catId]) byCat[catId] = [];
@@ -147,8 +150,9 @@ export default function DeckBuilderPage() {
       }
       reset();
       router.push("/flashcards");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to save deck");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to save deck");
     } finally {
       setSaving(false);
     }
@@ -163,6 +167,7 @@ export default function DeckBuilderPage() {
           { name: "Flash Cards", href: "/flashcards" },
           { name: isEdit ? "Edit Deck" : "Deck Builder", href: "/flashcards/deck-builder" },
         ]}
+        endtrail={isEdit ? "Edit Deck" : "Deck Builder"}
       />
       <div className="max-w-4xl mx-auto space-y-8 pb-8">
         <div>

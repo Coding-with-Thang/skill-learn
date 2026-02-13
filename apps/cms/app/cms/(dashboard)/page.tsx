@@ -33,12 +33,13 @@ export default function Home() {
         const response = await api.get('/dashboard/stats')
 
         setDashboardData(response.data)
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching dashboard data:', err)
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+        const e = err as { response?: { status?: number; data?: { error?: string } }; message?: string }
+        if (e.response?.status === 401 || e.response?.status === 403) {
+          setError(e.response?.data?.error || 'Unauthorized - Super admin access required')
         } else {
-          setError(err.response?.data?.error || err.message || 'Failed to load dashboard data')
+          setError(e.response?.data?.error || e.message || 'Failed to load dashboard data')
         }
       } finally {
         setLoading(false)

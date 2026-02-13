@@ -14,7 +14,11 @@ import { Loader } from "@skill-learn/ui/components/loader";
 import { extractTextFromProseMirror, cn } from "@skill-learn/lib/utils";
 import api from "@skill-learn/lib/utils/axios";
 
-function lessonSlugOrId(lesson) {
+type ChapterShape = { id?: string; title?: string; position?: number; lessons?: { id?: string; slug?: string; title?: string; position?: number }[] };
+type CourseShape = { id?: string; slug?: string; title?: string; description?: unknown; excerptDescription?: string; duration?: number | null; imageUrl?: string; chapters?: ChapterShape[] };
+type ProgressShape = { completedLessonIds?: string[]; courseCompleted?: boolean; progressPercent?: number };
+
+function lessonSlugOrId(lesson: { slug?: string; id?: string } | null) {
   return lesson?.slug ?? lesson?.id;
 }
 
@@ -70,10 +74,10 @@ export default function CoursePage() {
   const router = useRouter();
   const courseSlug = params?.courseSlug;
 
-  const [course, setCourse] = useState(null);
-  const [progress, setProgress] = useState(null);
+  const [course, setCourse] = useState<CourseShape | null>(null);
+  const [progress, setProgress] = useState<ProgressShape | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const courseSlugForLinks = course?.slug ?? course?.id ?? courseSlug;
   const firstLessonSlug = useMemo(() => getFirstLessonSlug(course?.chapters ?? []), [course?.chapters]);
@@ -107,20 +111,21 @@ export default function CoursePage() {
         if (cancelled) return;
         const data = res.data?.data ?? res.data;
         const c = data?.course ?? res.data?.course;
-        if (c) setCourse(c);
+        if (c) setCourse(c as CourseShape);
         else setError("Course not found");
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (cancelled) return;
-        if (err?.response?.status === 404) {
+        const e = err as { response?: { status?: number; data?: { message?: string } } };
+        if (e?.response?.status === 404) {
           setError("Course not found");
           return;
         }
-        if (err?.response?.status === 401) {
+        if (e?.response?.status === 401) {
           router.push("/sign-in");
           return;
         }
-        setError(err?.response?.data?.message || "Failed to load course");
+        setError(e?.response?.data?.message || "Failed to load course");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -243,8 +248,8 @@ export default function CoursePage() {
 
                   <section>
                     <CourseOutline
-                      chapters={course.chapters}
-                      courseSlug={courseSlugForLinks}
+                      chapters={course.chapters ?? []}
+                      courseSlug={typeof courseSlugForLinks === 'string' ? courseSlugForLinks : (Array.isArray(courseSlugForLinks) ? courseSlugForLinks[0] : '') ?? ''}
                       completedLessonIds={progress?.completedLessonIds ?? []}
                     />
                   </section>

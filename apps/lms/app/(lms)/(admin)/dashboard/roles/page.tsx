@@ -56,14 +56,15 @@ export default function RolesPage() {
 
   // Local state (UI only)
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Dialog state
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [permissionsDialogOpen, setPermissionsDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [initDialogOpen, setInitDialogOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
+  type RoleItem = { id: string; roleAlias?: string; permissions?: { id: string }[] };
+  const [selectedRole, setSelectedRole] = useState<RoleItem | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   // Form state
@@ -75,7 +76,7 @@ export default function RolesPage() {
   });
   const [selectedTemplateSet, setSelectedTemplateSet] = useState("generic");
   const [formLoading, setFormLoading] = useState(false);
-  const [formError, setFormError] = useState(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Expanded categories in permissions dialog
   const [expandedCategories, setExpandedCategories] = useState({});
@@ -98,8 +99,9 @@ export default function RolesPage() {
           permissionsData.categories.forEach((cat) => (expanded[cat] = true));
           setExpandedCategories(expanded);
         }
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || "Failed to load data");
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { error?: string } }; message?: string };
+        setError(e.response?.data?.error || e.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
@@ -118,7 +120,7 @@ export default function RolesPage() {
     setFormError(null);
 
     try {
-      if (isEditing) {
+      if (isEditing && selectedRole) {
         await updateRole(selectedRole.id, roleForm);
       } else {
         await createRole(roleForm);
@@ -126,8 +128,9 @@ export default function RolesPage() {
 
       setRoleDialogOpen(false);
       resetRoleForm();
-    } catch (err) {
-      setFormError(err.message);
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setFormError(e.message ?? "Failed");
     } finally {
       setFormLoading(false);
     }
@@ -144,8 +147,9 @@ export default function RolesPage() {
 
       setDeleteDialogOpen(false);
       setSelectedRole(null);
-    } catch (err) {
-      setFormError(err.message);
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setFormError(e.message ?? "Failed");
     } finally {
       setFormLoading(false);
     }
@@ -165,22 +169,23 @@ export default function RolesPage() {
       await fetchRoles(true); // Force refresh
 
       setInitDialogOpen(false);
-    } catch (err) {
-      setFormError(err.message);
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setFormError(e.message ?? "Failed");
     } finally {
       setFormLoading(false);
     }
   };
 
   // Handle permission toggle
-  const handlePermissionToggle = async (permissionId, isChecked) => {
+  const handlePermissionToggle = async (permissionId: string, isChecked: boolean) => {
     if (!selectedRole) return;
 
     try {
       const response = await api.put(`/tenant/roles/${selectedRole.id}`, {
         permissionIds: isChecked
-          ? [...selectedRole.permissions.map((p) => p.id), permissionId]
-          : selectedRole.permissions.filter((p) => p.id !== permissionId).map((p) => p.id),
+          ? [...(selectedRole.permissions ?? []).map((p) => p.id), permissionId]
+          : (selectedRole.permissions ?? []).filter((p) => p.id !== permissionId).map((p) => p.id),
       });
 
       if (response.data.error) {
@@ -193,8 +198,8 @@ export default function RolesPage() {
       const updatedRoles = useRolesStore.getState().roles;
       const updated = updatedRoles.find((r) => r.id === selectedRole.id);
       if (updated) setSelectedRole(updated);
-    } catch (err) {
-      console.error("Failed to update permission:", err);
+    } catch {
+      // ignore
     }
   };
 

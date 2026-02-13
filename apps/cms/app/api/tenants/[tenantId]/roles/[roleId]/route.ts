@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
+import type { RouteContext } from "@/types";
+
+type TenantRoleParams = { tenantId: string; roleId: string };
 
 /**
  * GET /api/tenants/[tenantId]/roles/[roleId]
  * Get a single tenant role by ID
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -115,7 +121,10 @@ export async function GET(request, { params }) {
  * PUT /api/tenants/[tenantId]/roles/[roleId]
  * Update a tenant role
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -288,7 +297,10 @@ export async function PUT(request, { params }) {
  * DELETE /api/tenants/[tenantId]/roles/[roleId]
  * Delete a tenant role
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

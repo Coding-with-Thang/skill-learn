@@ -68,6 +68,6 @@ export async function GET(request: NextRequest) {
 
 ## 6. Applied coverage
 
-- **LMS:** Most `app/api/**/route.ts` handlers now use `NextRequest` and, where applicable, `RouteContext<{ paramName: string }>` from `@/types`. Static routes use `(request: NextRequest)` or `(_request: NextRequest)`; dynamic routes use `({ params }: RouteContext<Params>)`.
-- **CMS:** Shared types live in `apps/cms/types/api.ts`. Apply the same pattern: `NextRequest` and `RouteContext<…>` for any remaining route handlers.
-- Any remaining untyped handlers can be found by searching for `export async function (GET|POST|PUT|PATCH|DELETE)(request,` or `(req,` and updated with the same pattern.
+- **LMS:** All `app/api/**/route.ts` handlers use `NextRequest` and, where applicable, `RouteContext<{ paramName: string }>` from `@/types`. Static routes use `(request: NextRequest)` or `(_request: NextRequest)`; dynamic routes use `({ params }: RouteContext<Params>)`.
+- **CMS:** All `app/api/**/route.ts` handlers use `NextRequest` and `RouteContext<…>` from `@/types` where there are dynamic segments. Shared types live in `apps/cms/types/api.ts`.
+- When adding new routes, follow the same pattern so they stay type-safe.

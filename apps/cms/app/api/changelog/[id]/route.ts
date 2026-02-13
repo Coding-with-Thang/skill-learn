@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { slugify } from "@skill-learn/lib/utils/utils";
+import type { RouteContext } from "@/types";
+
+type ChangelogIdParams = { id: string };
 
 /**
  * GET /api/changelog/[id]
  * Returns a single changelog entry
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<ChangelogIdParams>
+) {
   try {
     const { id } = await params;
 
@@ -36,7 +42,10 @@ export async function GET(request, { params }) {
  * PATCH /api/changelog/[id]
  * Updates a changelog entry
  */
-export async function PATCH(request, { params }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteContext<ChangelogIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -80,7 +89,10 @@ export async function PATCH(request, { params }) {
  * DELETE /api/changelog/[id]
  * Deletes a changelog entry
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<ChangelogIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

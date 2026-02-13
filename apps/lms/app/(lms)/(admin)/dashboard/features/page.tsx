@@ -51,16 +51,18 @@ const featureIcons = {
   ToggleLeft,
 }
 
+type FeatureItem = { id: string; enabled?: boolean; isEffectivelyEnabled?: boolean; icon?: string; canToggle?: boolean; name?: string; description?: string; [key: string]: unknown };
+
 export default function FeaturesPage() {
   // Note: Tenant-specific features are different from global features
   // For tenant admin, we need to fetch tenant features, not global features
   // So we'll keep local state for tenant features, but use store for global feature flags if needed
-  const [features, setFeatures] = useState([])
-  const [groupedFeatures, setGroupedFeatures] = useState({})
+  const [features, setFeatures] = useState<FeatureItem[]>([])
+  const [groupedFeatures, setGroupedFeatures] = useState<Record<string, FeatureItem[]>>({})
   const [summary, setSummary] = useState({ total: 0, enabled: 0, disabled: 0, locked: 0 })
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [togglingFeatureId, setTogglingFeatureId] = useState(null)
+  const [error, setError] = useState<string | null>(null)
+  const [togglingFeatureId, setTogglingFeatureId] = useState<string | null>(null)
 
   // Fetch tenant features (isRefresh = true when re-fetching after toggle, to avoid full-page loading)
   const fetchFeatures = async (isRefresh = false) => {
@@ -70,11 +72,12 @@ export default function FeaturesPage() {
       const response = await api.get('/tenant/features')
 
       setFeatures(response.data.features || [])
-      setGroupedFeatures(response.data.groupedByCategory || {})
+      setGroupedFeatures((response.data.groupedByCategory || {}) as Record<string, FeatureItem[]>)
       setSummary(response.data.summary || { total: 0, enabled: 0, disabled: 0, locked: 0 })
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching features:', err)
-      setError(err.response?.data?.error || err.message || 'Failed to fetch features')
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      setError(e.response?.data?.error || e.message || 'Failed to fetch features')
     } finally {
       setLoading(false)
     }
@@ -101,8 +104,9 @@ export default function FeaturesPage() {
       await fetchFeatures(true)
       // Refresh global features store so sidebar and other consumers see new flags
       await refreshStoreFeatures()
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update feature')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      setError(e.response?.data?.error || e.message || 'Failed to update feature')
     } finally {
       setTogglingFeatureId(null)
     }
@@ -295,7 +299,7 @@ export default function FeaturesPage() {
                           ) : (
                             <>
                               <AdminSwitch
-                                checked={feature.enabled}
+                                checked={!!feature.enabled}
                                 onCheckedChange={(checked) => handleToggle(feature.id, checked)}
                                 disabled={!feature.canToggle || loading}
                               />

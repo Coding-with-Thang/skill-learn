@@ -56,12 +56,13 @@ export default function TenantsPage() {
       const response = await api.get('/tenants')
 
       setTenants(response.data.tenants || [])
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching tenants:', err)
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+      const e = err as { response?: { status?: number; data?: { error?: string } }; message?: string }
+      if (e.response?.status === 401 || e.response?.status === 403) {
+        setError(e.response?.data?.error || 'Unauthorized - Super admin access required')
       } else {
-        setError(err.response?.data?.error || err.message || 'Failed to load tenants')
+        setError(e.response?.data?.error || e.message || 'Failed to load tenants')
       }
       setTenants([])
     } finally {
@@ -95,13 +96,14 @@ export default function TenantsPage() {
       }
 
       setCreateDialogOpen(false)
-      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
+      setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5, requireEmailForRegistration: true })
       fetchTenants()
-    } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number; data?: { error?: string } }; message?: string }
+      if (e.response?.status === 401 || e.response?.status === 403) {
+        setError(e.response?.data?.error || 'Unauthorized - Super admin access required')
       } else {
-        setError(err.response?.data?.error || err.message || 'Failed to create tenant')
+        setError(e.response?.data?.error || e.message || 'Failed to create tenant')
       }
     } finally {
       setFormLoading(false)
@@ -125,8 +127,9 @@ export default function TenantsPage() {
       setSelectedTenant(null)
       setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5, requireEmailForRegistration: true })
       fetchTenants()
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to update tenant')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      setError(e.response?.data?.error || e.message || 'Failed to update tenant')
     } finally {
       setFormLoading(false)
     }
@@ -147,11 +150,12 @@ export default function TenantsPage() {
       setDeleteDialogOpen(false)
       setSelectedTenant(null)
       fetchTenants()
-    } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        setError(err.response?.data?.error || 'Unauthorized - Super admin access required')
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number; data?: { error?: string } }; message?: string }
+      if (e.response?.status === 401 || e.response?.status === 403) {
+        setError(e.response?.data?.error || 'Unauthorized - Super admin access required')
       } else {
-        setError(err.response?.data?.error || err.message || 'Failed to delete tenant')
+        setError(e.response?.data?.error || e.message || 'Failed to delete tenant')
       }
     } finally {
       setFormLoading(false)
@@ -299,7 +303,7 @@ export default function TenantsPage() {
                   variant="outline"
                   onClick={() => {
                     setCreateDialogOpen(false)
-                    setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5 })
+                    setFormData({ name: '', slug: '', subscriptionTier: 'free', maxRoleSlots: 5, requireEmailForRegistration: true })
                     setError(null)
                   }}
                 >

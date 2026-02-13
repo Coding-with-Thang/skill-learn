@@ -30,14 +30,16 @@ import { Uploader } from "@skill-learn/ui/components/file-uploader";
 
 const TITLE_MAX = 200;
 
+type LessonData = { title?: string; description?: string; thumbnailUrl?: string | null; fileKey?: string | null; videoUrl?: string | null; courseChapter?: { title?: string } };
+
 export default function EditLessonPage() {
   const params = useParams();
-  const courseId = params.courseId;
-  const chapterId = params.chapterId;
-  const lessonId = params.lessonId;
+  const courseId = params.courseId as string;
+  const chapterId = params.chapterId as string;
+  const lessonId = params.lessonId as string;
   const router = useRouter();
 
-  const [lesson, setLesson] = useState(null);
+  const [lesson, setLesson] = useState<LessonData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -72,9 +74,10 @@ export default function EditLessonPage() {
           toast.error("Lesson not found");
           router.push(`/dashboard/courses/${courseId}/edit`);
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error(err);
-        toast.error(err?.response?.data?.message ?? "Failed to load lesson");
+        const e = err as { response?: { data?: { message?: string } } };
+        toast.error(e?.response?.data?.message ?? "Failed to load lesson");
         router.push(`/dashboard/courses/${courseId}/edit`);
       } finally {
         setLoading(false);
@@ -85,7 +88,7 @@ export default function EditLessonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, chapterId, lessonId, router]);
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: { title?: string; description?: string; thumbnailUrl?: string; fileKey?: string; videoUrl?: string }) => {
     if (!courseId || !chapterId || !lessonId) return;
     setSaving(true);
     try {
@@ -102,11 +105,12 @@ export default function EditLessonPage() {
       toast.success("Lesson saved");
       setLesson((prev) => (prev ? { ...prev, ...values } : null));
       router.push(`/dashboard/courses/${courseId}/edit?tab=structure`);
-    } catch (err) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { fieldErrors?: { title?: string[] }; error?: string; message?: string } } };
       const msg =
-        err?.response?.data?.fieldErrors?.title?.[0] ??
-        err?.response?.data?.error ??
-        err?.response?.data?.message;
+        e?.response?.data?.fieldErrors?.title?.[0] ??
+        e?.response?.data?.error ??
+        e?.response?.data?.message;
       toast.error(msg || "Failed to save lesson");
     } finally {
       setSaving(false);

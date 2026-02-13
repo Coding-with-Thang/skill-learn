@@ -99,9 +99,20 @@ const categoryOptions = [
   { value: 'general', label: 'General' },
 ]
 
+type FeatureItem = {
+  id: string
+  key: string
+  name: string
+  description?: string
+  icon?: string
+  isActive: boolean
+  defaultEnabled?: boolean
+  tenantCount?: number
+}
+
 export default function FeaturesPage() {
   const [features, setFeatures] = useState([])
-  const [groupedFeatures, setGroupedFeatures] = useState({})
+  const [groupedFeatures, setGroupedFeatures] = useState<Record<string, FeatureItem[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -132,8 +143,8 @@ export default function FeaturesPage() {
       const response = await api.get('/features')
 
       setFeatures(response.data.features || [])
-      setGroupedFeatures(response.data.groupedByCategory || {})
-    } catch (err) {
+      setGroupedFeatures((response.data.groupedByCategory || {}) as Record<string, FeatureItem[]>)
+    } catch (err: any) {
       console.error('Error fetching features:', err)
       setError(err.response?.data?.error || err.message || 'Failed to fetch features')
     } finally {
@@ -148,7 +159,7 @@ export default function FeaturesPage() {
       await api.post('/features/seed')
 
       await fetchFeatures()
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Failed to seed features')
     } finally {
       setLoading(false)
@@ -175,7 +186,7 @@ export default function FeaturesPage() {
       setCreateDialogOpen(false)
       resetForm()
       fetchFeatures()
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message)
     } finally {
       setFormLoading(false)
@@ -199,7 +210,7 @@ export default function FeaturesPage() {
       setSelectedFeature(null)
       resetForm()
       fetchFeatures()
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message)
     } finally {
       setFormLoading(false)
@@ -221,7 +232,7 @@ export default function FeaturesPage() {
       setDeleteDialogOpen(false)
       setSelectedFeature(null)
       fetchFeatures()
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message)
     } finally {
       setFormLoading(false)
@@ -238,7 +249,7 @@ export default function FeaturesPage() {
       }
 
       fetchFeatures()
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message)
     }
   }

@@ -23,12 +23,14 @@ export async function GET() {
     // Note: If custom session token claims are configured in Clerk Dashboard,
     // the role will be available directly in sessionClaims.role or sessionClaims.appRole
     // Otherwise, it might be in sessionClaims.publicMetadata.role
-    const userRole = 
-      sessionClaims?.role ||                    // Custom session token claim (recommended)
-      sessionClaims?.appRole ||                 // Custom session token claim (recommended)
-      sessionClaims?.publicMetadata?.role ||    // Fallback: if publicMetadata is included
-      sessionClaims?.publicMetadata?.appRole || // Fallback: if publicMetadata is included
-      sessionClaims?.metadata?.role;            // Legacy fallback
+    const pub = sessionClaims?.publicMetadata as Record<string, unknown> | undefined;
+    const meta = sessionClaims?.metadata as Record<string, unknown> | undefined;
+    const userRole =
+      (sessionClaims as Record<string, unknown>)?.role ||
+      (sessionClaims as Record<string, unknown>)?.appRole ||
+      pub?.role ||
+      pub?.appRole ||
+      meta?.role;
 
     const isSuperAdmin = userRole === 'super_admin';
 
@@ -41,7 +43,7 @@ export async function GET() {
   } catch (error) {
     console.error("[check-super-admin] Error:", error);
     return NextResponse.json(
-      { isSuperAdmin: false, error: error.message },
+      { isSuperAdmin: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

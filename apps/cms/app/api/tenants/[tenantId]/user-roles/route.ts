@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync";
+import type { RouteContext } from "@/types";
+
+type TenantIdParams = { tenantId: string };
 
 /**
  * GET /api/tenants/[tenantId]/user-roles
  * Get all user role assignments for a tenant
  */
-export async function GET(request, { params }) {
+export async function GET(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -30,7 +36,7 @@ export async function GET(request, { params }) {
     }
 
     // Build where clause
-    const where = { tenantId };
+    const where: { tenantId: string; userId?: string; tenantRoleId?: string } = { tenantId };
     if (userId) {
       where.userId = userId;
     }
@@ -96,9 +102,9 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error("Error fetching user roles:", error);
-    console.error("Error stack:", error.stack);
+    console.error("Error stack:", error instanceof Error ? error.stack : undefined);
     return NextResponse.json(
-      { error: "Failed to fetch user roles", details: error.message },
+      { error: "Failed to fetch user roles", details: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
@@ -108,7 +114,10 @@ export async function GET(request, { params }) {
  * POST /api/tenants/[tenantId]/user-roles
  * Assign a role to a user
  */
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -242,7 +251,10 @@ export async function POST(request, { params }) {
  * PUT /api/tenants/[tenantId]/user-roles
  * Reassign a user to a different role (user must have a role; use this to change it)
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

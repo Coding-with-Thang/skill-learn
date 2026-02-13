@@ -64,6 +64,8 @@ import {
   Unlock,
 } from 'lucide-react'
 
+type AxiosErr = { response?: { data?: { error?: string; fieldErrors?: Record<string, string> } }; message?: string }
+
 // Tab definitions
 const tabs = [
   { id: 'users', label: 'Users', icon: Users },
@@ -226,7 +228,7 @@ export default function TenantDetailPage() {
       const data = parseApiResponse(response)
       setPermissions(data.permissions || [])
       setGroupedPermissions(data.groupedByCategory || {})
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching permissions:', err)
     }
   }, [])
@@ -246,8 +248,9 @@ export default function TenantDetailPage() {
         fetchPermissions(), // Global permissions (no tenantId)
         fetchFeatures(tenantId),
       ])
-        .catch(err => {
-          setError(err.response?.data?.error || err.message || 'Failed to load data')
+        .catch((err: unknown) => {
+          const e = err as AxiosErr
+          setError(e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to load data')
         })
         .finally(() => setLoading(false))
     }
@@ -273,8 +276,8 @@ export default function TenantDetailPage() {
       setRoleDialogOpen(false)
       resetRoleForm()
       await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true)])
-    } catch (err) {
-      setFormError(err.message)
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err))
     } finally {
       setFormLoading(false)
     }
@@ -295,8 +298,8 @@ export default function TenantDetailPage() {
       setDeleteRoleDialogOpen(false)
       setSelectedRole(null)
       await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true), fetchUserRoles(tenantId, true)])
-    } catch (err) {
-      setFormError(err.message)
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err))
     } finally {
       setFormLoading(false)
     }
@@ -321,8 +324,9 @@ export default function TenantDetailPage() {
       setSelectedUserForRole('')
       setSelectedRoleForAssignment('')
       await fetchUserRoles(tenantId, true)
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || 'Failed to assign role')
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      setFormError(e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to assign role')
     } finally {
       setFormLoading(false)
     }
@@ -342,8 +346,9 @@ export default function TenantDetailPage() {
       setUserRoleToReassign(null)
       setReassignTargetRoleId('')
       await fetchUserRoles(tenantId, true)
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || 'Failed to reassign role')
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      setFormError(e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to reassign role')
     } finally {
       setFormLoading(false)
     }
@@ -354,7 +359,15 @@ export default function TenantDetailPage() {
     setFormLoading(true)
     setFormError(null)
     try {
-      const payload = {
+      const payload: {
+        username: string
+        firstName: string
+        lastName: string
+        password: string
+        confirmPassword: string
+        tenantRoleId: string
+        email?: string
+      } = {
         username: data.username,
         firstName: data.firstName,
         lastName: data.lastName,
@@ -374,9 +387,10 @@ export default function TenantDetailPage() {
         fetchUsers(tenantId, true)
         fetchUserRoles(tenantId, true)
       }, 2500)
-    } catch (err) {
-      const data = err.response?.data
-      const msg = data?.error || err.message || 'Failed to create user'
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      const data = e.response?.data
+      const msg = data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to create user'
       setFormError(msg)
       toast.error(msg)
       // Set field-level errors from API so user sees which fields failed
@@ -434,8 +448,9 @@ export default function TenantDetailPage() {
       setEditUserDialogOpen(false)
       setSelectedUserForEdit(null)
       await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
-    } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Failed to update user'
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      const msg = e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to update user'
       setFormError(msg)
       toast.error(msg)
     } finally {
@@ -454,8 +469,9 @@ export default function TenantDetailPage() {
       setDeleteUserDialogOpen(false)
       setSelectedUserForDelete(null)
       await Promise.all([fetchUsers(tenantId, true), fetchUserRoles(tenantId, true)])
-    } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Failed to delete user'
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      const msg = e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to delete user'
       setFormError(msg)
       toast.error(msg)
     } finally {
@@ -475,8 +491,8 @@ export default function TenantDetailPage() {
 
       setInitializeRolesDialogOpen(false)
       await Promise.all([fetchTenant(tenantId), fetchRoles(tenantId, true)])
-    } catch (err) {
-      setFormError(err.message)
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err))
     } finally {
       setFormLoading(false)
     }
@@ -503,7 +519,7 @@ export default function TenantDetailPage() {
       if (updatedRole) {
         setSelectedRole(updatedRole)
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error updating permissions:', err)
     }
   }
@@ -525,8 +541,9 @@ export default function TenantDetailPage() {
       if (updatedRole) {
         setSelectedRole(updatedRole)
       }
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || 'Failed to update role')
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      setFormError(e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to update role')
     }
   }
 
@@ -545,8 +562,8 @@ export default function TenantDetailPage() {
 
       setSelectedRole(response.data.role)
       setRoleDetailsDialogOpen(true)
-    } catch (err) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
     }
   }
 
@@ -645,14 +662,16 @@ export default function TenantDetailPage() {
     )
 
     // Update grouped features as well
-    const updatedGroupedFeatures = Object.entries(groupedFeatures).reduce((acc, [category, categoryFeatures]) => {
-      acc[category] = categoryFeatures.map(f =>
+    type FeatureWithFlags = { id: string; enabled?: boolean; isActive?: boolean; [k: string]: unknown }
+    const updatedGroupedFeatures = Object.entries(groupedFeatures).reduce((acc: Record<string, FeatureWithFlags[]>, [category, categoryFeatures]) => {
+      const list = (categoryFeatures || []) as FeatureWithFlags[]
+      acc[category] = list.map(f =>
         f.id === featureId
           ? { ...f, superAdminEnabled, isEffectivelyEnabled: f.enabled && superAdminEnabled && f.isActive }
           : f
       )
       return acc
-    }, {})
+    }, {} as Record<string, FeatureWithFlags[]>)
 
     // Apply optimistic update to store using Zustand's setState
     useTenantsStore.setState({
@@ -667,13 +686,13 @@ export default function TenantDetailPage() {
 
       // Refresh features to get the latest state from server (force bypasses request deduplication)
       await fetchFeatures(tenantId, true)
-    } catch (err) {
+    } catch (err: unknown) {
       // Revert optimistic update on error
       useTenantsStore.setState({
         features: previousFeatures,
         featuresByCategory: previousGroupedFeatures,
       })
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setFeatureLoading(false)
     }
@@ -689,8 +708,8 @@ export default function TenantDetailPage() {
 
       // Refresh features (force bypasses request deduplication)
       await fetchFeatures(tenantId, true)
-    } catch (err) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err))
     } finally {
       setFeatureLoading(false)
     }
@@ -1035,9 +1054,10 @@ export default function TenantDetailPage() {
                           }
                           // Refresh tenant data
                           await fetchTenant(tenantId, true)
-                        } catch (err) {
+                        } catch (err: unknown) {
                           console.error('Error updating default role:', err)
-                          setError(err.response?.data?.error || err.message || 'Failed to update default role')
+                          const e = err as AxiosErr
+                          setError(e.response?.data?.error || (err instanceof Error ? err.message : String(err)) || 'Failed to update default role')
                         }
                       }}
                       className="w-full mt-2 h-10 rounded-lg border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -1527,17 +1547,19 @@ export default function TenantDetailPage() {
             </Card>
           ) : (
             <div className="space-y-6">
-              {Object.entries(groupedFeatures).map(([category, categoryFeatures]) => (
+              {Object.entries(groupedFeatures).map(([category, categoryFeatures]) => {
+                const list = (categoryFeatures ?? []) as Array<{ id: string; key?: string; name?: string; description?: string; isEffectivelyEnabled?: boolean; icon?: string; superAdminEnabled?: boolean; [k: string]: unknown }>
+                return (
                 <Card key={category}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg">{getFeatureCategoryDisplayName(category)}</CardTitle>
                     <CardDescription>
-                      {categoryFeatures.filter(f => f.isEffectivelyEnabled).length} of {categoryFeatures.length} enabled
+                      {list.filter(f => f.isEffectivelyEnabled).length} of {list.length} enabled
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {categoryFeatures.map((feature) => {
+                      {list.map((feature) => {
                         const Icon = getFeatureIcon(feature.icon)
                         return (
                           <div
@@ -1600,7 +1622,7 @@ export default function TenantDetailPage() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+              ); })}
             </div>
           )}
 
@@ -1866,7 +1888,7 @@ export default function TenantDetailPage() {
                     className={createUserErrors.firstName ? 'border-red-500' : ''}
                   />
                   {createUserErrors.firstName && (
-                    <p className="text-sm text-red-600">{createUserErrors.firstName.message}</p>
+                    <p className="text-sm text-red-600">{String((createUserErrors.firstName as { message?: string }).message ?? '')}</p>
                   )}
                 </div>
                 <div className="grid gap-2">
@@ -1879,7 +1901,7 @@ export default function TenantDetailPage() {
                     className={createUserErrors.lastName ? 'border-red-500' : ''}
                   />
                   {createUserErrors.lastName && (
-                    <p className="text-sm text-red-600">{createUserErrors.lastName.message}</p>
+                    <p className="text-sm text-red-600">{String((createUserErrors.lastName as { message?: string }).message ?? '')}</p>
                   )}
                 </div>
               </div>
@@ -1893,7 +1915,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.username ? 'border-red-500' : ''}
                 />
                 {createUserErrors.username && (
-                  <p className="text-sm text-red-600">{createUserErrors.username.message}</p>
+                  <p className="text-sm text-red-600">{String((createUserErrors.username as { message?: string }).message ?? '')}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1908,7 +1930,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.password ? 'border-red-500' : ''}
                 />
                 {createUserErrors.password && (
-                  <p className="text-sm text-red-600">{createUserErrors.password.message}</p>
+                  <p className="text-sm text-red-600">{String((createUserErrors.password as { message?: string }).message ?? '')}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1923,7 +1945,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.confirmPassword ? 'border-red-500' : ''}
                 />
                 {createUserErrors.confirmPassword && (
-                  <p className="text-sm text-red-600">{createUserErrors.confirmPassword.message}</p>
+                  <p className="text-sm text-red-600">{String((createUserErrors.confirmPassword as { message?: string }).message ?? '')}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1937,7 +1959,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.email ? 'border-red-500' : ''}
                 />
                 {createUserErrors.email && (
-                  <p className="text-sm text-red-600">{createUserErrors.email.message}</p>
+                  <p className="text-sm text-red-600">{String((createUserErrors.email as { message?: string }).message ?? '')}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1954,7 +1976,7 @@ export default function TenantDetailPage() {
                   ))}
                 </select>
                 {createUserErrors.tenantRoleId && (
-                  <p className="text-sm text-red-600">{createUserErrors.tenantRoleId.message}</p>
+                  <p className="text-sm text-red-600">{String((createUserErrors.tenantRoleId as { message?: string }).message ?? '')}</p>
                 )}
                 <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
               </div>

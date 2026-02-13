@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync";
+import type { RouteContext } from "@/types";
+
+type TenantRoleParams = { tenantId: string; roleId: string };
 
 /**
  * GET /api/tenants/[tenantId]/roles/[roleId]/permissions
  * Get all permissions assigned to a tenant role
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -88,7 +94,10 @@ export async function GET(request, { params }) {
  * POST /api/tenants/[tenantId]/roles/[roleId]/permissions
  * Add permissions to a tenant role
  */
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -211,7 +220,10 @@ export async function POST(request, { params }) {
  * DELETE /api/tenants/[tenantId]/roles/[roleId]/permissions
  * Remove permissions from a tenant role
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<TenantRoleParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -219,7 +231,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { tenantId, roleId } = await params;
-    const body = await request.json();
+    const body = await _request.json();
     const { permissionIds } = body;
 
     // Validate input

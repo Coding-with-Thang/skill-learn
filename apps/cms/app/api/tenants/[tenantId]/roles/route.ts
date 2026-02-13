@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole";
+import type { RouteContext } from "@/types";
+
+type TenantIdParams = { tenantId: string };
 
 /**
  * GET /api/tenants/[tenantId]/roles
  * Get all roles for a tenant
  */
-export async function GET(request, { params }) {
+export async function GET(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -133,7 +139,10 @@ export async function GET(request, { params }) {
  * POST /api/tenants/[tenantId]/roles
  * Create a new role for a tenant (from template or custom)
  */
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -342,7 +351,10 @@ export async function POST(request, { params }) {
  * POST /api/tenants/[tenantId]/roles/initialize
  * Initialize default roles from a template set
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

@@ -33,8 +33,9 @@ export default function CreateFlashCardCategoryPage() {
       await api.post("/flashcards/categories", { name: name.trim() });
       toast.success("Category created");
       router.push("/flashcards");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to create category");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to create category");
     } finally {
       setSaving(false);
     }
@@ -47,6 +48,7 @@ export default function CreateFlashCardCategoryPage() {
           { name: "Flash Cards", href: "/flashcards" },
           { name: "Create Category", href: "/flashcards/create-category" },
         ]}
+        endtrail="Create Category"
       />
       <div className="max-w-2xl mx-auto py-8">
         <div className="mb-6">

@@ -12,7 +12,7 @@ import { Layers, Loader2, RefreshCw, Save } from 'lucide-react'
 
 export default function FlashcardLimitsPage() {
   const [limits, setLimits] = useState([])
-  const [edits, setEdits] = useState({})
+  const [edits, setEdits] = useState<Record<string, Record<string, number | string>>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -25,9 +25,12 @@ export default function FlashcardLimitsPage() {
       const list = response.data?.limits || []
       setLimits(list)
       setEdits({})
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching flashcard limits:', err)
-      setError(err.response?.data?.error || err.message || 'Failed to fetch limits')
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+        : (err instanceof Error ? err.message : String(err))
+      setError(msg || 'Failed to fetch limits')
     } finally {
       setLoading(false)
     }
@@ -73,8 +76,11 @@ export default function FlashcardLimitsPage() {
       setError(null)
       await api.patch('/flashcard-tier-limits', { limits: payload })
       await fetchLimits()
-    } catch (err) {
-      setError(err.response?.data?.error || err.message || 'Failed to save')
+    } catch (err: unknown) {
+      const msg = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
+        : (err instanceof Error ? err.message : String(err))
+      setError(msg || 'Failed to save')
     } finally {
       setSaving(false)
     }

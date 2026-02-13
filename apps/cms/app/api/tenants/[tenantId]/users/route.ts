@@ -86,7 +86,7 @@ export async function POST(
     try {
       data = await validateRequestBody(request, tenantUserCreateSchema);
     } catch (err) {
-      if (err instanceof SyntaxError || (err.message && err.message.toLowerCase().includes("json"))) {
+      if (err instanceof SyntaxError || (err instanceof Error && err.message.toLowerCase().includes("json"))) {
         return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
       }
       throw err;
@@ -146,7 +146,13 @@ export async function POST(
       defaultRole: roleAlias,
     };
 
-    const createParams = {
+    const createParams: {
+      username: string;
+      firstName: string;
+      lastName: string;
+      password: string;
+      emailAddress?: string[];
+    } = {
       username,
       firstName,
       lastName,

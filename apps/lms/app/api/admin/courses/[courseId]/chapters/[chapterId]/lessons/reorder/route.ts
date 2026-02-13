@@ -1,11 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireCanEditCourse } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
+import type { RouteContext } from "@/types";
+
+type CourseChapterParams = { courseId: string; chapterId: string };
 
 // Reorder lessons in one transaction. Body: { lessonIds: string[] }
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<CourseChapterParams>
+) {
   try {
     const { courseId, chapterId } = await params;
     if (!courseId || !chapterId) {

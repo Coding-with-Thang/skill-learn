@@ -113,7 +113,7 @@ export default function DashboardLayout({ children }) {
 
         // Build full trail: every segment except the last becomes a crumb; last is endtrail
         // Skip segments that format to "Detail" to shorten ID-heavy paths
-        const crumbs = []
+        const crumbs: { name: string; href: string }[] = []
         for (let i = 0; i < segments.length - 1; i++) {
             const segment = segments[i]
             const label = formatSegmentLabel(segment)

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 
@@ -16,13 +16,15 @@ async function ensureDefaults() {
     select: { tier: true },
   });
   const existingTiers = new Set(existing.map((r) => r.tier));
-  for (const tier of TIERS) {
+  type TierKey = keyof typeof DEFAULT_LIMITS;
+  for (const tier of TIERS as TierKey[]) {
     if (!existingTiers.has(tier)) {
+      const limits = DEFAULT_LIMITS[tier];
       await prisma.flashCardTierLimit.create({
         data: {
           tier,
-          maxDecks: DEFAULT_LIMITS[tier].maxDecks,
-          maxCardsPerDeck: DEFAULT_LIMITS[tier].maxCardsPerDeck,
+          maxDecks: limits.maxDecks,
+          maxCardsPerDeck: limits.maxCardsPerDeck,
         },
       });
     }
@@ -32,7 +34,7 @@ async function ensureDefaults() {
 /**
  * GET: List all flash card tier limits (super admin only)
  */
-export async function GET() {
+export async function GET(_request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -43,7 +45,14 @@ export async function GET() {
       orderBy: { tier: "asc" },
     });
 
-    const byTier = {};
+    type LimitRow = {
+      id: string;
+      tier: string;
+      maxDecks: number;
+      maxCardsPerDeck: number;
+      updatedAt: Date;
+    };
+    const byTier: Record<string, LimitRow> = {};
     for (const row of limits) {
       byTier[row.tier] = {
         id: row.id,
@@ -54,13 +63,14 @@ export async function GET() {
       };
     }
 
+    type TierKey = keyof typeof DEFAULT_LIMITS;
     return Response.json({
-      limits: TIERS.map((t) => byTier[t] ?? { tier: t, ...DEFAULT_LIMITS[t] }),
+      limits: (TIERS as TierKey[]).map((t) => byTier[t] ?? { tier: t, ...DEFAULT_LIMITS[t] }),
     });
   } catch (error) {
     console.error("[flashcard-tier-limits] GET error:", error);
     return Response.json(
-      { error: error.message || "Failed to fetch limits" },
+      { error: error instanceof Error ? error.message : "Failed to fetch limits" },
       { status: 500 }
     );
   }
@@ -70,7 +80,7 @@ export async function GET() {
  * PATCH: Update one or more tier limits (super admin only)
  * Body: { limits: [{ tier, maxDecks?, maxCardsPerDeck? }, ...] }
  */
-export async function PATCH(request) {
+export async function PATCH(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -85,12 +95,14 @@ export async function PATCH(request) {
       );
     }
 
-    const results = [];
+    const results: Awaited<ReturnType<typeof prisma.flashCardTierLimit.upsert>>[] = [];
+    type TierKey = keyof typeof DEFAULT_LIMITS;
     for (const u of updates) {
       const tier = (u.tier || "").toLowerCase();
       if (!TIERS.includes(tier)) continue;
+      const tierKey = tier as TierKey;
 
-      const data = {};
+      const data: { maxDecks?: number; maxCardsPerDeck?: number } = {};
       if (typeof u.maxDecks === "number" && u.maxDecks >= -1) data.maxDecks = u.maxDecks;
       // -1 = unlimited; LMS treats maxCardsPerDeck < 0 as unlimited
       if (
@@ -105,8 +117,8 @@ export async function PATCH(request) {
         where: { tier },
         create: {
           tier,
-          maxDecks: data.maxDecks ?? DEFAULT_LIMITS[tier].maxDecks,
-          maxCardsPerDeck: data.maxCardsPerDeck ?? DEFAULT_LIMITS[tier].maxCardsPerDeck,
+          maxDecks: data.maxDecks ?? DEFAULT_LIMITS[tierKey].maxDecks,
+          maxCardsPerDeck: data.maxCardsPerDeck ?? DEFAULT_LIMITS[tierKey].maxCardsPerDeck,
         },
         update: data,
       });
@@ -117,7 +129,7 @@ export async function PATCH(request) {
   } catch (error) {
     console.error("[flashcard-tier-limits] PATCH error:", error);
     return Response.json(
-      { error: error.message || "Failed to update limits" },
+      { error: error instanceof Error ? error.message : "Failed to update limits" },
       { status: 500 }
     );
   }

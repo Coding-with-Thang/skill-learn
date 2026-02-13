@@ -52,12 +52,14 @@ import api from "@skill-learn/lib/utils/axios";
 import { useCoursesStore } from "@skill-learn/lib/stores/coursesStore"
 import CourseStructure from '@/components/courses/CourseStructure'
 
+type AxiosErr = { response?: { data?: { message?: string; fieldErrors?: { title?: string[] }; details?: { fieldErrors?: { title?: string[] } }; error?: string } } };
+
 export default function EditCoursePage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const courseId = params.courseId;
-    const [categories, setCategories] = useState([]);
-    const [course, setCourse] = useState(null);
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+    const [course, setCourse] = useState<Record<string, unknown> | null>(null);
     const [loading, setLoading] = useState(true);
     const [courseLoading, setCourseLoading] = useState(true);
     const tabFromUrl = searchParams.get("tab");
@@ -66,19 +68,19 @@ export default function EditCoursePage() {
         if (tabFromUrl === "structure") setActiveTab("structure");
         else if (tabFromUrl === "details") setActiveTab("details");
     }, [tabFromUrl]);
-    const [chapterToDelete, setChapterToDelete] = useState(null);
+    const [chapterToDelete, setChapterToDelete] = useState<{ id: string; title?: string } | null>(null);
     const [deleteChapterPending, setDeleteChapterPending] = useState(false);
-    const [lessonToDelete, setLessonToDelete] = useState(null); // { chapterId, lesson }
+    const [lessonToDelete, setLessonToDelete] = useState<{ chapterId: string; lesson: { id: string; title?: string } } | null>(null);
     const [deleteLessonPending, setDeleteLessonPending] = useState(false);
     const [structureMutationPending, setStructureMutationPending] = useState(false);
     const [structureRefreshing, setStructureRefreshing] = useState(false);
     const [addChapterDialogOpen, setAddChapterDialogOpen] = useState(false);
     const [addChapterTitle, setAddChapterTitle] = useState("New Chapter");
-    const [addChapterTitleError, setAddChapterTitleError] = useState(null);
+    const [addChapterTitleError, setAddChapterTitleError] = useState<string | null>(null);
     const [addLessonDialogOpen, setAddLessonDialogOpen] = useState(false);
-    const [addLessonChapterId, setAddLessonChapterId] = useState(null);
+    const [addLessonChapterId, setAddLessonChapterId] = useState<string | null>(null);
     const [addLessonTitle, setAddLessonTitle] = useState("New Lesson");
-    const [addLessonTitleError, setAddLessonTitleError] = useState(null);
+    const [addLessonTitleError, setAddLessonTitleError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
     const router = useRouter();
     // Read preview from client store early so fetchCourse can prefer it
@@ -199,7 +201,7 @@ export default function EditCoursePage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId, course]);
 
-    const refreshCourse = async (options = {}) => {
+    const refreshCourse = async (options: { silent?: boolean } = {}) => {
         const { silent } = options;
         try {
             const res = await api.get(`/admin/courses/${courseId}`);
@@ -224,8 +226,9 @@ export default function EditCoursePage() {
             } finally {
                 setStructureRefreshing(false);
             }
-        } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete chapter');
+        } catch (err: unknown) {
+            const e = err as AxiosErr;
+            toast.error(e?.response?.data?.message || 'Failed to delete chapter');
             await refreshCourse({ silent: true }); // Revert UI to server state (toast already shown above)
         } finally {
             setDeleteChapterPending(false);
@@ -265,9 +268,10 @@ export default function EditCoursePage() {
             } finally {
                 setStructureRefreshing(false);
             }
-        } catch (err) {
-            const fieldErrors = err?.response?.data?.fieldErrors ?? err?.response?.data?.details?.fieldErrors;
-            const msg = fieldErrors?.title?.[0] ?? err?.response?.data?.error ?? err?.response?.data?.message;
+        } catch (err: unknown) {
+            const e = err as AxiosErr;
+            const fieldErrors = e?.response?.data?.fieldErrors ?? e?.response?.data?.details?.fieldErrors;
+            const msg = fieldErrors?.title?.[0] ?? e?.response?.data?.error ?? e?.response?.data?.message;
             setAddChapterTitleError(msg || "Failed to add chapter.");
             await refreshCourse({ silent: true });
         } finally {
@@ -307,9 +311,10 @@ export default function EditCoursePage() {
             } finally {
                 setStructureRefreshing(false);
             }
-        } catch (err) {
-            const fieldErrors = err?.response?.data?.fieldErrors ?? err?.response?.data?.details?.fieldErrors;
-            const msg = fieldErrors?.title?.[0] ?? err?.response?.data?.error ?? err?.response?.data?.message;
+        } catch (err: unknown) {
+            const e = err as AxiosErr;
+            const fieldErrors = e?.response?.data?.fieldErrors ?? e?.response?.data?.details?.fieldErrors;
+            const msg = fieldErrors?.title?.[0] ?? e?.response?.data?.error ?? e?.response?.data?.message;
             setAddLessonTitleError(msg || "Failed to add lesson.");
             await refreshCourse({ silent: true });
         } finally {
@@ -331,8 +336,9 @@ export default function EditCoursePage() {
             } finally {
                 setStructureRefreshing(false);
             }
-        } catch (err) {
-            toast.error(err?.response?.data?.message || 'Failed to delete lesson');
+        } catch (err: unknown) {
+            const e = err as AxiosErr;
+            toast.error(e?.response?.data?.message || 'Failed to delete lesson');
             await refreshCourse({ silent: true }); // Revert UI to server state (toast already shown above)
         } finally {
             setDeleteLessonPending(false);
@@ -364,7 +370,7 @@ export default function EditCoursePage() {
                     const payload = data.data || {};
                     if (payload.details) {
                         const fieldErrors = payload.details.fieldErrors || {};
-                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => (Array.isArray(v) ? v : []).map((m: string) => `${k}: ${m}`));
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
@@ -374,13 +380,14 @@ export default function EditCoursePage() {
                         toast.error(payload.message || 'An error occurred while updating the course');
                     }
                 }
-            } catch (error) {
-                const resp = error?.response?.data;
+            } catch (error: unknown) {
+                const e = error as { response?: { data?: { details?: { fieldErrors?: Record<string, string[]> }; message?: string } }; message?: string };
+                const resp = e?.response?.data;
                 if (resp) {
                     console.error(`/api/admin/courses/${courseId} error response:`, resp);
                     if (resp.details) {
                         const fieldErrors = resp.details.fieldErrors || {};
-                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => (Array.isArray(v) ? v : []).map((m: string) => `${k}: ${m}`));
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
@@ -389,7 +396,7 @@ export default function EditCoursePage() {
                         return;
                     }
                 }
-                toast.error(error?.message || 'An error occurred while updating the course');
+                toast.error(e?.message || 'An error occurred while updating the course');
                 return;
             }
         });
@@ -663,7 +670,8 @@ export default function EditCoursePage() {
                             onAddChapter={openAddChapterDialog}
                             onRenameChapter={async (chapterId, newTitle) => {
                                 if (structureMutationPending) return;
-                                const chapter = course?.chapters?.find((ch) => ch.id === chapterId);
+                                const chapters = (course?.chapters as { id: string; title?: string; position?: number; order?: number }[] | undefined);
+                                const chapter = chapters?.find((ch) => ch.id === chapterId);
                                 if (!chapter) return;
                                 setStructureMutationPending(true);
                                 try {
@@ -678,8 +686,9 @@ export default function EditCoursePage() {
                                     } finally {
                                         setStructureRefreshing(false);
                                     }
-                                } catch (err) {
-                                    toast.error(err?.response?.data?.message || 'Failed to rename chapter');
+                                } catch (err: unknown) {
+                                    const e = err as AxiosErr;
+                                    toast.error(e?.response?.data?.message || 'Failed to rename chapter');
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);
@@ -697,8 +706,9 @@ export default function EditCoursePage() {
                                     } finally {
                                         setStructureRefreshing(false);
                                     }
-                                } catch (err) {
-                                    toast.error(err?.response?.data?.message || 'Failed to reorder chapters');
+                                } catch (err: unknown) {
+                                    const e = err as AxiosErr;
+                                    toast.error(e?.response?.data?.message || 'Failed to reorder chapters');
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);
@@ -718,8 +728,9 @@ export default function EditCoursePage() {
                                     } finally {
                                         setStructureRefreshing(false);
                                     }
-                                } catch (err) {
-                                    toast.error(err?.response?.data?.message || 'Failed to reorder lessons');
+                                } catch (err: unknown) {
+                                    const e = err as AxiosErr;
+                                    toast.error(e?.response?.data?.message || 'Failed to reorder lessons');
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);

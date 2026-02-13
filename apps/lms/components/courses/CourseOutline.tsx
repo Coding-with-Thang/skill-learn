@@ -13,11 +13,10 @@ function getLessonIcon(lesson) {
   return FileText;
 }
 
+type ChapterOutline = { id?: string; title?: string; position?: number; lessons?: { id?: string; slug?: string; title?: string; videoUrl?: string; position?: number }[] };
+
 /**
  * Read-only course outline for learners: chapters and lessons.
- * Chapters are expandable/collapsible. Lessons show type icon, optional duration/pages/questions, completion checkmark.
- * If courseSlug is provided, lesson titles link to /courses/[courseSlug]/lessons/[lessonSlug].
- * completedLessonIds: optional Set or array of lesson IDs for completion checkmarks and chapter progress.
  */
 export default function CourseOutline({
   chapters = [],
@@ -25,6 +24,12 @@ export default function CourseOutline({
   courseId,
   completedLessonIds = [],
   className,
+}: {
+  chapters?: ChapterOutline[] | { id?: string; title?: string; position?: number; lessons?: unknown[] }[];
+  courseSlug?: string;
+  courseId?: string;
+  completedLessonIds?: string[];
+  className?: string;
 }) {
   const courseSlug = courseSlugProp ?? courseId;
   const completedSet = useMemo(

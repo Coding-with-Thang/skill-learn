@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 
@@ -6,7 +6,7 @@ import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
  * Get dashboard statistics
  * Returns aggregated data for the CMS dashboard
  */
-export async function GET(request) {
+export async function GET(_request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -33,7 +33,7 @@ export async function GET(request) {
     const activeTenants = tenants.filter(t => t._count.users > 0).length;
     
     // Calculate subscription distribution
-    const subscriptionDistribution = tenants.reduce((acc, tenant) => {
+    const subscriptionDistribution = tenants.reduce<Record<string, number>>((acc, tenant) => {
       const tier = tenant.subscriptionTier || 'free';
       if (!acc[tier]) {
         acc[tier] = 0;
@@ -57,7 +57,7 @@ export async function GET(request) {
       name: name.charAt(0).toUpperCase() + name.slice(1),
       value: count,
       count: count,
-      color: subscriptionColors[name] || '#6B7280',
+      color: (subscriptionColors as Record<string, string>)[name] || '#6B7280',
     }));
 
     // Calculate total active users across all tenants
@@ -65,7 +65,7 @@ export async function GET(request) {
 
     // Get recent tenants (last 10, ordered by creation date)
     const recentTenants = tenants
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 10)
       .map(tenant => ({
         id: tenant.id,
@@ -146,7 +146,7 @@ export async function GET(request) {
     ];
 
     // Recent alerts - empty for now (can be enhanced with actual alert system)
-    const recentAlerts = [];
+    const recentAlerts: unknown[] = [];
 
     return NextResponse.json({
       heroStats,

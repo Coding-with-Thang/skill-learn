@@ -47,14 +47,15 @@ import {
     categoryUpdateSchema,
 } from "@/lib/zodSchemas"
 
+type CategoryItem = { id: string; name: string; description?: string; imageUrl?: string; fileKey?: string; isActive?: boolean; _count?: { quizzes: number; courses: number } }
 export default function CategoriesPage() {
-    const [categories, setCategories] = useState([])
+    const [categories, setCategories] = useState<CategoryItem[]>([])
     const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const [error, setError] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
-    const [formError, setFormError] = useState(null)
-    const [editingId, setEditingId] = useState(null)
-    const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+    const [formError, setFormError] = useState<string | null>(null)
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null)
     const [searchInput, setSearchInput] = useState("")
     const searchTerm = useDebounce(searchInput, 300)
 
@@ -82,9 +83,9 @@ export default function CategoriesPage() {
             const responseData = response.data?.data || response.data
             const categoriesArray = responseData?.categories || []
             setCategories(categoriesArray)
-        } catch (error) {
-            console.error("Failed to fetch categories:", error)
-            setError(error.message)
+        } catch (err: unknown) {
+            console.error("Failed to fetch categories:", err)
+            setError(err instanceof Error ? err.message : "Failed to fetch categories")
         } finally {
             setLoading(false)
         }
@@ -102,9 +103,10 @@ export default function CategoriesPage() {
             }
             await fetchCategories()
             handleCloseForm()
-        } catch (err) {
+        } catch (err: unknown) {
             console.error("Failed to save category:", err)
-            const msg = err.response?.data?.error || "Failed to save category"
+            const e = err as { response?: { data?: { error?: string } } }
+            const msg = e.response?.data?.error || "Failed to save category"
             setFormError(msg)
             toast.error(msg)
         }
@@ -121,10 +123,11 @@ export default function CategoriesPage() {
             await fetchCategories()
             setDeleteConfirmId(null)
             handleCloseForm()
-        } catch (error) {
-            console.error("Failed to delete category:", error)
+        } catch (err: unknown) {
+            console.error("Failed to delete category:", err)
+            const e = err as { response?: { data?: { error?: string } } }
             toast.error(
-                error.response?.data?.error || "Failed to delete category"
+                e.response?.data?.error || "Failed to delete category"
             )
         }
     }
@@ -222,8 +225,8 @@ export default function CategoriesPage() {
                                             {category.name}
                                         </TableCell>
                                         <TableCell>{category.description || "-"}</TableCell>
-                                        <TableCell>{category._count.quizzes}</TableCell>
-                                        <TableCell>{category._count.courses}</TableCell>
+                                        <TableCell>{category._count?.quizzes ?? "-"}</TableCell>
+                                        <TableCell>{category._count?.courses ?? "-"}</TableCell>
                                         <TableCell>
                                             <span
                                                 className={`px-2 py-1 rounded-full text-xs ${category.isActive
@@ -393,7 +396,7 @@ export default function CategoriesPage() {
 
                                 {editingId && (() => {
                                     const categoryBeingEdited = categories.find((c) => c.id === editingId)
-                                    const hasQuizzesOrCourses = categoryBeingEdited && (categoryBeingEdited._count?.quizzes > 0 || categoryBeingEdited._count?.courses > 0)
+                                    const hasQuizzesOrCourses = categoryBeingEdited && ((categoryBeingEdited._count?.quizzes ?? 0) > 0 || (categoryBeingEdited._count?.courses ?? 0) > 0)
                                     return (
                                         <div className="mt-6 pt-6 border-t">
                                             <p className="text-sm text-muted-foreground mb-2">Delete this category permanently. This cannot be undone.</p>

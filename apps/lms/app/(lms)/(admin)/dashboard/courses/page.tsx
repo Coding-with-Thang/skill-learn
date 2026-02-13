@@ -11,7 +11,7 @@ import CourseActions from '@/components/courses/CourseActions';
 import Pagination from '@/components/shared/Pagination';
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 
-async function getCourses({ page = 1, pageSize = 5, category, tenantId } = {}) {
+async function getCourses({ page = 1, pageSize = 5, category, tenantId }: { page?: number; pageSize?: number; category?: string; tenantId?: string | null } = {}) {
     // CRITICAL: Only show courses for the current user's tenant (or global). Never show other tenants' courses.
     const tenantFilter = buildTenantContentFilter(tenantId ?? null, {});
     const where = { ...tenantFilter };
@@ -41,8 +41,8 @@ async function getCourses({ page = 1, pageSize = 5, category, tenantId } = {}) {
                     const url = await getSignedUrl(c.fileKey)
                     if (url) thumbnailUrl = url
                 }
-            } catch (err) {
-                console.warn('thumbnail fetch failed for', c.id, err?.message || err)
+            } catch (err: unknown) {
+                console.warn('thumbnail fetch failed for', c.id, err instanceof Error ? err.message : err)
             }
 
             return { ...c, thumbnailUrl }

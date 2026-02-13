@@ -18,14 +18,16 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import ShareDecksDialog from "@/components/flashcards/ShareDecksDialog";
 import { toast } from "sonner";
 
+type DeckShape = { name?: string; isPublic?: boolean; cardIds?: string[]; hiddenCardIds?: string[]; cards?: { id: string; question?: string }[] };
+
 export default function DeckSettingsPage() {
   const params = useParams();
   const router = useRouter();
   const deckId = params?.deckId;
 
-  const [deck, setDeck] = useState(null);
+  const [deck, setDeck] = useState<DeckShape | null>(null);
   const [loading, setLoading] = useState(true);
-  const [toggling, setToggling] = useState(null);
+  const [toggling, setToggling] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
@@ -35,7 +37,7 @@ export default function DeckSettingsPage() {
       .get(`/flashcards/decks/${deckId}`)
       .then((res) => {
         const d = res.data?.data ?? res.data;
-        setDeck(d?.deck ?? null);
+        setDeck((d?.deck ?? null) as DeckShape | null);
       })
       .catch(() => {
         toast.error("Deck not found");
@@ -53,14 +55,16 @@ export default function DeckSettingsPage() {
       const d = res.data?.data ?? res.data;
       setDeck((prev) => (prev ? { ...prev, isPublic: d?.deck?.isPublic ?? !prev.isPublic } : prev));
       toast.success(deck?.isPublic ? "Deck is now private" : "Deck is now shared with your workspace");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to update");
     } finally {
       setSharing(false);
     }
   };
 
-  const removeFromDeck = async (cardId) => {
+  const removeFromDeck = async (cardId: string) => {
+    if (!deck) return;
     setToggling(cardId);
     try {
       const newCardIds = (deck.cardIds ?? []).filter((id) => id !== cardId);
@@ -80,14 +84,15 @@ export default function DeckSettingsPage() {
           : prev
       );
       toast.success("Card removed from deck");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to remove");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to remove");
     } finally {
       setToggling(null);
     }
   };
 
-  const toggleHidden = async (cardId, currentlyHidden) => {
+  const toggleHidden = async (cardId: string, currentlyHidden: boolean) => {
     setToggling(cardId);
     try {
       await api.post(`/flashcards/decks/${deckId}/hide-card`, {
@@ -102,8 +107,9 @@ export default function DeckSettingsPage() {
         return { ...prev, hiddenCardIds: Array.from(hidden) };
       });
       toast.success(currentlyHidden ? "Card unhidden" : "Card hidden");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to update");
     } finally {
       setToggling(null);
     }
@@ -122,6 +128,7 @@ export default function DeckSettingsPage() {
           { name: "Flash Cards", href: "/flashcards" },
           { name: deck.name, href: `/flashcards/decks/${deckId}` },
         ]}
+        endtrail={deck.name}
       />
       <div className="max-w-2xl mx-auto space-y-6 pb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

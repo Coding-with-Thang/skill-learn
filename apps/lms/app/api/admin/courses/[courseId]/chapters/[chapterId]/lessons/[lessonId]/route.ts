@@ -1,13 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireCanEditCourse } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId } from "@skill-learn/lib/utils/tenant";
 import { resolveCourseId, generateUniqueLessonSlug } from "@/lib/courses";
+import type { RouteContext } from "@/types";
+
+type CourseLessonParams = { courseId: string; chapterId: string; lessonId: string };
 
 // Resolve lesson by id or slug within a course
-function lessonWhere(courseId, lessonIdOrSlug) {
+function lessonWhere(courseId: string, lessonIdOrSlug: string) {
   const isId = /^[a-f0-9]{24}$/i.test(lessonIdOrSlug);
   return {
     ...(isId ? { id: lessonIdOrSlug } : { slug: lessonIdOrSlug }),
@@ -16,7 +19,10 @@ function lessonWhere(courseId, lessonIdOrSlug) {
 }
 
 // Get a single lesson (for edit page). Params may be id or slug; chapterId in URL is ignored for lookup.
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<CourseLessonParams>
+) {
   try {
     const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
     if (!courseIdOrSlug || !lessonIdOrSlug) {
@@ -53,7 +59,10 @@ export async function GET(request, { params }) {
 }
 
 // Update a lesson (title, content, position). Params may be id or slug.
-export async function PATCH(request, { params }) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteContext<CourseLessonParams>
+) {
   try {
     const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
     if (!courseIdOrSlug || !lessonIdOrSlug) {
@@ -134,7 +143,10 @@ export async function PATCH(request, { params }) {
 }
 
 // Delete a lesson. Params may be id or slug.
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<CourseLessonParams>
+) {
   try {
     const { courseId: courseIdOrSlug, lessonId: lessonIdOrSlug } = await params;
     if (!courseIdOrSlug || !lessonIdOrSlug) {

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { LoadingSpinner } from '@skill-learn/ui/components/loading'
 import { useCoursesStore } from "@skill-learn/lib/stores/coursesStore"
 
-export default function CourseFilters({ categories = [], initialCategory = '', initialPageSize = 5 }) {
+type CategoryOption = { id: string; name: string };
+export default function CourseFilters({ categories = [] as CategoryOption[], initialCategory = '', initialPageSize = 5 }: { categories?: CategoryOption[]; initialCategory?: string; initialPageSize?: number }) {
     const router = useRouter()
     const category = useCoursesStore((s) => s.category)
     const pageSize = useCoursesStore((s) => s.pageSize)

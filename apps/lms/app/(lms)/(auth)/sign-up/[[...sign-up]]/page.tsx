@@ -98,9 +98,9 @@ export default function SignUpPage() {
 
       setMode('verify');
       toast.success('Verification code sent to your email!');
-    } catch (err) {
-      console.error('Sign up error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Failed to create account';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Failed to create account';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -136,9 +136,9 @@ export default function SignUpPage() {
       } else {
         toast.error('Sign-up could not be completed. Please try again.');
       }
-    } catch (err) {
-      console.error('Sign up error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Failed to create account';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Failed to create account';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -164,9 +164,9 @@ export default function SignUpPage() {
         toast.success('Account created successfully!');
         router.push('/home');
       }
-    } catch (err) {
-      console.error('Verification error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Invalid verification code';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Invalid verification code';
       setVerificationError(errorMessage);
     } finally {
       setLoading(false);
@@ -184,8 +184,7 @@ export default function SignUpPage() {
         redirectUrl: '/home',
         redirectUrlComplete: '/home',
       });
-    } catch (err) {
-      console.error('Social sign up error:', err);
+    } catch {
       setError('Failed to sign up with social provider');
       setLoading(false);
     }

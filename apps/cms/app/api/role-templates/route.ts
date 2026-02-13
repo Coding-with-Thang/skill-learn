@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole";
@@ -7,7 +7,7 @@ import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole";
  * GET /api/role-templates
  * Get all role templates (optionally filtered by template set)
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -19,7 +19,7 @@ export async function GET(request) {
     const isDefaultSet = searchParams.get("isDefaultSet");
 
     // Build where clause
-    const where = {};
+    const where: { templateSetName?: string; isDefaultSet?: boolean } = {};
     if (templateSetName) {
       where.templateSetName = templateSetName;
     }
@@ -105,7 +105,7 @@ export async function GET(request) {
  * POST /api/role-templates
  * Create a new role template (super admin only)
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

@@ -41,7 +41,7 @@ export default function UserRolesPage() {
 
   // Local state (UI only)
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Dialog state (assign or re-assign). When re-assigning, we need to remove the old assignment first.
@@ -52,7 +52,7 @@ export default function UserRolesPage() {
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState("");
   const [formLoading, setFormLoading] = useState(false);
-  const [formError, setFormError] = useState(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   // Load data
   useEffect(() => {
@@ -61,8 +61,9 @@ export default function UserRolesPage() {
       setError(null);
       try {
         await fetchAll();
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || "Failed to load data");
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { error?: string } }; message?: string };
+        setError(e.response?.data?.error || e.message || "Failed to load data");
       } finally {
         setLoading(false);
       }
@@ -89,8 +90,9 @@ export default function UserRolesPage() {
       setAssignDialogOpen(false);
       setSelectedUserId("");
       setSelectedRoleId("");
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || "Failed to assign role");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setFormError(e.response?.data?.error || e.message || "Failed to assign role");
     } finally {
       setFormLoading(false);
     }

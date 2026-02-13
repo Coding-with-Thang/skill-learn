@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { auth } from "@clerk/nextjs/server";
 
@@ -7,7 +7,7 @@ import { auth } from "@clerk/nextjs/server";
  * Get current user's permissions across all their tenant roles
  * This is used by the frontend to determine what the user can do
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
 
@@ -19,7 +19,7 @@ export async function GET(request) {
     const tenantId = searchParams.get("tenantId");
 
     // Build where clause
-    const where = { userId };
+    const where: { userId: string; tenantId?: string } = { userId };
     if (tenantId) {
       where.tenantId = tenantId;
     }
@@ -60,8 +60,9 @@ export async function GET(request) {
     });
 
     // Aggregate permissions from all active roles
-    const permissionMap = new Map();
-    const rolesByTenant = {};
+    const permissionMap = new Map<string, { id: string; name: string; displayName: string; category: string }>();
+    type TenantPerms = { tenant: { id: string; name: string; slug: string }; roles: unknown[]; permissions: Set<string> };
+    const rolesByTenant: Record<string, TenantPerms> = {};
 
     for (const userRole of userRoles) {
       // Skip inactive roles
@@ -145,7 +146,7 @@ export async function GET(request) {
  * POST /api/user-permissions/check
  * Check if user has specific permission(s)
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
 
@@ -164,7 +165,7 @@ export async function POST(request) {
     }
 
     // Build where clause
-    const where = { userId };
+    const where: { userId: string; tenantId?: string } = { userId };
     if (tenantId) {
       where.tenantId = tenantId;
     }

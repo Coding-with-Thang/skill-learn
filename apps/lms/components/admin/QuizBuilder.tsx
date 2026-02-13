@@ -36,7 +36,8 @@ import { Checkbox } from "@skill-learn/ui/components/checkbox"
 import { Uploader } from "@skill-learn/ui/components/file-uploader"
 import { AdminSwitch } from "@/components/admin/AdminSwitch"
 
-export default function QuizBuilder({ quizId = null }) {
+type QuizBuilderProps = { quizId?: string | null };
+export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

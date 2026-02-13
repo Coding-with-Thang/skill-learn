@@ -57,7 +57,7 @@ export async function getSystemSetting(key) {
  * @param {string|null} description - Optional description
  * @returns {Promise<object>} Updated setting
  */
-export async function updateSystemSetting(key, value, description = null) {
+export async function updateSystemSetting(key: string, value: string | number, description: string | null = null) {
   try {
     // Check admin authorization
     const { user } = await requireAdminForAction();

@@ -12,14 +12,16 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import api from "@skill-learn/lib/utils/axios";
 
+type LessonShape = { title?: string; description?: string; videoUrl?: string; thumbnailUrl?: string; [key: string]: unknown };
+
 export default function EditLessonPage() {
   const params = useParams();
   const router = useRouter();
-  const courseId = params.courseId;
-  const chapterId = params.chapterId;
-  const lessonId = params.lessonId;
+  const courseId = params.courseId as string;
+  const chapterId = params.chapterId as string;
+  const lessonId = params.lessonId as string;
 
-  const [lesson, setLesson] = useState(null);
+  const [lesson, setLesson] = useState<LessonShape | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -50,8 +52,9 @@ export default function EditLessonPage() {
           videoUrl: lessonData.videoUrl ?? "",
           thumbnailUrl: lessonData.thumbnailUrl ?? "",
         });
-      } catch (err) {
-        toast.error(err?.response?.data?.message || "Failed to load lesson");
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { message?: string } } };
+        toast.error(e?.response?.data?.message || "Failed to load lesson");
         router.push(`/dashboard/courses/${courseId}/edit`);
       } finally {
         setLoading(false);
@@ -75,9 +78,10 @@ export default function EditLessonPage() {
         }
       );
       toast.success("Lesson saved");
-      setLesson((prev) => ({ ...prev, ...form }));
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to save lesson");
+      setLesson((prev) => (prev ? { ...prev, ...form } : { ...form }));
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || "Failed to save lesson");
     } finally {
       setSaving(false);
     }

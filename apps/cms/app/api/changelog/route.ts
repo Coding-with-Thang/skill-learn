@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { slugify } from "@skill-learn/lib/utils/utils";
@@ -7,7 +7,7 @@ import { slugify } from "@skill-learn/lib/utils/utils";
  * GET /api/changelog
  * Returns all changelog entries
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const publishedOnly = searchParams.get('published') === 'true';
@@ -35,7 +35,7 @@ export async function GET(request) {
  * POST /api/changelog
  * Creates a new changelog entry
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

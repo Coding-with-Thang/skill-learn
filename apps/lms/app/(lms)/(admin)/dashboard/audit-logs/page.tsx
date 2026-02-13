@@ -31,15 +31,15 @@ import { Avatar, AvatarFallback } from "@skill-learn/ui/components/avatar"
 
 export default function AuditLogsPage() {
   const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
-  const [dateRange, setDateRange] = useState({ from: null, to: null })
-  const debounceTimerRef = useRef(null)
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null })
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     fetchLogs()
   }, [fetchLogs])
 
   // Debounced filter update function
-  const debouncedSetFilters = (newFilters) => {
+  const debouncedSetFilters = (newFilters: Record<string, unknown>) => {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
@@ -48,15 +48,15 @@ export default function AuditLogsPage() {
     }, 300)
   }
 
-  const handleDateRangeChange = (range) => {
-    setDateRange(range)
+  const handleDateRangeChange = (range: { from: Date | null; to: Date | null } | undefined) => {
+    setDateRange(range ?? { from: null, to: null })
     debouncedSetFilters({
       startDate: range?.from ? range.from.toISOString() : null,
       endDate: range?.to ? range.to.toISOString() : null,
     })
   }
 
-  const handleFilterChange = (newFilters) => {
+  const handleFilterChange = (newFilters: Record<string, unknown>) => {
     debouncedSetFilters(newFilters)
   }
 
@@ -114,7 +114,7 @@ export default function AuditLogsPage() {
               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Resource</label>
               <Select
                 value={filters.resource || "all"}
-                onValueChange={(value) => handleFilterChange({ resource: value === "all" ? null : value })}
+                onValueChange={(value: string) => handleFilterChange({ resource: value === "all" ? null : value })}
               >
                 <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
                   <SelectValue placeholder="All Resources" />
@@ -132,7 +132,7 @@ export default function AuditLogsPage() {
               <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Action</label>
               <Select
                 value={filters.action || "all"}
-                onValueChange={(value) => handleFilterChange({ action: value === "all" ? null : value })}
+                onValueChange={(value: string) => handleFilterChange({ action: value === "all" ? null : value })}
               >
                 <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
                   <SelectValue placeholder="All Actions" />
@@ -194,7 +194,7 @@ export default function AuditLogsPage() {
                     </TableRow>
                   ))
                 ) : logs && logs.length > 0 ? (
-                  logs.map((log) => (
+                  logs.map((log: { id: string; timestamp: string; user?: { firstName?: string; lastName?: string; id?: string }; action: string; resource: string; details?: string }) => (
                     <TableRow key={log.id} className="hover:bg-primary/5 transition-colors border-border/30 group">
                       <TableCell className="py-4">
                         <div className="flex flex-col">

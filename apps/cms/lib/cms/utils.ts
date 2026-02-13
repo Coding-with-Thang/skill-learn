@@ -62,9 +62,9 @@ export function getProgressColor(percentage) {
   return "bg-green-500";
 }
 
-export function formatTimeAgo(date) {
+export function formatTimeAgo(date: string | number | Date) {
   const now = new Date();
-  const diff = now - new Date(date);
+  const diff = now.getTime() - new Date(date).getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);

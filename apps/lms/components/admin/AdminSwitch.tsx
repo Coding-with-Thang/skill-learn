@@ -3,11 +3,18 @@
 import { forwardRef } from "react";
 import { cn } from "@skill-learn/lib/utils";
 
+export interface AdminSwitchProps {
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
 /**
  * Admin dashboard switch - compact style used on Feature Management and elsewhere.
  * Use this for consistent switch appearance across admin pages (not the bulkier UI Switch).
  */
-export const AdminSwitch = forwardRef(function AdminSwitch(
+export const AdminSwitch = forwardRef<HTMLButtonElement, AdminSwitchProps>(function AdminSwitch(
   { checked, onCheckedChange, disabled = false, className, ...props },
   ref
 ) {

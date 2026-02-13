@@ -21,8 +21,11 @@ import { Users, BookOpen } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios";
 import { ExposureMasteryBarChart } from "@/components/flashcards/ExposureMasteryBarChart";
 
+type ByCategoryItem = { categoryId?: string; categoryName: string; cardCount?: number; userCount?: number; avgExposure?: number; avgMastery?: number };
+type LearningAnalyticsData = { byCategory?: ByCategoryItem[]; totalCards?: number; totalUsers?: number; totalExposures?: number; avgMasteryOverall?: number };
+
 export default function FlashCardsLearningAnalyticsPage() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<LearningAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,7 +33,7 @@ export default function FlashCardsLearningAnalyticsPage() {
       .get("/admin/flashcards/learning-analytics")
       .then((res) => {
         const d = res.data?.data ?? res.data;
-        setData(d);
+        setData(d as LearningAnalyticsData);
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -41,8 +44,8 @@ export default function FlashCardsLearningAnalyticsPage() {
   const byCategory = data?.byCategory ?? [];
   const chartData = byCategory.map((c) => ({
     category: c.categoryName,
-    avgExposure: Math.round(c.avgExposure * 10) / 10,
-    avgMastery: Math.round(c.avgMastery * 100),
+    avgExposure: Math.round((c.avgExposure ?? 0) * 10) / 10,
+    avgMastery: Math.round((c.avgMastery ?? 0) * 100),
   }));
 
   return (
@@ -119,8 +122,8 @@ export default function FlashCardsLearningAnalyticsPage() {
                     <TableCell>{c.categoryName}</TableCell>
                     <TableCell>{c.cardCount}</TableCell>
                     <TableCell>{c.userCount}</TableCell>
-                    <TableCell>{c.avgExposure.toFixed(1)}</TableCell>
-                    <TableCell>{(c.avgMastery * 100).toFixed(0)}%</TableCell>
+                    <TableCell>{(c.avgExposure ?? 0).toFixed(1)}</TableCell>
+                    <TableCell>{((c.avgMastery ?? 0) * 100).toFixed(0)}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

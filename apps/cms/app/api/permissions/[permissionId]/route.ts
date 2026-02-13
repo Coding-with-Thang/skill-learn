@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
+import type { RouteContext } from "@/types";
+
+type PermissionIdParams = { permissionId: string };
 
 /**
  * GET /api/permissions/[permissionId]
  * Get a single permission by ID
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<PermissionIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -102,7 +108,10 @@ export async function GET(request, { params }) {
  * PUT /api/permissions/[permissionId]
  * Update a permission (super admin only)
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<PermissionIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -197,7 +206,10 @@ export async function PUT(request, { params }) {
  * Delete a permission (super admin only)
  * Note: Prefer deprecating over deleting to maintain audit trail
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<PermissionIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

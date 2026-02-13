@@ -2,9 +2,7 @@
   "name": "skill-learn",
   "version": "0.0.4",
   "private": true,
-  "workspaces": [
-    "apps/*"
-  ],
+  "workspaces": ["apps/*","packages/*"],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -14,6 +12,8 @@
     "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma"
   },
   "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.0.0",
     "turbo": "^2.8.7",
     "typescript": "^5.9.3",
     "eslint-config-prettier": "^10.1.8",

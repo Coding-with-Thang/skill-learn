@@ -34,7 +34,7 @@ import { toast } from "sonner";
 import api from "@skill-learn/lib/utils/axios";
 
 export default function CreateCoursePage() {
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [pending, startTransition] = useTransition();
     const router = useRouter();
@@ -97,7 +97,7 @@ export default function CreateCoursePage() {
                         // details comes from zod.flatten()
                         console.warn('Validation details:', payload.details);
                         const fieldErrors = payload.details.fieldErrors || {};
-                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => (Array.isArray(v) ? v : []).map((m: string) => `${k}: ${m}`));
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
@@ -107,14 +107,14 @@ export default function CreateCoursePage() {
                         toast.error(payload.message || 'An error occurred while creating the course');
                     }
                 }
-            } catch (error) {
-                // If axios returned a 400 with validation details, surface them
-                const resp = error?.response?.data;
+            } catch (error: unknown) {
+                const e = error as { response?: { data?: { details?: { fieldErrors?: Record<string, string[]> }; message?: string } }; message?: string };
+                const resp = e?.response?.data;
                 if (resp) {
                     console.error('/api/admin/courses/create error response:', resp);
                     if (resp.details) {
                         const fieldErrors = resp.details.fieldErrors || {};
-                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => v.map((m) => `${k}: ${m}`));
+                        const messages = Object.entries(fieldErrors).flatMap(([k, v]) => (Array.isArray(v) ? v : []).map((m: string) => `${k}: ${m}`));
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
@@ -123,7 +123,7 @@ export default function CreateCoursePage() {
                         return;
                     }
                 }
-                toast.error(error?.message || 'An error occurred while creating the course');
+                toast.error(e?.message || 'An error occurred while creating the course');
                 return;
             }
         });

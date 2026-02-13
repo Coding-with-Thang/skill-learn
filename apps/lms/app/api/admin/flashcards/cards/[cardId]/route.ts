@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import {
@@ -11,15 +11,17 @@ import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { flashCardUpdateSchema } from "@/lib/zodSchemas";
 import { getTenantId } from "@skill-learn/lib/utils/tenant";
 import { computeFingerprint } from "@skill-learn/lib/utils/flashCardFingerprint";
+import type { RouteContext } from "@/types";
 
-async function getParams(context) {
-  return await context.params;
-}
+type CardIdParams = { cardId: string };
 
 /**
  * PUT: Update flash card (admin)
  */
-export async function PUT(req, context) {
+export async function PUT(
+  req: NextRequest,
+  { params }: RouteContext<CardIdParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -31,7 +33,7 @@ export async function PUT(req, context) {
       });
     }
 
-    const { cardId } = await getParams(context);
+    const { cardId } = await params;
     const data = await validateRequestBody(req, flashCardUpdateSchema);
 
     const existing = await prisma.flashCard.findFirst({
@@ -65,7 +67,10 @@ export async function PUT(req, context) {
 /**
  * DELETE: Delete flash card (admin)
  */
-export async function DELETE(req, context) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: RouteContext<CardIdParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -77,7 +82,7 @@ export async function DELETE(req, context) {
       });
     }
 
-    const { cardId } = await getParams(context);
+    const { cardId } = await params;
 
     const existing = await prisma.flashCard.findFirst({
       where: { id: cardId, tenantId },

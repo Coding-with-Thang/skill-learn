@@ -28,18 +28,18 @@ import { useBillingStore } from "@skill-learn/lib/stores/billingStore";
 
 export default function BillingPage() {
   // Use selectors to only re-render when specific state changes
-  const billing = useBillingStore((state) => state.billing);
-  const subscription = useBillingStore((state) => state.subscription);
-  const storeLoading = useBillingStore((state) => state.isLoading);
-  const storeError = useBillingStore((state) => state.error);
-  const fetchBillingData = useBillingStore((state) => state.fetchBillingData);
-  const openPortal = useBillingStore((state) => state.openBillingPortal);
-  const cancelSubscription = useBillingStore((state) => state.cancelSubscription);
-  const resumeSubscription = useBillingStore((state) => state.resumeSubscription);
+  const billing = useBillingStore((state: { billing: unknown }) => state.billing);
+  const subscription = useBillingStore((state: { subscription: unknown }) => state.subscription);
+  const storeLoading = useBillingStore((state: { isLoading: boolean }) => state.isLoading);
+  const storeError = useBillingStore((state: { error: unknown }) => state.error);
+  const fetchBillingData = useBillingStore((state: { fetchBillingData: () => void }) => state.fetchBillingData);
+  const openPortal = useBillingStore((state: { openBillingPortal: () => void }) => state.openBillingPortal);
+  const cancelSubscription = useBillingStore((state: { cancelSubscription: () => void }) => state.cancelSubscription);
+  const resumeSubscription = useBillingStore((state: { resumeSubscription: () => void }) => state.resumeSubscription);
 
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(null);
-  const [error, setError] = useState(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   // Load data on mount
@@ -48,8 +48,9 @@ export default function BillingPage() {
       try {
         setLoading(true);
         await fetchBillingData();
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || "Failed to fetch billing");
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { error?: string } }; message?: string };
+        setError(e.response?.data?.error || e.message || "Failed to fetch billing");
       } finally {
         setLoading(false);
       }
@@ -66,8 +67,9 @@ export default function BillingPage() {
     try {
       setActionLoading("portal");
       await openPortal();
-    } catch (err) {
-      toast.error(err.response?.data?.error || err.message || "Failed to open billing portal");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      toast.error(e.response?.data?.error || e.message || "Failed to open billing portal");
     } finally {
       setActionLoading(null);
     }
@@ -83,8 +85,9 @@ export default function BillingPage() {
       setActionLoading("cancel");
       const result = await cancelSubscription();
       toast.success(result.message || "Subscription canceled successfully");
-    } catch (err) {
-      toast.error(err.response?.data?.error || err.message || "Failed to cancel subscription");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      toast.error(e.response?.data?.error || e.message || "Failed to cancel subscription");
     } finally {
       setActionLoading(null);
     }
@@ -96,8 +99,9 @@ export default function BillingPage() {
       setActionLoading("resume");
       const result = await resumeSubscription();
       toast.success(result.message || "Subscription resumed successfully");
-    } catch (err) {
-      toast.error(err.response?.data?.error || err.message || "Failed to resume subscription");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      toast.error(e.response?.data?.error || e.message || "Failed to resume subscription");
     } finally {
       setActionLoading(null);
     }

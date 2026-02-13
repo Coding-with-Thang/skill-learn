@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { chapterSchema } from "@/lib/zodSchemas";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
@@ -6,9 +6,15 @@ import { getTenantId } from "@skill-learn/lib/utils/tenant";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { resolveCourseId, generateUniqueChapterSlug } from "@/lib/courses";
+import type { RouteContext } from "@/types";
+
+type CourseIdParams = { courseId: string };
 
 // POST - Create a chapter for a course. courseId param may be id or slug.
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<CourseIdParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;

@@ -45,11 +45,13 @@ const OVERRIDE_MODES = [
   },
 ];
 
+type CategoryItem = { id: string; name: string; cardCount?: number; priority?: number };
+
 export default function FlashCardsPrioritiesPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [overrideMode, setOverrideMode] = useState("USER_OVERRIDES_ADMIN");
   const [loading, setLoading] = useState(true);
-  const [savingPriority, setSavingPriority] = useState(null);
+  const [savingPriority, setSavingPriority] = useState<string | null>(null);
   const [savingSettings, setSavingSettings] = useState(false);
 
   const fetchData = async () => {
@@ -61,19 +63,20 @@ export default function FlashCardsPrioritiesPage() {
       ]);
       const prioritiesData = prioritiesRes.data?.data ?? prioritiesRes.data;
       const settingsData = settingsRes.data?.data ?? settingsRes.data;
-      setCategories(prioritiesData.categories ?? []);
+      setCategories((prioritiesData.categories ?? []) as CategoryItem[]);
       setOverrideMode(
         settingsData.settings?.overrideMode ?? "USER_OVERRIDES_ADMIN"
       );
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load data");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to load data");
       setCategories([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePriorityChange = async (categoryId, newPriority, previousPriority) => {
+  const handlePriorityChange = async (categoryId: string, newPriority: number, previousPriority: number) => {
     try {
       setSavingPriority(categoryId);
       await api.post("/admin/flashcards/priorities", {
@@ -86,8 +89,9 @@ export default function FlashCardsPrioritiesPage() {
         )
       );
       toast.success("Priority updated");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update priority");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to update priority");
       setCategories((prev) =>
         prev.map((c) =>
           c.id === categoryId ? { ...c, priority: previousPriority } : c
@@ -98,14 +102,15 @@ export default function FlashCardsPrioritiesPage() {
     }
   };
 
-  const handleOverrideModeChange = async (value) => {
+  const handleOverrideModeChange = async (value: string) => {
     try {
       setSavingSettings(true);
       await api.patch("/admin/flashcards/settings", { overrideMode: value });
       setOverrideMode(value);
       toast.success("Override mode updated");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update settings");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to update settings");
     } finally {
       setSavingSettings(false);
     }
@@ -202,7 +207,7 @@ export default function FlashCardsPrioritiesPage() {
                           cat.id === c.id ? { ...cat, priority: num } : cat
                         )
                       );
-                      handlePriorityChange(c.id, num, previousPriority);
+                      handlePriorityChange(c.id, num, previousPriority ?? 1);
                     }}
                     disabled={savingPriority === c.id}
                   >

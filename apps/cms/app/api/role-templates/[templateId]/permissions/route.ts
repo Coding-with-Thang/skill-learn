@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
+import type { RouteContext } from "@/types";
+
+type TemplateIdParams = { templateId: string };
 
 /**
  * GET /api/role-templates/[templateId]/permissions
  * Get all permissions assigned to a role template
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -84,7 +90,10 @@ export async function GET(request, { params }) {
  * POST /api/role-templates/[templateId]/permissions
  * Add permissions to a role template
  */
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -196,7 +205,10 @@ export async function POST(request, { params }) {
  * DELETE /api/role-templates/[templateId]/permissions
  * Remove permissions from a role template
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -204,7 +216,7 @@ export async function DELETE(request, { params }) {
     }
 
     const { templateId } = await params;
-    const body = await request.json();
+    const body = await _request.json();
     const { permissionIds } = body;
 
     // Validate input

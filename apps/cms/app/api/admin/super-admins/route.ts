@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
@@ -6,7 +6,7 @@ import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 /**
  * Get list of all super admins
  */
-export async function GET(request) {
+export async function GET(_request: NextRequest) {
   try {
     // Check if requester is super admin
     const adminResult = await requireSuperAdmin();
@@ -68,7 +68,7 @@ export async function GET(request) {
  * Only existing super admins can promote new super admins.
  * The user must already have a Clerk account (e.g. from LMS sign-up).
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

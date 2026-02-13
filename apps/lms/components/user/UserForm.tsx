@@ -16,7 +16,8 @@ import { toast } from "sonner"
 import { userCreateSchema, userUpdateSchema } from "@/lib/zodSchemas"
 import api from "@skill-learn/lib/utils/axios"
 
-export default function UserForm({ user = null, onSuccess }) {
+type UserFormProps = { user?: Record<string, unknown> | null; onSuccess?: () => void | Promise<void> };
+export default function UserForm({ user = null, onSuccess }: UserFormProps) {
     const { createUser, updateUser, isLoading, users } = useUsersStore()
     const { roles, tenant, fetchRoles } = useRolesStore()
     const hasPermission = usePermissionsStore((s) => s.hasPermission)

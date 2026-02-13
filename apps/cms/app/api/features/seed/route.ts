@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { DEFAULT_FEATURES } from "@skill-learn/lib/constants/defaultFeatures";
@@ -7,7 +7,7 @@ import { DEFAULT_FEATURES } from "@skill-learn/lib/constants/defaultFeatures";
  * POST /api/features/seed
  * Seed default features (only creates if they don't exist)
  */
-export async function POST(request) {
+export async function POST(_request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -20,7 +20,7 @@ export async function POST(request) {
 
     // Filter out features that already exist
     const newFeatures = DEFAULT_FEATURES.filter(
-      (f) => !existingKeys.has(f.key),
+      (f: { key: string }) => !existingKeys.has(f.key),
     );
 
     if (newFeatures.length === 0) {
@@ -41,7 +41,7 @@ export async function POST(request) {
       success: true,
       message: `Created ${newFeatures.length} new feature(s)`,
       createdCount: newFeatures.length,
-      createdFeatures: newFeatures.map((f) => f.key),
+      createdFeatures: newFeatures.map((f: { key: string }) => f.key),
       existingCount: existingFeatures.length,
     });
   } catch (error) {
@@ -57,7 +57,7 @@ export async function POST(request) {
  * GET /api/features/seed
  * Get the list of default features that would be seeded
  */
-export async function GET(request) {
+export async function GET(_request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

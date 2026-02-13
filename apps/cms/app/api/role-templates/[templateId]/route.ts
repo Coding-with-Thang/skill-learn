@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
+import type { RouteContext } from "@/types";
+
+type TemplateIdParams = { templateId: string };
 
 /**
  * GET /api/role-templates/[templateId]
  * Get a single role template by ID
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -98,7 +104,10 @@ export async function GET(request, { params }) {
  * PUT /api/role-templates/[templateId]
  * Update a role template (super admin only)
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -250,7 +259,10 @@ export async function PUT(request, { params }) {
  * DELETE /api/role-templates/[templateId]
  * Delete a role template (super admin only)
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<TemplateIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

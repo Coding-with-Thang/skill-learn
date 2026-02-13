@@ -14,8 +14,10 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import api from "@skill-learn/lib/utils/axios";
 import { ExposureMasteryBarChart } from "@/components/flashcards/ExposureMasteryBarChart";
 
+type AnalyticsData = { byCategory?: { categoryName?: string; avgExposure?: number; avgMastery?: number }[]; totalCards?: number; totalExposures?: number; avgMasteryOverall?: number };
+
 export default function FlashCardsAnalyticsPage() {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export default function FlashCardsAnalyticsPage() {
       .get("/flashcards/analytics")
       .then((res) => {
         const d = res.data?.data ?? res.data;
-        setData(d);
+        setData(d as AnalyticsData);
       })
       .catch(() => setData(null))
       .finally(() => setLoading(false));
@@ -34,8 +36,8 @@ export default function FlashCardsAnalyticsPage() {
   const byCategory = data?.byCategory ?? [];
   const chartData = byCategory.map((c) => ({
     category: c.categoryName,
-    avgExposure: Math.round(c.avgExposure * 10) / 10,
-    avgMastery: Math.round(c.avgMastery * 100),
+    avgExposure: Math.round((c.avgExposure ?? 0) * 10) / 10,
+    avgMastery: Math.round((c.avgMastery ?? 0) * 100),
   }));
 
   return (
@@ -45,6 +47,7 @@ export default function FlashCardsAnalyticsPage() {
           { name: "Flash Cards", href: "/flashcards" },
           { name: "My Analytics", href: "/flashcards/analytics" },
         ]}
+        endtrail="My Analytics"
       />
       <div className="max-w-4xl mx-auto space-y-6 pb-8">
         <div>

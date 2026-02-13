@@ -66,7 +66,7 @@ export async function PUT(
 
     const client = typeof clerkClient === "function" ? await clerkClient() : clerkClient;
 
-    const updateData = {};
+    const updateData: { firstName?: string; lastName?: string; username?: string } = {};
     if (firstName !== undefined) {
       const v = String(firstName).trim();
       if (!v) {
@@ -130,7 +130,7 @@ export async function PUT(
   } catch (error) {
     console.error("Error updating tenant user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update user. Please try again." },
+      { error: error instanceof Error ? error.message : "Failed to update user. Please try again." },
       { status: 500 }
     );
   }
@@ -173,7 +173,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting tenant user:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to delete user" },
+      { error: error instanceof Error ? error.message : "Failed to delete user" },
       { status: 500 }
     );
   }

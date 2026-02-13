@@ -92,7 +92,8 @@ const SignInPage = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState(''); // 2FA code
-  const [twoFactorStrategy, setTwoFactorStrategy] = useState(null); // Store which 2FA strategy we're using
+  type SecondFactorStrategy = { strategy: string; phoneNumberId?: string; emailAddressId?: string };
+  const [twoFactorStrategy, setTwoFactorStrategy] = useState<SecondFactorStrategy | null>(null);
   const [error, setError] = useState(''); // Error message for sign-in
   const [resetError, setResetError] = useState(''); // Error message for password reset
   const [twoFactorError, setTwoFactorError] = useState(''); // Error message for 2FA
@@ -130,34 +131,34 @@ const SignInPage = () => {
       setError(''); // Clear previous errors
 
       // WORKAROUND: Try username directly first (for tenants that don't require email)
-      // If Clerk supports username as identifier, this will work without needing email/phone lookup
       let identifier = username;
-      let result = null;
+      type SignInResult = { status: string; createdSessionId?: string; supportedSecondFactors?: unknown[] };
+      let result: SignInResult | null = null;
 
       // First, try username directly (if Clerk has username authentication enabled)
       try {
         result = await signIn.create({
           identifier: username,
           password: password,
-        });
+        }) as SignInResult;
 
         // If it works, great! Username authentication is enabled
-        if (result.status === 'complete') {
+        if (result && result.status === 'complete' && result.createdSessionId) {
           await setActive({ session: result.createdSessionId });
           router.push('/home');
           setLoading(false);
           return;
-        } else if (result.status === 'needs_second_factor') {
+        } else if (result && result.status === 'needs_second_factor') {
           // 2FA required - username auth works, continue to 2FA handling below
           identifier = username;
         } else {
           // Some other status - might need lookup, but continue with result
           identifier = username;
         }
-      } catch (directError) {
+      } catch (directError: unknown) {
         // Username direct auth failed - likely "identifier is invalid"
-        // This means Clerk doesn't support username-only auth, need email/phone lookup
-        const errorMsg = directError.errors?.[0]?.message || directError.message || '';
+        const e = directError as { errors?: { message?: string }[]; message?: string };
+        const errorMsg = e.errors?.[0]?.message || e.message || '';
         const isInvalidIdentifier = errorMsg.toLowerCase().includes('invalid') ||
           errorMsg.toLowerCase().includes('identifier') ||
           errorMsg.toLowerCase().includes('not found');
@@ -205,7 +206,7 @@ const SignInPage = () => {
                 result = await signIn.create({
                   identifier: username,
                   password: password,
-                });
+                }) as SignInResult;
               } catch (retryError) {
                 // Still failed, use the identifier from lookup (shouldn't happen, but fallback)
                 identifier = lookupData.identifier || lookupData.email || lookupData.phoneNumber;
@@ -218,7 +219,7 @@ const SignInPage = () => {
                 result = await signIn.create({
                   identifier: identifier,
                   password: password,
-                });
+                }) as SignInResult;
               }
             } else if (lookupData.identifier) {
               identifier = lookupData.identifier;
@@ -239,7 +240,7 @@ const SignInPage = () => {
               result = await signIn.create({
                 identifier: identifier,
                 password: password,
-              });
+              }) as SignInResult;
             }
           } else {
             let errorMessage = 'User not found';
@@ -269,18 +270,18 @@ const SignInPage = () => {
         }
       }
 
-      if (result.status === 'complete') {
+      if (result && result.status === 'complete' && result.createdSessionId) {
         await setActive({ session: result.createdSessionId });
         router.push('/home');
-      } else if (result.status === 'needs_second_factor') {
+      } else if (result && result.status === 'needs_second_factor') {
         // Check available second factor strategies
         const supportedFactors = result.supportedSecondFactors || [];
 
         // Find TOTP factor (no preparation needed)
-        const totpFactor = supportedFactors.find(f => f.strategy === 'totp');
+        const totpFactor = supportedFactors.find((f: unknown) => (f as { strategy?: string }).strategy === 'totp');
         if (totpFactor) {
           setMode('2fa');
-          setTwoFactorStrategy(totpFactor);
+          setTwoFactorStrategy(totpFactor as SecondFactorStrategy);
           setError('');
           toast.info('Please enter your authenticator app code');
           setLoading(false);
@@ -288,22 +289,22 @@ const SignInPage = () => {
         }
 
         // Find phone code factor (requires preparation)
-        const phoneFactor = supportedFactors.find(f => f.strategy === 'phone_code');
+        const phoneFactor = supportedFactors.find((f: unknown) => (f as { strategy?: string }).strategy === 'phone_code');
         if (phoneFactor) {
           try {
             await signIn.prepareSecondFactor({
               strategy: 'phone_code',
-              phoneNumberId: phoneFactor.phoneNumberId,
+              phoneNumberId: (phoneFactor as { phoneNumberId: string }).phoneNumberId,
             });
             setMode('2fa');
-            setTwoFactorStrategy(phoneFactor);
+            setTwoFactorStrategy(phoneFactor as SecondFactorStrategy);
             setError('');
             toast.info('Please enter the code sent to your phone');
             setLoading(false);
             return;
-          } catch (prepError) {
-            console.error('Error preparing phone code 2FA:', prepError);
-            const errorMsg = prepError.errors?.[0]?.message || prepError.message || 'Unable to send verification code. Please try again or contact support.';
+          } catch (prepError: unknown) {
+            const pe = prepError as { errors?: { message?: string }[]; message?: string };
+            const errorMsg = pe.errors?.[0]?.message || pe.message || 'Unable to send verification code. Please try again or contact support.';
             setError(errorMsg);
             setLoading(false);
             return;
@@ -311,22 +312,22 @@ const SignInPage = () => {
         }
 
         // Find email code factor (requires preparation)
-        const emailFactor = supportedFactors.find(f => f.strategy === 'email_code');
+        const emailFactor = supportedFactors.find((f: unknown) => (f as { strategy?: string }).strategy === 'email_code');
         if (emailFactor) {
           try {
             await signIn.prepareSecondFactor({
               strategy: 'email_code',
-              emailAddressId: emailFactor.emailAddressId,
+              emailAddressId: (emailFactor as { emailAddressId: string }).emailAddressId,
             });
             setMode('2fa');
-            setTwoFactorStrategy(emailFactor);
+            setTwoFactorStrategy(emailFactor as SecondFactorStrategy);
             setError('');
             toast.info('Please enter the code sent to your email');
             setLoading(false);
             return;
-          } catch (prepError) {
-            console.error('Error preparing email code 2FA:', prepError);
-            const errorMsg = prepError.errors?.[0]?.message || prepError.message || 'Unable to send verification code. Please try again or contact support.';
+          } catch (prepError: unknown) {
+            const pe = prepError as { errors?: { message?: string }[]; message?: string };
+            const errorMsg = pe.errors?.[0]?.message || pe.message || 'Unable to send verification code. Please try again or contact support.';
             setError(errorMsg);
             setLoading(false);
             return;
@@ -339,19 +340,17 @@ const SignInPage = () => {
       } else {
         setError('Sign-in incomplete. Please try again.');
       }
-    } catch (err) {
-      console.error('Sign in error:', err);
-      // Extract error message from Clerk error object
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string; longMessage?: string }[]; message?: string };
       let errorMessage = 'Invalid username or password';
-
-      if (err.errors && Array.isArray(err.errors) && err.errors.length > 0) {
-        errorMessage = err.errors[0].message || err.errors[0].longMessage || errorMessage;
-      } else if (err.message) {
-        errorMessage = err.message;
+      if (e.errors && Array.isArray(e.errors) && e.errors.length > 0) {
+        const first = e.errors[0];
+        errorMessage = first?.message || (first as { longMessage?: string })?.longMessage || errorMessage;
+      } else if (e.message) {
+        errorMessage = e.message;
       } else if (typeof err === 'string') {
         errorMessage = err;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -369,9 +368,9 @@ const SignInPage = () => {
         redirectUrl: '/home',
         redirectUrlComplete: '/home',
       });
-    } catch (err) {
-      console.error('Social sign in error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Failed to sign in with social provider. Please check if this provider is enabled in your Clerk dashboard.';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Failed to sign in with social provider. Please check if this provider is enabled in your Clerk dashboard.';
       setError(errorMessage);
       setLoading(false);
     }
@@ -396,11 +395,12 @@ const SignInPage = () => {
       });
       await signIn.prepareFirstFactor({
         strategy: 'reset_password_email_code',
-      });
+        emailAddressId: (signIn as unknown as { firstFactor?: { emailAddressId?: string } }).firstFactor?.emailAddressId ?? '',
+      } as { strategy: 'reset_password_email_code'; emailAddressId: string });
       toast.success('Password reset code sent to your email!');
-    } catch (err) {
-      console.error('Password reset error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Failed to send reset code';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Failed to send reset code';
       setResetError(errorMessage);
     } finally {
       setLoading(false);
@@ -427,21 +427,21 @@ const SignInPage = () => {
         password: newPassword,
       });
 
-      if (result.status === 'complete') {
+      if (result.status === 'complete' && result.createdSessionId) {
         await setActive({ session: result.createdSessionId });
         toast.success('Password reset successfully!');
         router.push('/home');
       }
-    } catch (err) {
-      console.error('Password reset error:', err);
-      const errorMessage = err.errors?.[0]?.message || 'Failed to reset password';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[] };
+      const errorMessage = e.errors?.[0]?.message || 'Failed to reset password';
       toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTwoFactor = async (e) => {
+  const handleTwoFactor = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!signInLoaded) return;
@@ -459,10 +459,10 @@ const SignInPage = () => {
         const strategy = supportedFactors[0];
         if (strategy) {
           const result = await signIn.attemptSecondFactor({
-            strategy: strategy.strategy,
+            strategy: (strategy.strategy === 'email_link' ? 'email_code' : strategy.strategy) as 'phone_code' | 'email_code' | 'totp' | 'backup_code',
             code: twoFactorCode,
-            ...(strategy.phoneNumberId && { phoneNumberId: strategy.phoneNumberId }),
-            ...(strategy.emailAddressId && { emailAddressId: strategy.emailAddressId }),
+            ...('phoneNumberId' in strategy && strategy.phoneNumberId && { phoneNumberId: strategy.phoneNumberId }),
+            ...('emailAddressId' in strategy && strategy.emailAddressId && { emailAddressId: strategy.emailAddressId }),
           });
 
           if (result.status === 'complete') {
@@ -474,13 +474,13 @@ const SignInPage = () => {
       } else {
         // Use the stored strategy
         const result = await signIn.attemptSecondFactor({
-          strategy: twoFactorStrategy.strategy,
+          strategy: twoFactorStrategy.strategy as 'phone_code' | 'email_code' | 'totp' | 'backup_code',
           code: twoFactorCode,
-          ...(twoFactorStrategy.phoneNumberId && { phoneNumberId: twoFactorStrategy.phoneNumberId }),
-          ...(twoFactorStrategy.emailAddressId && { emailAddressId: twoFactorStrategy.emailAddressId }),
+          ...('phoneNumberId' in twoFactorStrategy && twoFactorStrategy.phoneNumberId && { phoneNumberId: twoFactorStrategy.phoneNumberId }),
+          ...('emailAddressId' in twoFactorStrategy && twoFactorStrategy.emailAddressId && { emailAddressId: twoFactorStrategy.emailAddressId }),
         });
 
-        if (result.status === 'complete') {
+        if (result.status === 'complete' && result.createdSessionId) {
           await setActive({ session: result.createdSessionId });
           router.push('/home');
           return;
@@ -489,8 +489,9 @@ const SignInPage = () => {
 
       // If we get here, the code was invalid
       setTwoFactorError('Invalid code. Please try again.');
-    } catch (err) {
-      const errorMessage = err.errors?.[0]?.message || err.message || 'Invalid authentication code. Please try again.';
+    } catch (err: unknown) {
+      const e = err as { errors?: { message?: string }[]; message?: string };
+      const errorMessage = e.errors?.[0]?.message || e.message || 'Invalid authentication code. Please try again.';
       setTwoFactorError(errorMessage);
     } finally {
       setLoading(false);

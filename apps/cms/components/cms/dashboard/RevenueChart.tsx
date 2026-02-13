@@ -13,11 +13,12 @@ const timeRanges = ['7D', '30D', '90D', '1Y']
 export default function RevenueChart({ data }) {
   const { selectedTimeRange, setTimeRange } = useDashboardStore()
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = (props: { active?: boolean; payload?: readonly { color?: string; name?: string; value?: number }[]; label?: string | number }) => {
+    const { active, payload, label } = props
     if (active && payload && payload.length) {
       return (
         <div className="rounded-lg border bg-card p-3 shadow-lg">
-          <p className="text-sm font-medium mb-2">{label}</p>
+          <p className="text-sm font-medium mb-2">{label != null ? String(label) : ''}</p>
           {payload.map((entry, index) => (
             <div key={index} className="flex items-center gap-2 text-xs">
               <div
@@ -25,7 +26,7 @@ export default function RevenueChart({ data }) {
                 style={{ backgroundColor: entry.color }}
               />
               <span className="text-muted-foreground">{entry.name}:</span>
-              <span className="font-medium">${entry.value.toLocaleString()}</span>
+              <span className="font-medium">${entry.value != null ? entry.value.toLocaleString() : ''}</span>
             </div>
           ))}
         </div>
@@ -98,7 +99,7 @@ export default function RevenueChart({ data }) {
                   axisLine={false}
                   tickFormatter={(value) => `$${value / 1000}k`}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={(props) => <CustomTooltip active={props.active} payload={props.payload} label={props.label} />} />
                 <Legend
                   wrapperStyle={{ paddingTop: '20px' }}
                   iconType="circle"

@@ -36,11 +36,13 @@ import { cn } from "@skill-learn/lib/utils";
 
 const emptyCard = () => ({ question: "", answer: "", tags: "", difficulty: "none" });
 
+type CategoryItem = { id: string; name: string };
+
 export default function CreateFlashCardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [categoryId, setCategoryId] = useState("");
   const [batchLimit, setBatchLimit] = useState(30);
   const [subscriptionTier, setSubscriptionTier] = useState("");
@@ -69,7 +71,7 @@ export default function CreateFlashCardPage() {
     ])
       .then(([catRes, limitRes]) => {
         const cats = catRes.data?.data?.categories ?? catRes.data?.categories ?? [];
-        setCategories(cats);
+        setCategories((cats ?? []) as CategoryItem[]);
         if (cats.length && !categoryId) setCategoryId(cats[0].id);
         const data = limitRes.data?.data ?? limitRes.data ?? {};
         const tier = data.subscriptionTier ?? "";
@@ -129,8 +131,9 @@ export default function CreateFlashCardPage() {
       const created = res.data?.data?.created ?? res.data?.created ?? valid.length;
       toast.success(`Created ${created} card${created !== 1 ? "s" : ""} successfully!`);
       router.push("/flashcards");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to create cards");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to create cards");
     } finally {
       setSaving(false);
     }

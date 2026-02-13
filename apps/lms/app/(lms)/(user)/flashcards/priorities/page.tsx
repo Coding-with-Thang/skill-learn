@@ -67,6 +67,7 @@ export default function FlashCardPrioritiesPage() {
           { name: "Flash Cards", href: "/flashcards" },
           { name: "My Priorities", href: "/flashcards/priorities" },
         ]}
+        endtrail="My Priorities"
       />
       <div className="max-w-2xl mx-auto space-y-6 pb-8">
         <div>

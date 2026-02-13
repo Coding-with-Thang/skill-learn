@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { lessonSchema } from "@/lib/zodSchemas";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
@@ -6,15 +6,21 @@ import { getTenantId } from "@skill-learn/lib/utils/tenant";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { resolveCourseId, generateUniqueLessonSlug } from "@/lib/courses";
+import type { RouteContext } from "@/types";
 
-function resolveChapterWhere(courseId, chapterIdOrSlug) {
+type CourseChapterParams = { courseId: string; chapterId: string };
+
+function resolveChapterWhere(courseId: string, chapterIdOrSlug: string) {
   return /^[a-f0-9]{24}$/i.test(chapterIdOrSlug)
     ? { id: chapterIdOrSlug, courseId }
     : { slug: chapterIdOrSlug, courseId };
 }
 
 // GET - List lessons in a chapter. courseId and chapterId params may be id or slug.
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<CourseChapterParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -45,7 +51,10 @@ export async function GET(request, { params }) {
 }
 
 // POST - Create a lesson. courseId and chapterId params may be id or slug.
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<CourseChapterParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import {
@@ -9,11 +9,17 @@ import {
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId } from "@skill-learn/lib/utils/tenant";
 import { z } from "zod";
+import type { RouteContext } from "@/types";
+
+type SuggestionIdParams = { suggestionId: string };
 
 /**
  * POST with action: apply | dismiss
  */
-export async function POST(req, context) {
+export async function POST(
+  req: NextRequest,
+  { params }: RouteContext<SuggestionIdParams>
+) {
   try {
     const adminResult = await requireAdmin();
     if (adminResult instanceof NextResponse) return adminResult;
@@ -25,10 +31,10 @@ export async function POST(req, context) {
       });
     }
 
-    const params = await context.params;
+    const resolvedParams = await params;
     const { suggestionId } = await z
       .object({ suggestionId: z.string().regex(/^[0-9a-fA-F]{24}$/) })
-      .parseAsync({ suggestionId: params.suggestionId });
+      .parseAsync(resolvedParams);
 
     const body = await req.json().catch(() => ({}));
     const action = body.action || "apply";

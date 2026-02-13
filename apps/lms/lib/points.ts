@@ -1,7 +1,7 @@
 import { prisma } from '@skill-learn/database';
 import { getAuth } from "@clerk/nextjs/server"; // Change import
 import { updateStreak } from "./streak";
-import { getSystemSetting } from "./settings";
+import { getSystemSetting } from "./actions/settings";
 
 export async function getDailyPointStatus(request) {
   try {

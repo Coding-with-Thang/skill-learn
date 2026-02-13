@@ -47,11 +47,13 @@ import { Badge } from "@skill-learn/ui/components/badge";
 import { cn } from "@skill-learn/lib/utils";
 import ShareDecksDialog from "@/components/flashcards/ShareDecksDialog";
 
+type FlashcardsHomeData = { decks?: unknown[]; sharedDecks?: unknown[]; categories?: unknown[]; recommended?: unknown[]; stats?: { dueToday?: number; needsAttention?: number }; limits?: { maxDecks?: number; currentDeckCount?: number; canCreateDeck?: boolean } };
+
 export default function FlashCardsHomePage() {
   const router = useRouter();
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<FlashcardsHomeData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [acceptingDeckId, setAcceptingDeckId] = useState(null);
+  const [acceptingDeckId, setAcceptingDeckId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState("grid"); // grid or list
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
@@ -60,7 +62,7 @@ export default function FlashCardsHomePage() {
       .get("/flashcards/home")
       .then((res) => {
         const d = res.data?.data ?? res.data;
-        setData(d);
+        setData(d as FlashcardsHomeData);
       })
       .catch(() => setData({ decks: [], categories: [], recommended: [], stats: {} }))
       .finally(() => setLoading(false));
@@ -73,35 +75,36 @@ export default function FlashCardsHomePage() {
     sharedDecks = [],
     categories = [],
     recommended = [],
-    stats = {},
-    limits = {}
+    stats = {} as FlashcardsHomeData["stats"],
+    limits = {} as FlashcardsHomeData["limits"]
   } = data ?? {};
 
-  const { maxDecks, currentDeckCount = 0, canCreateDeck = true } = limits;
+  const { maxDecks, currentDeckCount = 0, canCreateDeck = true } = limits ?? {};
 
-  const handleAcceptDeck = async (deckId, e) => {
+  const handleAcceptDeck = async (deckId: string, e?: React.MouseEvent) => {
     e?.stopPropagation?.();
     setAcceptingDeckId(deckId);
     try {
       await api.post("/flashcards/decks/accept", { deckId });
       toast.success("Deck added to your collection");
       const res = await api.get("/flashcards/home");
-      setData(res.data?.data ?? res.data);
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to accept deck");
+      setData((res.data?.data ?? res.data) as FlashcardsHomeData);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to accept deck");
     } finally {
       setAcceptingDeckId(null);
     }
   };
 
-  const startStudy = (params = {}) => {
+  const startStudy = (params: { deckId?: string; virtualDeck?: string; categoryIds?: string[] | string; limit?: number } = {}) => {
     const q = new URLSearchParams();
     if (params.deckId) q.set("deckId", params.deckId);
     if (params.virtualDeck) q.set("virtualDeck", params.virtualDeck);
     if (params.categoryIds) {
       q.set("categoryIds", Array.isArray(params.categoryIds)
         ? params.categoryIds.join(",")
-        : params.categoryIds);
+        : String(params.categoryIds));
     }
     if (params.limit) q.set("limit", String(params.limit));
     const search = q.toString();
@@ -215,7 +218,7 @@ export default function FlashCardsHomePage() {
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-foreground">Due Today</h3>
               <p className="text-sm text-muted-foreground">
-                {stats.dueToday || 12} cards ready for review to maintain your streak.
+                {(stats?.dueToday ?? 12)} cards ready for review to maintain your streak.
               </p>
             </div>
             <Button
@@ -243,7 +246,7 @@ export default function FlashCardsHomePage() {
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-foreground">Needs Attention</h3>
               <p className="text-sm text-muted-foreground">
-                Focus on {stats.needsAttention || 8} low mastery cards from "Product Features".
+                Focus on {(stats?.needsAttention ?? 8)} low mastery cards from "Product Features".
               </p>
             </div>
             <Button

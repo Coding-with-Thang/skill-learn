@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import admin from "firebase-admin";
 import { z } from "zod";
@@ -48,7 +48,7 @@ if (!admin.apps.length) {
       });
     } catch (e) {
       // If initialization fails, admin may already be initialized or config invalid
-      console.warn("Firebase Admin initialization error:", e?.message || e);
+      console.warn("Firebase Admin initialization error:", e instanceof Error ? e.message : e);
     }
   }
 }
@@ -62,7 +62,7 @@ const getStorage = () => {
   }
 };
 
-export async function POST(req) {
+export async function POST(req: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -76,12 +76,13 @@ export async function POST(req) {
     }
     const formData = await req.formData();
     // Get the uploaded file from the form data
-    const file = formData.get("file");
-    if (!file) {
+    const entry = formData.get("file");
+    if (!entry || typeof entry === "string") {
       throw new AppError("No file uploaded", ErrorType.VALIDATION, {
         status: 400,
       });
     }
+    const file = entry as File;
 
     // Build a plain object with the metadata we expect and validate it with Zod
     const metadata = {
@@ -163,7 +164,7 @@ export async function POST(req) {
   }
 }
 
-export async function DELETE(req) {
+export async function DELETE(req: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

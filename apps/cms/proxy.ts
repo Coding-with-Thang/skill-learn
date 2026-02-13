@@ -44,12 +44,15 @@ const proxy = clerkMiddleware(async (auth, req) => {
       // Check super admin role from Clerk metadata
       // Note: If custom session token claims are configured in Clerk Dashboard,
       // the role will be available directly in sessionClaims.role or sessionClaims.appRole
+      const claims = sessionClaims as Record<string, unknown> | undefined
+      const publicMeta = claims?.publicMetadata as Record<string, unknown> | undefined
+      const meta = claims?.metadata as Record<string, unknown> | undefined
       const userRole =
-        sessionClaims?.role || // Custom session token claim (recommended)
-        sessionClaims?.appRole || // Custom session token claim (recommended)
-        sessionClaims?.publicMetadata?.role || // Fallback: if publicMetadata is included
-        sessionClaims?.publicMetadata?.appRole || // Fallback: if publicMetadata is included
-        sessionClaims?.metadata?.role; // Legacy fallback
+        claims?.role || // Custom session token claim (recommended)
+        claims?.appRole || // Custom session token claim (recommended)
+        publicMeta?.role || // Fallback: if publicMetadata is included
+        publicMeta?.appRole || // Fallback: if publicMetadata is included
+        meta?.role; // Legacy fallback
 
       const isSuperAdmin = userRole === "super_admin";
 

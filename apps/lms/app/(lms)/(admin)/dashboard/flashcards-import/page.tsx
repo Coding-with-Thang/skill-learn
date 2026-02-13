@@ -23,22 +23,21 @@ import { Upload } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
+type CardRow = { question: string; answer: string };
+
 /**
  * Parse CSV: question,answer (or question;answer)
  * Lines with empty question/answer are skipped
  */
-function parseCSV(text) {
+function parseCSV(text: string): CardRow[] {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
-  const cards = [];
+  const cards: CardRow[] = [];
   for (const line of lines) {
     const parts = line.includes(";")
       ? line.split(";").map((s) => s.trim())
       : line.split(",").map((s) => s.trim());
     if (parts.length >= 2 && parts[0] && parts[1]) {
-      cards.push({
-        question: parts[0],
-        answer: parts[1],
-      });
+      cards.push({ question: parts[0], answer: parts[1] });
     }
   }
   return cards;
@@ -47,7 +46,7 @@ function parseCSV(text) {
 /**
  * Parse JSON: [{ question, answer, tags?, difficulty? }]
  */
-function parseJSON(text) {
+function parseJSON(text: string) {
   const data = JSON.parse(text);
   const arr = Array.isArray(data) ? data : data.cards ?? [];
   return arr
@@ -60,8 +59,10 @@ function parseJSON(text) {
     }));
 }
 
+type CategoryItem = { id: string; name: string };
+
 export default function FlashCardsImportPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
   const [categoryId, setCategoryId] = useState("");
@@ -74,10 +75,11 @@ export default function FlashCardsImportPage() {
       const res = await api.get("/admin/flashcards/priorities");
       const data = res.data?.data ?? res.data;
       const cats = data.categories ?? [];
-      setCategories(cats);
+      setCategories((cats ?? []) as CategoryItem[]);
       if (cats.length && !categoryId) setCategoryId(cats[0].id);
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load categories");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to load categories");
       setCategories([]);
     } finally {
       setLoading(false);
@@ -89,12 +91,12 @@ export default function FlashCardsImportPage() {
     fetchCategories();
   }, [fetchCategories]);
 
-  const handleFile = (e) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      const text = reader.result;
+      const text = typeof reader.result === "string" ? reader.result : "";
       const ext = file.name.toLowerCase().split(".").pop();
       if (ext === "json") {
         setFormat("json");
@@ -129,7 +131,7 @@ export default function FlashCardsImportPage() {
       } else {
         cards = parseCSV(rawInput);
       }
-    } catch (err) {
+    } catch {
       toast.error("Invalid format. Check your input.");
       return;
     }
@@ -150,8 +152,9 @@ export default function FlashCardsImportPage() {
         `Imported ${data.created ?? 0} cards${(data.skipped ?? 0) > 0 ? `, ${data.skipped} skipped (duplicates)` : ""}`
       );
       setRawInput("");
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Import failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Import failed");
     } finally {
       setImporting(false);
     }

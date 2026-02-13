@@ -37,10 +37,12 @@ import { FolderTree, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
+type CategoryItem = { id: string; name: string; cardCount?: number };
+
 export default function FlashCardsAdminCategoriesPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editCat, setEditCat] = useState(null);
+  const [editCat, setEditCat] = useState<CategoryItem | null>(null);
   const [newName, setNewName] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -49,9 +51,10 @@ export default function FlashCardsAdminCategoriesPage() {
       setLoading(true);
       const res = await api.get("/admin/flashcards/priorities");
       const data = res.data?.data ?? res.data;
-      setCategories(data.categories ?? []);
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load categories");
+      setCategories((data.categories ?? []) as CategoryItem[]);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to load categories");
       setCategories([]);
     } finally {
       setLoading(false);
@@ -76,8 +79,9 @@ export default function FlashCardsAdminCategoriesPage() {
       toast.success("Category created");
       setNewName("");
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Create failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Create failed");
     } finally {
       setSaving(false);
     }
@@ -93,14 +97,15 @@ export default function FlashCardsAdminCategoriesPage() {
       toast.success("Category updated");
       setEditCat(null);
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Update failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Update failed");
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (cat) => {
+  const handleDelete = async (cat: CategoryItem) => {
     const msg =
       (cat.cardCount ?? 0) > 0
         ? `Delete "${cat.name}"? This will remove ${cat.cardCount} cards.`
@@ -110,8 +115,9 @@ export default function FlashCardsAdminCategoriesPage() {
       await api.delete(`/admin/flashcards/categories/${cat.id}`);
       toast.success("Category deleted");
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Delete failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Delete failed");
     }
   };
 
@@ -211,7 +217,7 @@ export default function FlashCardsAdminCategoriesPage() {
                 <Input
                   value={editCat.name}
                   onChange={(e) =>
-                    setEditCat((p) => ({ ...p, name: e.target.value }))
+                    setEditCat((p) => (p ? { ...p, name: e.target.value } : null))
                   }
                   className="mt-1"
                 />

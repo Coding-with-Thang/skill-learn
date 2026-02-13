@@ -20,6 +20,8 @@ import UserDetails from "@/components/user/UserDetails"
 import UserForm from "@/components/user/UserForm"
 import { UserFilters } from "@/components/user/UserFilters"
 
+type UserItem = { id: string; firstName?: string; lastName?: string; username?: string; tenantRole?: string; createdAt?: string; reportsTo?: { firstName?: string; lastName?: string } };
+
 export default function UsersPage() {
   const { users, isLoading, error, fetchUsers } = useUsersStore();
   const hasPermission = usePermissionsStore((s) => s.hasPermission);
@@ -36,42 +38,35 @@ export default function UsersPage() {
   }, [fetchPermissions]);
 
   const [showForm, setShowForm] = useState(false)
-  const [editingUser, setEditingUser] = useState(null)
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [editingUser, setEditingUser] = useState<UserItem | null>(null)
+  const [selectedUser, setSelectedUser] = useState<UserItem | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [roleFilter, setRoleFilter] = useState('all')
   const [sortBy, setSortBy] = useState('name')
-  const [errorUsers, setErrorUsers] = useState(null)
-  const [userToDelete, setUserToDelete] = useState(null)
+  const [errorUsers, setErrorUsers] = useState<string | null>(null)
+  const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
 
-  const filteredUsers = useMemo(() => {
-    if (!users) return [];
-
-    return users
+  const filteredUsers = useMemo((): UserItem[] => {
+    if (!users || !Array.isArray(users)) return [];
+    const list = users as UserItem[];
+    return list
       .filter(user => {
         const matchesSearch = searchTerm
-          ? user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+          ? (user.firstName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (user.lastName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (user.username ?? '').toLowerCase().includes(searchTerm.toLowerCase())
           : true;
-
-        // Filter by tenant role only
-        const matchesRole = roleFilter === 'all'
-          ? true
-          : user.tenantRole === roleFilter;
-
+        const matchesRole = roleFilter === 'all' ? true : (user.tenantRole ?? '') === roleFilter;
         return matchesSearch && matchesRole;
       })
       .sort((a, b) => {
         switch (sortBy) {
           case 'name':
-            return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+            return `${a.firstName ?? ''} ${a.lastName ?? ''}`.localeCompare(`${b.firstName ?? ''} ${b.lastName ?? ''}`);
           case 'role':
-            const aRole = a.tenantRole || '';
-            const bRole = b.tenantRole || '';
-            return aRole.localeCompare(bRole);
+            return (a.tenantRole || '').localeCompare(b.tenantRole || '');
           case 'recent':
-            return new Date(b.createdAt) - new Date(a.createdAt);
+            return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
           default:
             return 0;
         }
@@ -88,28 +83,30 @@ export default function UsersPage() {
       }
       setShowForm(false)
       await fetchUsers(true)
-    } catch (error) {
-      setErrorUsers(error.response?.data?.error || 'An error occurred')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setErrorUsers(e.response?.data?.error || 'An error occurred')
     }
   }
 
-  const handleEdit = (user) => {
+  const handleEdit = (user: UserItem) => {
     setEditingUser(user)
     setShowForm(true)
   }
 
-  const handleDeleteClick = (user) => {
+  const handleDeleteClick = (user: UserItem) => {
     setUserToDelete(user)
   }
 
-  const handleDeleteConfirm = async (user) => {
+  const handleDeleteConfirm = async (user: UserItem | null) => {
     if (!user) return
     try {
       await useUsersStore.getState().deleteUser(user.id)
       setUserToDelete(null)
       await fetchUsers(true)
-    } catch (error) {
-      setErrorUsers(error.response?.data?.error || 'Failed to delete user')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setErrorUsers(e.response?.data?.error || 'Failed to delete user')
       setUserToDelete(null)
     }
   }
@@ -237,7 +234,7 @@ export default function UsersPage() {
             ))}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan="6" className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   No users found
                 </td>
               </tr>
@@ -253,7 +250,7 @@ export default function UsersPage() {
               {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : 'User details'}
             </DialogTitle>
           </DialogHeader>
-          <UserDetails user={selectedUser} />
+          {selectedUser && <UserDetails user={selectedUser} />}
         </DialogContent>
       </Dialog>
     </div>

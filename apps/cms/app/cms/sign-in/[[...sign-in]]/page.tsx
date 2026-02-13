@@ -1,7 +1,7 @@
 "use client"
 
 import { SignIn, SignedIn, SignOutButton, useUser } from '@clerk/nextjs'
-import { dark, light } from '@clerk/themes'
+import { dark } from '@clerk/themes'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@skill-learn/ui/components/button"
@@ -125,7 +125,7 @@ export default function CMSSignInPage() {
               path="/cms/sign-in"
               afterSignInUrl="/cms/tenants"
               appearance={{
-                baseTheme: theme === 'dark' ? dark : light,
+                baseTheme: theme === 'dark' ? dark : undefined,
                 elements: {
                   rootBox: "mx-auto",
                   card: "shadow-lg",

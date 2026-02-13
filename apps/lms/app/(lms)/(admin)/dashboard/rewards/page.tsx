@@ -37,13 +37,15 @@ import {
 } from "@skill-learn/ui/components/select"
 import { StatCard } from "@skill-learn/ui/components/stat-card"
 
+type RewardItem = { id: string; prize: string; description?: string };
+
 export default function RewardsAdminPage() {
   const { fetchRewards, rewards, isLoading, updateReward, deleteReward } = useRewardStore()
   const [showModal, setShowModal] = useState(false)
-  const [editingReward, setEditingReward] = useState(null)
+  const [editingReward, setEditingReward] = useState<RewardItem | null>(null)
   const [searchInput, setSearchInput] = useState('')
   const searchTerm = useDebounce(searchInput, 300)
-  const [confirmDelete, setConfirmDelete] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState<RewardItem | null>(null)
 
   useEffect(() => {
     fetchRewards()
@@ -54,7 +56,7 @@ export default function RewardsAdminPage() {
     reward.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleEdit = (reward) => {
+  const handleEdit = (reward: RewardItem) => {
     setEditingReward(reward)
     setShowModal(true)
   }
@@ -64,7 +66,7 @@ export default function RewardsAdminPage() {
     setEditingReward(null)
   }
 
-  const handleDelete = async (reward) => {
+  const handleDelete = async (reward: RewardItem) => {
     try {
       await deleteReward(reward.id)
       toast.success('Reward deleted successfully')
@@ -296,7 +298,7 @@ export default function RewardsAdminPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => handleDelete(confirmDelete)}
+              onClick={() => confirmDelete && handleDelete(confirmDelete)}
             >
               Delete
             </Button>

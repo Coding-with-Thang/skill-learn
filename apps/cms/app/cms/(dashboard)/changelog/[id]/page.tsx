@@ -8,7 +8,7 @@ import Link from 'next/link'
 import api from "@skill-learn/lib/utils/axios"
 import { toast } from 'sonner'
 
-export default function EditChangelogPage({ params }) {
+export default function EditChangelogPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [changelog, setChangelog] = useState(null)
   const [loading, setLoading] = useState(true)

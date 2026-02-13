@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
+import type { RouteContext } from "@/types";
+
+type FeatureIdParams = { featureId: string };
 
 /**
  * GET /api/features/[featureId]
  * Get a single feature with tenant usage stats
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<FeatureIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -86,7 +92,10 @@ export async function GET(request, { params }) {
  * PUT /api/features/[featureId]
  * Update a global feature
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<FeatureIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -148,7 +157,10 @@ export async function PUT(request, { params }) {
  * DELETE /api/features/[featureId]
  * Delete a global feature
  */
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  _request: NextRequest,
+  { params }: RouteContext<FeatureIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

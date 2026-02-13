@@ -467,7 +467,7 @@ export default function TrainingPage() {
 
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 md:px-12 py-8">
-          <BreadCrumbCom endtrail="Training" />
+          <BreadCrumbCom crumbs={[]} endtrail="Training" />
 
           {/* Header */}
           <motion.div

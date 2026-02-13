@@ -1,13 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { auth } from "@clerk/nextjs/server";
+import type { RouteContext } from "@/types";
+
+type TenantIdParams = { tenantId: string };
 
 /**
  * GET /api/tenants/[tenantId]/features
  * Get all features for a specific tenant (with their enabled/disabled status)
  */
-export async function GET(request, { params }) {
+export async function GET(
+  _request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -101,7 +107,10 @@ export async function GET(request, { params }) {
  * Update feature settings for a tenant (super admin only)
  * Body: { featureId, superAdminEnabled, enabled? }
  */
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -201,7 +210,10 @@ export async function PUT(request, { params }) {
  * POST /api/tenants/[tenantId]/features
  * Initialize all features for a tenant with default settings
  */
-export async function POST(request, { params }) {
+export async function POST(
+  request: NextRequest,
+  { params }: RouteContext<TenantIdParams>
+) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

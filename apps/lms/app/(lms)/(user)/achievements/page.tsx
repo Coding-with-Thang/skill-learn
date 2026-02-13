@@ -331,7 +331,7 @@ export default function AchievementsPage() {
   return (
     <div className="min-h-screen bg-background pb-20 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-8">
-        <BreadCrumbCom endtrail="Achievements" />
+        <BreadCrumbCom crumbs={[]} endtrail="Achievements" />
 
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mt-8 gap-6">
@@ -380,7 +380,9 @@ export default function AchievementsPage() {
               <Badge3D
                 size="lg"
                 color="from-cyan-400 to-cyan-600"
-                achievement={achievements.find(a => a.id === 'early-adopter')} // Using dummy for hero
+                achievement={achievements.find(a => a.id === 'early-adopter')}
+                icon={(achievements.find(a => a.id === 'early-adopter'))?.icon}
+                isLocked={(achievements.find(a => a.id === 'early-adopter'))?.isLocked ?? true}
               />
             </div>
 

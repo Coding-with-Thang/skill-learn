@@ -128,9 +128,10 @@ export default function RolesPermissionsPage() {
 
       // Also fetch to store for shared state (user permissions for other components)
       await fetchGlobalPermissions(null)
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error fetching permissions:', err)
-      throw new Error(err.response?.data?.error || err.message || 'Failed to fetch permissions')
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      throw new Error(e.response?.data?.error || e.message || 'Failed to fetch permissions')
     }
   }, [fetchGlobalPermissions])
 
@@ -141,8 +142,9 @@ export default function RolesPermissionsPage() {
       setError(null)
       try {
         await Promise.all([fetchPermissions(), fetchRoleTemplates(true)]) // Force refresh templates
-      } catch (err) {
-        setError(err.response?.data?.error || err.message || 'Failed to load data')
+      } catch (err: unknown) {
+        const e = err as { response?: { data?: { error?: string } }; message?: string }
+        setError(e.response?.data?.error || e.message || 'Failed to load data')
       } finally {
         setLoading(false)
       }
@@ -195,8 +197,8 @@ export default function RolesPermissionsPage() {
       resetPermissionForm()
       await fetchPermissions() // Refresh local permissions (with deprecated)
       await fetchGlobalPermissions(null) // Refresh store
-    } catch (err) {
-      setFormError(err.message)
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : String(err))
     } finally {
       setFormLoading(false)
     }
@@ -218,8 +220,9 @@ export default function RolesPermissionsPage() {
       setTemplateDialogOpen(false)
       resetTemplateForm()
       // Store automatically refreshes templates
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || 'Failed to save role template')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      setFormError(e.response?.data?.error || e.message || 'Failed to save role template')
     } finally {
       setFormLoading(false)
     }
@@ -249,8 +252,9 @@ export default function RolesPermissionsPage() {
         setSelectedItem(null)
         // Store automatically refreshes templates
       }
-    } catch (err) {
-      setFormError(err.response?.data?.error || err.message || 'Failed to delete')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string }
+      setFormError(e.response?.data?.error || e.message || 'Failed to delete')
     } finally {
       setFormLoading(false)
     }
@@ -280,7 +284,7 @@ export default function RolesPermissionsPage() {
       if (updatedTemplate) {
         setSelectedItem(updatedTemplate)
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Error updating permissions:', err)
     }
   }
@@ -486,8 +490,9 @@ export default function RolesPermissionsPage() {
                 fetchGlobalPermissions(null),
                 fetchRoleTemplates(true),
               ])
-            } catch (err) {
-              setError(err.response?.data?.error || err.message || 'Failed to refresh')
+            } catch (err: unknown) {
+              const e = err as { response?: { data?: { error?: string } }; message?: string }
+              setError(e.response?.data?.error || e.message || 'Failed to refresh')
             } finally {
               setLoading(false)
             }

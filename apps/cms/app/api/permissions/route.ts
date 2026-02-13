@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@skill-learn/database";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 
@@ -6,7 +6,7 @@ import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
  * GET /api/permissions
  * Get all permissions (optionally filtered by category or status)
  */
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {
@@ -19,7 +19,7 @@ export async function GET(request) {
     const includeDeprecated = searchParams.get("includeDeprecated") === "true";
 
     // Build where clause
-    const where = {};
+    const where: { category?: string; isActive?: boolean; isDeprecated?: boolean } = {};
     if (category) {
       where.category = category;
     }
@@ -51,7 +51,7 @@ export async function GET(request) {
     });
 
     // Group permissions by category
-    const groupedByCategory = permissions.reduce((acc, perm) => {
+    const groupedByCategory = permissions.reduce<Record<string, unknown[]>>((acc, perm) => {
       if (!acc[perm.category]) {
         acc[perm.category] = [];
       }
@@ -96,7 +96,7 @@ export async function GET(request) {
  * POST /api/permissions
  * Create a new permission (super admin only)
  */
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   try {
     const adminResult = await requireSuperAdmin();
     if (adminResult instanceof NextResponse) {

@@ -69,9 +69,10 @@ export default function ChangelogForm({ initialData = null }) {
           console.warn('No superAdmins in response:', response.data)
           toast.error('No super admins found')
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching super admins:', error)
-        console.error('Error details:', error.response?.data || error.message)
+        const e = error as { response?: { data?: unknown }; message?: string }
+        console.error('Error details:', e.response?.data || (error instanceof Error ? error.message : error))
         toast.error('Failed to load super admins')
       } finally {
         setLoadingAdmins(false)

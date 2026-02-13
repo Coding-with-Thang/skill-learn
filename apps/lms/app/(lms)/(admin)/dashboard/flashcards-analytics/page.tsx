@@ -9,20 +9,23 @@ import { RefreshCw, Check, X, Lightbulb, TrendingUp, TrendingDown } from "lucide
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
+type SuggestionItem = { id: string; suggestedPriority: number; currentPriority?: number; categoryName?: string; reason?: string };
+
 export default function FlashCardsAnalyticsPage() {
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [actingId, setActingId] = useState(null);
+  const [actingId, setActingId] = useState<string | null>(null);
 
   const fetchSuggestions = async () => {
     try {
       setLoading(true);
       const res = await api.get("/admin/flashcards/suggestions");
       const data = res.data?.data ?? res.data;
-      setSuggestions(data.suggestions ?? []);
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load suggestions");
+      setSuggestions((data.suggestions ?? []) as SuggestionItem[]);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to load suggestions");
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -36,8 +39,9 @@ export default function FlashCardsAnalyticsPage() {
       const data = res.data?.data ?? res.data;
       toast.success(`Generated ${data.generated ?? 0} new suggestion(s)`);
       await fetchSuggestions();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to generate suggestions");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to generate suggestions");
     } finally {
       setGenerating(false);
     }
@@ -49,8 +53,9 @@ export default function FlashCardsAnalyticsPage() {
       await api.post(`/admin/flashcards/suggestions/${suggestionId}`, { action });
       toast.success(action === "apply" ? "Priority updated" : "Suggestion dismissed");
       await fetchSuggestions();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Action failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Action failed");
     } finally {
       setActingId(null);
     }

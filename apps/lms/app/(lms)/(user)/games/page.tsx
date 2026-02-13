@@ -111,7 +111,7 @@ export default function GameSelectPage() {
     >
       <section className="w-full min-h-screen bg-background pb-20">
         <div className="max-w-7xl mx-auto px-6 pt-6">
-          <BreadCrumbCom endtrail="Games" />
+          <BreadCrumbCom crumbs={[]} endtrail="Games" />
 
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="relative inline-block mb-4">

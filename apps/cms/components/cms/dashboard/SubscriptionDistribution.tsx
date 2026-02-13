@@ -7,7 +7,8 @@ import { motion } from 'framer-motion'
 export default function SubscriptionDistribution({ data }) {
   const total = data.reduce((sum, item) => sum + item.count, 0)
 
-  const CustomTooltip = ({ active, payload }) => {
+  const CustomTooltip = (props: { active?: boolean; payload?: readonly { payload?: { name?: string; count?: number } }[] }) => {
+    const { active, payload } = props
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (
@@ -22,10 +23,13 @@ export default function SubscriptionDistribution({ data }) {
     return null
   }
 
-  const CustomLegend = ({ payload }) => {
+  const CustomLegend = (props: { payload?: readonly { color?: string; value?: string; payload?: Record<string, unknown> }[] }) => {
+    const { payload = [] } = props
     return (
       <div className="grid grid-cols-2 gap-3 mt-4">
-        {payload.map((entry, index) => (
+        {payload.map((entry, index) => {
+          const count = typeof entry.payload?.count === 'number' ? entry.payload.count : 0
+          return (
           <motion.div
             key={index}
             initial={{ opacity: 0, y: 10 }}
@@ -40,11 +44,12 @@ export default function SubscriptionDistribution({ data }) {
             <div className="flex-1">
               <p className="text-xs font-medium">{entry.value}</p>
               <p className="text-xs text-muted-foreground">
-                {entry.payload.count} ({((entry.payload.count / total) * 100).toFixed(0)}%)
+                {count} ({total ? ((count / total) * 100).toFixed(0) : 0}%)
               </p>
             </div>
           </motion.div>
-        ))}
+          )
+        })}
       </div>
     )
   }
@@ -78,8 +83,8 @@ export default function SubscriptionDistribution({ data }) {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend content={<CustomLegend />} />
+                <Tooltip content={(props) => <CustomTooltip active={props.active} payload={props.payload} />} />
+                <Legend content={(props) => <CustomLegend payload={(props.payload ?? []) as readonly { color?: string; value?: string; payload?: Record<string, unknown> }[]} />} />
               </PieChart>
             </ResponsiveContainer>
           </div>

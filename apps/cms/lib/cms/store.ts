@@ -1,5 +1,34 @@
 import { create } from 'zustand'
 
+type DashboardState = {
+  searchQuery: string
+  setSearchQuery: (query: string) => void
+  selectedTimeRange: string
+  setTimeRange: (range: string) => void
+  tenantFilter: string
+  setTenantFilter: (filter: string) => void
+  notifications: Array<{ id: number; title: string; message: string; time: Date; read: boolean }>
+  markNotificationRead: (id: number) => void
+  markAllNotificationsRead: () => void
+}
+
+type ThemeState = {
+  theme: string
+  toggleTheme: () => void
+  setTheme: (theme: string) => void
+  initializeTheme: () => void
+}
+
+type SidebarState = {
+  isCollapsed: boolean
+  isMobileOpen: boolean
+  toggleSidebar: () => void
+  setSidebarCollapsed: (isCollapsed: boolean) => void
+  toggleMobileSidebar: () => void
+  setMobileSidebarOpen: (isOpen: boolean) => void
+  closeMobileSidebar: () => void
+}
+
 // Get initial theme from localStorage or default to 'light'
 const getInitialTheme = () => {
   if (typeof window === 'undefined') return 'light'
@@ -21,7 +50,7 @@ const applyTheme = (theme) => {
 const initialTheme = getInitialTheme()
 applyTheme(initialTheme)
 
-export const useThemeStore = create((set) => ({
+export const useThemeStore = create<ThemeState>((set) => ({
   theme: initialTheme,
   toggleTheme: () => set((state) => {
     const newTheme = state.theme === 'light' ? 'dark' : 'light'
@@ -48,7 +77,7 @@ export const useThemeStore = create((set) => ({
   },
 }))
 
-export const useSidebarStore = create((set) => ({
+export const useSidebarStore = create<SidebarState>((set) => ({
   isCollapsed: false,
   isMobileOpen: false,
   toggleSidebar: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
@@ -58,7 +87,7 @@ export const useSidebarStore = create((set) => ({
   closeMobileSidebar: () => set({ isMobileOpen: false }),
 }))
 
-export const useDashboardStore = create((set) => ({
+export const useDashboardStore = create<DashboardState>((set) => ({
   searchQuery: '',
   setSearchQuery: (query) => set({ searchQuery: query }),
   

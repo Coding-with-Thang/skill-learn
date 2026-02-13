@@ -46,12 +46,15 @@ import { Layers, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
+type CardItem = { id: string; question: string; answer: string; categoryId: string; category?: { id: string; name: string }; difficulty?: number | null };
+type CategoryItem = { id: string; name: string };
+
 export default function FlashCardsAdminCardsPage() {
-  const [cards, setCards] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [cards, setCards] = useState<CardItem[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [editCard, setEditCard] = useState(null);
+  const [editCard, setEditCard] = useState<CardItem | null>(null);
   const [saving, setSaving] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -63,10 +66,11 @@ export default function FlashCardsAdminCardsPage() {
       ]);
       const cardsData = cardsRes.data?.data ?? cardsRes.data;
       const catsData = catsRes.data?.data ?? catsRes.data;
-      setCards(cardsData.cards ?? []);
-      setCategories(catsData.categories ?? []);
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load data");
+      setCards((cardsData.cards ?? []) as CardItem[]);
+      setCategories((catsData.categories ?? []) as CategoryItem[]);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Failed to load data");
       setCards([]);
       setCategories([]);
     } finally {
@@ -89,8 +93,9 @@ export default function FlashCardsAdminCardsPage() {
       await api.delete(`/admin/flashcards/cards/${card.id}`);
       toast.success("Card deleted");
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Delete failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Delete failed");
     }
   };
 
@@ -107,8 +112,9 @@ export default function FlashCardsAdminCardsPage() {
       toast.success("Card updated");
       setEditCard(null);
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.error || "Update failed");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      toast.error(e.response?.data?.error || "Update failed");
     } finally {
       setSaving(false);
     }
@@ -196,8 +202,8 @@ export default function FlashCardsAdminCardsPage() {
                                   ...card,
                                   question: card.question,
                                   answer: card.answer,
-                                  categoryId: card.categoryId ?? card.category?.id,
-                                  difficulty: card.difficulty ?? "none",
+                                  categoryId: card.categoryId ?? card.category?.id ?? "",
+                                  difficulty: card.difficulty ?? null,
                                 })
                               }
                             >
@@ -235,7 +241,7 @@ export default function FlashCardsAdminCardsPage() {
                 <Textarea
                   value={editCard.question}
                   onChange={(e) =>
-                    setEditCard((p) => ({ ...p, question: e.target.value }))
+                    setEditCard((p) => (p ? { ...p, question: e.target.value } : null))
                   }
                   rows={2}
                   className="mt-1"
@@ -246,7 +252,7 @@ export default function FlashCardsAdminCardsPage() {
                 <Textarea
                   value={editCard.answer}
                   onChange={(e) =>
-                    setEditCard((p) => ({ ...p, answer: e.target.value }))
+                    setEditCard((p) => (p ? { ...p, answer: e.target.value } : null))
                   }
                   rows={2}
                   className="mt-1"
@@ -257,7 +263,7 @@ export default function FlashCardsAdminCardsPage() {
                 <Select
                   value={editCard.categoryId}
                   onValueChange={(v) =>
-                    setEditCard((p) => ({ ...p, categoryId: v }))
+                    setEditCard((p) => (p ? { ...p, categoryId: v } : null))
                   }
                 >
                   <SelectTrigger>
@@ -275,9 +281,9 @@ export default function FlashCardsAdminCardsPage() {
               <div>
                 <Label>Difficulty</Label>
                 <Select
-                  value={editCard.difficulty || "none"}
+                  value={editCard.difficulty != null ? String(editCard.difficulty) : "none"}
                   onValueChange={(v) =>
-                    setEditCard((p) => ({ ...p, difficulty: v === "none" ? null : v }))
+                    setEditCard((p) => (p ? { ...p, difficulty: v === "none" ? null : Number(v) } : null))
                   }
                 >
                   <SelectTrigger>
