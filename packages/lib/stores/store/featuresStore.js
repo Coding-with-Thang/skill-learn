@@ -1,0 +1,134 @@
+import { create } from "zustand";
+import api from "../../utils/axios.js";
+import { handleErrorWithNotification } from "../../utils/notifications.js";
+import { createRequestDeduplicator } from "../../utils/requestDeduplication.js";
+import { parseApiResponse } from "../../utils/apiResponseParser.js";
+
+// STORE constants
+const STORE = {
+  FETCH_COOLDOWN: 30000, // 30 seconds - features change infrequently
+};
+
+// Request deduplication
+const requestDeduplicator = createRequestDeduplicator();
+
+/**
+ * Features Store
+ * Manages feature flags and feature checks
+ * Replaces useFeatures hook for better performance and shared state
+ */
+export const useFeaturesStore = create((set, get) => ({
+  // State
+  features: {}, // { [featureKey]: boolean }
+  isLoading: false,
+  error: null,
+  lastUpdated: null,
+
+  // Fetch features from API
+  fetchFeatures: async (force = false) => {
+    return requestDeduplicator.dedupe(
+      "fetchFeatures",
+      async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await api.get("/features");
+          const data = parseApiResponse(response);
+          const features = data.features || {};
+
+          set({
+            features,
+            isLoading: false,
+            lastUpdated: Date.now(),
+          });
+
+          return features;
+        } catch (error) {
+          // Use error message from response if available
+          const errorMessage =
+            error.response?.data?.error ||
+            error.response?.data?.message ||
+            error.message ||
+            "Failed to fetch features";
+
+          // If error response includes features, use them for graceful degradation
+          if (error.response?.data?.features) {
+            set({
+              features: error.response.data.features,
+              isLoading: false,
+            });
+          } else {
+            // Default all features to enabled if there's an error (graceful degradation)
+            set({
+              features: {},
+              isLoading: false,
+            });
+          }
+          set({ error: errorMessage });
+          console.error("Error fetching features:", error);
+        }
+      },
+      { force, cooldown: STORE.FETCH_COOLDOWN }
+    );
+  },
+
+  // Check if a feature is enabled
+  isEnabled: (featureKey, defaultValue = true) => {
+    const { features, isLoading } = get();
+
+    if (isLoading) {
+      return defaultValue; // Return default while loading
+    }
+
+    // If feature is not in the list, assume enabled (for backwards compatibility)
+    if (!(featureKey in features)) {
+      return defaultValue;
+    }
+
+    return features[featureKey] === true;
+  },
+
+  // Check if multiple features are all enabled
+  allEnabled: (featureKeys) => {
+    const { isEnabled } = get();
+    return featureKeys.every((key) => isEnabled(key));
+  },
+
+  // Check if any of the features are enabled
+  anyEnabled: (featureKeys) => {
+    const { isEnabled } = get();
+    return featureKeys.some((key) => isEnabled(key));
+  },
+
+  // Refresh features
+  refresh: async () => {
+    return get().fetchFeatures(true);
+  },
+
+  // Reset store
+  reset: () =>
+    set({
+      features: {},
+      isLoading: false,
+      error: null,
+      lastUpdated: null,
+    }),
+}));
+
+/**
+ * Feature keys available in the system
+ */
+export const FEATURE_KEYS = {
+  GAMES: "games",
+  COURSE_QUIZZES: "course_quizzes",
+  LEADERBOARDS: "leaderboards",
+  REWARDS_STORE: "rewards_store",
+  ACHIEVEMENTS: "achievements",
+  STREAKS: "streaks",
+  TRAINING_COURSES: "training_courses",
+  POINT_SYSTEM: "point_system",
+  CATEGORIES: "categories",
+  USER_STATS: "user_stats",
+  AUDIT_LOGS: "audit_logs",
+  CUSTOM_ROLES: "custom_roles",
+  FLASHCARDS: "flash_cards",
+};

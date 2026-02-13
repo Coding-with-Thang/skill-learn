@@ -1,0 +1,960 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+// Legacy enum: authorization is tenant-based (TenantRole/UserRole). Only AGENT/USER/OWNER used for defaults/display.
+enum Role {
+  ADMIN
+  MANAGER
+  AGENT
+  USER
+  OPERATIONS
+  OWNER
+}
+
+model User {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId         String          @unique
+  username        String          @unique // Globally unique username
+  email           String?
+  firstName       String
+  lastName        String
+  imageUrl        String?
+  role            Role            @default(AGENT) // Display/default only; auth is TenantRole via UserRole
+  tenantId        String?         @db.ObjectId // Multi-tenant: user belongs to ONE tenant
+  tenant          Tenant?         @relation(fields: [tenantId], references: [id])
+  reportsToUserId String?         @db.ObjectId // Reports-to (same tenant); null = none
+  reportsTo       User?           @relation("UserReportsTo", fields: [reportsToUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  directReports   User[]          @relation("UserReportsTo")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  points          Int             @default(0)
+  lifetimePoints  Int             @default(0)
+  pointLogs       PointLog[]
+  rewardsRedeemed RewardLog[]
+  categoryStats   CategoryStat[]
+  AuditLog        AuditLog[]
+  currentStreak   Int             @default(0)
+  longestStreak   Int             @default(0)
+  lastStreakDate  DateTime?
+  streakUpdatedAt DateTime?       @default(now())
+  systemSettings  SystemSetting[]
+  quizzes         Quiz[]
+  courses         Course[]
+  flashCardAccess FlashCardAccess[]
+  flashCardProgress FlashCardProgress[]
+  flashCardDecks  FlashCardDeck[]
+  categoryPriorityUser CategoryPriorityUser[]
+  courseProgress  CourseProgress[]
+  lessonProgress  LessonProgress[]
+  // Note: userRoles relation removed - UserRole.userId is Clerk ID (String), not User.id (ObjectId)
+  // Query user roles by matching User.clerkId with UserRole.userId in application code
+
+  // CRITICAL INDEXES FOR COMMON QUERIES
+  @@index([role]) // Filter by role: "Get all managers"
+  @@index([points(sort: Desc)]) // Leaderboards: "Top users by points"
+  @@index([lifetimePoints(sort: Desc)]) // Lifetime leaderboards
+  @@index([createdAt]) // Date-based queries: "Users joined this month"
+  @@index([role, points(sort: Desc)]) // Compound: "Top agents by points"
+  // TEXT SEARCH INDEXES (if you need name-based search)
+  @@index([firstName, lastName]) // Full name search
+  @@index([username, firstName, lastName]) // Comprehensive user search
+  @@index([tenantId, reportsToUserId]) // Reporting hierarchy per tenant
+  @@map("users")
+}
+
+model Category {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  description   String?
+  imageUrl      String?
+  fileKey       String?        // Storage path for uploaded image (tenant-scoped); signed URL resolved when serving
+  isActive      Boolean        @default(true)
+  tenantId      String?        @db.ObjectId // Multi-tenant: category belongs to ONE tenant (null = global)
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id])
+  isGlobal      Boolean        @default(false) // Global content available to all tenants
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  quizzes       Quiz[]
+  categoryStats CategoryStat[]
+  courses       Course[]
+
+  // Name unique per tenant (and per global when tenantId is null)
+  @@unique([tenantId, name])
+  // INDEXES FOR CATEGORY QUERIES
+  @@index([isActive]) // Filter active categories
+  @@index([isActive, name]) // Active categories sorted by name
+  @@map("categories")
+}
+
+model Quiz {
+  id                 String     @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String?
+  imageUrl           String?
+  fileKey            String? // Firebase Storage path for quiz image (similar to Course model)
+  categoryId         String     @db.ObjectId
+  category           Category   @relation(fields: [categoryId], references: [id])
+  questions          Question[]
+  isActive           Boolean    @default(true)
+  tenantId           String?    @db.ObjectId // Multi-tenant: quiz belongs to ONE tenant (null = global)
+  tenant             Tenant?    @relation(fields: [tenantId], references: [id])
+  isGlobal           Boolean    @default(false) // Global content available to all tenants
+  timeLimit          Int?
+  passingScore       Int        @default(70)
+  lastAttempt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  userId             String?    @db.ObjectId
+  user               User?      @relation(fields: [userId], references: [id])
+  score              Int?
+  totalQuestions     Int?
+  showQuestionReview Boolean    @default(true)
+  showCorrectAnswers Boolean    @default(false)
+
+  // CRITICAL FOREIGN KEY AND QUERY INDEXES
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([categoryId, isActive])
+  @@index([lastAttempt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([title])
+  @@map("quizzes")
+}
+
+model Question {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  text     String
+  imageUrl String?
+  fileKey  String? // Firebase Storage path for question image (similar to Quiz/Course)
+  videoUrl String?
+  quizId   String   @db.ObjectId
+  quiz     Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options  Option[]
+  points   Int      @default(1)
+
+  // FOREIGN KEY INDEXES
+  @@index([quizId]) // CRITICAL: "Questions for quiz X"
+  @@map("questions")
+}
+
+//Answers
+model Option {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  text       String
+  isCorrect  Boolean
+  questionId String   @db.ObjectId
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // FOREIGN KEY INDEXES
+  @@index([questionId]) // CRITICAL: "Options for question X"
+  @@index([questionId, isCorrect]) // Find correct answers
+  @@map("options")
+}
+
+model CategoryStat {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String    @db.ObjectId
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId     String    @db.ObjectId
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  attempts       Int       @default(0)
+  completed      Int       @default(0)
+  averageScore   Float?
+  bestScore      Float?
+  totalTimeSpent Int       @default(0)
+  lastAttempt    DateTime? // Last attempt in this category
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, categoryId]) // Already exists - prevents duplicates
+  // PERFORMANCE INDEXES FOR ANALYTICS
+  @@index([userId]) // User's stats across categories
+  @@index([categoryId]) // All users' stats for a category
+  @@index([userId, lastAttempt(sort: Desc)]) // Recent activity per user
+  @@index([categoryId, averageScore(sort: Desc)]) // Category leaderboards
+  @@index([categoryId, bestScore(sort: Desc)]) // Best scores per category
+  @@index([lastAttempt(sort: Desc)]) // Global recent activity
+  @@index([averageScore(sort: Desc)]) // Global leaderboards
+  @@map("category_stats")
+}
+
+model PointLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  // CRITICAL INDEXES FOR POINT HISTORY
+  @@index([userId]) // User's point history
+  @@index([userId, createdAt(sort: Desc)]) // Recent points for user
+  @@index([createdAt(sort: Desc)]) // Global recent point activity
+  @@index([reason]) // Filter by reason
+  @@index([reason, createdAt(sort: Desc)]) // Recent activity by reason
+  @@index([userId, reason]) // User's points by reason
+  @@map("point_logs")
+}
+
+model Reward {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  prize          String
+  description    String?
+  cost           Int
+  imageUrl       String?
+  fileKey        String? // Firebase Storage path for reward image (similar to Quiz/Course)
+  featured       Boolean     @default(false)
+  enabled        Boolean     @default(true)
+  allowMultiple  Boolean     @default(false)
+  maxRedemptions Int         @default(1)
+  tenantId       String?     @db.ObjectId // Multi-tenant: reward belongs to ONE tenant (null = global)
+  tenant         Tenant?     @relation(fields: [tenantId], references: [id])
+  isGlobal       Boolean     @default(false) // Global content available to all tenants
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  rewardLogs     RewardLog[]
+  claimUrl       String? // Optional URL for digital rewards
+
+  @@index([enabled])
+  @@index([featured])
+  @@index([prize])
+}
+
+model RewardLog {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardId    String    @db.ObjectId
+  reward      Reward    @relation(fields: [rewardId], references: [id])
+  redeemed    Boolean   @default(false)
+  pointsSpent Int
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  claimed     Boolean   @default(false)
+  claimUrl    String?
+  claimedAt   DateTime?
+
+  // REWARD TRACKING INDEXES
+  @@index([userId]) // User's redemption history
+  @@index([rewardId]) // Reward popularity tracking
+  @@index([redeemed]) // Filter by redemption status
+  @@index([userId, redeemed]) // User's redemption status
+  @@index([userId, createdAt(sort: Desc)]) // Recent redemptions per user
+  @@index([createdAt(sort: Desc)]) // Global recent redemptions
+  @@map("reward_logs")
+}
+
+model Game {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  imageUrl    String?
+  slug        String
+  genre       String?
+  tenantId    String? @db.ObjectId // Multi-tenant: game belongs to ONE tenant (null = global)
+  tenant      Tenant? @relation(fields: [tenantId], references: [id])
+  isGlobal    Boolean @default(false) // Global content available to all tenants
+  rules       Rule[] // One-to-many relationship
+
+  // GAME TRACKING INDEXES
+  @@index([title]) // Search for title
+  @@index([genre(sort: Desc)]) // Sort by genre
+}
+
+model Rule {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  text   String
+  gameId String @db.ObjectId
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action     String
+  details    String?
+  resource   String? // e.g., "reward", "user", "points"
+  resourceId String?  @db.ObjectId
+  timestamp  DateTime @default(now())
+
+  // AUDIT LOG INDEXES
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp(sort: Desc)])
+  @@index([userId, timestamp(sort: Desc)])
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  key         String   @unique
+  value       String
+  description String?
+  category    String   @default("general")
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  @db.ObjectId
+  user        User?    @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_settings")
+}
+
+model Course {
+  id                 String       @id @default(auto()) @map("_id") @db.ObjectId
+  title              String
+  description        String
+  fileKey            String
+  duration           Int
+  categoryId         String       @db.ObjectId
+  category           Category     @relation(fields: [categoryId], references: [id])
+  excerptDescription String
+  slug               String
+  status             CourseStatus @default(Draft)
+  tenantId           String?      @db.ObjectId // Multi-tenant: course belongs to ONE tenant (null = global)
+  tenant             Tenant?      @relation(fields: [tenantId], references: [id])
+  isGlobal           Boolean      @default(false) // Global content available to all tenants
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  userId             String?      @db.ObjectId
+  user               User?        @relation(fields: [userId], references: [id])
+  chapters           Chapter[]
+  courseChapters     CourseChapter[]
+  courseProgress     CourseProgress[]
+
+  @@unique([tenantId, slug]) // Slug unique within a tenant (and among global courses when tenantId is null)
+}
+
+model Chapter {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  courseId  String   @db.ObjectId
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  slug      String?  // Unique per course (not per tenant); set on create/update via generateUniqueChapterSlug
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lessons   Lesson[]
+
+  @@index([courseId, slug])
+  @@index([courseId])
+  @@index([courseId, position])
+  @@map("chapters")
+}
+
+model Lesson {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  chapterId String   @db.ObjectId
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title     String
+  slug      String?  // Unique per chapter; set on create/update via generateUniqueLessonSlug
+  content   String   @default("") // HTML or markdown content
+  videoUrl  String?  // Video URL for lesson (e.g. hosted or YouTube)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lessonProgress LessonProgress[]
+
+  @@index([chapterId, slug])
+  @@index([chapterId])
+  @@index([chapterId, position])
+  @@map("lessons")
+}
+
+enum CourseStatus {
+  Published
+  Draft
+  Achieved
+}
+
+model CourseChapter {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  position    Int
+  description String?
+  courseId    String        @db.ObjectId
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     CourseLesson[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  @@index([courseId])
+  @@index([position])
+  @@map("course_chapters")
+}
+
+model CourseLesson {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  position         Int
+  description      String?
+  thumbnailUrl     String?
+  videoUrl         String?
+  fileKey          String?
+  courseChapterId  String       @db.ObjectId
+  courseChapter    CourseChapter @relation(fields: [courseChapterId], references: [id], onDelete: Cascade)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  @@index([courseChapterId])
+  @@index([position])
+  @@map("course_lessons")
+}
+
+// User progress for courses (learner-facing)
+model CourseProgress {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String    @db.ObjectId
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completedAt DateTime? // Set when user clicks "Complete course"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+  @@map("course_progress")
+}
+
+model LessonProgress {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String   @db.ObjectId
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
+  @@map("lesson_progress")
+}
+
+// ============================================
+// MULTI-TENANT RBAC MODELS
+// ============================================
+
+// Organizations/tenants in the system
+model Tenant {
+  id                 String @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  slug               String @unique
+  subscriptionTier   String @default("free") // free, starter, pro, enterprise
+  subscriptionStatus String @default("active") // active, trialing, past_due, canceled, etc.
+  maxRoleSlots       Int    @default(5)
+  baseRoleSlots      Int    @default(5)
+  purchasedRoleSlots Int    @default(0)
+  defaultRoleId      String? @unique @db.ObjectId // Default role for new users
+
+  // Stripe integration fields
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String? // Current price ID
+  billingInterval      String? // monthly, annually
+  trialEndsAt          DateTime?
+  subscriptionEndsAt   DateTime? // When current period ends
+  cancelAtPeriodEnd    Boolean   @default(false)
+
+  // Auth: when false, sign-up uses username + password only (no email)
+  requireEmailForRegistration Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tenantRoles       TenantRole[]
+  userRoles         UserRole[]
+  defaultRole       TenantRole? @relation("DefaultRole", fields: [defaultRoleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roleSlotPurchases RoleSlotPurchase[]
+  tenantFeatures    TenantFeature[]
+  users             User[]
+  courses           Course[]
+  categories        Category[]
+  quizzes           Quiz[]
+  rewards           Reward[]
+  games             Game[]
+
+  // Flash Cards (enterprise LMS)
+  flashCards            FlashCard[]
+  flashCardCategories   FlashCardCategory[]
+  flashCardAccess       FlashCardAccess[]
+  flashCardProgress     FlashCardProgress[]
+  categoryPriorityAdmin CategoryPriorityAdmin[]
+  categoryPriorityUser  CategoryPriorityUser[]
+  flashCardPrioritySettings FlashCardPrioritySettings[]
+  flashCardCategoryPrioritySuggestions FlashCardCategoryPrioritySuggestion[]
+  flashCardDecks        FlashCardDeck[]
+  flashCardDeckShares   FlashCardDeckShare[]
+
+  // Note: @@unique([slug]) already creates an index, no need for @@index([slug])
+  // Note: stripeCustomerId and stripeSubscriptionId have @unique, which creates indexes
+  @@index([subscriptionTier])
+  @@index([subscriptionStatus])
+  @@map("tenants")
+}
+
+// Global permissions catalog (super admin manages)
+model Permission {
+  id                      String       @id @default(auto()) @map("_id") @db.ObjectId
+  name                    String       @unique // e.g., "users.create", "content.read"
+  displayName             String // e.g., "Create Users"
+  description             String?
+  category                String // e.g., "user_management", "content"
+  isDeprecated            Boolean      @default(false)
+  deprecatedAt            DateTime?
+  replacementPermissionId String?      @db.ObjectId
+  replacementPermission   Permission?  @relation("PermissionReplacement", fields: [replacementPermissionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replacedPermissions     Permission[] @relation("PermissionReplacement")
+  sunsetDate              DateTime?
+  isActive                Boolean      @default(true)
+  createdAt               DateTime     @default(now())
+
+  // Relations
+  roleTemplatePermissions RoleTemplatePermission[]
+  tenantRolePermissions   TenantRolePermission[]
+
+  // Note: @@unique([name]) already creates an index, no need for @@index([name])
+  @@index([category]) // Filter by category
+  @@index([isActive]) // Filter active permissions
+  @@index([isDeprecated]) // Filter deprecated permissions
+  @@map("permissions")
+}
+
+// Role templates for onboarding (super admin creates)
+model RoleTemplate {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  templateSetName String // e.g., "generic", "education"
+  roleName        String // e.g., "Administrator", "Manager"
+  description     String?
+  slotPosition    Int // 1-5
+  isDefaultSet    Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  // Relations
+  roleTemplatePermissions RoleTemplatePermission[]
+  tenantRoles             TenantRole[]
+
+  @@index([templateSetName]) // Filter by template set
+  @@index([slotPosition]) // Filter by slot position
+  @@index([isDefaultSet]) // Filter default templates
+  @@map("role_templates")
+}
+
+// Permissions assigned to role templates
+model RoleTemplatePermission {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  roleTemplateId String       @db.ObjectId
+  roleTemplate   RoleTemplate @relation(fields: [roleTemplateId], references: [id], onDelete: Cascade)
+  permissionId   String       @db.ObjectId
+  permission     Permission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([roleTemplateId, permissionId])
+  @@index([roleTemplateId]) // Get all permissions for a template
+  @@index([permissionId]) // Find all templates with a permission
+  @@map("role_template_permissions")
+}
+
+// Tenant-specific roles (tenant admin creates)
+model TenantRole {
+  id                    String        @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId              String        @db.ObjectId
+  tenant                Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roleAlias             String // Custom name like "Teacher", "Manager"
+  description           String?
+  slotPosition               Int
+  isActive                   Boolean       @default(true)
+  doesNotCountTowardSlotLimit Boolean      @default(false) // Built-in Guest role; excluded from maxRoleSlots
+  createdFromTemplateId      String?       @db.ObjectId
+  createdFromTemplate   RoleTemplate? @relation(fields: [createdFromTemplateId], references: [id])
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  // Relations
+  tenantRolePermissions TenantRolePermission[]
+  userRoles             UserRole[]
+  defaultForTenant      Tenant? @relation("DefaultRole") // Optional: this role is the default for a tenant
+
+  @@unique([tenantId, roleAlias])
+  @@index([tenantId]) // Get all roles for a tenant
+  @@index([tenantId, isActive]) // Get active roles for a tenant
+  @@index([slotPosition]) // Filter by slot position
+  @@map("tenant_roles")
+}
+
+// Permissions assigned to tenant roles
+model TenantRolePermission {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  tenantRoleId String     @db.ObjectId
+  tenantRole   TenantRole @relation(fields: [tenantRoleId], references: [id], onDelete: Cascade)
+  permissionId String     @db.ObjectId
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+
+  @@unique([tenantRoleId, permissionId])
+  @@index([tenantRoleId]) // Get all permissions for a role
+  @@index([permissionId]) // Find all roles with a permission
+  @@map("tenant_role_permissions")
+}
+
+// User to role assignments
+model UserRole {
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String // Clerk user ID (not ObjectId, as it's from Clerk)
+  tenantId     String     @db.ObjectId
+  tenant       Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantRoleId String     @db.ObjectId
+  tenantRole   TenantRole @relation(fields: [tenantRoleId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+  assignedBy   String? // Clerk user ID of admin who assigned
+
+  @@unique([userId, tenantRoleId])
+  @@index([userId]) // Get all roles for a user
+  @@index([tenantId]) // Get all users in a tenant
+  @@index([tenantId, userId]) // Get user's roles in a tenant
+  @@index([tenantRoleId]) // Get all users with a role
+  @@map("user_roles")
+}
+
+// Track additional role slot purchases
+model RoleSlotPurchase {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId          String    @db.ObjectId
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  slotsPurchased    Int
+  unitPrice         Float
+  totalPrice        Float
+  billingCycleStart DateTime?
+  billingCycleEnd   DateTime?
+  stripeInvoiceId   String?
+  status            String    @default("active") // active, cancelled, expired
+  purchasedAt       DateTime  @default(now())
+
+  @@index([tenantId]) // Get all purchases for a tenant
+  @@index([status]) // Filter by status
+  @@index([stripeInvoiceId]) // Stripe integration
+  @@index([purchasedAt(sort: Desc)]) // Recent purchases
+  @@map("role_slot_purchases")
+}
+
+// ============================================
+// TENANT FEATURE MANAGEMENT
+// ============================================
+// 
+// Feature flags that can be enabled/disabled per tenant.
+// Super admins can set global defaults and override per tenant.
+// Tenant admins can enable/disable features (within what super admin allows).
+
+// Global feature definitions (managed by super admin)
+model Feature {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  key            String          @unique // e.g., "games", "course_quizzes", "leaderboards"
+  name           String // Display name e.g., "Games", "Course Quizzes", "Leaderboards"
+  description    String?
+  category       String          @default("general") // e.g., "gamification", "learning", "social"
+  defaultEnabled Boolean         @default(true) // Default state for new tenants
+  isActive       Boolean         @default(true) // If false, feature is globally disabled
+  icon           String? // Icon name for UI (e.g., "Gamepad2", "Trophy")
+  sortOrder      Int             @default(0) // For UI ordering
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  tenantFeatures TenantFeature[]
+
+  @@index([category])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("features")
+}
+
+// Tenant-specific feature settings
+model TenantFeature {
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId           String    @db.ObjectId
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  featureId          String    @db.ObjectId
+  feature            Feature   @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  enabled            Boolean   @default(true) // Tenant admin can toggle (if superAdminEnabled is true)
+  superAdminEnabled  Boolean   @default(true) // Super admin override - if false, tenant admin cannot enable
+  superAdminLockedAt DateTime? // When super admin locked/unlocked the feature
+  lastToggledAt      DateTime? // When tenant admin last toggled
+  lastToggledBy      String? // Clerk user ID of who last toggled
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([tenantId, featureId])
+  @@index([tenantId])
+  @@index([featureId])
+  @@index([tenantId, enabled])
+  @@index([enabled])
+  @@map("tenant_features")
+}
+
+// ============================================
+// CHANGELOG MODELS
+// ============================================
+
+model Changelog {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String   // Main content / description
+  version     String?
+  imageUrl    String?
+  fileKey     String?  // For Firebase Storage
+  releaseDate DateTime @default(now())
+  published   Boolean  @default(false)
+  authorId    String?  // Clerk ID of the admin who posted
+  authorName  String?
+  authorImage String?
+  
+  // Tags/Categories
+  tags        String[] // e.g., ["New", "Enterprise", "Improved", "Fixed", "Security"]
+  
+  // Stats for the release (Mockup 2)
+  newFeaturesCount Int? @default(0)
+  bugFixesCount    Int? @default(0)
+  
+  // External links (Mockup 2)
+  apiDocsUrl    String?
+  githubRepoUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([releaseDate(sort: Desc)])
+  @@index([published])
+  @@map("changelogs")
+}
+
+// ============================================
+// FLASH CARDS (Enterprise LMS)
+// ============================================
+
+model FlashCard {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId   String   @db.ObjectId
+  category     FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  question     String
+  answer       String
+  fingerprint  String   // Hash of normalized question + answer for deduplication
+  createdBy    String   @db.ObjectId
+  createdRole  String   // "admin" | "user"
+  isPublic     Boolean  @default(false)
+  isGlobal     Boolean  @default(false) // When true, visible to all tenants (platform-wide)
+  tags         String[] @default([])
+  difficulty   String?  // "easy" | "good" | "hard" | null; null = always show
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  access     FlashCardAccess[]
+  progress   FlashCardProgress[]
+
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId])
+  @@index([categoryId])
+  @@index([tenantId, categoryId])
+  @@index([createdBy])
+  @@index([fingerprint])
+  @@map("flash_cards")
+}
+
+model FlashCardCategory {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  name      String
+  createdBy String   @db.ObjectId
+  isSystem  Boolean  @default(false) // Admin default categories
+  isGlobal  Boolean  @default(false) // When true, visible to all tenants (platform-wide)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  flashCards FlashCard[]
+  adminPriorities   CategoryPriorityAdmin[]
+  userPriorities    CategoryPriorityUser[]
+  suggestions       FlashCardCategoryPrioritySuggestion[]
+
+  @@index([tenantId])
+  @@index([tenantId, name])
+  @@map("flash_card_categories")
+}
+
+model FlashCardDeck {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String   @db.ObjectId
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ownerId     String   @db.ObjectId
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  isPublic    Boolean  @default(false) // Share with all in tenant (others can accept a copy)
+  cardIds      String[] @default([]) // FlashCard ids
+  hiddenCardIds String[] @default([]) // Cards hidden from study in this deck
+  categoryIds  String[] @default([]) // Optional helper for display
+  createdAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deckShares FlashCardDeckShare[]
+
+  @@index([tenantId])
+  @@index([ownerId])
+  @@index([tenantId, ownerId])
+  @@map("flash_card_decks")
+}
+
+// Directed deck share: send deck(s) to specific user(s) within tenant
+model FlashCardDeckShare {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId  String   @db.ObjectId
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deckId    String   @db.ObjectId
+  deck      FlashCardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  sharedBy  String   @db.ObjectId
+  sharedTo  String   @db.ObjectId
+  sharedAt  DateTime @default(now())
+
+  @@unique([deckId, sharedTo])
+  @@index([tenantId])
+  @@index([sharedTo])
+  @@index([tenantId, sharedTo])
+  @@map("flash_card_deck_shares")
+}
+
+model FlashCardAccess {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId    String    @db.ObjectId
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flashCardId String    @db.ObjectId
+  flashCard   FlashCard @relation(fields: [flashCardId], references: [id], onDelete: Cascade)
+  userId      String    @db.ObjectId
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acceptedAt  DateTime  @default(now())
+
+  @@unique([flashCardId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@map("flash_card_access")
+}
+
+model FlashCardProgress {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId      String    @db.ObjectId
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId        String    @db.ObjectId
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flashCardId   String    @db.ObjectId
+  flashCard     FlashCard @relation(fields: [flashCardId], references: [id], onDelete: Cascade)
+  exposureCount Int       @default(0)
+  correctCount  Int       @default(0)
+  incorrectCount Int      @default(0)
+  masteryScore  Float     @default(0) // 0-1, correctCount / exposureCount
+  repetitions   Int       @default(0)
+  intervalDays  Float     @default(0)
+  easeFactor    Float     @default(2.5)
+  nextReviewAt  DateTime?
+  lastSeenAt    DateTime?
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, userId, flashCardId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@index([nextReviewAt])
+  @@index([tenantId, userId, nextReviewAt])
+  @@map("flash_card_progress")
+}
+
+model CategoryPriorityAdmin {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String  @db.ObjectId
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId String  @db.ObjectId
+  category   FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  priority   Int     // 1-10
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, categoryId])
+  @@index([tenantId])
+  @@map("category_priority_admin")
+}
+
+model CategoryPriorityUser {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId   String  @db.ObjectId
+  tenant     Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId     String  @db.ObjectId
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String  @db.ObjectId
+  category   FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  priority   Int     // 1-10
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, userId, categoryId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([tenantId, userId])
+  @@map("category_priority_user")
+}
+
+enum FlashCardOverrideMode {
+  USER_OVERRIDES_ADMIN
+  ADMIN_OVERRIDES_USER
+  ADMIN_ONLY
+  USER_ONLY
+}
+
+model FlashCardPrioritySettings {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId     String   @db.ObjectId
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  overrideMode FlashCardOverrideMode @default(USER_OVERRIDES_ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId])
+  @@map("flash_card_priority_settings")
+}
+
+model FlashCardCategoryPrioritySuggestion {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  tenantId         String   @db.ObjectId
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  categoryId       String   @db.ObjectId
+  category         FlashCardCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  suggestedPriority Int
+  reason           String
+  generatedAt      DateTime @default(now())
+  appliedAt        DateTime?
+  dismissedAt      DateTime?
+
+  @@index([tenantId])
+  @@index([categoryId])
+  @@map("flash_card_category_priority_suggestions")
+}
+
+// Platform-wide flash card limits by subscription tier (super admin manages)
+model FlashCardTierLimit {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  tier            String   @unique // free, starter, pro, enterprise
+  maxDecks        Int      // -1 = unlimited
+  maxCardsPerDeck Int
+  updatedAt       DateTime @updatedAt
+
+  @@map("flash_card_tier_limits")
+}
+
