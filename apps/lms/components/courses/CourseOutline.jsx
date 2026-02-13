@@ -131,7 +131,7 @@ export default function CourseOutline({
                   className={cn(
                     "shrink-0 rounded-md px-2 py-0.5 text-xs font-medium",
                     completedInChapter >= totalInChapter && totalInChapter > 0
-                      ? "bg-[var(--success)] text-[var(--success-foreground)]"
+                      ? "bg-(--success) text-(--success-foreground)"
                       : "bg-muted text-muted-foreground"
                   )}
                 >
@@ -155,14 +155,14 @@ export default function CourseOutline({
                       : null;
                     const content = (
                       <>
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-[var(--secondary)]">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded text-secondary">
                           <Icon className="h-4 w-4" />
                         </span>
                         <span className="flex-1 min-w-0 text-foreground">
                           {chapterIndex + 1}.{lessonIndex + 1} {lesson.title}
                         </span>
                         {isCompleted && (
-                          <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--success)]" aria-hidden />
+                          <CheckCircle2 className="h-5 w-5 shrink-0 text-(--success)" aria-hidden />
                         )}
                       </>
                     );

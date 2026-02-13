@@ -20,7 +20,11 @@ export async function GET(request) {
         lastName: true,
         imageUrl: true,
         categoryStats: {
-          where: buildTenantOnlyFilter(tenantId),
+          where: {
+            category: tenantId
+              ? { tenantId }
+              : { tenantId: null },
+          },
           select: {
             attempts: true,
             completed: true,

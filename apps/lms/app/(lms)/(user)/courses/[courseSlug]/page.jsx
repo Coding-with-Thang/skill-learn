@@ -234,7 +234,7 @@ export default function CoursePage() {
                         "Track your progress and outcomes",
                       ].map((item, i) => (
                         <div key={i} className="flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 shrink-0 text-[var(--success)]" />
+                          <CheckCircle2 className="h-5 w-5 shrink-0 text-(--success)" />
                           <span>{item}</span>
                         </div>
                       ))}
@@ -256,11 +256,11 @@ export default function CoursePage() {
                     {/* Course preview card */}
                     <div className="rounded-xl border border-border bg-card shadow-theme-md overflow-hidden">
                       <div className="relative aspect-video bg-muted">
-                        <span className="absolute left-3 top-3 rounded-md bg-[var(--success)] px-2 py-0.5 text-xs font-medium text-[var(--success-foreground)]">
+                        <span className="absolute left-3 top-3 rounded-md bg-(--success) px-2 py-0.5 text-xs font-medium text-(--success-foreground)">
                           PREVIEW AVAILABLE
                         </span>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[var(--secondary)] shadow-theme">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-secondary shadow-theme">
                             <Play className="h-6 w-6 ml-0.5" fill="currentColor" />
                           </div>
                         </div>
@@ -278,7 +278,7 @@ export default function CoursePage() {
                             href={startOrContinueHref}
                             className={cn(
                               "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white transition-opacity hover:opacity-95",
-                              "bg-gradient-to-r from-[var(--secondary)] to-[var(--info)]"
+                              "bg-linear-to-r from-secondary to-info"
                             )}
                           >
                             {isCourseCompleted

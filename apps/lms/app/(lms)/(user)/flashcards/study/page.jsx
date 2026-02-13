@@ -369,7 +369,7 @@ export default function FlashCardStudyPage() {
                 </div>
 
                 <div className="absolute bottom-12 left-12">
-                  <span className="text-6xl italic font-black text-foreground/[0.03] transition-colors">#{currentIndex + 1}</span>
+                  <span className="text-6xl italic font-black text-foreground/3 transition-colors">#{currentIndex + 1}</span>
                 </div>
 
                 {/* Category/Tag */}
@@ -450,18 +450,18 @@ export default function FlashCardStudyPage() {
                   onClick={() => !isSubmitting && handleFeedback("needs_review")}
                   className={cn(
                     "group rounded-[24px] border-border bg-card hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden",
-                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-rose-500/[0.02]"
+                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-rose-500/"
                   )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-rose-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                   <h3 className="text-lg font-bold text-rose-500">Need Review</h3>
-                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase uppercase">Show Again Soon</p>
+                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Show Again Soon</p>
                 </Card>
 
                 {/* Got It */}
                 <Card
                   onClick={() => handleFeedback("got_it")}
-                  className="group cursor-pointer rounded-[24px] border-border bg-card hover:bg-emerald-500/[0.02] hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden"
+                  className="group cursor-pointer rounded-[24px] border-border bg-card hover:bg-emerald-500/2 hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden"
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                   <h3 className="text-lg font-bold text-emerald-500">Got It</h3>
@@ -473,7 +473,7 @@ export default function FlashCardStudyPage() {
                   onClick={() => !isSubmitting && handleFeedback("mastered")}
                   className={cn(
                     "group rounded-[24px] border-border bg-card hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden",
-                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-indigo-500/[0.02]"
+                    isSubmitting ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:bg-indigo-500/2"
                   )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
@@ -511,12 +511,12 @@ export default function FlashCardStudyPage() {
               variant="ghost"
               onClick={handleHideFromDeck}
               disabled={hiding}
-              className="rounded-xl h-12 px-6 text-muted-foreground hover:text-brand-tealestructive font-bold"
+              className="rounded-xl h-12 px-6 text-muted-foreground hover:text-brand-teal destructive font-bold"
             >
               <EyeOff className="w-4 h-4 mr-2" /> {hiding ? "Hiding..." : "Hide"}
             </Button>
             {hidingError && (
-              <span className="text-xs text-brand-tealestructive">Could not hide card</span>
+              <span className="text-xs text-brand-teal destructive">Could not hide card</span>
             )}
           </div>
         )}
