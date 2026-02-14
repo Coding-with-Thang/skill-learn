@@ -13,7 +13,14 @@ const nextConfig = {
     "@skill-learn/lib",
     "@skill-learn/database",
   ],
-  turbopack: {},
+  // Turbopack: use monorepo root + relative-path aliases (absolute Windows paths break: "windows imports are not implemented yet")
+  turbopack: {
+    root: path.join(__dirname, "../.."),
+    resolveAlias: {
+      "@skill-learn/lib": "../../packages/lib",
+      "@skill-learn/ui": "../../packages/ui",
+    },
+  },
   // Reduce dev terminal noise (compile/proxy/render lines); set to true or use ignore: [] to restore
   logging: {
     incomingRequests: false,
