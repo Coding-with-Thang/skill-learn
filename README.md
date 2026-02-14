@@ -2,6 +2,8 @@
 
 > AI-Powered Learning Management System with Gamification
 
+**Proprietary — Internal use only. Not for redistribution or public disclosure.**
+
 Skill-Learn is a comprehensive, multi-tenant Learning Management System (LMS) designed to make workplace training engaging and effective. Built with modern web technologies, it combines personalized learning paths, interactive quizzes, gamification, and rewards to accelerate skill development.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
@@ -262,7 +264,7 @@ This starts both applications:
 
 ## 🔑 Environment Variables
 
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root directory. Use placeholders below; never commit real credentials. Full setup may be documented in internal wikis.
 
 ```bash
 # ============================================
@@ -457,7 +459,8 @@ Super Admin (CMS)
 | Tier | Users | Features |
 |------|-------|----------|
 | **Free** | Up to 5 | Basic courses, community access |
-| **Pro** ($12.99/mo) | Up to 100 | AI coaching, priority support, certifications |
+| **Starter** | See plan | Entry-level paid plan |
+| **Pro** | Up to 100 | AI coaching, priority support, certifications |
 | **Enterprise** | Unlimited | Custom integrations, SLA, dedicated support |
 
 ## 🔌 API Endpoints
@@ -542,6 +545,8 @@ Additional documentation is available in the `/docs` directory:
 | [FORM_STANDARDIZATION.md](docs/FORM_STANDARDIZATION.md) | Form component standards |
 | [THEME_GUIDE.md](docs/THEME_GUIDE.md) | Theming and styling guide |
 | [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) | Deployment instructions |
+| [TYPESCRIPT_PRODUCTION_PUSH_PLAN.md](docs/TYPESCRIPT_PRODUCTION_PUSH_PLAN.md) | Failsafe plan to push TypeScript migration to production |
+| [ESLINT.md](docs/ESLINT.md) | ESLint configuration and production rules |
 
 ## 🔒 Security
 

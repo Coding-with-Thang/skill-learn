@@ -37,7 +37,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
 # Shared Database
-MONGODB_URI=mongodb://...
+DATABASE_URL=your_database_connection_string
 
 # Clerk Webhooks (shared secret)
 CLERK_WEBHOOK_SECRET=whsec_...
@@ -69,7 +69,7 @@ CLERK_SECRET_KEY=sk_test_...
 # ============================================
 # Database (Shared)
 # ============================================
-MONGODB_URI=mongodb://...
+DATABASE_URL=your_database_connection_string
 
 # ============================================
 # Webhooks (Shared)
@@ -93,7 +93,7 @@ NEXT_PUBLIC_CMS_URL=http://localhost:3001
 
 ### 2.1 LMS App Setup
 
-**File: `apps/lms/app/layout.jsx`**
+**File: `apps/lms/app/layout.tsx`**
 
 ```javascript
 import { ClerkProvider } from "@clerk/nextjs";
@@ -136,7 +136,7 @@ export default function RootLayout({ children }) {
 }
 ```
 
-**File: `apps/lms/middleware.js`**
+**File: `apps/lms/middleware.ts`**
 
 ```javascript
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
@@ -182,7 +182,7 @@ export const config = {
 
 ### 2.2 CMS App Setup
 
-**File: `apps/cms/app/layout.jsx`**
+**File: `apps/cms/app/layout.tsx`**
 
 ```javascript
 import { ClerkProvider } from "@clerk/nextjs";
@@ -203,7 +203,7 @@ export default function CMSLayout({ children }) {
 }
 ```
 
-**File: `apps/cms/middleware.js`**
+**File: `apps/cms/middleware.ts`**
 
 ```javascript
 import { clerkMiddleware } from "@clerk/nextjs/server";
@@ -309,7 +309,7 @@ export async function DELETE(request) {
 
 **Decision:** Keep webhooks in the LMS app (since it handles user management)
 
-**File: `apps/lms/app/api/webhooks/route.js`**
+**File: `apps/lms/app/api/webhooks/route.ts`**
 
 ```javascript
 import { Webhook } from "svix";
@@ -549,7 +549,7 @@ export default function TopBar() {
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Both apps | Public Clerk key      |
 | `CLERK_SECRET_KEY`                  | Both apps | Server-side Clerk key |
 | `CLERK_WEBHOOK_SECRET`              | LMS only  | Webhook verification  |
-| `MONGODB_URI`                       | Both apps | Database connection   |
+| `DATABASE_URL`                      | Both apps | Database connection   |
 
 ---
 
@@ -595,7 +595,7 @@ export default function TopBar() {
 # Production environment variables
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 CLERK_SECRET_KEY=sk_live_...
-MONGODB_URI=mongodb+srv://...
+DATABASE_URL=your_database_connection_string
 CLERK_WEBHOOK_SECRET=whsec_...
 ```
 

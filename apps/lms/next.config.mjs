@@ -6,6 +6,8 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: { ignoreDuringBuilds: false },
+  typescript: { ignoreBuildErrors: false },
   outputFileTracingRoot: path.join(__dirname, "../.."),
   transpilePackages: [
     "@skill-learn/ui",

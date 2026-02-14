@@ -123,7 +123,7 @@ className = "hover:bg-info-hover";
 For dangerous actions like delete.
 
 ```jsx
-className = "bg-destructive text-brand-tealestructive-foreground";
+className = "bg-destructive text-destructive-foreground";
 className = "hover:bg-destructive-hover";
 ```
 
@@ -388,7 +388,7 @@ className="bg-gradient-teal"
 </button>
 
 // Destructive button
-<button className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive-hover rounded-lg px-4 py-2">
+<button className="bg-destructive text-destructive-foreground hover:bg-destructive-hover rounded-lg px-4 py-2">
   Delete
 </button>
 ```
@@ -468,8 +468,7 @@ When creating or updating components:
 
 - **Theme Files**: `apps/lms/app/themes.css`
 - **Global Styles**: `apps/lms/app/globals.css`
-- **Tailwind Config**: `tailwind.config.mjs`
-- **Theme Switcher**: `packages/ui/components/ThemeSwitcher.jsx`
-- **Color Audit Report**: `hard-coded-colors-report.md` (in docs/)
-- **Implementation Plan**: `THEME_SYSTEM_ELEVATION_PLAN.md` (in docs/)
+- **Tailwind Config**: `tailwind.config.mjs` (in each app)
+- **Theme Switcher**: In `packages/ui` or app layout
 - **Migration Reference**: `COLOR_MIGRATION_REFERENCE.md` (in docs/)
+- **Quick Start**: `THEME_QUICK_START.md` (in docs/)

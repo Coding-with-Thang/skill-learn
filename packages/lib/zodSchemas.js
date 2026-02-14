@@ -393,6 +393,48 @@ export const tenantUserCreateSchema = z.object({
   path: ["confirmPassword"],
 });
 
+// API-only schema for POST /api/tenants/[tenantId]/users (no confirmPassword; that is client-side only).
+export const tenantUserCreateApiSchema = z.object({
+  username: z
+    .string()
+    .min(1, "Username is required")
+    .transform((s) => s.trim())
+    .pipe(
+      z
+        .string()
+        .min(3, "Username must be at least 3 characters")
+        .max(128, "Username must be at most 128 characters")
+        .regex(/^[a-zA-Z0-9_]+$/, "Username may only contain letters, numbers, and underscores")
+    ),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .transform((s) => s.trim())
+    .pipe(z.string().max(100, "First name must be at most 100 characters")),
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .transform((s) => s.trim())
+    .pipe(z.string().max(100, "Last name must be at most 100 characters")),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password must be at most 128 characters"),
+  email: z
+    .union([
+      z.string().trim().min(1).max(254).email("Please provide a valid email address"),
+      z.literal(""),
+      z.undefined(),
+    ])
+    .optional()
+    .transform((v) => (v == null || v === "" ? undefined : v)),
+  tenantRoleId: z
+    .string()
+    .min(1, "A role is required. Please select a role for the user.")
+    .transform((s) => s.trim())
+    .pipe(objectIdSchema),
+});
+
 // File upload metadata (for multipart/upload validation)
 export const fileUploadSchema = z.object({
   fileName: z.string().min(1, { message: "Filename is required" }),

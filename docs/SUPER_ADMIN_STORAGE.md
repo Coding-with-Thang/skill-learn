@@ -40,7 +40,7 @@ Super admin is stored in **Clerk's user public metadata**:
 
 ## How It's Checked
 
-### 1. Middleware (`apps/cms/middleware.js`)
+### 1. Middleware (`apps/cms/middleware.ts`)
 
 Checks super admin on every CMS route request:
 
@@ -56,7 +56,7 @@ const userRole =
 const isSuperAdmin = userRole === "super_admin";
 ```
 
-### 2. API Routes (`packages/lib/utils/utils/auth.js`)
+### 2. API Routes (`packages/lib/utils/auth.ts`)
 
 Uses `requireSuperAdmin()` helper function:
 

@@ -36,8 +36,6 @@ playwright/.cache/
 # ============================================
 # Next.js
 # ============================================
-/.next/
-/out/
 .next/
 out/
 .swc/
@@ -55,10 +53,6 @@ next-env.d.ts
 # ============================================
 .env
 .env*.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
 
 # ============================================
 # Debug & Logs
@@ -79,8 +73,6 @@ logs/
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.json
-.vscode/launch.json
-.vscode/tasks.json
 
 # Cursor
 .cursor/
@@ -103,7 +95,6 @@ logs/
 .vim/
 
 # Emacs
-*~
 \#*\#
 /.emacs.desktop
 /.emacs.desktop.lock
@@ -141,8 +132,6 @@ $RECYCLE.BIN/
 # ============================================
 # Database & Prisma
 # ============================================
-# Prisma migrations are typically committed
-# Only ignore SQLite database files if used
 prisma/dev.db
 prisma/dev.db-journal
 *.db
@@ -176,7 +165,6 @@ firebase-export-*.json
 *.p12
 *.pfx
 *.p8
-*.pem
 secrets/
 *.secret
 *.private
@@ -191,9 +179,6 @@ secrets/
 .parcel-cache/
 .turbo/
 .agent
-*.swp
-*.swo
-*~
 
 # ============================================
 # Package Managers
@@ -213,12 +198,6 @@ secrets/
 .yarn/install-state.gz
 
 # ============================================
-# TypeScript
-# ============================================
-*.tsbuildinfo
-tsconfig.tsbuildinfo
-
-# ============================================
 # Storybook
 # ============================================
 storybook-static/
@@ -227,9 +206,7 @@ storybook-static/
 # ============================================
 # Misc
 # ============================================
-# npm pack output (e.g. skill-learn@0.0.4 or skill-learn@0.0.4.tgz)
 skill-learn@*
-
 notes.md
 /archive
 /docs/audits
@@ -241,26 +218,9 @@ notes.md
 *.old
 *.orig
 *.save
-*.swo
-*.swp
 CODE_QUALITY_AUDIT.md
 
 # ============================================
 # Project Specific
 # ============================================
 # Add any project-specific ignores below
-
-# ============================================
-# Monorepo (Turborepo)
-# ============================================
-# Turborepo cache (already above, but keeping for clarity)
-# .turbo/
-
-# Apps
-apps/*/.next
-apps/*/node_modules
-
-# Packages
-packages/*/node_modules
-packages/*/dist
-packages/*/.next

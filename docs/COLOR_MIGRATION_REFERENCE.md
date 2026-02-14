@@ -333,5 +333,4 @@ After migrating colors, test:
 ## Need Help?
 
 - See full documentation: `THEME_SYSTEM.md`
-- View implementation plan: `THEME_SYSTEM_ELEVATION_PLAN.md`
-- Check color audit: `hard-coded-colors-report.md`
+- Quick start guide: `THEME_QUICK_START.md`

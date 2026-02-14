@@ -9,114 +9,117 @@
   /* ===== Base Colors ===== */
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.15 0 0);
-  
+
   /* ===== Surface Colors ===== */
-  --card: oklch(1.0 0 0);
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0 0);
-  --popover: oklch(1.0 0 0);
+  --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
-  
+
   /* ===== Brand Colors ===== */
   --brand-teal: oklch(0.35 0.08 180);
   --brand-teal-light: oklch(0.45 0.08 180);
   --brand-teal-dark: oklch(0.28 0.08 180);
-  --brand-dark-blue: oklch(0.20 0.08 260);
+  --brand-dark-blue: oklch(0.2 0.08 260);
   --brand-cyan: oklch(0.65 0.12 200);
-  
+
   /* ===== Primary Colors ===== */
   --primary: oklch(0.35 0.08 180);
   --primary-foreground: oklch(0.99 0 0);
   --primary-hover: oklch(0.28 0.08 180);
   --primary-active: oklch(0.25 0.08 180);
-  
+
   /* ===== Secondary Colors ===== */
   --secondary: oklch(0.92 0.01 260);
-  --secondary-foreground: oklch(0.20 0.08 260);
+  --secondary-foreground: oklch(0.2 0.08 260);
   --secondary-hover: oklch(0.88 0.01 260);
   --secondary-active: oklch(0.85 0.01 260);
-  
+
   /* ===== Accent Colors ===== */
   --accent: oklch(0.95 0.01 180);
-  --accent-foreground: oklch(0.20 0.08 180);
+  --accent-foreground: oklch(0.2 0.08 180);
   --accent-hover: oklch(0.92 0.01 180);
   --accent-active: oklch(0.88 0.01 180);
-  
+
   /* ===== Muted Colors ===== */
   --muted: oklch(0.96 0.005 260);
-  --muted-foreground: oklch(0.50 0.01 260);
+  --muted-foreground: oklch(0.5 0.01 260);
   --muted-hover: oklch(0.93 0.005 260);
-  
+
   /* ===== Semantic Status Colors ===== */
   --success: oklch(0.55 0.15 145);
   --success-foreground: oklch(0.99 0 0);
   --success-hover: oklch(0.48 0.15 145);
-  
-  --warning: oklch(0.70 0.15 80);
+
+  --warning: oklch(0.7 0.15 80);
   --warning-foreground: oklch(0.15 0 0);
   --warning-hover: oklch(0.63 0.15 80);
-  
+
   --error: oklch(0.58 0.21 27);
   --error-foreground: oklch(0.99 0 0);
   --error-hover: oklch(0.51 0.21 27);
-  
+
   --info: oklch(0.55 0.18 240);
   --info-foreground: oklch(0.99 0 0);
   --info-hover: oklch(0.48 0.18 240);
-  
+
   /* ===== Destructive Colors ===== */
   --destructive: oklch(0.58 0.21 27);
   --destructive-foreground: oklch(0.99 0 0);
   --destructive-hover: oklch(0.51 0.21 27);
-  
+
   /* ===== Border & Input Colors ===== */
-  --border: oklch(0.90 0.005 260);
-  --input: oklch(0.90 0.005 260);
+  --border: oklch(0.9 0.005 260);
+  --input: oklch(0.9 0.005 260);
   --input-hover: oklch(0.85 0.005 260);
   --input-focus: oklch(0.35 0.08 180);
-  
+
   /* ===== Ring/Focus Colors ===== */
   --ring: oklch(0.35 0.08 180);
   --ring-primary: oklch(0.35 0.08 180);
-  --ring-secondary: oklch(0.20 0.08 260);
-  
+  --ring-secondary: oklch(0.2 0.08 260);
+
   /* ===== Chart Colors ===== */
   --chart-1: oklch(0.55 0.18 240);
   --chart-2: oklch(0.55 0.15 145);
-  --chart-3: oklch(0.70 0.15 80);
+  --chart-3: oklch(0.7 0.15 80);
   --chart-4: oklch(0.58 0.21 27);
   --chart-5: oklch(0.65 0.12 200);
-  
+
   /* ===== Sidebar Colors ===== */
   --sidebar: oklch(0.99 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
   --sidebar-primary: oklch(0.35 0.08 180);
   --sidebar-primary-foreground: oklch(0.99 0 0);
   --sidebar-accent: oklch(0.95 0.01 180);
-  --sidebar-accent-foreground: oklch(0.20 0.08 180);
-  --sidebar-border: oklch(0.90 0.005 260);
+  --sidebar-accent-foreground: oklch(0.2 0.08 180);
+  --sidebar-border: oklch(0.9 0.005 260);
   --sidebar-ring: oklch(0.35 0.08 180);
-  
+
   /* ===== Game & Interactive Colors ===== */
   --game-primary: oklch(0.65 0.18 25);
-  --game-secondary: oklch(0.60 0.12 240);
-  --game-accent: oklch(0.70 0.20 50);
+  --game-secondary: oklch(0.6 0.12 240);
+  --game-accent: oklch(0.7 0.2 50);
   --game-background: oklch(0.75 0.08 180);
-  
+
   /* ===== Reward & Points Colors ===== */
   --reward-gold: oklch(0.75 0.15 85);
-  --reward-silver: oklch(0.70 0.02 0);
+  --reward-silver: oklch(0.7 0.02 0);
   --reward-bronze: oklch(0.55 0.12 50);
   --points-primary: oklch(0.65 0.18 25);
-  --points-secondary: oklch(0.60 0.12 240);
-  
+  --points-secondary: oklch(0.6 0.12 240);
+
   /* ===== Typography ===== */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
-  --font-display: "Poppins", "Fredoka One", "Comic Sans MS", cursive, sans-serif;
-  
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --font-display:
+    "Poppins", "Fredoka One", "Comic Sans MS", cursive, sans-serif;
+
   /* ===== Border Radius ===== */
   --radius: 0.625rem;
   --radius-sm: calc(var(--radius) - 0.25rem);
@@ -125,31 +128,38 @@
   --radius-xl: calc(var(--radius) + 0.25rem);
   --radius-2xl: calc(var(--radius) + 0.5rem);
   --radius-3xl: calc(var(--radius) + 1rem);
-  
+
   /* ===== Shadows ===== */
   --shadow-color: oklch(0 0 0 / 0.1);
   --shadow-color-sm: oklch(0 0 0 / 0.05);
   --shadow-color-md: oklch(0 0 0 / 0.1);
   --shadow-color-lg: oklch(0 0 0 / 0.15);
   --shadow-color-xl: oklch(0 0 0 / 0.2);
-  
+
   --shadow-2xs: 0 1px 2px 0 var(--shadow-color-sm);
   --shadow-xs: 0 1px 2px 0 var(--shadow-color-sm);
-  --shadow-sm: 0 1px 3px 0 var(--shadow-color-sm), 0 1px 2px -1px var(--shadow-color-sm);
-  --shadow: 0 1px 3px 0 var(--shadow-color-md), 0 1px 2px -1px var(--shadow-color-md);
-  --shadow-md: 0 4px 6px -1px var(--shadow-color-md), 0 2px 4px -2px var(--shadow-color-md);
-  --shadow-lg: 0 10px 15px -3px var(--shadow-color-lg), 0 4px 6px -4px var(--shadow-color-lg);
-  --shadow-xl: 0 20px 25px -5px var(--shadow-color-xl), 0 8px 10px -6px var(--shadow-color-xl);
+  --shadow-sm:
+    0 1px 3px 0 var(--shadow-color-sm), 0 1px 2px -1px var(--shadow-color-sm);
+  --shadow:
+    0 1px 3px 0 var(--shadow-color-md), 0 1px 2px -1px var(--shadow-color-md);
+  --shadow-md:
+    0 4px 6px -1px var(--shadow-color-md), 0 2px 4px -2px var(--shadow-color-md);
+  --shadow-lg:
+    0 10px 15px -3px var(--shadow-color-lg),
+    0 4px 6px -4px var(--shadow-color-lg);
+  --shadow-xl:
+    0 20px 25px -5px var(--shadow-color-xl),
+    0 8px 10px -6px var(--shadow-color-xl);
   --shadow-2xl: 0 25px 50px -12px var(--shadow-color-xl);
-  
+
   /* ===== Transitions ===== */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* ===== Spacing ===== */
   --spacing: 0.25rem;
-  
+
   /* ===== Letter Spacing ===== */
   --tracking-normal: 0em;
   --tracking-tight: -0.025em;
@@ -166,85 +176,85 @@
   /* ===== Base Colors ===== */
   --background: oklch(0.15 0 0);
   --foreground: oklch(0.98 0 0);
-  
+
   /* ===== Surface Colors ===== */
-  --card: oklch(0.20 0 0);
+  --card: oklch(0.2 0 0);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.25 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  
+
   /* ===== Brand Colors ===== */
   --brand-teal: oklch(0.55 0.12 180);
   --brand-teal-light: oklch(0.65 0.12 180);
   --brand-teal-dark: oklch(0.45 0.12 180);
-  --brand-dark-blue: oklch(0.35 0.10 260);
-  --brand-cyan: oklch(0.70 0.15 200);
-  
+  --brand-dark-blue: oklch(0.35 0.1 260);
+  --brand-cyan: oklch(0.7 0.15 200);
+
   /* ===== Primary Colors ===== */
   --primary: oklch(0.55 0.12 180);
   --primary-foreground: oklch(0.15 0 0);
   --primary-hover: oklch(0.65 0.12 180);
-  --primary-active: oklch(0.70 0.12 180);
-  
+  --primary-active: oklch(0.7 0.12 180);
+
   /* ===== Secondary Colors ===== */
   --secondary: oklch(0.25 0.01 260);
   --secondary-foreground: oklch(0.98 0 0);
-  --secondary-hover: oklch(0.30 0.01 260);
+  --secondary-hover: oklch(0.3 0.01 260);
   --secondary-active: oklch(0.35 0.01 260);
-  
+
   /* ===== Accent Colors ===== */
   --accent: oklch(0.35 0.05 180);
   --accent-foreground: oklch(0.98 0 0);
-  --accent-hover: oklch(0.40 0.05 180);
+  --accent-hover: oklch(0.4 0.05 180);
   --accent-active: oklch(0.45 0.05 180);
-  
+
   /* ===== Muted Colors ===== */
   --muted: oklch(0.25 0.005 260);
   --muted-foreground: oklch(0.65 0.01 260);
-  --muted-hover: oklch(0.30 0.005 260);
-  
+  --muted-hover: oklch(0.3 0.005 260);
+
   /* ===== Semantic Status Colors ===== */
   --success: oklch(0.65 0.18 145);
   --success-foreground: oklch(0.15 0 0);
   --success-hover: oklch(0.72 0.18 145);
-  
+
   --warning: oklch(0.75 0.18 80);
   --warning-foreground: oklch(0.15 0 0);
   --warning-hover: oklch(0.82 0.18 80);
-  
+
   --error: oklch(0.68 0.22 27);
   --error-foreground: oklch(0.15 0 0);
   --error-hover: oklch(0.75 0.22 27);
-  
-  --info: oklch(0.65 0.20 240);
+
+  --info: oklch(0.65 0.2 240);
   --info-foreground: oklch(0.15 0 0);
-  --info-hover: oklch(0.72 0.20 240);
-  
+  --info-hover: oklch(0.72 0.2 240);
+
   /* ===== Destructive Colors ===== */
   --destructive: oklch(0.68 0.22 27);
   --destructive-foreground: oklch(0.15 0 0);
   --destructive-hover: oklch(0.75 0.22 27);
-  
+
   /* ===== Border & Input Colors ===== */
   --border: oklch(0.28 0.005 260);
   --input: oklch(0.32 0.005 260);
   --input-hover: oklch(0.38 0.005 260);
   --input-focus: oklch(0.55 0.12 180);
-  
+
   /* ===== Ring/Focus Colors ===== */
   --ring: oklch(0.55 0.12 180);
   --ring-primary: oklch(0.55 0.12 180);
-  --ring-secondary: oklch(0.35 0.10 260);
-  
+  --ring-secondary: oklch(0.35 0.1 260);
+
   /* ===== Chart Colors ===== */
-  --chart-1: oklch(0.65 0.20 240);
+  --chart-1: oklch(0.65 0.2 240);
   --chart-2: oklch(0.65 0.18 145);
   --chart-3: oklch(0.75 0.18 80);
   --chart-4: oklch(0.68 0.22 27);
-  --chart-5: oklch(0.70 0.15 200);
-  
+  --chart-5: oklch(0.7 0.15 200);
+
   /* ===== Sidebar Colors ===== */
-  --sidebar: oklch(0.20 0 0);
+  --sidebar: oklch(0.2 0 0);
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.55 0.12 180);
   --sidebar-primary-foreground: oklch(0.15 0 0);
@@ -252,34 +262,41 @@
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.28 0.005 260);
   --sidebar-ring: oklch(0.55 0.12 180);
-  
+
   /* ===== Game & Interactive Colors ===== */
-  --game-primary: oklch(0.70 0.20 25);
+  --game-primary: oklch(0.7 0.2 25);
   --game-secondary: oklch(0.65 0.15 240);
   --game-accent: oklch(0.75 0.22 50);
   --game-background: oklch(0.25 0.05 180);
-  
+
   /* ===== Reward & Points Colors ===== */
-  --reward-gold: oklch(0.80 0.18 85);
+  --reward-gold: oklch(0.8 0.18 85);
   --reward-silver: oklch(0.75 0.03 0);
-  --reward-bronze: oklch(0.60 0.14 50);
-  --points-primary: oklch(0.70 0.20 25);
+  --reward-bronze: oklch(0.6 0.14 50);
+  --points-primary: oklch(0.7 0.2 25);
   --points-secondary: oklch(0.65 0.15 240);
-  
+
   /* ===== Shadows - Subtle light glow for dark mode ===== */
   --shadow-color: oklch(1 0 0 / 0.05);
   --shadow-color-sm: oklch(1 0 0 / 0.03);
   --shadow-color-md: oklch(1 0 0 / 0.05);
   --shadow-color-lg: oklch(1 0 0 / 0.08);
   --shadow-color-xl: oklch(1 0 0 / 0.1);
-  
+
   --shadow-2xs: 0 1px 2px 0 var(--shadow-color-sm);
   --shadow-xs: 0 1px 2px 0 var(--shadow-color-sm);
-  --shadow-sm: 0 1px 3px 0 var(--shadow-color-sm), 0 1px 2px -1px var(--shadow-color-sm);
-  --shadow: 0 1px 3px 0 var(--shadow-color-md), 0 1px 2px -1px var(--shadow-color-md);
-  --shadow-md: 0 4px 6px -1px var(--shadow-color-md), 0 2px 4px -2px var(--shadow-color-md);
-  --shadow-lg: 0 10px 15px -3px var(--shadow-color-lg), 0 4px 6px -4px var(--shadow-color-lg);
-  --shadow-xl: 0 20px 25px -5px var(--shadow-color-xl), 0 8px 10px -6px var(--shadow-color-xl);
+  --shadow-sm:
+    0 1px 3px 0 var(--shadow-color-sm), 0 1px 2px -1px var(--shadow-color-sm);
+  --shadow:
+    0 1px 3px 0 var(--shadow-color-md), 0 1px 2px -1px var(--shadow-color-md);
+  --shadow-md:
+    0 4px 6px -1px var(--shadow-color-md), 0 2px 4px -2px var(--shadow-color-md);
+  --shadow-lg:
+    0 10px 15px -3px var(--shadow-color-lg),
+    0 4px 6px -4px var(--shadow-color-lg);
+  --shadow-xl:
+    0 20px 25px -5px var(--shadow-color-xl),
+    0 8px 10px -6px var(--shadow-color-xl);
   --shadow-2xl: 0 25px 50px -12px var(--shadow-color-xl);
 }
 
@@ -293,7 +310,11 @@
 }
 
 .bg-gradient-game {
-  background: linear-gradient(135deg, var(--game-primary), var(--game-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--game-primary),
+    var(--game-secondary)
+  );
 }
 
 .bg-gradient-primary {
@@ -301,14 +322,30 @@
 }
 
 /* Theme-aware shadows */
-.shadow-theme-2xs { box-shadow: var(--shadow-2xs); }
-.shadow-theme-xs { box-shadow: var(--shadow-xs); }
-.shadow-theme-sm { box-shadow: var(--shadow-sm); }
-.shadow-theme { box-shadow: var(--shadow); }
-.shadow-theme-md { box-shadow: var(--shadow-md); }
-.shadow-theme-lg { box-shadow: var(--shadow-lg); }
-.shadow-theme-xl { box-shadow: var(--shadow-xl); }
-.shadow-theme-2xl { box-shadow: var(--shadow-2xl); }
+.shadow-theme-2xs {
+  box-shadow: var(--shadow-2xs);
+}
+.shadow-theme-xs {
+  box-shadow: var(--shadow-xs);
+}
+.shadow-theme-sm {
+  box-shadow: var(--shadow-sm);
+}
+.shadow-theme {
+  box-shadow: var(--shadow);
+}
+.shadow-theme-md {
+  box-shadow: var(--shadow-md);
+}
+.shadow-theme-lg {
+  box-shadow: var(--shadow-lg);
+}
+.shadow-theme-xl {
+  box-shadow: var(--shadow-xl);
+}
+.shadow-theme-2xl {
+  box-shadow: var(--shadow-2xl);
+}
 
 /* Text gradients */
 .text-gradient-teal {
@@ -323,17 +360,4 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-/* ============================================
-   LEGACY THEME SUPPORT (Deprecated)
-   Keep for backward compatibility, will be removed in future
-   ============================================ */
-
-[data-theme="ocean"],
-[data-theme="ocean-dark"],
-[data-theme="sunset"] {
-  /* These themes are deprecated. Please use light or dark mode instead. */
-  /* Fallback to light theme */
-  all: inherit;
 }

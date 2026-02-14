@@ -4,7 +4,7 @@ This document describes how the Clerk webhook integrates with the multi-tenant p
 
 ## Overview
 
-The webhook handler (`/apps/lms/app/api/webhooks/route.js`) processes Clerk events and:
+The webhook handler (`apps/lms/app/api/webhooks/route.ts`) processes Clerk events and:
 1. Creates/updates users in the database
 2. Assigns users to tenants
 3. Assigns default roles
@@ -102,7 +102,7 @@ import {
   syncTenantUsersMetadata,
   assignUserToTenant,
   removeUserFromTenant
-} from "@skill-learn/lib/utils/clerkSync.js";
+} from "@skill-learn/lib/utils/clerkSync";
 
 // Sync single user's metadata
 await syncUserMetadataToClerk(userId, tenantId);
