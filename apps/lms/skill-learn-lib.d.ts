@@ -7,6 +7,7 @@ declare module "@skill-learn/lib/utils/errorHandler";
 declare module "@skill-learn/lib/utils/apiWrapper";
 declare module "@skill-learn/lib/utils/tenant";
 declare module "@skill-learn/lib/utils/validateRequest";
+declare module "@skill-learn/lib/utils/rateLimit";
 declare module "@skill-learn/lib/utils/flashCardFingerprint";
 declare module "@skill-learn/lib/utils/permissions";
 declare module "@skill-learn/lib/stores/auditLogStore";
