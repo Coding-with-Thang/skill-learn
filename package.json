@@ -2,7 +2,10 @@
   "name": "skill-learn",
   "version": "0.1.5",
   "private": true,
-  "workspaces": ["apps/*","packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -14,10 +17,10 @@
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.0.0",
-    "turbo": "^2.8.7",
-    "typescript": "^5.9.3",
     "eslint-config-prettier": "^10.1.8",
-    "rimraf": "^6.1.2"
+    "rimraf": "^6.1.2",
+    "turbo": "^2.8.9",
+    "typescript": "^5.9.3"
   },
   "overrides": {
     "fast-xml-parser": "^5.3.5",
