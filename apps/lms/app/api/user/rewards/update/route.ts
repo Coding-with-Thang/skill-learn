@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
 import { requireAuth } from "@skill-learn/lib/utils/auth";

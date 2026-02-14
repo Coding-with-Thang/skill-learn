@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireAdminOrMediaAccess } from "@skill-learn/lib/utils/auth";
 import admin from "firebase-admin";
 import { fileUploadSchema } from "@skill-learn/lib/zodSchemas";

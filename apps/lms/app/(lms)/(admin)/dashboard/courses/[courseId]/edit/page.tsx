@@ -6,8 +6,7 @@ import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { courseSchema, courseStatusOptions } from "@/lib/zodSchemas"
-import { buttonVariants } from "@skill-learn/ui/components/button";
-import { Button } from "@skill-learn/ui/components/button"
+import { buttonVariants , Button } from "@skill-learn/ui/components/button";
 import {
     Form,
     FormControl,

@@ -4,24 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/compon
 import { Progress } from "@skill-learn/ui/components/progress"
 import { motion } from 'framer-motion'
 import { cn, getProgressColor } from '@/lib/cms/utils'
-import { Activity, Database, HardDrive, Mail, CreditCard, Server } from 'lucide-react'
+import {
+  Activity,
+  Database,
+  HardDrive,
+  Mail,
+  CreditCard,
+  Server,
+  Shield,
+} from "lucide-react"
 
 const statusIcons = {
-  'API Server': Activity,
-  'Database': Database,
-  'Storage': HardDrive,
-  'Email Service': Mail,
-  'Payment Gateway': CreditCard,
-  'Redis Cache': Database,
-  'Auth Service': Shield,
-  'API Gateway': Server,
-  'Database Cluster': Database,
-  'Storage Service': HardDrive,
+  "API Server": Activity,
+  Database: Database,
+  Storage: HardDrive,
+  "Email Service": Mail,
+  "Payment Gateway": CreditCard,
+  "Redis Cache": Database,
+  "Auth Service": Shield,
+  "API Gateway": Server,
+  "Database Cluster": Database,
+  "Storage Service": HardDrive,
 }
-
-// Fallback icon imports if needed or rely on importing them above
-// Note: Shield is not imported above, need to add it.
-import { Shield } from 'lucide-react'
 
 export default function SystemHealthPanel({ systemStatus, resourceUsage }) {
   const getStatusIcon = (status) => {

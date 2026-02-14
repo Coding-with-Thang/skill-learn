@@ -53,7 +53,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                     </PaginationItem>
                 ) : (
                     <PaginationItem>
-                        <button disabled className={buttonVariants({ variant: 'outline', size: 'default' }) + ' opacity-50 cursor-not-allowed'}>Previous</button>
+                        <button disabled className={`${buttonVariants({ variant: 'outline', size: 'default' })  } opacity-50 cursor-not-allowed`}>Previous</button>
                     </PaginationItem>
                 )}
 
@@ -84,7 +84,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                     </PaginationItem>
                 ) : (
                     <PaginationItem>
-                        <button disabled className={buttonVariants({ size: 'default' }) + ' opacity-50 cursor-not-allowed'}>Next</button>
+                        <button disabled className={`${buttonVariants({ size: 'default' })  } opacity-50 cursor-not-allowed`}>Next</button>
                     </PaginationItem>
                 )}
             </PaginationContent>

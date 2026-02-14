@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { buttonVariants } from "@skill-learn/ui/components/button";
-import { Button } from "@skill-learn/ui/components/button";
+import { buttonVariants , Button } from "@skill-learn/ui/components/button";
 import { Card, CardTitle, CardContent, CardDescription, CardHeader } from "@skill-learn/ui/components/card";
 import { Input } from "@skill-learn/ui/components/input";
 import { Textarea } from "@skill-learn/ui/components/textarea";

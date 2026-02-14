@@ -1,7 +1,7 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { prisma } from "@skill-learn/database";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { getTenantDefaultRoleId } from "@skill-learn/lib/utils/tenantDefaultRole";
 

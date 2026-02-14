@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { createCourse } from '../actions';
 import { getTenantContext } from "@skill-learn/lib/utils/tenant";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions";

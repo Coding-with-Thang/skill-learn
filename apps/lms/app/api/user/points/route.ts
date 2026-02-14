@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { requireAuth } from "@skill-learn/lib/utils/auth";

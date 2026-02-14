@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { buttonVariants } from "@skill-learn/ui/components/button";
-import { Button } from "@skill-learn/ui/components/button";
+import { buttonVariants , Button } from "@skill-learn/ui/components/button";
 import {
   Form,
   FormControl,

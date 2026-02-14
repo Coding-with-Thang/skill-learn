@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
-import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
+import { handleApiError , AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getDailyPointStatus } from "@/lib/points";
 import { updateStreak, getStreakInfo } from "@/lib/streak";
 import { prisma } from '@skill-learn/database';
-import { AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 
 /**

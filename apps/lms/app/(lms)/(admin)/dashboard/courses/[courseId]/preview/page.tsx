@@ -1,9 +1,8 @@
 import { prisma } from '@skill-learn/database';
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage"
 import { extractTextFromProseMirror } from "@skill-learn/lib/utils"
-import { buttonVariants } from "@skill-learn/ui/components/button";
+import { buttonVariants , Button } from "@skill-learn/ui/components/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skill-learn/ui/components/card";
-import { Button } from "@skill-learn/ui/components/button"
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Clock, BookOpen } from "lucide-react";

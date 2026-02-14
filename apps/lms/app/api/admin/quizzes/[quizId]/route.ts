@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from '@skill-learn/database';
 import { requireCanEditQuiz } from "@skill-learn/lib/utils/auth";
@@ -126,7 +126,7 @@ export async function PUT(
     }
 
     // Update quiz and manage questions
-    let quiz = await prisma.quiz.update({
+    const quiz = await prisma.quiz.update({
       where: { id: quizId },
       data: {
         title: data.title,

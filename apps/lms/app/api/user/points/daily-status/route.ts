@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getDailyPointStatus } from "@/lib/points";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler";

@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest";
-import { categoryUpdateSchema } from "@/lib/zodSchemas";
+import { categoryUpdateSchema , objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
-import { objectIdSchema } from "@/lib/zodSchemas";
+
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import type { RouteContext } from "@/types";

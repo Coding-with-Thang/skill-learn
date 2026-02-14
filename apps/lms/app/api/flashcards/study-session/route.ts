@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import {
@@ -31,7 +31,7 @@ function weightedShuffle<T>(items: T[], weights: number[]): T[] {
   }));
   let totalWeight = combined.reduce((s, c) => s + c.weight, 0);
   const result: T[] = [];
-  let remaining = [...combined];
+  const remaining = [...combined];
 
   while (remaining.length > 0) {
     let r = Math.random() * totalWeight;
@@ -84,9 +84,9 @@ export async function POST(req: NextRequest) {
     const userId = user.id;
 
     // 1. Resolve accessible cards (owned + shared)
-    let cardIds = new Set<string>();
+    const cardIds = new Set<string>();
 
-    let hiddenInDeck = new Set<string>();
+    const hiddenInDeck = new Set<string>();
 
     if (deckIds?.length) {
       const decks = await prisma.flashCardDeck.findMany({

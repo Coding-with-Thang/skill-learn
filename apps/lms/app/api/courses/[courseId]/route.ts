@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { getCourseWithChaptersAndLessons } from "@/lib/courses";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";

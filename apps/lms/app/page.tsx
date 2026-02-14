@@ -10,8 +10,7 @@ import SkillLearnHere from '@/components/landing/SkillLearnHere';
 import FAQ from '@/components/landing/FAQ';
 import Testimonials from '@/components/landing/Testimonials';
 import { LoadingPage } from "@skill-learn/ui/components/loading"
-import { ErrorCard } from "@skill-learn/ui/components/error-boundary"
-import { ErrorBoundary } from "@skill-learn/ui/components/error-boundary"
+import { ErrorCard , ErrorBoundary } from "@skill-learn/ui/components/error-boundary"
 
 /**
  * Landing Page - Public facing marketing page for non-authenticated users

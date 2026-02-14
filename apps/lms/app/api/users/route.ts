@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";

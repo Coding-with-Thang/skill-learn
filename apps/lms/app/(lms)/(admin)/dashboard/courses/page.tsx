@@ -75,7 +75,7 @@ export default async function CoursesPage({ searchParams }) {
         }),
     ]);
 
-    const baseHref = `/dashboard/courses?pageSize=${pageSize}` + (category ? `&category=${encodeURIComponent(category)}` : '');
+    const baseHref = `/dashboard/courses?pageSize=${pageSize}${  category ? `&category=${encodeURIComponent(category)}` : ''}`;
 
     return (
         <>

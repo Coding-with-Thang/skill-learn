@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk";

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
-import { getTenantContext } from "@skill-learn/lib/utils/tenant";
+import { getTenantContext , buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 import { requireAnyPermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
@@ -8,7 +8,7 @@ import { getSystemSetting } from "@/lib/actions/settings";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { quizCreateSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
-import { buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+
 import { QUIZ_CONFIG } from "@/config/constants";
 
 const QUIZ_LIST_PERMISSIONS = [

@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }) {
             const segment = segments[i]
             const label = formatSegmentLabel(segment)
             if (label === "Detail") continue
-            const href = "/" + segments.slice(0, i + 1).join('/')
+            const href = `/${  segments.slice(0, i + 1).join('/')}`
             crumbs.push({ name: label, href })
         }
         const lastSegment = segments[segments.length - 1]
