@@ -359,12 +359,12 @@ export default function TenantDetailPage() {
     setFormLoading(true)
     setFormError(null)
     try {
+      // Only send fields the API expects; confirmPassword is for client-side validation only.
       const payload: {
         username: string
         firstName: string
         lastName: string
         password: string
-        confirmPassword: string
         tenantRoleId: string
         email?: string
       } = {
@@ -372,7 +372,6 @@ export default function TenantDetailPage() {
         firstName: data.firstName,
         lastName: data.lastName,
         password: data.password,
-        confirmPassword: data.confirmPassword,
         tenantRoleId: data.tenantRoleId,
       }
       if (data.email) payload.email = data.email

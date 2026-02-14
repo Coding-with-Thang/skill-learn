@@ -4,7 +4,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
-import { tenantUserCreateSchema } from "@skill-learn/lib/zodSchemas";
+import { tenantUserCreateApiSchema } from "@skill-learn/lib/zodSchemas";
 
 import type { RouteContext } from "@/types";
 
@@ -68,7 +68,7 @@ export async function GET(
 /**
  * POST /api/tenants/[tenantId]/users
  * Create a tenant user via Clerk. Webhook (user.created) will create User in DB and assign role.
- * Body: { username, firstName, lastName, password, email?, tenantRoleId } — validated with tenantUserCreateSchema.
+ * Body: { username, firstName, lastName, password, email?, tenantRoleId } — validated with tenantUserCreateApiSchema (no confirmPassword).
  */
 export async function POST(
   request: NextRequest,
@@ -84,7 +84,7 @@ export async function POST(
 
     let data;
     try {
-      data = await validateRequestBody(request, tenantUserCreateSchema);
+      data = await validateRequestBody(request, tenantUserCreateApiSchema);
     } catch (err) {
       if (err instanceof SyntaxError || (err instanceof Error && err.message.toLowerCase().includes("json"))) {
         return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
