@@ -58,7 +58,7 @@ export async function GET(
         if (url) imageUrl = url;
       }
     } catch (err) {
-      console.warn("Signed URL failed for course", courseId, err?.message || err);
+      console.warn("Signed URL failed for course", courseId, err instanceof Error ? err.message : err);
     }
 
     return successResponse({ course: { ...course, imageUrl } });

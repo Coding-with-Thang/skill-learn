@@ -88,7 +88,7 @@ export default function OnboardingAccountPage() {
       toast.success("Verification code sent to your email!");
     } catch (err) {
       console.error("Sign up error:", err);
-      const errorMessage = err.errors?.[0]?.message || "Failed to create account";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Failed to create account";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -108,7 +108,7 @@ export default function OnboardingAccountPage() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
 
         // Create user in database
         await createUserInDatabase();
@@ -118,7 +118,7 @@ export default function OnboardingAccountPage() {
       }
     } catch (err) {
       console.error("Verification error:", err);
-      const errorMessage = err.errors?.[0]?.message || "Invalid verification code";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Invalid verification code";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -139,12 +139,12 @@ export default function OnboardingAccountPage() {
       });
 
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+        await setActive?.({ session: result.createdSessionId });
         router.push(`/onboarding/workspace?session_id=${sessionId}`);
       }
     } catch (err) {
       console.error("Sign in error:", err);
-      const errorMessage = err.errors?.[0]?.message || "Invalid credentials";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Invalid credentials";
       toast.error(errorMessage);
     } finally {
       setLoading(false);

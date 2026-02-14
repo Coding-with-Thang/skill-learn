@@ -5,16 +5,16 @@ import Image from 'next/image';
 
 export default function HeroSection() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   // Refs for parallax elements
-  const topBlobRef = useRef(null);
-  const bottomBlobRef = useRef(null);
-  const topCircleRef = useRef(null);
-  const bottomCircleRef = useRef(null);
-  const heroRef = useRef(null);
+  const topBlobRef = useRef<HTMLDivElement | null>(null);
+  const bottomBlobRef = useRef<HTMLDivElement | null>(null);
+  const topCircleRef = useRef<HTMLDivElement | null>(null);
+  const bottomCircleRef = useRef<HTMLDivElement | null>(null);
+  const heroRef = useRef<HTMLDivElement | null>(null);
   const activeRef = useRef(false);
-  const gridRef = useRef(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
 
   // Intersection-aware parallax — parallax runs only while the hero is visible
   useEffect(() => {

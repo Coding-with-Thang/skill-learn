@@ -13,7 +13,7 @@ import { requireTenantContext } from "@skill-learn/lib/utils/tenant";
  * Get all user role assignments for the tenant
  * Requires: roles.read or roles.assign permission
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Get tenant context using standardized utility
     const tenantContext = await requireTenantContext();
@@ -37,7 +37,7 @@ export async function GET(_request: NextRequest) {
     const filterRoleId = searchParams.get("roleId");
 
     // Build where clause
-    const where = { tenantId: tenantId };
+    const where: { tenantId: string; userId?: string; tenantRoleId?: string } = { tenantId };
     if (filterUserId) where.userId = filterUserId;
     if (filterRoleId) where.tenantRoleId = filterRoleId;
 
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
  * Remove a role from a user
  * Requires: roles.assign permission
  */
-export async function DELETE(_request: NextRequest) {
+export async function DELETE(request: NextRequest) {
   try {
     // Get tenant context using standardized utility
     const tenantContext = await requireTenantContext();
@@ -269,7 +269,7 @@ export async function DELETE(_request: NextRequest) {
       }
     }
 
-    let deletedUserRole = null;
+    let deletedUserRole: Awaited<ReturnType<typeof prisma.userRole.findFirst>> = null;
 
     if (userRoleId) {
       const userRole = await prisma.userRole.findFirst({

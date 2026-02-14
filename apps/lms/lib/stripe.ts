@@ -4,8 +4,7 @@ import Stripe from "stripe";
 // Note: If STRIPE_SECRET_KEY is not set, stripe will be undefined and functions should check for it
 export const stripe = process.env.STRIPE_SECRET_KEY
   ? new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: "2024-12-18.acacia",
-      typescript: false,
+      apiVersion: "2026-01-28.clover",
     })
   : null;
 
@@ -160,7 +159,7 @@ export async function createCheckoutSession({
   isOnboarding = false,
 }) {
   const sessionParams = {
-    mode: "subscription",
+    mode: "subscription" as const,
     payment_method_types: ["card"],
     line_items: [
       {
@@ -171,44 +170,35 @@ export async function createCheckoutSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: allowPromotionCodes,
-    billing_address_collection: "required",
+    billing_address_collection: "required" as const,
     metadata: {
       planId: planId || "pro",
       tenantId: tenantId || "",
       userId: userId || "",
       isOnboarding: isOnboarding ? "true" : "false",
     },
+    ...(customerId
+      ? { customer: customerId }
+      : { customer_creation: "always" as const, ...(customerEmail ? { customer_email: customerEmail } : {}) }),
+    ...(trialDays > 0
+      ? {
+          subscription_data: {
+            trial_period_days: trialDays,
+            metadata: {
+              planId: planId || "pro",
+              tenantId: tenantId || "",
+              userId: userId || "",
+            },
+          },
+        }
+      : {}),
   };
-
-  // If customer exists, use their ID
-  if (customerId) {
-    sessionParams.customer = customerId;
-  } else {
-    // Allow Stripe to create a new customer
-    sessionParams.customer_creation = "always";
-    // Collect email for new customers during onboarding
-    if (customerEmail) {
-      sessionParams.customer_email = customerEmail;
-    }
-  }
-
-  // Add trial period for new subscriptions
-  if (trialDays > 0) {
-    sessionParams.subscription_data = {
-      trial_period_days: trialDays,
-      metadata: {
-        planId: planId || "pro",
-        tenantId: tenantId || "",
-        userId: userId || "",
-      },
-    };
-  }
 
   if (!stripe) {
     throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.");
   }
   
-  const session = await stripe.checkout.sessions.create(sessionParams);
+  const session = await stripe.checkout.sessions.create(sessionParams as Stripe.Checkout.SessionCreateParams);
   return session;
 }
 
@@ -285,11 +275,14 @@ export async function updateSubscription(subscriptionId, newPriceId) {
   }
   
   const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-  
+  const firstItem = subscription.items.data[0];
+  if (!firstItem?.id) {
+    throw new Error("Subscription has no items");
+  }
   const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
     items: [
       {
-        id: subscription.items.data[0].id,
+        id: firstItem.id,
         price: newPriceId,
       },
     ],
@@ -369,9 +362,10 @@ export function verifyWebhookSignature(payload, signature, webhookSecret) {
   
   try {
     return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-  } catch (error) {
-    console.error("Webhook signature verification failed:", error.message);
-    throw error;
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
+    console.error("Webhook signature verification failed:", e.message);
+    throw e;
   }
 }
 

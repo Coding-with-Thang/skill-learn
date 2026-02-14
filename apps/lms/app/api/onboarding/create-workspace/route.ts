@@ -60,12 +60,13 @@ export async function POST(request: NextRequest) {
       dbUser = await prisma.user.create({
         data: {
           clerkId: userId,
-          username: user.username || user.primaryEmailAddress?.emailAddress?.split("@")[0] || `user_${userId.substring(0, 8)}`,
-          firstName: user.firstName || "User",
-          lastName: user.lastName || "",
-          imageUrl: user.imageUrl,
+          username: user?.username || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || `user_${userId.substring(0, 8)}`,
+          firstName: user?.firstName || "User",
+          lastName: user?.lastName || "",
+          imageUrl: user?.imageUrl ?? null,
           role: "OWNER",
         },
+        include: { tenant: true },
       });
     }
 
@@ -155,13 +156,11 @@ export async function POST(request: NextRequest) {
 
     await prisma.systemSetting.createMany({
       data: settingsToCreate.map((setting) => ({
-        tenantId: tenant.id,
         key: setting.key,
         value: setting.value,
         category: setting.category,
         description: `${setting.category} setting`,
       })),
-      skipDuplicates: true,
     });
 
     // Initialize default features for the tenant
@@ -178,12 +177,11 @@ export async function POST(request: NextRequest) {
             enabled: feature.defaultEnabled,
             superAdminEnabled: true,
           })),
-          skipDuplicates: true,
         });
       }
-    } catch (e) {
-      console.log("Could not initialize features:", e.message);
-    }
+} catch (e) {
+        console.log("Could not initialize features:", e instanceof Error ? e.message : String(e));
+      }
 
     return NextResponse.json({
       workspace: {
@@ -197,7 +195,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating workspace:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to create workspace" },
+      { error: error instanceof Error ? error.message : "Failed to create workspace" },
       { status: 500 }
     );
   }

@@ -34,7 +34,7 @@ if (!admin.apps.length) {
       });
     } catch (e) {
       // If initialization fails, admin may already be initialized or config invalid
-      console.warn("Firebase Admin initialization error:", e?.message || e);
+      console.warn("Firebase Admin initialization error:", e instanceof Error ? e.message : e);
     }
   }
 }
@@ -57,12 +57,13 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     // Get the uploaded file from the form data
-    const file = formData.get("file");
-    if (!file) {
+    const fileEntry = formData.get("file");
+    if (!fileEntry || !(fileEntry instanceof File)) {
       throw new AppError("No file uploaded", ErrorType.VALIDATION, {
         status: 400,
       });
     }
+    const file = fileEntry;
 
     // Build a plain object with the metadata we expect and validate it with Zod
     const metadata = {

@@ -24,7 +24,7 @@ export default function ApplyPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -37,7 +37,8 @@ export default function ApplyPage() {
     }, 2000);
   };
 
-  const formattedJobId = jobId?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  const id = Array.isArray(jobId) ? jobId[0] : jobId;
+  const formattedJobId = id?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
   if (isSubmitted) {
     return (
@@ -138,13 +139,13 @@ export default function ApplyPage() {
                   <div
                     className={`border-2 border-dashed rounded-4xl p-8 text-center transition-colors cursor-pointer ${file ? "border-teal-500 bg-teal-50/30" : "border-slate-200 hover:border-teal-300"
                       }`}
-                    onClick={() => document.getElementById('resume-upload').click()}
+                    onClick={() => document.getElementById('resume-upload')?.click()}
                   >
                     <input
                       type="file"
                       id="resume-upload"
                       className="hidden"
-                      onChange={(e) => setFile(e.target.files[0])}
+                      onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                     />
                     {file ? (
                       <div className="flex items-center justify-center gap-3">

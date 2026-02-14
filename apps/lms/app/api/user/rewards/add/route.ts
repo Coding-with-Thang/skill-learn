@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for reward image:",
-        err?.message || err
+        err instanceof Error ? err.message : err
       );
     }
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@skill-learn/database";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import {
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     const parsed = flashCardUserBulkCreateSchema.safeParse(raw);
     if (!parsed.success) {
       throw new AppError(
-        parsed.error.errors?.[0]?.message || "Invalid request",
+        parsed.error.issues?.[0]?.message || "Invalid request",
         ErrorType.VALIDATION,
         { status: 400 }
       );
@@ -94,7 +95,10 @@ export async function POST(req: NextRequest) {
       ).map((c) => c.fingerprint)
     );
 
-    const created = [];
+    type CardWithCategory = Prisma.FlashCardGetPayload<{
+      include: { category: { select: { id: true; name: true } } };
+    }>;
+    const created: CardWithCategory[] = [];
     let skipped = 0;
 
     for (const item of cardsToCreate) {
@@ -123,7 +127,7 @@ export async function POST(req: NextRequest) {
         existingFingerprints.add(fingerprint);
         created.push(card);
       } catch (err) {
-        if (err.code === "P2002") {
+        if ((err as { code?: string }).code === "P2002") {
           existingFingerprints.add(fingerprint);
           skipped++;
         } else throw err;

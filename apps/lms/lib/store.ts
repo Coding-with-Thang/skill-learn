@@ -8,7 +8,7 @@ const getInitialTheme = () => {
 }
 
 // Apply theme to document
-const applyTheme = (theme) => {
+const applyTheme = (theme: 'light' | 'dark') => {
     if (typeof window === 'undefined') return
     if (theme === 'dark') {
     document.documentElement.classList.add('dark')
@@ -21,7 +21,14 @@ const applyTheme = (theme) => {
 const initialTheme = getInitialTheme()
 applyTheme(initialTheme)
 
-export const useThemeStore = create((set) => ({
+type ThemeState = {
+  theme: 'light' | 'dark';
+  toggleTheme: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
+  initializeTheme: () => void;
+};
+
+export const useThemeStore = create<ThemeState>((set) => ({
     theme: initialTheme,
     toggleTheme: () => set((state) => {
     const newTheme = state.theme === 'light' ? 'dark' : 'light'

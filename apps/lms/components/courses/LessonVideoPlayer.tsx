@@ -9,23 +9,28 @@ const PLAYBACK_RATES = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 function getYouTubeEmbedUrl(url) {
   if (!url || typeof url !== "string") return null;
   const trimmed = url.trim();
-  let videoId = null;
+  let videoId: string | null = null;
   if (trimmed.includes("youtube.com/watch?v=")) {
     const match = trimmed.match(/[?&]v=([^&]+)/);
-    videoId = match ? match[1] : null;
+    videoId = match ? (match[1] ?? null) : null;
   } else if (trimmed.includes("youtu.be/")) {
     const match = trimmed.match(/youtu\.be\/([^?&]+)/);
-    videoId = match ? match[1] : null;
+    videoId = match ? (match[1] ?? null) : null;
   } else if (trimmed.includes("youtube.com/embed/")) {
     const match = trimmed.match(/embed\/([^?&]+)/);
-    videoId = match ? match[1] : null;
+    videoId = match ? (match[1] ?? null) : null;
   }
   return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : null;
 }
 
-export default function LessonVideoPlayer({ src, className, onProgress, onEnded }) {
-  const videoRef = useRef(null);
-  const containerRef = useRef(null);
+export default function LessonVideoPlayer({ src, className, onProgress, onEnded }: {
+  src?: string | null | undefined;
+  className?: string;
+  onProgress?: (current: number, duration: number) => void;
+  onEnded?: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -35,7 +40,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
   const [showRateMenu, setShowRateMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hoverControls, setHoverControls] = useState(false);
-  const progressIntervalRef = useRef(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const youtubeEmbedUrl = getYouTubeEmbedUrl(src);
   const isYouTube = !!youtubeEmbedUrl;
@@ -139,8 +144,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
     if (isYouTube) return;
     progressIntervalRef.current = setInterval(() => {
       if (videoRef.current && playing) {
-        const pct = duration ? (videoRef.current.currentTime / duration) * 100 : 0;
-        onProgress?.(pct);
+        onProgress?.(videoRef.current.currentTime, duration);
       }
     }, 2000);
     return () => {

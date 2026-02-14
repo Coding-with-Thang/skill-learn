@@ -64,16 +64,18 @@ const GAME_REGISTRY = {
   },
 };
 
+type GameKey = keyof typeof GAME_REGISTRY;
+
 export default function GamePage() {
   const params = useParams();
-  const gameName = params.gameName;
+  const gameName = (Array.isArray(params.gameName) ? params.gameName[0] : params.gameName) as string | undefined;
 
   // Check if game exists in registry
-  if (!gameName || !GAME_REGISTRY[gameName]) {
+  if (!gameName || !(GAME_REGISTRY as Record<string, unknown>)[gameName]) {
     return notFound();
   }
 
-  const gameConfig = GAME_REGISTRY[gameName];
+  const gameConfig = GAME_REGISTRY[gameName as GameKey];
 
   return (
     <GameRunner

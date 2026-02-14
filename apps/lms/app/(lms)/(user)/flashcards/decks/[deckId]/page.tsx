@@ -18,7 +18,7 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import ShareDecksDialog from "@/components/flashcards/ShareDecksDialog";
 import { toast } from "sonner";
 
-type DeckShape = { name?: string; isPublic?: boolean; cardIds?: string[]; hiddenCardIds?: string[]; cards?: { id: string; question?: string }[] };
+type DeckShape = { id: string; name?: string; isPublic?: boolean; cardIds?: string[]; hiddenCardIds?: string[]; cards?: { id: string; question?: string }[] };
 
 export default function DeckSettingsPage() {
   const params = useParams();

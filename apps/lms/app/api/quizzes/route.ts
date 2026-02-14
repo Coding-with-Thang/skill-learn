@@ -57,7 +57,7 @@ export async function GET(_request: NextRequest) {
           console.warn(
             "Failed to generate signed URL for quiz image:",
             quiz.id,
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
 

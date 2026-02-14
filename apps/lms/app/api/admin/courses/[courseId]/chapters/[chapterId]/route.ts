@@ -98,7 +98,7 @@ export async function PUT(
       data: {
         title: validation.data.title,
         slug: newSlug,
-        position: validation.data.order ?? validation.data.position ?? 0,
+        position: validation.data.order ?? 0,
       },
     });
 

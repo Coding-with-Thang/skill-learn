@@ -48,7 +48,8 @@ export default function CourseOutline({
   const chaptersWithSortedLessons = useMemo(
     () =>
       sortedChapters.map((ch) => {
-        const sortedLessons = [...(ch.lessons ?? [])].sort(
+        const lessonList = (ch.lessons ?? []) as Array<{ id: string; position?: number; slug?: string; title?: string }>;
+        const sortedLessons = [...lessonList].sort(
           (a, b) => (a.position ?? 0) - (b.position ?? 0)
         );
         const completedInChapter = sortedLessons.filter((l) => completedSet.has(l.id)).length;
@@ -97,7 +98,8 @@ export default function CourseOutline({
       <div className="space-y-2">
         {chaptersWithSortedLessons.map((chapter, chapterIndex) => {
           const lessons = chapter.sortedLessons;
-          const isOpen = openChapters[chapter.id] === undefined ? chapterIndex === 0 : !!openChapters[chapter.id];
+          const chapterId = chapter.id ?? '';
+          const isOpen = openChapters[chapterId] === undefined ? chapterIndex === 0 : !!openChapters[chapterId];
           const completedInChapter = chapter.completedInChapter;
           const totalInChapter = chapter.totalInChapter;
           const progressLabel =

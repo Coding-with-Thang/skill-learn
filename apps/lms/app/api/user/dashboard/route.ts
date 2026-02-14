@@ -30,11 +30,11 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Extract user points from pointsData
-    const user = pointsData?.user || {};
-    
+    const user = (pointsData?.user || {}) as { points?: number; lifetimePoints?: number };
+
     return successResponse({
-      points: user.points || 0,
-      lifetimePoints: user.lifetimePoints || 0,
+      points: user.points ?? 0,
+      lifetimePoints: user.lifetimePoints ?? 0,
       dailyStatus: {
         todaysPoints: pointsData.todaysPoints || 0,
         canEarnPoints: pointsData.canEarnPoints !== false,
@@ -42,12 +42,12 @@ export async function GET(request: NextRequest) {
         todaysLogs: pointsData.todaysLogs || [],
       },
       streak: {
-        current: streakData.currentStreak || streakData.current || 0,
-        longest: streakData.longestStreak || streakData.longest || 0,
-        atRisk: streakData.streakAtRisk || streakData.atRisk || false,
-        nextMilestone: streakData.nextMilestone || 5,
-        pointsToNextMilestone: streakData.pointsToNextMilestone || 5,
-        streakUpdated: streakData.streakUpdated || false,
+        current: streakData.currentStreak ?? 0,
+        longest: streakData.longestStreak ?? 0,
+        atRisk: streakData.streakAtRisk ?? false,
+        nextMilestone: streakData.nextMilestone ?? 5,
+        pointsToNextMilestone: streakData.pointsToNextMilestone ?? 5,
+        streakUpdated: streakData.streakUpdated ?? false,
       },
     });
   } catch (error) {

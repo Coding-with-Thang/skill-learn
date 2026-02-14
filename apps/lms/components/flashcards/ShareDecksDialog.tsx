@@ -16,20 +16,32 @@ import { Loader } from "@skill-learn/ui/components/loader";
 import { toast } from "sonner";
 import { Share2 } from "lucide-react";
 
-export default function ShareDecksDialog({ open, onOpenChange, decks, onSuccess }) {
-  const [recipients, setRecipients] = useState([]);
-  const [selectedDeckIds, setSelectedDeckIds] = useState(new Set());
-  const [recipientMode, setRecipientMode] = useState("specific"); // "all" | "specific"
-  const [selectedUserIds, setSelectedUserIds] = useState(new Set());
+type Recipient = { id: string; [key: string]: unknown };
+type DeckItem = { id: string; name?: string; cardIds?: unknown[]; hiddenCardIds?: unknown[] };
+
+export default function ShareDecksDialog({
+  open,
+  onOpenChange,
+  decks,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  decks: DeckItem[];
+  onSuccess?: () => void;
+}) {
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [selectedDeckIds, setSelectedDeckIds] = useState<Set<string>>(new Set());
+  const [recipientMode, setRecipientMode] = useState<"all" | "specific">("specific");
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [sharing, setSharing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     // Pre-select when single deck (e.g. from deck detail page)
-    setSelectedDeckIds(
-      decks.length === 1 ? new Set([decks[0].id]) : new Set()
-    );
+    const single = decks.length === 1 ? decks[0] : undefined;
+    setSelectedDeckIds(single ? new Set([single.id]) : new Set());
     setSelectedUserIds(new Set());
     setRecipientMode("specific");
     setLoading(true);
@@ -47,7 +59,7 @@ export default function ShareDecksDialog({ open, onOpenChange, decks, onSuccess 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only init when opening
   }, [open]);
 
-  const toggleDeck = (id) => {
+  const toggleDeck = (id: string) => {
     setSelectedDeckIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -56,7 +68,7 @@ export default function ShareDecksDialog({ open, onOpenChange, decks, onSuccess 
     });
   };
 
-  const toggleUser = (id) => {
+  const toggleUser = (id: string) => {
     setSelectedUserIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -109,7 +121,8 @@ export default function ShareDecksDialog({ open, onOpenChange, decks, onSuccess 
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to share decks");
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to share decks";
+      toast.error(msg);
     } finally {
       setSharing(false);
     }

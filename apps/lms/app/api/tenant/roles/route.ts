@@ -38,6 +38,9 @@ export async function GET(_request: NextRequest) {
       where: { id: user.tenantId },
       select: { id: true, name: true, maxRoleSlots: true },
     });
+    if (!tenant) {
+      throw new AppError("Tenant not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
 
     // Get roles
     const roles = await prisma.tenantRole.findMany({
@@ -137,6 +140,9 @@ export async function POST(request: NextRequest) {
       where: { id: user.tenantId },
       select: { id: true, maxRoleSlots: true },
     });
+    if (!tenant) {
+      throw new AppError("Tenant not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
 
     const existingRolesCount = await prisma.tenantRole.count({
       where: { tenantId: user.tenantId, doesNotCountTowardSlotLimit: false },
@@ -156,7 +162,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get template permissions if using template
-    let templatePermissionIds = [];
+    let templatePermissionIds: string[] = [];
     if (templateId) {
       const template = await prisma.roleTemplate.findUnique({
         where: { id: templateId },
@@ -177,7 +183,7 @@ export async function POST(request: NextRequest) {
     const role = await prisma.$transaction(async (tx) => {
       const newRole = await tx.tenantRole.create({
         data: {
-          tenantId: user.tenantId,
+          tenantId: user.tenantId!,
           roleAlias,
           description: description || null,
           slotPosition: slotPosition || existingRolesCount + 1,
@@ -213,6 +219,10 @@ export async function POST(request: NextRequest) {
         },
       });
     });
+
+    if (!role) {
+      throw new AppError("Failed to create role", ErrorType.INTERNAL, { status: 500 });
+    }
 
     return NextResponse.json(
       {
@@ -266,6 +276,9 @@ export async function PUT(request: NextRequest) {
         _count: { select: { tenantRoles: true } },
       },
     });
+    if (!tenant) {
+      throw new AppError("Tenant not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
 
     // Check if tenant already has roles
     if (tenant._count.tenantRoles > 0) {
@@ -289,7 +302,7 @@ export async function PUT(request: NextRequest) {
 
     // Create roles
     const createdRoles = await prisma.$transaction(async (tx) => {
-      const roles = [];
+      const roles: Array<{ id: string; roleAlias: string; slotPosition: number; permissionCount: number }> = [];
 
       for (const template of templates) {
         if (template.roleName?.toLowerCase() === GUEST_ROLE_ALIAS.toLowerCase()) continue;
@@ -297,7 +310,7 @@ export async function PUT(request: NextRequest) {
 
         const role = await tx.tenantRole.create({
           data: {
-            tenantId: user.tenantId,
+            tenantId: user.tenantId!,
             roleAlias: template.roleName,
             description: template.description,
             slotPosition: template.slotPosition,

@@ -3,7 +3,7 @@
 import { Check } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 
-function PricingCard({ title, price, features, cta, highlighted, badge }) {
+function PricingCard({ title, price, features, cta, highlighted, badge }: { title: string; price: string; features: string[]; cta: string; highlighted?: boolean; badge?: string }) {
   return (
     <div className={`relative p-8 rounded-4xl border ${highlighted ? 'border-brand-teal shadow-2xl scale-105 z-10 bg-white' : 'border-gray-200 bg-white shadow-lg hover:shadow-xl transition-shadow'}`}>
       {badge && (

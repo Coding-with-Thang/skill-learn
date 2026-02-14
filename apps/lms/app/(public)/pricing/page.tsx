@@ -497,7 +497,7 @@ function FeatureComparison() {
 
 // FAQ section
 function FAQSection() {
-  const [openIndex, setOpenIndex] = useState(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
     <div className="mt-20">
@@ -610,7 +610,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error(error.message || "Failed to start checkout. Please try again.");
+      toast.error(error instanceof Error ? error.message : "Failed to start checkout. Please try again.");
     } finally {
       setIsLoading(false);
       setLoadingPlan(null);

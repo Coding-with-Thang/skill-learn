@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest) {
     }
 
     // Get query parameters
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(_request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
     const resource = searchParams.get("resource");
@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest) {
     const endDate = searchParams.get("endDate");
 
     // Build where clause - only logs for users in this tenant
-    const where = { user: { tenantId } };
+    const where: { user: { tenantId: string }; resource?: string; action?: string; timestamp?: { gte?: Date; lte?: Date } } = { user: { tenantId } };
     if (resource) where.resource = resource;
     if (action) where.action = action;
     if (startDate || endDate) {

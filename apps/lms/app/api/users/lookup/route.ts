@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       });
       
       if (clerkUsers && clerkUsers.data && clerkUsers.data.length > 0) {
-        const clerkUser = clerkUsers.data[0];
+        const clerkUser = clerkUsers.data[0]!;
         const email = clerkUser.emailAddresses?.[0]?.emailAddress;
         const phoneNumber = clerkUser.phoneNumbers?.[0]?.phoneNumber;
         
@@ -105,8 +105,9 @@ export async function GET(request: NextRequest) {
         }
       }
     } catch (clerkSearchError) {
+      const errMsg = clerkSearchError instanceof Error ? clerkSearchError.message : String(clerkSearchError);
       // Check if it's a Clerk authentication error
-      if (clerkSearchError.message?.includes('key') || clerkSearchError.message?.includes('environment')) {
+      if (errMsg.includes('key') || errMsg.includes('environment')) {
         return NextResponse.json(
           { error: "Authentication service configuration error. Please contact support." },
           { status: 503 }

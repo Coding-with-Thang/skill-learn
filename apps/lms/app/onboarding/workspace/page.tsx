@@ -59,7 +59,7 @@ export default function OnboardingWorkspacePage() {
 
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const [roles, setRoles] = useState([]);
+  const [roles, setRoles] = useState<Array<{ id: string; roleAlias: string; doesNotCountTowardSlotLimit?: boolean }>>([]);
   const [defaultRoleId, setDefaultRoleId] = useState("");
   const [rolesLoading, setRolesLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -143,7 +143,7 @@ export default function OnboardingWorkspacePage() {
       }
     } catch (err) {
       console.error("Workspace creation error:", err);
-      toast.error(err.message || "Failed to create workspace");
+      toast.error(err instanceof Error ? err.message : "Failed to create workspace");
     } finally {
       setLoading(false);
     }
@@ -170,7 +170,7 @@ export default function OnboardingWorkspacePage() {
       router.push("/onboarding/complete");
     } catch (err) {
       console.error("Default role update error:", err);
-      toast.error(err.message || "Failed to set default role");
+      toast.error(err instanceof Error ? err.message : "Failed to set default role");
     } finally {
       setLoading(false);
     }

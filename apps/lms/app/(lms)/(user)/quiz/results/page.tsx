@@ -18,8 +18,8 @@ const formatTime = (seconds) => {
   return `${minutes}m ${remainingSeconds}s`;
 };
 
-const formatDate = (date) => {
-  return new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const formatDate = (date?: Date) => {
+  return (date ?? new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 // Collapsible Question Component
@@ -76,7 +76,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
               // Styling Logic (theme-aware for dark mode)
               let containerClass = "border-border bg-card hover:bg-muted/50";
               let labelColor = "text-foreground";
-              let icon = null;
+              let icon: React.ReactNode = null;
 
               if (isSelected && isAnswerCorrect) {
                 containerClass = "border-green-500/40 bg-green-500/10 dark:bg-green-500/20 ring-1 ring-green-500/30";
@@ -133,11 +133,22 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
   );
 };
 
+type QuizResults = {
+  score: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  pointsEarned?: number;
+  hasPassed: boolean;
+  isPerfectScore?: boolean;
+  timeSpent: number;
+  detailedResponses?: Array<{ questionId: string; selectedOptionIds?: string[]; isCorrect?: boolean }>;
+};
+
 export default function ResultsPage() {
   const router = useRouter();
   const { selectedQuiz, quizResponses } = useQuizStartStore();
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
+  const [results, setResults] = useState<QuizResults | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { logUserAction } = useAuditLog();
 
   // Admin/Operations Settings
@@ -163,7 +174,7 @@ export default function ResultsPage() {
         setResults(parsedResults);
       } catch (error) {
         toast.error("Failed to load quiz results");
-        setError(error.message);
+        setError(error instanceof Error ? error.message : "Failed to load quiz results");
         router.replace("/training");
       }
     }

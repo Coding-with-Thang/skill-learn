@@ -150,10 +150,11 @@ const JOB_DETAILS = {
 };
 
 export default function JobDescriptionPage() {
-  const { jobId } = useParams();
+  const params = useParams();
+  const jobId = Array.isArray(params.jobId) ? params.jobId[0] : params.jobId;
 
   // Default to a generic job if jobId doesn't match
-  const job = JOB_DETAILS[jobId] || {
+  const job = (JOB_DETAILS as Record<string, typeof JOB_DETAILS[keyof typeof JOB_DETAILS]>)[jobId ?? ""] || {
     title: "Future Leader at Skill-Learn",
     department: "Growth",
     location: "Global / Remote",

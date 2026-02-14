@@ -22,10 +22,12 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
+type PriorityCategory = { id: string; name?: string; cardCount?: number; priority: number };
+
 export default function FlashCardPrioritiesPage() {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<PriorityCategory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [savingPriority, setSavingPriority] = useState(null);
+  const [savingPriority, setSavingPriority] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -34,14 +36,15 @@ export default function FlashCardPrioritiesPage() {
       const data = res.data?.data ?? res.data;
       setCategories(data.categories ?? []);
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to load priorities");
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to load priorities";
+      toast.error(msg);
       setCategories([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePriorityChange = async (categoryId, priority) => {
+  const handlePriorityChange = async (categoryId: string, priority: number) => {
     try {
       setSavingPriority(categoryId);
       await api.post("/flashcards/priorities", { categoryId, priority });
@@ -50,7 +53,8 @@ export default function FlashCardPrioritiesPage() {
       );
       toast.success("Priority updated");
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to update priority");
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to update priority";
+      toast.error(msg);
     } finally {
       setSavingPriority(null);
     }

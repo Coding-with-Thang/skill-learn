@@ -43,7 +43,7 @@ export async function GET(_request: NextRequest) {
           console.warn(
             "Failed to generate signed URL for reward image:",
             reward.id,
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
 

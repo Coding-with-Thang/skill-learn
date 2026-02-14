@@ -47,7 +47,10 @@ import { Badge } from "@skill-learn/ui/components/badge";
 import { cn } from "@skill-learn/lib/utils";
 import ShareDecksDialog from "@/components/flashcards/ShareDecksDialog";
 
-type FlashcardsHomeData = { decks?: unknown[]; sharedDecks?: unknown[]; categories?: unknown[]; recommended?: unknown[]; stats?: { dueToday?: number; needsAttention?: number }; limits?: { maxDecks?: number; currentDeckCount?: number; canCreateDeck?: boolean } };
+type Deck = { id: string; name?: string; categoryName?: string; cardIds?: unknown[]; hiddenCardIds?: unknown[] };
+type SharedDeck = { id: string; name?: string; cardCount?: number; ownerUsername?: string };
+type Category = { id: string; name?: string };
+type FlashcardsHomeData = { decks?: Deck[]; sharedDecks?: SharedDeck[]; categories?: Category[]; recommended?: unknown[]; stats?: { dueToday?: number; needsAttention?: number }; limits?: { maxDecks?: number; currentDeckCount?: number; canCreateDeck?: boolean } };
 
 export default function FlashCardsHomePage() {
   const router = useRouter();
@@ -291,7 +294,7 @@ export default function FlashCardsHomePage() {
             <h2 className="text-2xl font-bold">
               My Decks
               <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({currentDeckCount}/{maxDecks < 0 ? "∞" : maxDecks})
+                ({currentDeckCount}/{maxDecks == null || maxDecks < 0 ? "∞" : maxDecks})
               </span>
             </h2>
           </div>

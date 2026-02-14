@@ -147,7 +147,7 @@ export async function GET(_request: NextRequest) {
           trialEndsAt: subscriptionData.trialEndsAt,
           billingInterval: subscriptionData.billingInterval,
           daysRemaining: Math.ceil(
-            (new Date(subscriptionData.currentPeriodEnd) - new Date()) / (1000 * 60 * 60 * 24)
+            (new Date(subscriptionData.currentPeriodEnd as string | Date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
           ),
         },
 

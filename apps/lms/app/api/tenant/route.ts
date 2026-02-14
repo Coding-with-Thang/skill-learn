@@ -122,7 +122,6 @@ export async function PATCH(request: NextRequest) {
     if (!allowedByPermission) {
       const setting = await prisma.systemSetting.findFirst({
         where: {
-          tenantId: user.tenantId,
           key: "onboardingCompleted",
           category: "onboarding",
         },

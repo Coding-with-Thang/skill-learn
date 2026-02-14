@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@skill-learn/database";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import {
@@ -116,7 +117,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext<DeckIdPar
       }
     }
 
-    const updateData = {};
+    const updateData: Prisma.FlashCardDeckUpdateInput = {};
     if (data.name != null) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.cardIds != null) {

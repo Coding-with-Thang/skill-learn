@@ -161,7 +161,7 @@ export default function CourseStructure({
 
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editTitle, setEditTitle] = useState(chapter.title);
-    const inputRef = useRef(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
     useEffect(() => {
       setEditTitle(chapter.title);

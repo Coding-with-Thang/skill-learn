@@ -47,7 +47,7 @@ export default function UserDetails({ user: propUser }: UserDetailsProps = {}) {
           </Avatar>
           <div>
             <h3 className="text-xl font-semibold">{clerkUser.fullName}</h3>
-            <p className="text-sm text-muted-foreground">Member since {new Date(clerkUser.createdAt).toLocaleDateString()}</p>
+            <p className="text-sm text-muted-foreground">Member since {clerkUser.createdAt != null ? new Date(clerkUser.createdAt).toLocaleDateString() : "—"}</p>
           </div>
         </div>
       </CardContent>

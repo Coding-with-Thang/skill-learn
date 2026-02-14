@@ -75,7 +75,7 @@ export async function GET(_request: NextRequest) {
           completionRate: Number(completionRate.toFixed(2)),
         };
       })
-      .filter(Boolean) // Remove null entries
+      .filter((e): e is NonNullable<typeof e> => e != null)
       .sort((a, b) => b.averageScore - a.averageScore)
       .slice(0, 100) // Get top 100
       .map((entry, index) => ({

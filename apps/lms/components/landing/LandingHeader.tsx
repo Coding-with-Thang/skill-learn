@@ -12,8 +12,8 @@ export default function LandingHeader() {
   const { isLoaded } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
-  const resourcesRef = useRef(null);
-  const dropdownRef = useRef(null);
+  const resourcesRef = useRef<HTMLButtonElement | null>(null);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   // Calculate dropdown position
   useEffect(() => {
@@ -26,13 +26,13 @@ export default function LandingHeader() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         resourcesOpen &&
         resourcesRef.current &&
         dropdownRef.current &&
-        !resourcesRef.current.contains(event.target) &&
-        !dropdownRef.current.contains(event.target)
+        !resourcesRef.current.contains(event.target as Node) &&
+        !dropdownRef.current.contains(event.target as Node)
       ) {
         setResourcesOpen(false);
       }

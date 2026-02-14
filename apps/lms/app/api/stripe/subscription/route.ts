@@ -57,34 +57,41 @@ export async function GET(_request: NextRequest) {
     }
     
     const tenant = user.tenant;
-    let stripeSubscription = null;
-    
+    let stripeSubscription: Awaited<ReturnType<typeof getSubscription>> = null;
+
     // If there's a Stripe subscription, fetch the latest details
     if (tenant.stripeSubscriptionId) {
       stripeSubscription = await getSubscription(tenant.stripeSubscriptionId);
     }
-    
+
+    // Stripe SDK may return Response<Subscription>; use subscription shape for response
+    const sub = stripeSubscription as {
+      id: string; status: string; current_period_start: number; current_period_end: number;
+      cancel_at_period_end: boolean; canceled_at: number | null; trial_start: number | null; trial_end: number | null;
+      items?: { data: Array<{ price?: { recurring?: { interval?: string } } }> };
+    } | null;
+
     // Get plan details
     const currentPlan = PRICING_PLANS[tenant.subscriptionTier] || PRICING_PLANS.free;
-    
+
     // Build response
     const response = {
-      subscription: stripeSubscription ? {
-        id: stripeSubscription.id,
-        status: stripeSubscription.status,
-        currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-        canceledAt: stripeSubscription.canceled_at 
-          ? new Date(stripeSubscription.canceled_at * 1000) 
+      subscription: sub ? {
+        id: sub.id,
+        status: sub.status,
+        currentPeriodStart: new Date(sub.current_period_start * 1000),
+        currentPeriodEnd: new Date(sub.current_period_end * 1000),
+        cancelAtPeriodEnd: sub.cancel_at_period_end,
+        canceledAt: sub.canceled_at
+          ? new Date(sub.canceled_at * 1000)
           : null,
-        trialStart: stripeSubscription.trial_start
-          ? new Date(stripeSubscription.trial_start * 1000)
+        trialStart: sub.trial_start
+          ? new Date(sub.trial_start * 1000)
           : null,
-        trialEnd: stripeSubscription.trial_end
-          ? new Date(stripeSubscription.trial_end * 1000)
+        trialEnd: sub.trial_end
+          ? new Date(sub.trial_end * 1000)
           : null,
-        interval: stripeSubscription.items.data[0]?.price?.recurring?.interval || tenant.billingInterval,
+        interval: sub?.items?.data?.[0]?.price?.recurring?.interval || tenant.billingInterval,
       } : {
         id: null,
         status: tenant.subscriptionStatus,

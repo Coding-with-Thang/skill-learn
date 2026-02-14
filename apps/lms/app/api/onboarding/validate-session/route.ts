@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       // Real Stripe validation
       const stripe = (await import("stripe")).default;
       const stripeClient = new stripe(stripeSecretKey, {
-        apiVersion: "2024-12-18.acacia",
+        apiVersion: "2026-01-28.clover",
       });
 
       try {
@@ -43,18 +43,31 @@ export async function GET(request: NextRequest) {
           );
         }
 
-        // Get plan details
+        // Get plan details (subscription can be expanded object or id string)
         const subscription = session.subscription;
-        const priceId = subscription?.items?.data[0]?.price?.id;
+        const priceId =
+          typeof subscription === "object" && subscription?.items
+            ? subscription.items.data?.[0]?.price?.id
+            : undefined;
         const planId = getPlanFromPriceId(priceId) || "pro";
         const plan = PRICING_PLANS[planId] || PRICING_PLANS.pro;
 
-        // Store validated session for later use
+        // Store validated session for later use (customer can be id string or object)
+        const subscriptionId =
+          typeof subscription === "object" ? subscription?.id : subscription ?? undefined;
+        const customer = session.customer;
+        const customerId =
+          typeof customer === "object" ? customer?.id : customer ?? undefined;
+        const customerEmail =
+          session.customer_email ||
+          (typeof customer === "object" && customer && "email" in customer
+            ? customer.email
+            : undefined);
         validatedSessions.set(sessionId, {
-          customerId: session.customer?.id || session.customer,
-          subscriptionId: subscription?.id,
+          customerId,
+          subscriptionId,
           planId,
-          email: session.customer_email || session.customer?.email,
+          email: customerEmail,
           validatedAt: new Date(),
         });
 
@@ -62,9 +75,9 @@ export async function GET(request: NextRequest) {
           valid: true,
           planId,
           planName: plan.name,
-          email: session.customer_email || session.customer?.email,
-          customerId: session.customer?.id || session.customer,
-          subscriptionId: subscription?.id,
+          email: customerEmail ?? undefined,
+          customerId,
+          subscriptionId,
         });
       } catch (stripeError) {
         console.error("Stripe session retrieval error:", stripeError);

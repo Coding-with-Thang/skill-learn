@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       sharedCount = deckIds.length;
     } else {
       // Share to specific users: create FlashCardDeckShare for each (deck, user) pair
-      const toCreate = [];
+      const toCreate: Array<{ tenantId: string; deckId: string; sharedBy: string; sharedTo: string }> = [];
       for (const deckId of deckIds) {
         for (const userId of recipientUserIds) {
           if (userId === sharedBy) continue; // Don't share with self

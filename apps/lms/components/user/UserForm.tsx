@@ -125,8 +125,8 @@ export default function UserForm({ user = null, onSuccess }: UserFormProps) {
                 toast.success("User created successfully!")
             }
             onSuccess?.()
-        } catch (error) {
-            toast.error(error.message || "An error occurred")
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "An error occurred")
         }
     }
 

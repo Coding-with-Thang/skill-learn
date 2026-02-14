@@ -41,7 +41,7 @@ export async function GET(_request: NextRequest) {
           console.warn(
             "thumbnail fetch failed for",
             course.id,
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
 
@@ -57,7 +57,7 @@ export async function GET(_request: NextRequest) {
     return res;
   } catch (error) {
     console.error("[courses API] Error:", error);
-    console.error("[courses API] Error stack:", error.stack);
+    console.error("[courses API] Error stack:", error instanceof Error ? error.stack : undefined);
     return handleApiError(error);
   }
 }

@@ -10,7 +10,9 @@ const choices = [
   { name: 'Rock', emoji: '✊', beats: 'Scissors' },
   { name: 'Paper', emoji: '✋', beats: 'Rock' },
   { name: 'Scissors', emoji: '✌️', beats: 'Paper' }
-];
+] as const;
+
+type Choice = (typeof choices)[number];
 
 export default function RockPaperScissors() {
   const [round, setRound] = useLocalStorage("round", 1);
@@ -19,8 +21,8 @@ export default function RockPaperScissors() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const pathname = usePathname();
 
-  const [playerChoice, setPlayerChoice] = useState(null);
-  const [computerChoice, setComputerChoice] = useState(null);
+  const [playerChoice, setPlayerChoice] = useState<Choice | null>(null);
+  const [computerChoice, setComputerChoice] = useState<Choice | null>(null);
   const [result, setResult] = useState('');
   const [gameOver, setGameOver] = useState(false);
 
@@ -31,10 +33,10 @@ export default function RockPaperScissors() {
     }
   }, [round, pathname]);
 
-  const playGame = (choice) => {
+  const playGame = (choice: Choice) => {
     if (gameOver) return;
 
-    const computer = choices[Math.floor(Math.random() * 3)];
+    const computer = choices[Math.floor(Math.random() * 3)] ?? choices[0];
     setPlayerChoice(choice);
     setComputerChoice(computer);
 
@@ -78,7 +80,7 @@ export default function RockPaperScissors() {
             <div className="flex flex-col items-center gap-4">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">YOU</p>
               <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center text-6xl">
-                {playerChoice.emoji}
+                {playerChoice?.emoji}
               </div>
             </div>
 
@@ -87,7 +89,7 @@ export default function RockPaperScissors() {
             <div className="flex flex-col items-center gap-4">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI</p>
               <div className="w-32 h-32 bg-white rounded-[2.5rem] shadow-xl flex items-center justify-center text-6xl">
-                {computerChoice.emoji}
+                {computerChoice?.emoji}
               </div>
             </div>
           </div>

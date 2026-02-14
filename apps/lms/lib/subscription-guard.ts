@@ -114,7 +114,7 @@ export async function checkSubscriptionAccess(clerkUserId) {
           status: SUBSCRIPTION_STATUS.TRIALING,
           accessLevel: ACCESS_LEVEL.FULL,
           tenant,
-          message: `Trial active until ${new Date(tenant.trialEndsAt).toLocaleDateString()}`,
+          message: tenant.trialEndsAt != null ? `Trial active until ${new Date(tenant.trialEndsAt).toLocaleDateString()}` : "Trial active",
         };
 
       case "past_due":
@@ -173,14 +173,15 @@ export async function checkSubscriptionAccess(clerkUserId) {
           message: "Access granted",
         };
     }
-  } catch (error) {
-    console.error("Error checking subscription access:", error);
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
+    console.error("Error checking subscription access:", e);
     return {
       status: SUBSCRIPTION_STATUS.NONE,
       accessLevel: ACCESS_LEVEL.BLOCKED,
       tenant: null,
       message: "Error checking subscription",
-      error: error.message,
+      error: e.message,
     };
   }
 }

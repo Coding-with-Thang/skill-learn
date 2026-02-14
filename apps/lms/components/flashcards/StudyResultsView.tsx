@@ -7,11 +7,18 @@ import { Trophy, RotateCw, Sparkles, CheckCircle2, Target, Flame } from "lucide-
 import { motion } from "framer-motion";
 import { cn } from "@skill-learn/lib/utils";
 
+type StudyStats = { studied?: number; correct?: number; uniqueShown?: number };
+
 export default function StudyResultsView({
   stats = {},
   deckName = "Session",
   streak = 0,
   onReview,
+}: {
+  stats?: StudyStats;
+  deckName?: string;
+  streak?: number;
+  onReview?: () => void;
 }) {
   const { studied = 0, correct = 0, uniqueShown } = stats;
   const cardsStudied = uniqueShown ?? studied;

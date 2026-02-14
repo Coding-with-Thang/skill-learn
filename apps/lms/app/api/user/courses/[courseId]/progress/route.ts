@@ -35,7 +35,8 @@ export async function GET(
       throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    const course = await getCourseWithChaptersAndLessons(courseId);
+    const tenantId = await getTenantId();
+    const course = await getCourseWithChaptersAndLessons(courseId, tenantId ?? undefined);
     if (!course) {
       throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
@@ -43,7 +44,6 @@ export async function GET(
       throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    const tenantId = await getTenantId();
     const allowed = tenantId
       ? course.tenantId === tenantId || (course.isGlobal && !course.tenantId)
       : course.isGlobal && !course.tenantId;
@@ -55,13 +55,14 @@ export async function GET(
       where: { userId_courseId: { userId: user.id, courseId } },
     });
 
+    const courseWithChapters = course as typeof course & { chapters?: Array<{ lessons?: Array<{ id: string }> }> };
     const lessonProgressList = await prisma.lessonProgress.findMany({
-      where: { userId: user.id, lessonId: { in: getAllLessonIds(course.chapters) } },
+      where: { userId: user.id, lessonId: { in: getAllLessonIds(courseWithChapters.chapters) } },
       select: { lessonId: true },
     });
     const completedLessonIds = lessonProgressList.map((p) => p.lessonId);
 
-    const totalLessons = countLessons(course.chapters);
+    const totalLessons = countLessons(courseWithChapters.chapters);
     const completedCount = completedLessonIds.length;
     const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 

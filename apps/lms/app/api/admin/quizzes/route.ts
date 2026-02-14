@@ -9,6 +9,7 @@ import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { quizCreateSchema } from "@/lib/zodSchemas";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { QUIZ_CONFIG } from "@/config/constants";
 
 const QUIZ_LIST_PERMISSIONS = [
   PERMISSIONS.QUIZZES_READ,
@@ -73,7 +74,7 @@ export async function GET(_request: NextRequest) {
           console.warn(
             "Failed to generate signed URL for quiz image:",
             quiz.id,
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
 
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for quiz image:",
-        err?.message || err
+        err instanceof Error ? err.message : err
       );
     }
 

@@ -37,7 +37,8 @@ export async function POST(
       throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    const course = await getCourseWithChaptersAndLessons(courseId);
+    const tenantId = await getTenantId();
+    const course = await getCourseWithChaptersAndLessons(courseId, tenantId ?? undefined);
     if (!course) {
       throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
@@ -45,7 +46,6 @@ export async function POST(
       throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    const tenantId = await getTenantId();
     const allowed = tenantId
       ? course.tenantId === tenantId || (course.isGlobal && !course.tenantId)
       : course.isGlobal && !course.tenantId;
@@ -53,7 +53,8 @@ export async function POST(
       throw new AppError("Course not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    const lessonIds = (course.chapters ?? []).flatMap((ch) => (ch.lessons ?? []).map((l) => l.id));
+    const courseWithChapters = course as typeof course & { chapters?: Array<{ lessons?: Array<{ id: string }> }> };
+    const lessonIds = (courseWithChapters.chapters ?? []).flatMap((ch) => (ch.lessons ?? []).map((l) => l.id));
     if (!lessonIds.includes(lessonId)) {
       throw new AppError("Lesson not found in this course", ErrorType.NOT_FOUND, { status: 404 });
     }

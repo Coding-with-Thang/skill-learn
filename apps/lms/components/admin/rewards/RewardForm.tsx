@@ -101,7 +101,7 @@ export function RewardForm({ reward, onClose }) {
       }
       onClose()
     } catch (error) {
-      toast.error(error.message || "Something went wrong")
+      toast.error(error instanceof Error ? error.message : "Something went wrong")
     }
   }
 

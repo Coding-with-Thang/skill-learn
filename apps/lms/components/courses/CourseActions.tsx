@@ -42,7 +42,9 @@ export default function CourseActions({ courseId, courseSlug }) {
       }
     } catch (error) {
       console.error('Error deleting course:', error);
-      toast.error(error?.response?.data?.message || 'Failed to delete course');
+      const msg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message
+        ?? (error instanceof Error ? error.message : 'Failed to delete course');
+      toast.error(msg);
     } finally {
       setIsDeleting(false);
     }

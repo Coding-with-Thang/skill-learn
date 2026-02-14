@@ -25,7 +25,7 @@ if (!admin.apps.length) {
         storageBucket,
       });
     } catch (e) {
-      console.warn("Firebase Admin initialization error:", e?.message || e);
+      console.warn("Firebase Admin initialization error:", e instanceof Error ? e.message : e);
     }
   }
 }

@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       ).map((a) => a.flashCardId)
     );
 
-    const acceptedCardIds = [];
+    const acceptedCardIds: string[] = [];
     for (const cardId of sourceDeck.cardIds) {
       if (ownedCardIds.has(cardId) || sharedCardIds.has(cardId)) {
         acceptedCardIds.push(cardId);

@@ -253,7 +253,7 @@ export async function getDashboardStats() {
 
     // Aggregate quiz points by quiz ID (combine quiz_completed and perfect_score_bonus)
     const quizPointsMap = new Map();
-    const nonQuizReasons = [];
+    const nonQuizReasons: { category: string; points: number }[] = [];
 
     // Ensure pointsDistribution is an array before iterating
     if (Array.isArray(pointsDistribution)) {
@@ -333,7 +333,7 @@ export async function getDashboardStats() {
               categoryId: stat.categoryId,
               category: category?.name || "Unknown",
               completionRate:
-                (stat._sum.completed / (stat._sum.attempts || 1)) * 100,
+                ((stat._sum.completed ?? 0) / (stat._sum.attempts || 1)) * 100,
               averageScore: stat._avg.averageScore || 0,
             };
           })

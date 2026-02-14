@@ -41,7 +41,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<Array<{ id: string; name?: string }>>([])
   const [quiz, setQuiz] = useState({
     title: "",
     description: "",

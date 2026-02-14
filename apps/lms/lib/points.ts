@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { getAuth } from "@clerk/nextjs/server"; // Change import
 import { updateStreak } from "./streak";
@@ -29,6 +30,10 @@ export async function getDailyPointStatus(request) {
       },
     });
 
+    if (!user) {
+      return { user: null, todaysPoints: 0, canEarnPoints: false, lifetimePoints: 0, todaysLogs: [], dailyLimit };
+    }
+
     //Get today's date at midnight
     const today = new Date(new Date().setHours(0, 0, 0, 0));
 
@@ -50,18 +55,19 @@ export async function getDailyPointStatus(request) {
       todaysLogs,
       dailyLimit,
     };
-  } catch (error) {
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
     console.error("Error in getDailyPointStatus:", {
-      message: error.message,
-      stack: error.stack,
-      type: error.constructor.name,
-      cause: error.cause,
+      message: e.message,
+      stack: e.stack,
+      type: e.constructor.name,
+      cause: e.cause,
     });
-    throw error;
+    throw e;
   }
 }
 
-export async function awardPoints(amount, reason, request = null) {
+export async function awardPoints(amount: number, reason: string, request?: NextRequest | null) {
   if (!amount || typeof amount !== "number") {
     throw new Error("Point amount must be a number");
   }
@@ -186,8 +192,9 @@ export async function awardPoints(amount, reason, request = null) {
     });
 
     return result;
-  } catch (error) {
-    console.error("Point award error:", error);
-    throw new Error(`Failed to award points: ${error.message}`);
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
+    console.error("Point award error:", e);
+    throw new Error(`Failed to award points: ${e.message}`);
   }
 }

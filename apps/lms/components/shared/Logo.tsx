@@ -5,7 +5,7 @@ import Image from "next/image";
 import logo from '../../public/logo.svg';
 import { cn } from "@skill-learn/lib/utils";
 
-export function Logo({ className, textClassName, imageClassName }) {
+export function Logo({ className, textClassName, imageClassName }: { className?: string; textClassName?: string; imageClassName?: string } = {}) {
   return (
     <Link href="/" className={cn("flex gap-1 items-center justify-center", className)}>
       <Image

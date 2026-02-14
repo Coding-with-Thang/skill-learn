@@ -13,7 +13,10 @@ export default function CheckoutSuccessPage() {
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
   const [status, setStatus] = useState("loading"); // loading, success, error
-  const [subscription, setSubscription] = useState(null);
+  const [subscription, setSubscription] = useState<{
+    subscription?: { plan?: { name?: string }; trialEnd?: Date | null };
+    plan?: { name?: string; features?: string[] };
+  } | null>(null);
 
   useEffect(() => {
     // Trigger confetti animation

@@ -10,10 +10,10 @@ import { slugify } from "@skill-learn/lib/utils/utils";
 export const courseWithChaptersAndLessonsInclude = {
   category: true,
   chapters: {
-    orderBy: { position: "asc" },
+    orderBy: { position: "asc" as const },
     include: {
       lessons: {
-        orderBy: { position: "asc" },
+        orderBy: { position: "asc" as const },
       },
     },
   },
@@ -33,15 +33,13 @@ function looksLikeObjectId(str) {
  * @param {string} [params.excludeCourseId] - Course ID to exclude (for updates)
  * @returns {Promise<boolean>} True if slug is taken
  */
-export async function isCourseSlugTakenInTenant({ slug, tenantId, excludeCourseId }) {
+export async function isCourseSlugTakenInTenant({ slug, tenantId, excludeCourseId }: { slug: string; tenantId?: string | null; excludeCourseId?: string | undefined }) {
   if (!slug || typeof slug !== "string") return false;
   const where = {
     slug: slug.trim().toLowerCase(),
     tenantId: tenantId ?? null,
+    ...(excludeCourseId ? { id: { not: excludeCourseId } } : {}),
   };
-  if (excludeCourseId) {
-    where.id = { not: excludeCourseId };
-  }
   const existing = await prisma.course.findFirst({
     where,
     select: { id: true },
@@ -70,10 +68,10 @@ export async function resolveCourseId(courseIdOrSlug, tenantId) {
     }
     return course?.id ?? null;
   }
-  const where = { slug: courseIdOrSlug };
-  if (tenantId !== undefined) {
-    where.tenantId = tenantId ?? null;
-  }
+  const where = {
+    slug: courseIdOrSlug,
+    ...(tenantId !== undefined ? { tenantId: tenantId ?? null } : {}),
+  };
   const course = await prisma.course.findFirst({
     where,
     select: { id: true },
@@ -116,8 +114,7 @@ export async function generateUniqueChapterSlug(prismaClient, courseId, title, e
   let slug = baseSlug;
   let n = 1;
   while (true) {
-    const where = { courseId, slug };
-    if (excludeChapterId) where.id = { not: excludeChapterId };
+    const where = { courseId, slug, ...(excludeChapterId ? { id: { not: excludeChapterId } } : {}) };
     const existing = await prismaClient.chapter.findFirst({
       where,
       select: { id: true },
@@ -141,8 +138,7 @@ export async function generateUniqueLessonSlug(prismaClient, chapterId, title, e
   let slug = baseSlug;
   let n = 1;
   while (true) {
-    const where = { chapterId, slug };
-    if (excludeLessonId) where.id = { not: excludeLessonId };
+    const where = { chapterId, slug, ...(excludeLessonId ? { id: { not: excludeLessonId } } : {}) };
     const existing = await prismaClient.lesson.findFirst({
       where,
       select: { id: true },
@@ -162,13 +158,13 @@ export async function generateUniqueLessonSlug(prismaClient, chapterId, title, e
  * @param {number} [options.skip] - Number of courses to skip (pagination)
  * @returns {Promise<object[]>} Array of courses with category, chapters, and lessons
  */
-export async function getCoursesWithChaptersAndLessons(options = {}) {
+export async function getCoursesWithChaptersAndLessons(options: { where?: object; take?: number; skip?: number } = {}) {
   const { where = {}, take, skip } = options;
 
   return prisma.course.findMany({
     where,
-    take,
-    skip,
+    ...(take != null ? { take } : {}),
+    ...(skip != null ? { skip } : {}),
     orderBy: { createdAt: "desc" },
     include: courseWithChaptersAndLessonsInclude,
   });

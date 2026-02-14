@@ -91,24 +91,25 @@ const proxy = clerkMiddleware(async (auth, req) => {
     if (isProtected) {
       await auth.protect();
     }
-  } catch (error) {
+  } catch (err) {
     // NEXT_REDIRECT is a special Next.js error used for redirects - don't treat it as an error
-    if (error.message === "NEXT_REDIRECT") {
-      throw error; // Re-throw to allow Next.js to handle the redirect
+    if (err instanceof Error && err.message === "NEXT_REDIRECT") {
+      throw err; // Re-throw to allow Next.js to handle the redirect
     }
 
     // NEXT_HTTP_ERROR_FALLBACK is used by Clerk for 404 errors when protect() is called
     // This happens when unauthenticated users try to access protected routes
     // We should let Next.js handle this, not treat it as a server error
-    if (error.message?.includes("NEXT_HTTP_ERROR_FALLBACK")) {
+    if (err instanceof Error && err.message?.includes("NEXT_HTTP_ERROR_FALLBACK")) {
       // Re-throw to let Next.js handle it properly (will return 404)
-      throw error;
+      throw err;
     }
 
+    const e = err instanceof Error ? err : new Error(String(err));
     console.error("Proxy error:", {
-      message: error.message,
-      stack: error.stack,
-      type: error.constructor.name,
+      message: e.message,
+      stack: e.stack,
+      type: e.constructor.name,
     });
     return new NextResponse(
       JSON.stringify({ error: "Internal server error" }),

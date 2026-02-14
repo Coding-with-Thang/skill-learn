@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest) {
     }
 
     // Get the user's actual role from UserRole → TenantRole
-    let roleAlias = null;
+    let roleAlias: string | null = null;
     if (user.tenantId) {
       const userRole = await prisma.userRole.findFirst({
         where: {

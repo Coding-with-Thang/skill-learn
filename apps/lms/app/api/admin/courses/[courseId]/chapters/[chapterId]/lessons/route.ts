@@ -86,7 +86,7 @@ export async function POST(
       });
     }
 
-    const slug = await generateUniqueLessonSlug(prisma, chapter.id, validation.data.title);
+    const slug = await generateUniqueLessonSlug(prisma, chapter.id, validation.data.title, undefined);
 
     const lesson = await prisma.lesson.create({
       data: {
@@ -94,7 +94,7 @@ export async function POST(
         title: validation.data.title,
         slug,
         content: validation.data.content ?? "",
-        position: validation.data.order ?? validation.data.position ?? 0,
+        position: validation.data.order ?? 0,
       },
     });
 

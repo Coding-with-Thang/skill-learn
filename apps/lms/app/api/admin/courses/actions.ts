@@ -32,7 +32,7 @@ export async function createCourse(data, userId, tenantId = null) {
         }
 
         const slug = validation.data.slug;
-        const taken = await isCourseSlugTakenInTenant({ slug, tenantId: tenantId ?? null });
+        const taken = await isCourseSlugTakenInTenant({ slug, tenantId: tenantId ?? null, excludeCourseId: undefined });
         if (taken) {
             return {
                 status: "error",
@@ -51,7 +51,7 @@ export async function createCourse(data, userId, tenantId = null) {
             slug,
             status: validation.data.status,
             userId: userId,
-            ...(tenantId && { tenantId, isGlobal: false }),
+            ...(tenantId ? { tenantId, isGlobal: false } : {}),
         };
 
         const createdCourse = await prisma.course.create({ data: payload });
@@ -64,7 +64,7 @@ export async function createCourse(data, userId, tenantId = null) {
     } catch (error) {
         return {
             status: "error",
-            message: error?.message || "An error occurred while creating the course",
+            message: error instanceof Error ? error.message : "An error occurred while creating the course",
         }
     }
 }

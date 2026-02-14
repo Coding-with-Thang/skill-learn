@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card"
 import { Button } from "@skill-learn/ui/components/button"
 import { Progress } from "@skill-learn/ui/components/progress"
@@ -27,7 +27,7 @@ import { formatDistanceToNow, format } from 'date-fns'
 import api from "@skill-learn/lib/utils/axios"
 import { handleErrorWithNotification } from "@skill-learn/lib/utils/notifications"
 
-export default function UserStats({ user }) {
+export default function UserStats({ user }: { user?: unknown } = {}) {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -56,6 +56,16 @@ export default function UserStats({ user }) {
     )
   }
 
+  type CategoryStat = { categoryId: string; [key: string]: unknown };
+  type ActivityItem = { date?: string | number | Date; [key: string]: unknown };
+  const fallback = {
+    totalAttempts: 0,
+    totalCompleted: 0,
+    recentAttemptDate: null as string | null,
+    longestStreak: 0,
+    categoryStats: [] as CategoryStat[],
+    recentActivity: [] as ActivityItem[]
+  };
   const {
     totalAttempts = 0,
     totalCompleted = 0,
@@ -63,7 +73,7 @@ export default function UserStats({ user }) {
     longestStreak = 0,
     categoryStats = [],
     recentActivity = []
-  } = stats || {}
+  } = (stats as typeof fallback | null) ?? fallback
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -113,9 +123,9 @@ export default function UserStats({ user }) {
                       +{activity.points}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground px-4 py-3">
-                      {format(new Date(activity.date), "MMM d, yyyy")}
+                      {activity.date != null ? format(new Date(activity.date), "MMM d, yyyy") : "—"}
                       <span className="block text-xs">
-                        {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                        {activity.date != null ? formatDistanceToNow(new Date(activity.date), { addSuffix: true }) : ""}
                       </span>
                     </TableCell>
                   </TableRow>
@@ -203,7 +213,7 @@ function StatsGrid({ recentAttemptDate, longestStreak, totalCompleted, totalAtte
   )
 }
 
-function StatCard({ icon: Icon, iconColor, bgColor, title, value, unit, subtext, children }) {
+function StatCard({ icon: Icon, iconColor, bgColor, title, value, unit, subtext, children }: { icon: React.ComponentType<{ className?: string }>; iconColor?: string; bgColor?: string; title: string; value: string | number; unit?: string; subtext?: string; children?: React.ReactNode }) {
   return (
     <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300">
       <CardContent className="p-6">

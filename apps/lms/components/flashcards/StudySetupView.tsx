@@ -28,20 +28,34 @@ const STUDY_MODES = [
 
 const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
 
-export default function StudySetupView({ searchParams, onStart, error, onClearError }) {
+type StudyHomeDeck = { id?: string; name?: string; cardIds?: unknown[]; hiddenCardIds?: unknown[] };
+type RecommendedItem = { id?: string; name?: string; description?: string; cardCount?: number };
+type StudyHomeData = { decks?: StudyHomeDeck[]; recommended?: RecommendedItem[] };
+
+export default function StudySetupView({
+  searchParams,
+  onStart,
+  error,
+  onClearError,
+}: {
+  searchParams?: Record<string, unknown> & { get?: (k: string) => string | undefined };
+  onStart?: (opts: unknown) => void;
+  error?: string | null;
+  onClearError?: () => void;
+}) {
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<StudyHomeData | null>(null);
   const [mode, setMode] = useState("once");
   const [durationMinutes, setDurationMinutes] = useState(15);
-  const [selectedDeckIds, setSelectedDeckIds] = useState(new Set());
-  const [virtualSource, setVirtualSource] = useState(null); // "due_today" | "needs_attention" | "company_focus" | null
+  const [selectedDeckIds, setSelectedDeckIds] = useState<Set<string>>(new Set());
+  const [virtualSource, setVirtualSource] = useState<string | null>(null); // "due_today" | "needs_attention" | "company_focus" | null
   const [limit, setLimit] = useState(50);
 
-  const params = searchParams || {};
-  const deckIdParam = params.deckId ?? params.get?.("deckId");
-  const virtualParam = params.virtualDeck ?? params.get?.("virtualDeck");
-  const categoryIdsParam = params.categoryIds ?? params.get?.("categoryIds");
-  const limitParam = params.limit ?? params.get?.("limit");
+  const params: Record<string, unknown> & { get?: (k: string) => string | undefined } = searchParams ?? {};
+  const deckIdParam = (params.deckId as string | undefined) ?? params.get?.("deckId");
+  const virtualParam = (params.virtualDeck as string | undefined) ?? params.get?.("virtualDeck");
+  const categoryIdsParam = (params.categoryIds as string | undefined) ?? params.get?.("categoryIds");
+  const limitParam = (params.limit as string | undefined) ?? params.get?.("limit");
 
   useEffect(() => {
     api
@@ -71,7 +85,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
     if (limitParam) setLimit(Math.min(200, Math.max(1, parseInt(limitParam, 10) || 25)));
   }, [limitParam]);
 
-  const toggleDeck = (id) => {
+  const toggleDeck = (id: string) => {
     setSelectedDeckIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -81,7 +95,7 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
     setVirtualSource(null);
   };
 
-  const selectVirtual = (id) => {
+  const selectVirtual = (id: string | null) => {
     setVirtualSource(id);
     setSelectedDeckIds(new Set());
   };
@@ -101,11 +115,11 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
       deckId: hasDecks && deckIds.length === 1 ? deckIds[0] : undefined,
       virtualDeck: hasVirtual ? virtualSource : undefined,
       categoryIds: hasVirtual && virtualSource === "company_focus" && data?.recommended
-        ? (data.recommended.find((r) => r.id === "company-focus")?.studyParams?.categoryIds ?? [])
+        ? ((data.recommended as { id?: string; studyParams?: { categoryIds?: unknown[] } }[]).find((r) => r.id === "company-focus")?.studyParams?.categoryIds ?? [])
         : undefined,
       limit: sessionLimit,
     };
-    onStart(config);
+    onStart?.(config);
   };
 
   if (loading) return <Loader variant="gif" />;
@@ -215,11 +229,11 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
                 {decks.map((deck) => {
                   const visibleCount = (deck.cardIds?.length ?? 0) - (deck.hiddenCardIds?.length ?? 0);
                   return (
-                    <div key={deck.id} className="flex items-center gap-3">
+                    <div key={deck.id ?? undefined} className="flex items-center gap-3">
                       <Checkbox
-                        id={`deck-${deck.id}`}
-                        checked={selectedDeckIds.has(deck.id) && !hasVirtual}
-                        onCheckedChange={() => toggleDeck(deck.id)}
+                        id={`deck-${deck.id ?? ""}`}
+                        checked={deck.id != null && selectedDeckIds.has(deck.id) && !hasVirtual}
+                        onCheckedChange={() => deck.id != null && toggleDeck(deck.id)}
                       />
                       <Label
                         htmlFor={`deck-${deck.id}`}
@@ -240,13 +254,13 @@ export default function StudySetupView({ searchParams, onStart, error, onClearEr
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {recommended.map((r) => {
                 const vId = r.id?.replace(/-/g, "_");
-                const icons = { due_today: Clock, needs_attention: AlertCircle, company_focus: Target };
-                const Icon = icons[vId] ?? Sparkles;
+                const icons: Record<string, typeof Clock> = { due_today: Clock, needs_attention: AlertCircle, company_focus: Target };
+                const Icon = (vId != null && icons[vId]) ? icons[vId] : Sparkles;
                 return (
                   <button
                     key={r.id}
                     type="button"
-                    onClick={() => selectVirtual(vId)}
+                    onClick={() => selectVirtual(vId ?? null)}
                     className={cn(
                       "flex items-start gap-3 p-4 rounded-4xl border-2 transition-all text-left",
                       virtualSource === vId

@@ -90,7 +90,7 @@ export async function GET(_request: NextRequest) {
           console.warn(
             "Failed to generate signed URL for reward image:",
             reward.id,
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
         return { ...reward, imageUrl };
@@ -107,8 +107,8 @@ export async function GET(_request: NextRequest) {
           } catch (err) {
             console.warn(
               "Failed to generate signed URL for reward image in history:",
-              log.reward.id,
-              err?.message || err
+              (log as { rewardId?: string }).rewardId ?? "unknown",
+              err instanceof Error ? err.message : err
             );
           }
         }

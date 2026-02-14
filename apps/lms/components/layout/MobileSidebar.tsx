@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 import {
   Menu,
   LayoutGrid,
@@ -48,8 +49,9 @@ export default function MobileSidebar() {
     'roles.assign'
   ]);
 
+  type NavItem = { label: string; href: string; icon: LucideIcon; feature?: string; special?: boolean };
   // Admin Navigation Items
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     { label: "Overview", href: "/dashboard", icon: LayoutGrid },
     { label: "Users", href: "/dashboard/users", icon: User },
     { label: "Courses", href: "/dashboard/courses", icon: GraduationCap, feature: "training_courses" },
@@ -62,7 +64,7 @@ export default function MobileSidebar() {
   ];
 
   // User Navigation Items
-  const userNavItems = [
+  const userNavItems: NavItem[] = [
     { label: "Dashboard", href: "/home", icon: LayoutGrid },
     { label: "Training", href: "/training", icon: GraduationCap, feature: "training_courses" },
     { label: "Flash Cards", href: "/flashcards", icon: Layers, feature: "flash_cards" },

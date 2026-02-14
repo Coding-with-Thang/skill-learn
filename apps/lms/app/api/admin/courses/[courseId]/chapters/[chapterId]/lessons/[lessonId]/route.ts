@@ -89,7 +89,7 @@ export async function PATCH(
     const effectiveChapterId = lesson.chapterId;
 
     const body = await request.json();
-    const data = {};
+    const data: { title?: string; slug?: string; content?: string; videoUrl?: string | null; position?: number } = {};
     if (typeof body?.title === "string") {
       const trimmed = body.title.trim();
       if (trimmed.length === 0) {

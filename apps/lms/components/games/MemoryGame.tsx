@@ -21,10 +21,10 @@ const MemoryGame = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const pathname = usePathname();
 
-  const [difficulty, setDifficulty] = useState('easy');
-  const [cards, setCards] = useState([]);
-  const [flipped, setFlipped] = useState([]);
-  const [matched, setMatched] = useState([]);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [cards, setCards] = useState<{ id: number; emoji: string }[]>([]);
+  const [flipped, setFlipped] = useState<number[]>([]);
+  const [matched, setMatched] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -37,7 +37,7 @@ const MemoryGame = () => {
     }
   }, [round, pathname]);
 
-  const setupInitialBoard = useCallback((diff) => {
+  const setupInitialBoard = useCallback((diff: keyof typeof difficulties) => {
     const pairCount = difficulties[diff].pairs;
     const selectedEmojis = allEmojis.slice(0, pairCount);
     const gameEmojis = [...selectedEmojis, ...selectedEmojis];
@@ -66,7 +66,7 @@ const MemoryGame = () => {
     return () => clearInterval(timer);
   }, [timeLeft, isPlaying]);
 
-  const handleCardClick = (id) => {
+  const handleCardClick = (id: number) => {
     if (gameOver || flipped.length === 2 || flipped.includes(id) || matched.includes(id)) return;
 
     if (!isPlaying) setIsPlaying(true);
@@ -76,8 +76,9 @@ const MemoryGame = () => {
 
     if (newFlipped.length === 2) {
       setMoves(m => m + 1);
-      const [first, second] = newFlipped;
-      if (cards[first].emoji === cards[second].emoji) {
+      const first = newFlipped[0];
+      const second = newFlipped[1];
+      if (first !== undefined && second !== undefined && cards[first]?.emoji === cards[second]?.emoji) {
         setMatched(prev => {
           const newMatched = [...prev, first, second];
           if (newMatched.length === cards.length) {
@@ -104,7 +105,7 @@ const MemoryGame = () => {
       </div>
 
       <div className="flex gap-4 mb-8">
-        {Object.keys(difficulties).map((diff) => (
+        {(Object.keys(difficulties) as (keyof typeof difficulties)[]).map((diff) => (
           <button
             key={diff}
             onClick={() => setDifficulty(diff)}

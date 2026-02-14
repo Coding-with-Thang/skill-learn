@@ -26,7 +26,7 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
         }
 
         const pages = Array.from(range).sort((a, b) => a - b)
-        const result = []
+        const result: (number | null)[] = []
         let last = 0
         for (const p of pages) {
             if (last && p - last > 1) result.push(null)

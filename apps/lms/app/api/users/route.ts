@@ -207,11 +207,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if username exists in Clerk
-    const existingClerkUsers = await clerkClient.users.getUserList({
+    const client = await clerkClient();
+    const existingClerkUsers = await client.users.getUserList({
       username: [username],
     });
 
-    if (existingClerkUsers.length > 0) {
+    if ((existingClerkUsers.data?.length ?? 0) > 0) {
       throw new AppError(
         "Username already exists in authentication system",
         ErrorType.VALIDATION,
@@ -229,7 +230,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create user in Clerk
-    const clerkUser = await clerkClient.users.createUser({
+    const clerkUser = await client.users.createUser({
       firstName,
       lastName,
       password,

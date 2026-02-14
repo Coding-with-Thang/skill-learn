@@ -139,22 +139,22 @@ export async function POST(req: NextRequest) {
             bonusAwarded = bonusResult.awarded;
           } catch (bonusError) {
             // If bonus can't be awarded (e.g., daily limit reached), log but don't fail
-            console.warn("Could not award perfect score bonus:", bonusError.message);
+            console.warn("Could not award perfect score bonus:", bonusError instanceof Error ? bonusError.message : String(bonusError));
           }
         }
       } catch (pointsError) {
         // If points can't be awarded (e.g., daily limit reached), log but don't fail the quiz completion
-        console.warn("Could not award quiz points:", pointsError.message);
+        console.warn("Could not award quiz points:", pointsError instanceof Error ? pointsError.message : String(pointsError));
       }
     }
 
     // Fetch updated daily status to include in response (eliminates need for follow-up call)
-    let updatedDailyStatus = null;
+    let updatedDailyStatus: Awaited<ReturnType<typeof getDailyPointStatus>> | null = null;
     try {
       updatedDailyStatus = await getDailyPointStatus(req);
     } catch (statusError) {
       // If we can't get updated status, continue without it (non-critical)
-      console.warn("Could not fetch updated daily status:", statusError.message);
+      console.warn("Could not fetch updated daily status:", statusError instanceof Error ? statusError.message : String(statusError));
     }
 
     return successResponse({

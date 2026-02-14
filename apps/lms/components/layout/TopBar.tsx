@@ -10,7 +10,7 @@ import { SearchCommand } from "./SearchCommand";
 import { useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 
-export default function TopBar({ adminMode }) {
+export default function TopBar({ adminMode = false }: { adminMode?: boolean } = {}) {
   const { user } = useUser();
   const { role } = useUserRole();
 

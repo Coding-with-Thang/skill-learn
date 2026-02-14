@@ -8,7 +8,7 @@ import { createPortalSession } from "@/lib/stripe";
  * POST /api/stripe/portal
  * Create a Stripe billing portal session
  */
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
     

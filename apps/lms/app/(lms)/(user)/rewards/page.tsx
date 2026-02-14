@@ -247,7 +247,8 @@ const ClaimButton = ({ redemption, onClaim }) => {
       toast.success("Successfully claimed reward!")
     } catch (error) {
       console.error('Error claiming reward:', error)
-      toast.error(error.response?.data?.error || "Failed to claim reward")
+      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to claim reward";
+      toast.error(msg)
     } finally {
       setClaiming(false)
     }
@@ -553,13 +554,16 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
   }, {});
 
   // Sort groups by most recent redemption date
-  const sortedGroups = Object.entries(groupedRedemptions)
+  type RedemptionItem = { createdAt: string; id: string; reward: { prize: string } };
+  const sortedGroups: RedemptionItem[][] = Object.entries(groupedRedemptions)
     .sort(([, a], [, b]) => {
-      const latestA = new Date(a[0].createdAt).getTime();
-      const latestB = new Date(b[0].createdAt).getTime();
+      const listA = a as RedemptionItem[];
+      const listB = b as RedemptionItem[];
+      const latestA = new Date(listA[0]?.createdAt ?? 0).getTime();
+      const latestB = new Date(listB[0]?.createdAt ?? 0).getTime();
       return latestB - latestA;
     })
-    .map(([, redemptions]) => redemptions);
+    .map(([, redemptions]) => redemptions as RedemptionItem[]);
 
   return (
     <div className="overflow-x-auto">
@@ -575,7 +579,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
         <TableBody>
           {sortedGroups.map((redemptions) => (
             <RedemptionGroup
-              key={`${redemptions[0].reward.prize}-${redemptions[0].id}`}
+              key={`${redemptions[0]?.reward.prize ?? "prize"}-${redemptions[0]?.id ?? "id"}`}
               redemptions={redemptions.sort((a, b) =>
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               )}
@@ -591,11 +595,11 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
 export default function RewardsPage() {
   const { fetchRewardsComplete, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
   const { points, fetchUserData } = usePointsStore()
-  const [redeemingRewardId, setRedeemingRewardId] = useState(null)
+  const [redeemingRewardId, setRedeemingRewardId] = useState<string | null>(null)
 
   // Modal state
   const [showRedeemModal, setShowRedeemModal] = useState(false);
-  const [selectedReward, setSelectedReward] = useState(null);
+  const [selectedReward, setSelectedReward] = useState<{ id: string; cost: number; prize: string } | null>(null);
 
   useEffect(() => {
     // Use consolidated endpoints: fetchRewardsComplete combines rewards + history
@@ -669,7 +673,8 @@ export default function RewardsPage() {
     } catch (error) {
       // Error notification is already handled by the store
       // Only show additional notification if store didn't handle it
-      if (!error.response?.data?.error) {
+      const err = error as { response?: { data?: { error?: string } } };
+      if (!err.response?.data?.error) {
         toast.error('Failed to redeem reward')
       }
     } finally {
@@ -684,8 +689,9 @@ export default function RewardsPage() {
       // Refresh rewards and history after claiming
       await fetchRewardsComplete()
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to claim reward')
-      throw error
+      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to claim reward';
+      toast.error(msg);
+      throw error;
     }
   }
 

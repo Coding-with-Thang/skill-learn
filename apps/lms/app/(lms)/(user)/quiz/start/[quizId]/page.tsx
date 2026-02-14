@@ -21,7 +21,7 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 export default function SelectedQuizPage() {
   const router = useRouter();
   const { selectedQuiz } = useQuizStartStore();
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState<{ attempts?: number; completed?: number; bestScore?: number; averageScore?: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const startQuiz = async () => {
@@ -51,7 +51,7 @@ export default function SelectedQuizPage() {
       router.push("/quiz");
     } catch (error) {
       console.error("Error starting quiz: ", error);
-      if (error.response?.status === 401) {
+      if ((error as { response?: { status?: number } })?.response?.status === 401) {
         router.push("/sign-in");
       } else {
         alert("Failed to start quiz. Please try again.");

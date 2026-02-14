@@ -65,7 +65,8 @@ export async function POST() {
     });
     const adminByCat = new Map(adminPriorities.map((p) => [p.categoryId, p]));
 
-    const suggestions = [];
+    type SuggestionWithCategory = { id: string; categoryId: string; suggestedPriority: number; reason: string; generatedAt: Date; category: { name: string } };
+    const suggestions: SuggestionWithCategory[] = [];
 
     for (const [categoryId, agg] of byCategory.entries()) {
       if (agg.count < MIN_CARDS_FOR_SUGGESTION) continue;
@@ -76,8 +77,8 @@ export async function POST() {
         agg.mastery.reduce((a, b) => a + b, 0) / agg.mastery.length;
 
       const current = adminByCat.get(categoryId)?.priority ?? 5;
-      let suggestedPriority = null;
-      let reason = null;
+      let suggestedPriority: number | null = null;
+      let reason: string | null = null;
 
       if (
         avgExposure >= HIGH_EXPOSURE_THRESHOLD &&
@@ -108,7 +109,7 @@ export async function POST() {
               tenantId,
               categoryId,
               suggestedPriority,
-              reason,
+              reason: reason ?? "",
             },
             include: { category: { select: { name: true } } },
           });

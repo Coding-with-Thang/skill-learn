@@ -8,8 +8,17 @@ import { RadioGroup, RadioGroupItem } from "@skill-learn/ui/components/radio-gro
 import { Label } from "@skill-learn/ui/components/label";
 import clsx from "clsx";
 
-export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selectedCategory, setSelectedCategory }) {
-    const [randomQuestion, setRandomQuestion] = useState(null);
+type QuizQuestion = { question: string; options: string[]; correct: string };
+
+export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selectedCategory, setSelectedCategory }: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  setRound: (v: number | ((prev: number) => number)) => void;
+  setScore: (v: number | ((prev: number) => number)) => void;
+  selectedCategory: string;
+  setSelectedCategory: (v: string) => void;
+}) {
+    const [randomQuestion, setRandomQuestion] = useState<QuizQuestion | null>(null);
     const [selectedAnswer, setSelectedAnswer] = useState("");
     const [answered, setAnswered] = useState(false);
 
@@ -461,7 +470,7 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selec
     }
 
     function submitAnswer() {
-        if (!selectedAnswer) return;
+        if (!selectedAnswer || !randomQuestion) return;
         const isCorrect = selectedAnswer === randomQuestion.correct;
         setAnswered(true);
 

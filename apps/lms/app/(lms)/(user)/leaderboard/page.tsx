@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
   const [pointsData, setPointsData] = useState([]);
   const [quizData, setQuizData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const { isSignedIn, isLoaded } = useUser();
 
   useEffect(() => {

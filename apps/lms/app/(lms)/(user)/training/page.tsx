@@ -62,18 +62,20 @@ export default function TrainingPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
   const [contentType, setContentType] = useState("all") // "all", "courses", "quizzes"
-  const [selectedCategories, setSelectedCategories] = useState([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState("all")
   const [showFilters, setShowFilters] = useState(false)
   const [activeTab, setActiveTab] = useState("all") // "all", "quizzes", "courses", "favorites"
-  const [allQuizzes, setAllQuizzes] = useState([])
+  type TransformedCourse = { title?: string; description?: string; category?: string; status?: string; id?: string; imageUrl?: string; duration?: string; moduleCount?: number; progress?: number; slug?: string };
+  type TransformedQuiz = { title?: string; description?: string; categoryName?: string; categoryId?: string; [key: string]: unknown };
+  const [allQuizzes, setAllQuizzes] = useState<TransformedQuiz[]>([])
   const [quizzesLoading, setQuizzesLoading] = useState(true)
-  const [rawCourses, setRawCourses] = useState([]) // Store raw course data from API
-  const [allCourses, setAllCourses] = useState([]) // Transformed courses with progress data
+  const [rawCourses, setRawCourses] = useState<unknown[]>([]) // Store raw course data from API
+  const [allCourses, setAllCourses] = useState<TransformedCourse[]>([]) // Transformed courses with progress data
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [userProgress, setUserProgress] = useState(null)
   const [progressLoading, setProgressLoading] = useState(false)
-  const [contentMessage, setContentMessage] = useState(null) // e.g. "Complete onboarding" when 400
+  const [contentMessage, setContentMessage] = useState<string | null>(null) // e.g. "Complete onboarding" when 400
 
   useEffect(() => {
     fetchCategories()
@@ -122,7 +124,7 @@ export default function TrainingPage() {
         }
 
         // API returns { success: true, data: { courses: [...] } }
-        let courses = []
+        let courses: unknown[] = []
         const data = result?.data ?? result
         if (Array.isArray(data?.courses)) {
           courses = data.courses
@@ -143,20 +145,21 @@ export default function TrainingPage() {
         setRawCourses(courses)
       } catch (error) {
         console.error("Error fetching courses:", error)
-        if (error.response) {
+        const err = error as { response?: { status?: number; data?: { error?: string; message?: string }; headers?: unknown }; request?: unknown; message?: string };
+        if (err.response) {
           // The request was made and the server responded with a status code
           // that falls out of the range of 2xx
-          console.error("Error response status:", error.response.status)
-          console.error("Error response data:", error.response.data)
-          console.error("Error response headers:", error.response.headers)
-          const errorMessage = error.response?.data?.error || error.response?.data?.message || `Server error: ${error.response.status}`
+          console.error("Error response status:", err.response.status)
+          console.error("Error response data:", err.response.data)
+          console.error("Error response headers:", err.response.headers)
+          const errorMessage = err.response?.data?.error || err.response?.data?.message || `Server error: ${err.response.status}`
           console.error("Error message:", errorMessage)
-        } else if (error.request) {
+        } else if (err.request) {
           // The request was made but no response was received
-          console.error("No response received:", error.request)
+          console.error("No response received:", err.request)
         } else {
           // Something happened in setting up the request that triggered an Error
-          console.error("Error setting up request:", error.message)
+          console.error("Error setting up request:", err.message)
         }
         setRawCourses([])
       } finally {
@@ -175,10 +178,12 @@ export default function TrainingPage() {
     }
 
     // Transform course data to match CourseCard format
-    const transformedCourses = rawCourses.map(course => {
+    type RawCourse = { duration?: number; id?: string; title?: string; description?: unknown; excerptDescription?: string; imageUrl?: string; category?: { name?: string } };
+    const transformedCourses = rawCourses.map((course: unknown) => {
+      const c = course as RawCourse;
       // Format duration from minutes to "Xh Ym" format
-      const hours = Math.floor((course.duration || 0) / 60)
-      const minutes = (course.duration || 0) % 60
+      const hours = Math.floor((c.duration || 0) / 60)
+      const minutes = (c.duration || 0) % 60
       const durationStr = hours > 0
         ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
         : `${minutes}m`
@@ -187,19 +192,19 @@ export default function TrainingPage() {
       const { moduleCount, progress, status } = getCourseProgressData(course, userProgress)
 
       return {
-        id: course.id,
-        title: course.title,
-        description: extractTextFromProseMirror(course.description) || course.excerptDescription || "",
-        imageUrl: course.imageUrl || "/placeholder-course.jpg",
+        id: c.id,
+        title: c.title,
+        description: extractTextFromProseMirror(c.description) || c.excerptDescription || "",
+        imageUrl: c.imageUrl || "/placeholder-course.jpg",
         duration: durationStr,
         moduleCount,
         progress,
         status,
-        category: course.category?.name || "Uncategorized"
+        category: c.category?.name || "Uncategorized"
       }
     })
 
-    setAllCourses(transformedCourses)
+    setAllCourses(transformedCourses as TransformedCourse[])
   }, [rawCourses, userProgress]) // Re-transform when raw courses or user progress changes
 
   // Fetch all quizzes from /api/quizzes (wait for Clerk so auth token is sent)
@@ -220,7 +225,7 @@ export default function TrainingPage() {
         }
 
         // API returns { success: true, data: { quizzes: [...] } }
-        let quizzes = []
+        let quizzes: unknown[] = []
         const data = result?.data ?? result
         if (Array.isArray(data?.quizzes)) {
           quizzes = data.quizzes
@@ -237,12 +242,16 @@ export default function TrainingPage() {
         }
 
         // Normalize category info for filtering (category can be relation object)
-        const normalized = quizzes.map((quiz) => ({
-          ...quiz,
-          categoryName: quiz.category?.name ?? quiz.categoryName ?? "Uncategorized",
-          categoryId: quiz.category?.id ?? quiz.categoryId,
-        }))
-        setAllQuizzes(normalized)
+        type QuizItem = { category?: { name?: string; id?: string }; categoryName?: string; categoryId?: string; [key: string]: unknown };
+        const normalized = quizzes.map((quiz) => {
+          const q = quiz as QuizItem;
+          return {
+            ...q,
+            categoryName: q.category?.name ?? q.categoryName ?? "Uncategorized",
+            categoryId: q.category?.id ?? q.categoryId,
+          };
+        });
+        setAllQuizzes(normalized as TransformedQuiz[])
       } catch (error) {
         console.error("Error fetching quizzes:", error)
         setAllQuizzes([])
@@ -261,15 +270,15 @@ export default function TrainingPage() {
     // Search
     if (searchQuery) {
       filtered = filtered.filter(course =>
-        course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchQuery.toLowerCase())
+        (course.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (course.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(course =>
-        selectedCategories.includes(course.category)
+        course.category != null && selectedCategories.includes(course.category)
       )
     }
 
@@ -289,15 +298,15 @@ export default function TrainingPage() {
     // Search
     if (searchQuery) {
       filtered = filtered.filter(quiz =>
-        quiz.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        quiz.description.toLowerCase().includes(searchQuery.toLowerCase())
+        (quiz.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (quiz.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
       filtered = filtered.filter(quiz =>
-        selectedCategories.includes(quiz.categoryName)
+        quiz.categoryName != null && selectedCategories.includes(quiz.categoryName)
       )
     }
 
@@ -339,7 +348,7 @@ export default function TrainingPage() {
 
   // Get unique category names from both quizzes and courses
   const availableCategories = useMemo(() => {
-    const categorySet = new Set()
+    const categorySet = new Set<string>()
     allQuizzes.forEach(quiz => {
       if (quiz.categoryName) categorySet.add(quiz.categoryName)
     })
@@ -663,7 +672,7 @@ export default function TrainingPage() {
                         key={quiz.id}
                         quiz={{
                           ...quiz,
-                          questionCount: quiz.questions?.length || 0,
+                          questionCount: (Array.isArray(quiz.questions) ? quiz.questions.length : 0) || 0,
                           // Status: Quiz status tracking not yet implemented
                           // TODO: Once QuizAttempt data is integrated, determine status:
                           // - "not-started": no attempts

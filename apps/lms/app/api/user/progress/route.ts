@@ -52,7 +52,15 @@ export async function GET(_request: NextRequest) {
       (stat) => (stat.attempts || 0) > (stat.completed || 0)
     );
 
-    let currentModule = null;
+    let currentModule: {
+      id: string;
+      title: string;
+      category: string;
+      categoryId: string;
+      progress: number;
+      timeRemaining: string;
+      type: string;
+    } | null = null;
     if (lastInProgress?.category) {
       const progress = Math.round(lastInProgress.bestScore ?? 0);
       const estimatedMinutes = Math.max(5, Math.round((100 - progress) / 10));

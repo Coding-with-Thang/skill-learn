@@ -85,6 +85,7 @@ export default function VideoAdPage() {
   };
 
   const scene = scenes[currentScene];
+  if (!scene) return null;
 
   return (
     <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden transition-colors duration-1000 ${scene.color}`}>

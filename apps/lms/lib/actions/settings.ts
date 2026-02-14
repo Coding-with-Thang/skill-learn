@@ -39,12 +39,13 @@ export async function getSystemSetting(key) {
     });
 
     return setting?.value || DEFAULT_SETTINGS[key];
-  } catch (error) {
+  } catch (err) {
+    const e = err instanceof Error ? err : new Error(String(err));
     console.error(`Error getting system setting ${key}:`, {
-      message: error.message,
-      stack: error.stack,
-      type: error.constructor.name,
-      cause: error.cause,
+      message: e.message,
+      stack: e.stack,
+      type: e.constructor.name,
+      cause: e.cause,
     });
     return DEFAULT_SETTINGS[key];
   }

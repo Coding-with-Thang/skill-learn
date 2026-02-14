@@ -24,22 +24,24 @@ const DUE_THRESHOLD_RATIO = 0.6; // If fewer than 60% of limit are due, allow ne
  * Weighted shuffle: higher weight = higher chance to appear earlier
  * Runtime only, not persisted
  */
-function weightedShuffle(items, weights) {
+function weightedShuffle<T>(items: T[], weights: number[]): T[] {
   const combined = items.map((item, i) => ({
     item,
     weight: weights[i] ?? 1,
   }));
   let totalWeight = combined.reduce((s, c) => s + c.weight, 0);
-  const result = [];
+  const result: T[] = [];
   let remaining = [...combined];
 
   while (remaining.length > 0) {
     let r = Math.random() * totalWeight;
     for (let i = 0; i < remaining.length; i++) {
-      r -= remaining[i].weight;
+      const entry = remaining[i];
+      if (!entry) continue;
+      r -= entry.weight;
       if (r <= 0) {
-        result.push(remaining[i].item);
-        totalWeight -= remaining[i].weight;
+        result.push(entry.item);
+        totalWeight -= entry.weight;
         remaining.splice(i, 1);
         break;
       }
@@ -82,9 +84,9 @@ export async function POST(req: NextRequest) {
     const userId = user.id;
 
     // 1. Resolve accessible cards (owned + shared)
-    let cardIds = new Set();
+    let cardIds = new Set<string>();
 
-    let hiddenInDeck = new Set();
+    let hiddenInDeck = new Set<string>();
 
     if (deckIds?.length) {
       const decks = await prisma.flashCardDeck.findMany({
@@ -270,7 +272,7 @@ export async function POST(req: NextRequest) {
         const weight = applyMasteryWeight(basePriority, mastery);
         return { card, weight };
       })
-      .filter(Boolean);
+      .filter((w): w is { card: (typeof filteredCards)[number]; weight: number } => w != null);
 
     // 7. Weighted shuffle
     const shuffled = weightedShuffle(

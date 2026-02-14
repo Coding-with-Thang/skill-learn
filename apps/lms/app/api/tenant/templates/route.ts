@@ -60,7 +60,8 @@ export async function GET(_request: NextRequest) {
     }));
 
     // Group by template set
-    const groupedBySet = formattedTemplates.reduce((acc, t) => {
+    type SetGroup = { name: string; isDefault: boolean | null; roles: (typeof formattedTemplates)[number][] };
+    const groupedBySet = formattedTemplates.reduce<Record<string, SetGroup>>((acc, t) => {
       if (!acc[t.templateSetName]) {
         acc[t.templateSetName] = {
           name: t.templateSetName,
@@ -68,7 +69,7 @@ export async function GET(_request: NextRequest) {
           roles: [],
         };
       }
-      acc[t.templateSetName].roles.push(t);
+      acc[t.templateSetName]!.roles.push(t);
       return acc;
     }, {});
 

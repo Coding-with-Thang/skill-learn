@@ -60,7 +60,7 @@ export async function GET(
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for quiz image:",
-        err?.message || err
+        err instanceof Error ? err.message : err
       );
     }
 
@@ -75,7 +75,7 @@ export async function GET(
             console.warn(
               "Failed to generate signed URL for question image:",
               question.id,
-              err?.message || err
+              err instanceof Error ? err.message : err
             );
           }
         }
@@ -163,7 +163,7 @@ export async function PUT(
         } catch (err) {
           console.warn(
             "Failed to generate signed URL for question image:",
-            err?.message || err
+            err instanceof Error ? err.message : err
           );
         }
 
@@ -187,7 +187,7 @@ export async function PUT(
     }
 
     // Return updated quiz with all relations
-    quiz = await prisma.quiz.findUnique({
+    const updatedQuiz = await prisma.quiz.findUnique({
       where: { id: quizId },
       include: {
         category: {
@@ -203,24 +203,26 @@ export async function PUT(
         },
       },
     });
-
+    if (!updatedQuiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
     // Generate signed URL if fileKey exists
-    let imageUrl = quiz.imageUrl || null;
+    let imageUrl = updatedQuiz.imageUrl || null;
     try {
-      if (quiz.fileKey) {
-        const signedUrl = await getSignedUrl(quiz.fileKey, 7);
+      if (updatedQuiz.fileKey) {
+        const signedUrl = await getSignedUrl(updatedQuiz.fileKey, 7);
         if (signedUrl) imageUrl = signedUrl;
       }
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for quiz image:",
-        err?.message || err
+        err instanceof Error ? err.message : err
       );
     }
 
     // Generate signed URLs for question images if fileKey exists
-    if (quiz.questions && Array.isArray(quiz.questions)) {
-      for (const question of quiz.questions) {
+    if (updatedQuiz.questions && Array.isArray(updatedQuiz.questions)) {
+      for (const question of updatedQuiz.questions) {
         if (question.fileKey) {
           try {
             const signedUrl = await getSignedUrl(question.fileKey, 7);
@@ -229,7 +231,7 @@ export async function PUT(
             console.warn(
               "Failed to generate signed URL for question image:",
               question.id,
-              err?.message || err
+              err instanceof Error ? err.message : err
             );
           }
         }
@@ -238,7 +240,7 @@ export async function PUT(
 
     return successResponse({ 
       quiz: { 
-        ...quiz, 
+        ...updatedQuiz, 
         imageUrl 
       } 
     });

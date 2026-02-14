@@ -30,8 +30,8 @@ const getTagStyles = (tag) => {
 export default async function ChangelogDetailPage({ params }) {
   const { slug } = await params;
 
-  let update;
-  let relatedUpdates = [];
+  let update: Awaited<ReturnType<typeof prisma.changelog.findUnique>>;
+  let relatedUpdates: Awaited<ReturnType<typeof prisma.changelog.findMany>> = [];
 
   try {
     update = await prisma.changelog.findUnique({
@@ -141,17 +141,17 @@ export default async function ChangelogDetailPage({ params }) {
             <Card className="bg-white border-slate-100 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden sticky top-8">
               <CardContent className="p-8 space-y-8">
                 {/* Stats */}
-                {(update.newFeaturesCount > 0 || update.bugFixesCount > 0) && (
+                {((update.newFeaturesCount ?? 0) > 0 || (update.bugFixesCount ?? 0) > 0) && (
                   <div className="flex justify-between divide-x border-b pb-8">
-                    {update.newFeaturesCount > 0 && (
+                    {(update.newFeaturesCount ?? 0) > 0 && (
                       <div className="pr-6">
-                        <div className="text-3xl font-black text-teal-500">{update.newFeaturesCount}</div>
+                        <div className="text-3xl font-black text-teal-500">{update.newFeaturesCount ?? 0}</div>
                         <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Features</div>
                       </div>
                     )}
-                    {update.bugFixesCount > 0 && (
-                      <div className={`${update.newFeaturesCount > 0 ? 'px-6 border-l' : ''}`}>
-                        <div className="text-3xl font-black text-slate-800">{update.bugFixesCount}</div>
+                    {(update.bugFixesCount ?? 0) > 0 && (
+                      <div className={`${(update.newFeaturesCount ?? 0) > 0 ? 'px-6 border-l' : ''}`}>
+                        <div className="text-3xl font-black text-slate-800">{update.bugFixesCount ?? 0}</div>
                         <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bug Fixes</div>
                       </div>
                     )}

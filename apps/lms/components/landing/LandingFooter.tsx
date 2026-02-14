@@ -62,7 +62,7 @@ export default function LandingFooter() {
         </div>
         <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <Logo textClassName="text-white" />
+            <Logo className="" textClassName="text-white" imageClassName="" />
             <p className="text-white/50 text-xs font-medium tracking-wide">
               © {new Date().getFullYear()} SKILL-LEARN INC. ALL RIGHTS RESERVED.
             </p>

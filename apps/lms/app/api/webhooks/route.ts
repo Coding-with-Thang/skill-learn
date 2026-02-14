@@ -60,7 +60,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         "svix-id": svix_id,
         "svix-timestamp": svix_timestamp,
         "svix-signature": svix_signature,
-      });
+      }) as { type: string; data: Record<string, unknown> };
     } catch (err: unknown) {
       console.error("[Webhook] Verification failed:", err instanceof Error ? err.message : String(err));
       return NextResponse.json(
@@ -117,16 +117,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         if (tenant) resolvedTenantId = tenant.id;
       }
 
+      const updatePayload: Record<string, string | null> = {};
+      if (attributes.username != null) updatePayload.username = attributes.username || null;
+      if (attributes.first_name != null) updatePayload.firstName = attributes.first_name;
+      if (attributes.last_name != null) updatePayload.lastName = attributes.last_name;
+      if (email != null) updatePayload.email = email;
+      if (attributes.image_url != null) updatePayload.imageUrl = attributes.image_url;
+      if (resolvedTenantId != null) updatePayload.tenantId = resolvedTenantId;
+
       await prisma.user.upsert({
         where: { clerkId: id },
-        update: {
-          username: attributes.username || undefined,
-          firstName: attributes.first_name || undefined,
-          lastName: attributes.last_name || undefined,
-          email: email || undefined,
-          imageUrl: attributes.image_url || undefined,
-          tenantId: resolvedTenantId || undefined,
-        },
+        update: updatePayload as Parameters<typeof prisma.user.upsert>[0]["update"],
         create: {
           clerkId: id,
           username: attributes.username || id,
@@ -212,9 +213,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           username: attributes.username || id,
           firstName: attributes.first_name || "",
           lastName: attributes.last_name || "",
-          email: email,
+          email: email ?? null,
           imageUrl: attributes.image_url || null,
-          tenantId: resolvedTenantId,
+          tenantId: resolvedTenantId ?? null,
           points: 0,
           lifetimePoints: 0,
         },
@@ -271,8 +272,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const tenant = await prisma.tenant.findFirst({
           where: {
             OR: [
-              { stripeCustomerId: orgId }, // If using Clerk org ID as reference
-              { slug: orgSlug },
+              ...(orgId != null ? [{ stripeCustomerId: orgId }] : []),
+              ...(orgSlug != null ? [{ slug: orgSlug }] : []),
             ],
           },
         });
@@ -305,7 +306,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       const userId = orgDelData.public_user_data?.user_id;
       const orgSlug = orgDelData.organization?.slug;
 
-      if (userId) {
+      if (userId && orgSlug) {
         // Find tenant
         const tenant = await prisma.tenant.findFirst({
           where: { slug: orgSlug },
@@ -339,7 +340,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
               },
             });
           } catch (err) {
-            console.error("[Webhook] Failed to clear Clerk metadata:", err.message);
+            console.error("[Webhook] Failed to clear Clerk metadata:", err instanceof Error ? err.message : String(err));
           }
 
           console.log(
@@ -354,16 +355,18 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // ============================================
     if (eventType === "session.created") {
       const userId = (evt.data as { user_id?: string }).user_id;
-      
-      // Get user with tenant info
-      const user = await prisma.user.findUnique({
-        where: { clerkId: userId },
-        select: { tenantId: true },
-      });
 
-      // Sync latest tenant info on session start
-      if (user?.tenantId) {
-        await syncTenantMetadataToClerk(userId, user.tenantId);
+      if (userId) {
+        // Get user with tenant info
+        const user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+          select: { tenantId: true },
+        });
+
+        // Sync latest tenant info on session start
+        if (user?.tenantId) {
+          await syncTenantMetadataToClerk(userId, user.tenantId);
+        }
       }
     }
 

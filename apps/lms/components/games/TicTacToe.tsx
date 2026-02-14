@@ -12,14 +12,16 @@ import {
 import { X, Circle } from "lucide-react";
 import QuizModal from "@/components/quiz/QuizModal"
 
-const calculateWinner = (squares) => {
-  const lines = [
-    [0, 1, 2], [3, 4, 5], [6, 7, 8],
-    [0, 3, 6], [1, 4, 7], [2, 5, 8],
-    [0, 4, 8], [2, 4, 6],
-  ];
+type SquareValue = "X" | "O" | null;
 
-  for (const line of lines) {
+const LINES: [number, number, number][] = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8],
+  [0, 3, 6], [1, 4, 7], [2, 5, 8],
+  [0, 4, 8], [2, 4, 6],
+];
+
+const calculateWinner = (squares: SquareValue[]): { winner: SquareValue; line: number[] } => {
+  for (const line of LINES) {
     const [a, b, c] = line;
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
       return { winner: squares[a], line };
@@ -62,9 +64,9 @@ const minimax = (squares, depth, isMaximizing) => {
 const TicTacToe = () => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
-  const [winner, setWinner] = useState(null);
-  const [winningLine, setWinningLine] = useState([]);
-  const [difficulty, setDifficulty] = useState("easy");
+  const [winner, setWinner] = useState<"X" | "O" | "draw" | null>(null);
+  const [winningLine, setWinningLine] = useState<number[]>([]);
+  const [difficulty, setDifficulty] = useState<"easy" | "hard">("easy");
   const [isAIThinking, setIsAIThinking] = useState(false);
 
   const [round, setRound] = useLocalStorage("round", 1);
@@ -120,8 +122,8 @@ const TicTacToe = () => {
         let moveIndex = -1;
 
         if (currentDifficulty === "easy") {
-          const empty = newBoard.map((s, i) => s === null ? i : null).filter(i => i !== null);
-          if (empty.length > 0) moveIndex = empty[Math.floor(Math.random() * empty.length)];
+          const empty = newBoard.map((s, i) => s === null ? i : null).filter((i): i is number => i !== null);
+          if (empty.length > 0) moveIndex = empty[Math.floor(Math.random() * empty.length)] ?? moveIndex;
         } else {
           let bestScore = -Infinity;
           for (let i = 0; i < newBoard.length; i++) {

@@ -38,7 +38,7 @@ export async function GET(_request: NextRequest) {
     // Calculate average score
     const scores = categoryStats
       .map((stat) => stat.averageScore)
-      .filter(Boolean);
+      .filter((s): s is number => s != null);
     const averageScore =
       scores.length > 0
         ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
@@ -49,7 +49,7 @@ export async function GET(_request: NextRequest) {
       .filter((stat) => stat.averageScore !== null)
       .map((stat) => ({
         name: stat.category.name,
-        score: Math.round(stat.averageScore),
+        score: Math.round(stat.averageScore ?? 0),
       }));
 
     const bestCategory =

@@ -14,8 +14,8 @@ export default function OnboardingStartPage() {
   const sessionId = searchParams.get("session_id");
 
   const [status, setStatus] = useState("validating"); // validating, success, error, no_session
-  const [sessionData, setSessionData] = useState(null);
-  const [error, setError] = useState(null);
+  const [sessionData, setSessionData] = useState<{ planName?: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionId) {
@@ -48,7 +48,7 @@ export default function OnboardingStartPage() {
       }, 2000);
     } catch (err) {
       console.error("Session validation error:", err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : "Validation failed");
       setStatus("error");
     }
   };

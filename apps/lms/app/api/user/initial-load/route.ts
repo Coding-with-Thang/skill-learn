@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const includeParam = searchParams.get("include") || "points,streak";
     const includes = includeParam.split(",").map((s) => s.trim());
 
-    const result = {};
+    const result: Record<string, unknown> = {};
 
     // Get user from database (needed for most queries)
     const user = await prisma.user.findUnique({
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build parallel queries based on what's requested
-    const queries = [];
+    const queries: Array<Promise<{ key: string; data: unknown }>> = [];
 
     if (includes.includes("points") || includes.includes("dashboard")) {
       queries.push(
@@ -143,10 +143,11 @@ export async function GET(request: NextRequest) {
 
     // If dashboard was requested, combine points and streak
     if (includes.includes("dashboard")) {
+      const pointsData = result.points as { points?: number; lifetimePoints?: number; dailyStatus?: unknown } | undefined;
       result.dashboard = {
-        points: result.points?.points || 0,
-        lifetimePoints: result.points?.lifetimePoints || 0,
-        dailyStatus: result.points?.dailyStatus,
+        points: pointsData?.points ?? 0,
+        lifetimePoints: pointsData?.lifetimePoints ?? 0,
+        dailyStatus: pointsData?.dailyStatus,
         streak: result.streak,
       };
     }

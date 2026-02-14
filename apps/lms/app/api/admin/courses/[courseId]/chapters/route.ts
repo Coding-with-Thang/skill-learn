@@ -44,14 +44,14 @@ export async function POST(
       });
     }
 
-    const slug = await generateUniqueChapterSlug(prisma, courseId, validation.data.title);
+    const slug = await generateUniqueChapterSlug(prisma, courseId, validation.data.title, undefined);
 
     const chapter = await prisma.chapter.create({
       data: {
         courseId,
         title: validation.data.title,
         slug,
-        position: validation.data.order ?? validation.data.position ?? 0,
+        position: validation.data.order ?? 0,
       },
     });
 

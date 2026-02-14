@@ -23,7 +23,17 @@ import {
   Shuffle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { cn } from "@skill-learn/lib/utils";
+
+type StudySessionConfig = {
+  mode?: string;
+  limit?: number;
+  durationMinutes?: number;
+  deckIds?: string[];
+  virtualDeck?: unknown;
+  categoryIds?: string[];
+};
 
 export default function FlashCardStudyPage() {
   const router = useRouter();
@@ -49,19 +59,19 @@ export default function FlashCardStudyPage() {
     shuffleCards,
   } = useFlashCardStudyStore();
 
-  const [sessionConfig, setSessionConfig] = useState(null);
+  const [sessionConfig, setSessionConfig] = useState<StudySessionConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [hiding, setHiding] = useState(false);
   const [deckName, setDeckName] = useState("Flash Cards Session");
   const [streak, setStreak] = useState(0);
   const [showHint, setShowHint] = useState(false);
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState(null);
-  const timerRef = useRef(null);
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [showResults, setShowResults] = useState(false);
   const [sessionStats, setSessionStats] = useState({ studied: 0, correct: 0 });
   const [uniqueCardIdsShown, setUniqueCardIdsShown] = useState(new Set());
-  const [lastFeedback, setLastFeedback] = useState(null);
-  const [startError, setStartError] = useState(null);
+  const [lastFeedback, setLastFeedback] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
   const [hidingError, setHidingError] = useState(false);
 
   const handleStartSession = useCallback(async (config) => {
@@ -69,7 +79,7 @@ export default function FlashCardStudyPage() {
     setStartError(null);
     setSessionConfig(config);
     try {
-      const body = { limit: config.limit ?? 50 };
+      const body: { limit: number; deckId?: string; deckIds?: string[]; virtualDeck?: unknown; categoryIds?: string[] } = { limit: config.limit ?? 50 };
       if (config.deckIds?.length) {
         if (config.deckIds.length === 1) {
           body.deckId = config.deckIds[0];
@@ -115,7 +125,8 @@ export default function FlashCardStudyPage() {
       }
     } catch (err) {
       setSessionConfig(null);
-      setStartError(err.response?.data?.error || "Failed to load study session.");
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to load study session.";
+      setStartError(msg);
     } finally {
       setLoading(false);
     }
@@ -125,7 +136,7 @@ export default function FlashCardStudyPage() {
   useEffect(() => {
     if (sessionConfig?.mode !== "time" || timeLeftSeconds == null || timeLeftSeconds <= 0) return;
     timerRef.current = setInterval(() => {
-      setTimeLeftSeconds((s) => (s <= 1 ? 0 : s - 1));
+      setTimeLeftSeconds((s) => (s == null || s <= 1 ? 0 : s - 1));
     }, 1000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -561,7 +572,7 @@ export default function FlashCardStudyPage() {
   }
 }
 
-function ShortcutPill({ keyName, label, className }) {
+function ShortcutPill({ keyName, label, className }: { keyName: string; label: string; className?: string }) {
   return (
     <div className={cn("inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border shadow-sm", className)}>
       <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">{keyName}</span>

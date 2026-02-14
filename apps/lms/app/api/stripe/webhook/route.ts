@@ -44,9 +44,10 @@ export async function POST(request: NextRequest) {
   try {
     event = verifyWebhookSignature(body, signature, webhookSecret);
   } catch (error) {
-    console.error("Webhook signature verification failed:", error.message);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Webhook signature verification failed:", message);
     return NextResponse.json(
-      { error: `Webhook Error: ${error.message}` },
+      { error: `Webhook Error: ${message}` },
       { status: 400 }
     );
   }
@@ -102,12 +103,21 @@ export async function POST(request: NextRequest) {
  * Handle checkout.session.completed event
  * This is called when a customer completes the checkout
  */
-async function handleCheckoutCompleted(session) {
+async function handleCheckoutCompleted(session: { customer?: string; subscription?: string; metadata?: { tenantId?: string; userId?: string } }) {
+  if (!stripe) throw new Error("Stripe not configured");
   const { customer, subscription, metadata } = session;
   const { tenantId, userId } = metadata || {};
-  
-  // Get subscription details from Stripe
-  const subscriptionDetails = await stripe.subscriptions.retrieve(subscription);
+  if (!subscription) throw new Error("No subscription in session");
+
+  // Get subscription details from Stripe (cast: SDK may return Response<Subscription>)
+  const raw = await stripe.subscriptions.retrieve(subscription);
+  const subscriptionDetails = raw as unknown as {
+    status: string;
+    trial_end: number | null;
+    current_period_end: number;
+    cancel_at_period_end: boolean;
+    items: { data: Array<{ price?: { id?: string; recurring?: { interval?: string } } }> };
+  };
   const priceId = subscriptionDetails.items.data[0]?.price?.id;
   const planId = getPlanFromPriceId(priceId) || "pro";
   const interval = subscriptionDetails.items.data[0]?.price?.recurring?.interval;
@@ -115,48 +125,34 @@ async function handleCheckoutCompleted(session) {
   // Determine limits based on plan
   const plan = PRICING_PLANS[planId] || PRICING_PLANS.pro;
   
+  const updateData = {
+    stripeCustomerId: customer ?? null,
+    stripeSubscriptionId: subscription,
+    stripePriceId: priceId ?? null,
+    subscriptionTier: planId,
+    subscriptionStatus: mapSubscriptionStatus(subscriptionDetails.status),
+    billingInterval: interval ?? null,
+    trialEndsAt: subscriptionDetails.trial_end
+      ? new Date(subscriptionDetails.trial_end * 1000)
+      : null,
+    subscriptionEndsAt: new Date(subscriptionDetails.current_period_end * 1000),
+    cancelAtPeriodEnd: subscriptionDetails.cancel_at_period_end,
+  };
+
   if (tenantId) {
-    // Update existing tenant
     await prisma.tenant.update({
       where: { id: tenantId },
-      data: {
-        stripeCustomerId: customer,
-        stripeSubscriptionId: subscription,
-        stripePriceId: priceId,
-        subscriptionTier: planId,
-        subscriptionStatus: mapSubscriptionStatus(subscriptionDetails.status),
-        billingInterval: interval,
-        trialEndsAt: subscriptionDetails.trial_end 
-          ? new Date(subscriptionDetails.trial_end * 1000)
-          : null,
-        subscriptionEndsAt: new Date(subscriptionDetails.current_period_end * 1000),
-        cancelAtPeriodEnd: subscriptionDetails.cancel_at_period_end,
-      },
+      data: updateData,
     });
   } else if (userId) {
-    // Get user to find or create tenant
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
       include: { tenant: true },
     });
-    
     if (user?.tenantId) {
-      // Update user's tenant
       await prisma.tenant.update({
         where: { id: user.tenantId },
-        data: {
-          stripeCustomerId: customer,
-          stripeSubscriptionId: subscription,
-          stripePriceId: priceId,
-          subscriptionTier: planId,
-          subscriptionStatus: mapSubscriptionStatus(subscriptionDetails.status),
-          billingInterval: interval,
-          trialEndsAt: subscriptionDetails.trial_end 
-            ? new Date(subscriptionDetails.trial_end * 1000)
-            : null,
-          subscriptionEndsAt: new Date(subscriptionDetails.current_period_end * 1000),
-          cancelAtPeriodEnd: subscriptionDetails.cancel_at_period_end,
-        },
+        data: updateData,
       });
     }
   }

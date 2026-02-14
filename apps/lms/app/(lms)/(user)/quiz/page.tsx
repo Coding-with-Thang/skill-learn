@@ -32,7 +32,9 @@ const shuffleArray = (array) => {
     return shuffled;
 };
 
-const QuestionMedia = ({ question }) => {
+type QuizQuestionResponse = { questionId: string; selectedOptionIds?: string[]; isCorrect?: boolean; question?: string; selectedAnswer?: string; correctAnswer?: string };
+
+const QuestionMedia = ({ question }: { question: { imageUrl?: string; videoUrl?: string } }) => {
     const [mediaError, setMediaError] = useState(false);
 
     // If no media exists or there's an error, don't render anything
@@ -77,8 +79,8 @@ export default function QuizScreenPage() {
     const router = useRouter();
     const { selectedQuiz, setSelectedQuiz, setQuizResponses } = useQuizStartStore();
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [selectedOptions, setSelectedOptions] = useState([]); // Array of selected option IDs
-    const [responses, setResponses] = useState([]);
+    const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // Array of selected option IDs
+    const [responses, setResponses] = useState<QuizQuestionResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(
@@ -339,9 +341,10 @@ export default function QuizScreenPage() {
                 const correctOptionIds = correctOptions.map(opt => opt.id);
 
                 // Recalculate correctness
+                const ids = response.selectedOptionIds ?? [];
                 const isCorrect =
-                    response.selectedOptionIds.length === correctOptionIds.length &&
-                    response.selectedOptionIds.every(id => correctOptionIds.includes(id));
+                    ids.length === correctOptionIds.length &&
+                    ids.every(id => correctOptionIds.includes(id));
 
                 return {
                     ...response,
@@ -363,7 +366,22 @@ export default function QuizScreenPage() {
                 ? Math.max(0, Math.min(UI.MAX_PERCENTAGE, (correctAnswers / totalQuestions) * UI.MAX_PERCENTAGE))
                 : 0;
 
-            const resultsData = {
+            const resultsData: {
+                score: number;
+                totalQuestions: number;
+                correctAnswers: number;
+                remainingDailyPoints: number;
+                pointsEarned: number;
+                pointsAwarded?: number;
+                bonusAwarded?: number;
+                pointsBreakdown: Record<string, unknown>;
+                hasPassed: boolean;
+                isPerfectScore: boolean;
+                hasPassingRequirement: boolean;
+                passingScore: number;
+                timeSpent: number;
+                detailedResponses: QuizQuestionResponse[];
+            } = {
                 score: Number(scorePercentage.toFixed(1)),
                 totalQuestions,
                 correctAnswers,

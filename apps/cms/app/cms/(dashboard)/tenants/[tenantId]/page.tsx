@@ -1888,7 +1888,7 @@ export default function TenantDetailPage() {
                     className={createUserErrors.firstName ? 'border-red-500' : ''}
                   />
                   {createUserErrors.firstName && (
-                    <p className="text-sm text-red-600">{String((createUserErrors.firstName as { message?: string }).message ?? '')}</p>
+                    <p className="text-sm text-red-600">{createUserErrors.firstName?.message ?? ''}</p>
                   )}
                 </div>
                 <div className="grid gap-2">
@@ -1901,7 +1901,7 @@ export default function TenantDetailPage() {
                     className={createUserErrors.lastName ? 'border-red-500' : ''}
                   />
                   {createUserErrors.lastName && (
-                    <p className="text-sm text-red-600">{String((createUserErrors.lastName as { message?: string }).message ?? '')}</p>
+                    <p className="text-sm text-red-600">{createUserErrors.lastName?.message ?? ''}</p>
                   )}
                 </div>
               </div>
@@ -1915,7 +1915,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.username ? 'border-red-500' : ''}
                 />
                 {createUserErrors.username && (
-                  <p className="text-sm text-red-600">{String((createUserErrors.username as { message?: string }).message ?? '')}</p>
+                  <p className="text-sm text-red-600">{createUserErrors.username?.message ?? ''}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1930,7 +1930,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.password ? 'border-red-500' : ''}
                 />
                 {createUserErrors.password && (
-                  <p className="text-sm text-red-600">{String((createUserErrors.password as { message?: string }).message ?? '')}</p>
+                  <p className="text-sm text-red-600">{createUserErrors.password?.message ?? ''}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1945,7 +1945,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.confirmPassword ? 'border-red-500' : ''}
                 />
                 {createUserErrors.confirmPassword && (
-                  <p className="text-sm text-red-600">{String((createUserErrors.confirmPassword as { message?: string }).message ?? '')}</p>
+                  <p className="text-sm text-red-600">{createUserErrors.confirmPassword?.message ?? ''}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1959,7 +1959,7 @@ export default function TenantDetailPage() {
                   className={createUserErrors.email ? 'border-red-500' : ''}
                 />
                 {createUserErrors.email && (
-                  <p className="text-sm text-red-600">{String((createUserErrors.email as { message?: string }).message ?? '')}</p>
+                  <p className="text-sm text-red-600">{createUserErrors.email?.message ?? ''}</p>
                 )}
               </div>
               <div className="grid gap-2">
@@ -1976,7 +1976,7 @@ export default function TenantDetailPage() {
                   ))}
                 </select>
                 {createUserErrors.tenantRoleId && (
-                  <p className="text-sm text-red-600">{String((createUserErrors.tenantRoleId as { message?: string }).message ?? '')}</p>
+                  <p className="text-sm text-red-600">{createUserErrors.tenantRoleId?.message ?? ''}</p>
                 )}
                 <p className="text-xs text-muted-foreground">User must have an assigned role. Choose from this tenant&apos;s active roles.</p>
               </div>

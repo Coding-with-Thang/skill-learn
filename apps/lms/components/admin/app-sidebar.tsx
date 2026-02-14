@@ -217,7 +217,7 @@ export function AppSidebar({ ...props }) {
         .map(item => ({
           ...item,
           // Also filter sub-items if they have feature requirements
-          items: item.items?.filter(subItem => !subItem.feature || isEnabled(subItem.feature)),
+          items: item.items?.filter((subItem: { title: string; url: string; feature?: string }) => !subItem.feature || isEnabled(subItem.feature)),
         })),
     })).filter(group => group.items.length > 0);
   }, [isEnabled, isLoading]);

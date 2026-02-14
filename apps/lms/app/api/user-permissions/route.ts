@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const tenantId = searchParams.get("tenantId");
 
-    const where = { userId };
+    const where: { userId: string; tenantId?: string } = { userId };
     if (tenantId) {
       where.tenantId = tenantId;
     }
@@ -58,8 +58,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const permissionMap = new Map();
-    const rolesByTenant = {};
+    type TenantGroup = {
+      tenant: (typeof userRoles)[number]["tenant"];
+      roles: Array<{ id: string; roleAlias: string; assignedAt: Date }>;
+      permissions: Set<string>;
+    };
+    const permissionMap = new Map<string, { id: string; name: string; displayName: string; category: string }>();
+    const rolesByTenant: Record<string, TenantGroup> = {};
 
     for (const userRole of userRoles) {
       if (!userRole.tenantRole.isActive) continue;
@@ -69,11 +74,11 @@ export async function GET(request: NextRequest) {
         rolesByTenant[tenantKey] = {
           tenant: userRole.tenant,
           roles: [],
-          permissions: new Set(),
+          permissions: new Set<string>(),
         };
       }
 
-      rolesByTenant[tenantKey].roles.push({
+      rolesByTenant[tenantKey]!.roles.push({
         id: userRole.tenantRole.id,
         roleAlias: userRole.tenantRole.roleAlias,
         assignedAt: userRole.assignedAt,
@@ -82,7 +87,7 @@ export async function GET(request: NextRequest) {
       for (const trp of userRole.tenantRole.tenantRolePermissions) {
         const perm = trp.permission;
         if (perm.isActive && !perm.isDeprecated) {
-          rolesByTenant[tenantKey].permissions.add(perm.name);
+          rolesByTenant[tenantKey]!.permissions.add(perm.name);
           permissionMap.set(perm.name, {
             id: perm.id,
             name: perm.name,

@@ -32,9 +32,9 @@ const getTagStyles = (tag) => {
 };
 
 export default async function ChangelogPage() {
-  let updates = [];
-  let years = [];
-  let tagCounts = {};
+  let updates: Awaited<ReturnType<typeof prisma.changelog.findMany>> = [];
+  let years: number[] = [];
+  let tagCounts: Record<string, number> = {};
 
   try {
     updates = await prisma.changelog.findMany({

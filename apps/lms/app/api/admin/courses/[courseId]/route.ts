@@ -39,7 +39,7 @@ export async function GET(
       return authResult;
     }
 
-    const course = await getCourseWithChaptersAndLessons(courseId);
+    const course = await getCourseWithChaptersAndLessons(courseId, tenantId ?? undefined);
 
     if (!course) {
       throw new AppError("Course not found", ErrorType.NOT_FOUND, {
@@ -56,7 +56,7 @@ export async function GET(
     } catch (err) {
       console.warn(
         "Failed to generate signed URL for course image:",
-        err?.message || err,
+        err instanceof Error ? err.message : err,
       );
     }
 

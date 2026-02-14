@@ -8,7 +8,7 @@ import { Button } from "@skill-learn/ui/components/button";
 
 export default function SkillLearnHere() {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const videoRef = useRef(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (!isVideoPlaying) {
@@ -24,7 +24,7 @@ export default function SkillLearnHere() {
       videoRef.current.focus?.();
     }
 
-    const onKey = (e) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsVideoPlaying(false);
     };
 

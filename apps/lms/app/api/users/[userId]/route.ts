@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
@@ -203,18 +204,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
             }
         }
 
-        // Build user update payload (profile + reportsTo)
-        type UserUpdatePayload = Partial<{
-            username: string;
-            firstName: string | null;
-            lastName: string | null;
-            reportsToUserId: string | null;
-        }>;
-        const updateData: UserUpdatePayload = {};
+        // Build user update payload (profile + reportsTo) for Prisma (unchecked = scalar fields)
+        const updateData: Prisma.UserUncheckedUpdateInput = {};
         if (username !== undefined) updateData.username = username;
         if (firstName !== undefined) updateData.firstName = firstName;
         if (lastName !== undefined) updateData.lastName = lastName;
-        if (newReportsTo !== undefined) updateData.reportsToUserId = newReportsTo;
+        if (newReportsTo !== undefined) updateData.reportsToUserId = newReportsTo ?? null;
 
         if (Object.keys(updateData).length > 0) {
             await prisma.user.update({

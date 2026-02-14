@@ -69,9 +69,9 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    let customerId = null;
+    let customerId: string | null = null;
     let customerEmail = providedEmail;
-    let tenantId = null;
+    let tenantId: string | null = null;
     
     // If user is authenticated, get their info
     if (userId) {
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
         throw new AppError("You already have an active subscription. Please manage it from the billing portal.", ErrorType.VALIDATION, { status: 400, redirectToPortal: true });
       }
       
-      customerId = dbUser?.tenant?.stripeCustomerId;
-      tenantId = dbUser?.tenantId;
+      customerId = dbUser?.tenant?.stripeCustomerId ?? null;
+      tenantId = dbUser?.tenantId ?? null;
       
       // Create customer if needed for authenticated users
       if (!customerId && customerEmail) {
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
             clerkUserId: userId,
           },
         });
-        customerId = customer.id;
+        customerId = customer?.id ?? null;
       }
     }
     

@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         existingFingerprints.add(fingerprint);
         created++;
       } catch (err) {
-        if (err.code === "P2002") {
+        if ((err as { code?: string }).code === "P2002") {
           skipped++;
         } else throw err;
       }

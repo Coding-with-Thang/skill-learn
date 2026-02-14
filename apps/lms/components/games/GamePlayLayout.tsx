@@ -29,6 +29,8 @@ const PLACEHOLDER_SRC =
   "data:image/svg+xml," +
   encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#9ca3af"/></svg>');
 
+type LeaderboardPlayer = { avatar?: string; name: string; score: number };
+
 const GamePlayLayout = ({
   children,
   title,
@@ -45,6 +47,22 @@ const GamePlayLayout = ({
   onPause,
   onResume,
   isPaused = false
+}: {
+  children?: React.ReactNode;
+  title?: string;
+  gameTitle?: string;
+  currentScore?: number;
+  round?: number;
+  totalRounds?: number;
+  personalBest?: number;
+  globalRank?: string;
+  rules?: string[];
+  tip?: string;
+  leaderboard?: LeaderboardPlayer[];
+  onReset?: () => void;
+  onPause?: () => void;
+  onResume?: () => void;
+  isPaused?: boolean;
 }) => {
   const { user } = useUser();
 
