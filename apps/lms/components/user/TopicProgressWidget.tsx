@@ -18,8 +18,8 @@ export default function TopicProgressWidget() {
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-between">
         {/* Circular Chart */}
-        <div className="relative w-48 h-48">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="relative w-48 h-48 min-w-[192px] min-h-[192px]">
+          <ResponsiveContainer width="100%" height="100%" minHeight={192}>
             <PieChart>
               <Pie
                 data={data}

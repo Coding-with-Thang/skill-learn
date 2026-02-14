@@ -336,8 +336,8 @@ export default function ResultsPage() {
           <CardContent className="p-8">
             <h3 className="text-lg font-bold text-foreground mb-6 text-center">Accuracy</h3>
             <div className="flex flex-col items-center justify-center">
-              <div className="relative w-48 h-48 mb-6">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="relative w-48 h-48 min-w-[192px] min-h-[192px] mb-6">
+                <ResponsiveContainer width="100%" height="100%" minHeight={192}>
                   <PieChart>
                     <Pie
                       data={chartData}

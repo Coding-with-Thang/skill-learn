@@ -49,7 +49,7 @@ export default function CategoryBarChart({ categoryData }) {
         <CardDescription>Attempts vs Completions</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={ChartConfig}>
+        <ChartContainer config={ChartConfig} className="h-[200px] w-full min-h-[160px]">
           <BarChart accessibilityLayer data={chartData}>
             <XAxis
               dataKey="key"
