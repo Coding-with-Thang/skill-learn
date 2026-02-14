@@ -920,7 +920,10 @@ export default function RolesPermissionsPage() {
                   id="template-default"
                   checked={templateForm.isDefaultSet}
                   onCheckedChange={(checked) =>
-                    setTemplateForm({ ...templateForm, isDefaultSet: checked })
+                    setTemplateForm({
+                      ...templateForm,
+                      isDefaultSet: checked === true,
+                    })
                   }
                 />
                 <Label htmlFor="template-default" className="cursor-pointer">
