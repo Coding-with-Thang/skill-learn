@@ -2,8 +2,8 @@
   "name": "@skill-learn/database",
   "version": "0.0.4",
   "private": true,
-  "main": "./index.js",
-  "types": "./index.d.ts",
+  "main": "./index.ts",
+  "types": "./index.ts",
   "scripts": {
     "build": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
     "prisma:generate": "node ../../node_modules/prisma/build/index.js generate --schema=./prisma/schema.prisma",
