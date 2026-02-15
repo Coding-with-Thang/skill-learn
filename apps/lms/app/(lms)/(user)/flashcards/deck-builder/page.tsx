@@ -60,9 +60,9 @@ export default function DeckBuilderPage() {
         if (deckId) reqs.push(api.get(`/flashcards/decks/${deckId}`));
         const results = await Promise.all(reqs);
 
-        const cats = results[0].data?.data?.categories ?? results[0].data?.categories ?? [];
-        const cards = results[1].data?.data?.cards ?? results[1].data?.cards ?? [];
-        const raw = results[2].data?.data ?? results[2].data ?? {};
+        const cats = results[0]?.data?.data?.categories ?? results[0]?.data?.categories ?? [];
+        const cards = results[1]?.data?.data?.cards ?? results[1]?.data?.cards ?? [];
+        const raw = results[2]?.data?.data ?? results[2]?.data ?? {};
         const deckData = deckId && results[3]
           ? (results[3].data?.data?.deck ?? results[3].data?.deck)
           : null;
