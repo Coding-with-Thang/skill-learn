@@ -32,7 +32,6 @@ import {
   SidebarTrigger,
   SidebarSeparator,
 } from "@skill-learn/ui/components/sidebar";
-import { Logo } from "@/components/shared/Logo";
 import Link from "next/link";
 
 // Define navigation data with feature requirements
@@ -224,35 +223,38 @@ export function AppSidebar({ ...props }) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="border-b border-border/10 bg-muted/5">
-        <div className="flex items-center justify-center p-3">
-          <SidebarTrigger className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all rounded-xl" />
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="pt-6">
-        {filteredNavGroups.map((group) => (
-          <NavMain key={group.label} label={group.label} items={group.items} />
-        ))}
-      </SidebarContent>
-      <div className="flex-1" />
-      <SidebarSeparator />
-      <SidebarFooter className="py-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
+      <div className="flex min-h-0 flex-1 flex-col pb-24">
+        <SidebarHeader className="shrink-0 border-b border-border/10 bg-muted/5">
+          <div className="flex items-center justify-center p-3">
+            <SidebarTrigger className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all rounded-xl" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="min-h-0 flex-1 pt-6">
+          {filteredNavGroups.map((group) => (
+            <NavMain key={group.label} label={group.label} items={group.items} />
+          ))}
+        </SidebarContent>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 border-t border-border/10 bg-sidebar">
+        <SidebarSeparator />
+        <SidebarFooter className="py-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:p-0">
               <Link href="/home">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <LayoutGrid className="size-4" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <div className="grid flex-1 self-end text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold uppercase tracking-tight text-[11px]">Back to Home</span>
                   <span className="truncate text-[10px] text-muted-foreground uppercase font-black">Main Dashboard</span>
                 </div>
               </Link>
             </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </div>
       <SidebarRail />
     </Sidebar>
   );

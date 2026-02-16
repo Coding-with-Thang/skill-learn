@@ -136,9 +136,9 @@ export default function DashboardLayout({ children }) {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <div className="flex flex-col min-h-screen w-full bg-primary bg-green-500">
+          <div className="flex flex-col min-h-screen w-full bg-background">
             <TopBar adminMode={true} />
-            <main className="flex-1 flex flex-col p-4 sm:p-8 w-full min-w-0 max-w-7xl mx-auto gap-6 overflow-y-auto bg-primary bg-green-500">
+            <main className="flex-1 flex flex-col p-4 sm:p-8 w-full min-w-0 max-w-7xl mx-auto gap-6 overflow-y-auto bg-background">
               <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
               <PageErrorBoundary pageName="Dashboard">
                 {children}

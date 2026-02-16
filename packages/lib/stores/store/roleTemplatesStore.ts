@@ -13,6 +13,12 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+type RoleTemplatesApiData = {
+  roleTemplates?: unknown[];
+  groupedBySet?: Record<string, unknown>;
+  templateSets?: unknown[];
+};
+
 type RoleTemplatesState = {
   roleTemplates: unknown[];
   templatesBySet: Record<string, unknown>;
@@ -61,7 +67,7 @@ export const useRoleTemplatesStore = create<RoleTemplatesState>((set, get) => ({
               },
             }
           );
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as RoleTemplatesApiData;
 
           set({
             roleTemplates: data.roleTemplates || [],
