@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle2, Loader2, AlertCircle, ArrowRight, CreditCard } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
-import { Link } from "@/i18n/navigation";
 
 export default function OnboardingStartPage() {
+  const t = useTranslations("onboarding");
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -87,10 +88,10 @@ export default function OnboardingStartPage() {
           <CardContent className="p-8 text-center">
             <Loader2 className="w-12 h-12 animate-spin text-brand-teal mx-auto mb-6" />
             <h1 className="text-2xl font-bold text-gray-900 mb-3">
-              Validating Your Payment
+              {t("validatingPayment")}
             </h1>
             <p className="text-gray-600">
-              Please wait while we confirm your subscription...
+              {t("validatingWait")}
             </p>
           </CardContent>
         </Card>
@@ -107,17 +108,17 @@ export default function OnboardingStartPage() {
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-3">
-              Validation Failed
+              {t("validationFailed")}
             </h1>
             <p className="text-gray-600 mb-6">
-              {error || "We couldn't validate your payment session. Please try again or contact support."}
+              {error || t("validationError")}
             </p>
             <div className="flex flex-col gap-3">
               <Button onClick={validateSession} className="w-full">
-                Try Again
+                {t("tryAgain")}
               </Button>
               <Button variant="outline" asChild className="w-full">
-                <Link href="/pricing">Back to Pricing</Link>
+                <Link href="/pricing">{t("backToPricing")}</Link>
               </Button>
             </div>
           </CardContent>
@@ -140,47 +141,46 @@ export default function OnboardingStartPage() {
           </motion.div>
 
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            Payment Successful! 🎉
+            {t("paymentSuccessful")}
           </h1>
 
           <p className="text-gray-600 mb-2">
-            Thank you for subscribing to{" "}
+            {t("thankYouSubscribe")}{" "}
             <span className="font-semibold text-gray-900">
               {sessionData?.planName || "Skill-Learn Pro"}
             </span>
           </p>
 
           <p className="text-sm text-gray-500 mb-8">
-            Let&apos;s set up your account and workspace.
+            {t("setUpAccount")}
           </p>
 
-          {/* Progress Steps */}
           <div className="flex items-center justify-center gap-2 mb-8">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 ✓
               </div>
-              <span className="text-sm font-medium text-green-600">Payment</span>
+              <span className="text-sm font-medium text-green-600">{t("payment")}</span>
             </div>
             <div className="w-8 h-px bg-gray-300" />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-brand-teal rounded-full flex items-center justify-center text-white text-sm font-medium">
                 2
               </div>
-              <span className="text-sm font-medium text-gray-600">Account</span>
+              <span className="text-sm font-medium text-gray-600">{t("account")}</span>
             </div>
             <div className="w-8 h-px bg-gray-300" />
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm font-medium">
                 3
               </div>
-              <span className="text-sm text-gray-400">Workspace</span>
+              <span className="text-sm text-gray-400">{t("workspace")}</span>
             </div>
           </div>
 
           <Button asChild size="lg" className="w-full">
             <Link href={`/onboarding/account?session_id=${sessionId}`}>
-              Continue to Account Setup
+              {t("continueToAccount")}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
           </Button>

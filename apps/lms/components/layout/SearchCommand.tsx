@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Search, Command, X, ArrowRight, Zap, Book, GraduationCap } from "lucide-react";
 import {
   Dialog,
@@ -12,6 +13,8 @@ import { cn } from "@skill-learn/lib/utils";
 import { useRouter } from "@/i18n/navigation";
 
 export function SearchCommand({ isOpen, setIsOpen }) {
+  const t = useTranslations("common");
+  const tSearch = useTranslations("search");
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -51,13 +54,13 @@ export function SearchCommand({ isOpen, setIsOpen }) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-background/80 backdrop-blur-xl shadow-2xl rounded-3xl">
         <DialogHeader className="p-4 border-b border-border/50">
-          <DialogTitle className="sr-only">Search Knowledge Base</DialogTitle>
+          <DialogTitle className="sr-only">{tSearch("dialogTitle")}</DialogTitle>
           <div className="flex items-center gap-3 px-2">
             <Search className="h-5 w-5 text-muted-foreground" />
             <input
               autoFocus
               className="flex-1 bg-transparent border-none outline-none text-lg text-foreground placeholder:text-muted-foreground"
-              placeholder="Search your knowledge base..."
+              placeholder={t("searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />

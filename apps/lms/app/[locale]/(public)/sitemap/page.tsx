@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Map,
@@ -17,53 +18,55 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
-const sitemapSections = [
-  {
-    title: "Public Pages",
-    icon: Home,
-    links: [
-      { name: "Home", href: "/" },
-      { name: "Features", href: "/features" },
-      { name: "Pricing", href: "/pricing" },
-      { name: "Legal Hub", href: "/legal" },
-      { name: "About Us", href: "/about" },
-      { name: "Contact Us", href: "/contact" },
-      { name: "FAQ Hub", href: "/support/faq" },
-    ],
-  },
-  {
-    title: "Legal & Compliance",
-    icon: ShieldCheck,
-    links: [
-      { name: "Privacy Policy", href: "/legal/privacy-policy" },
-      { name: "Terms & Conditions", href: "/legal/terms-of-condition" },
-      { name: "Accessibility Statement", href: "/legal/accessibility" },
-      { name: "Data Protection & Compliance", href: "/legal/compliance" },
-    ],
-  },
-  {
-    title: "Product Flow",
-    icon: Zap,
-    links: [
-      { name: "Sign In", href: "/sign-in" },
-      { name: "Join Community", href: "/onboarding/welcome" },
-      { name: "Account Setup", href: "/onboarding/account" },
-    ],
-  },
-  {
-    title: "Platform",
-    icon: BookOpen,
-    links: [
-      { name: "Dashboard", href: "/user/dashboard" },
-      { name: "Community Feed", href: "/user/community" },
-      { name: "Learning Paths", href: "/user/paths" },
-      { name: "Rewards Center", href: "/user/rewards" },
-      { name: "My Profile", href: "/user/profile" },
-    ],
-  },
-];
-
 export default function SitemapPage() {
+  const t = useTranslations("sitemap");
+  const tNav = useTranslations("nav");
+  
+  const sitemapSections = [
+    {
+      title: t("publicPages"),
+      icon: Home,
+      links: [
+        { name: tNav("home"), href: "/" },
+        { name: tNav("features"), href: "/features" },
+        { name: tNav("pricing"), href: "/pricing" },
+        { name: t("legalHub"), href: "/legal" },
+        { name: tNav("about"), href: "/about" },
+        { name: tNav("contact"), href: "/contact" },
+        { name: t("faqHub"), href: "/support/faq" },
+      ],
+    },
+    {
+      title: t("legalCompliance"),
+      icon: ShieldCheck,
+      links: [
+        { name: t("privacyPolicy"), href: "/legal/privacy-policy" },
+        { name: t("termsConditions"), href: "/legal/terms-of-condition" },
+        { name: t("accessibilityStatement"), href: "/legal/accessibility" },
+        { name: t("dataProtection"), href: "/legal/compliance" },
+      ],
+    },
+    {
+      title: t("productFlow"),
+      icon: Zap,
+      links: [
+        { name: t("signIn"), href: "/sign-in" },
+        { name: t("joinCommunity"), href: "/onboarding/welcome" },
+        { name: t("accountSetup"), href: "/onboarding/account" },
+      ],
+    },
+    {
+      title: t("platform"),
+      icon: BookOpen,
+      links: [
+        { name: t("dashboard"), href: "/user/dashboard" },
+        { name: t("communityFeed"), href: "/user/community" },
+        { name: t("learningPaths"), href: "/user/paths" },
+        { name: t("rewardsCenter"), href: "/user/rewards" },
+        { name: t("myProfile"), href: "/user/profile" },
+      ],
+    },
+  ];
   return (
     <div className="min-h-screen bg-[#F8F9FB] font-sans pb-24">
       {/* Hero Section */}
@@ -76,13 +79,13 @@ export default function SitemapPage() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-teal/5 text-brand-teal rounded-full text-xs font-bold uppercase tracking-widest mb-6">
               <Map className="w-3 h-3" />
-              Sitemap
+              {t("sitemap")}
             </div>
             <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
-              Site Navigation
+              {t("siteNavigation")}
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl leading-relaxed mx-auto md:mx-0">
-              An organized directory of all available pages and resources within the Skill-Learn platform.
+              {t("subtitle")}
             </p>
           </motion.div>
         </div>
@@ -131,12 +134,12 @@ export default function SitemapPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
         <div className="bg-white rounded-[40px] p-12 border border-slate-100 shadow-sm text-center">
           <HelpCircle className="w-12 h-12 text-brand-teal mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-slate-900 mb-4">Can't find what you're looking for?</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">{t("cantFindWhat")}</h2>
           <p className="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">
-            Our support team is available 24/7 to help you navigate our platform and find the resources you need.
+            {t("supportAvailable")}
           </p>
           <button className="px-8 py-4 bg-slate-900 text-white font-bold rounded-4xl hover:bg-slate-800 transition-all shadow-lg">
-            Chat with Support
+            {t("chatWithSupport")}
           </button>
         </div>
       </section>

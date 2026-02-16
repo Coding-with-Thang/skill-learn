@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@skill-learn/ui/components/card";
 import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
@@ -17,16 +18,19 @@ import {
   Globe
 } from "lucide-react";
 
-// Game data with icon components/configurations for the visual area
-const games = [
-  {
-    id: 1,
-    title: "Tic Tac Toe",
-    description: "Classic strategy. Get three in a row to win against the AI.",
-    genre: "Strategy",
-    route: "/games/tic-tac-toe",
-    gameName: "tic-tac-toe",
-    genreColor: "bg-blue-100 text-blue-600",
+export default function GameSelectPage() {
+  const t = useTranslations("games");
+  
+  // Game data with icon components/configurations for the visual area
+  const games = [
+    {
+      id: 1,
+      title: t("ticTacToe"),
+      description: t("ticTacToeDesc"),
+      genre: t("strategy"),
+      route: "/games/tic-tac-toe",
+      gameName: "tic-tac-toe",
+      genreColor: "bg-blue-100 text-blue-600",
     renderIcon: () => (
       <div className="relative w-24 h-24 grid grid-cols-2 gap-2 opacity-80">
         <div className="flex items-center justify-center border-r-2 border-b-2 border-gray-300">
@@ -45,14 +49,14 @@ const games = [
       </div>
     )
   },
-  {
-    id: 2,
-    title: "Emoji Memory",
-    description: "Test your recall. Match the pairs of emojis before time runs out.",
-    genre: "Brain Teaser",
-    route: "/games/memory-game",
-    gameName: "memory-game",
-    genreColor: "bg-yellow-100 text-yellow-700",
+    {
+      id: 2,
+      title: t("emojiMemory"),
+      description: t("emojiMemoryDesc"),
+      genre: t("brainTeaser"),
+      route: "/games/memory-game",
+      gameName: "memory-game",
+      genreColor: "bg-yellow-100 text-yellow-700",
     renderIcon: () => (
       <div className="grid grid-cols-2 gap-3">
         <div className="w-12 h-12 bg-yellow-200 rounded-lg flex items-center justify-center shadow-sm">
@@ -66,14 +70,14 @@ const games = [
       </div>
     )
   },
-  {
-    id: 3,
-    title: "The Guessing Game",
-    description: "Can you guess the hidden number? Sharpen your intuition.",
-    genre: "Logic",
-    route: "/games/guessing-game",
-    gameName: "guessing-game",
-    genreColor: "bg-green-100 text-green-700",
+    {
+      id: 3,
+      title: t("guessingGame"),
+      description: t("guessingGameDesc"),
+      genre: t("logic"),
+      route: "/games/guessing-game",
+      gameName: "guessing-game",
+      genreColor: "bg-green-100 text-green-700",
     renderIcon: () => (
       <div className="relative">
         <div className="w-20 h-24 bg-white rounded-xl shadow-md flex items-center justify-center border border-gray-100">
@@ -84,14 +88,14 @@ const games = [
       </div>
     )
   },
-  {
-    id: 4,
-    title: "Rock Paper Scissors",
-    description: "The timeless hand game. Luck or psychology? You decide.",
-    genre: "Casual",
-    route: "/games/rock-paper-scissors",
-    gameName: "rock-paper-scissors",
-    genreColor: "bg-pink-100 text-pink-700",
+    {
+      id: 4,
+      title: t("rockPaperScissors"),
+      description: t("rockPaperScissorsDesc"),
+      genre: t("casual"),
+      route: "/games/rock-paper-scissors",
+      gameName: "rock-paper-scissors",
+      genreColor: "bg-pink-100 text-pink-700",
     renderIcon: () => (
       <div className="flex gap-4 items-center opacity-70">
         <Hand className="w-10 h-10 text-gray-600 -rotate-45" />
@@ -99,31 +103,29 @@ const games = [
         <Globe className="w-10 h-10 text-gray-600" />
       </div>
     )
-  }
-];
-
-export default function GameSelectPage() {
+    }
+  ];
+  
   return (
     <FeatureGate
       feature="games"
-      featureName="Games"
-      fallback={<FeatureDisabledPage featureName="Games" />}
+      featureName={t("title")}
+      fallback={<FeatureDisabledPage featureName={t("title")} />}
     >
       <section className="w-full min-h-screen bg-background pb-20">
         <div className="max-w-7xl mx-auto px-6 pt-6">
-          <BreadCrumbCom crumbs={[]} endtrail="Games" />
+          <BreadCrumbCom crumbs={[]} endtrail={t("title")} />
 
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="relative inline-block mb-4">
               <h1 className="text-4xl font-bold text-foreground mb-2">
-                Select a Game to Play
+                {t("title")}
               </h1>
               <div className="h-1 w-20 bg-blue-600 mx-auto mt-4 rounded-full"></div>
             </div>
 
             <p className="max-w-2xl text-lg text-muted-foreground mt-4 leading-relaxed">
-              Take a quick break and challenge your mind with our collection of brain
-              teasers. Earn points while you play!
+              {t("subtitle")}
             </p>
           </div>
 
@@ -161,7 +163,7 @@ export default function GameSelectPage() {
               <Plus className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-medium text-muted-foreground">
-              More games coming soon!
+              {t("moreGamesComing")}
             </h3>
           </div>
         </div>

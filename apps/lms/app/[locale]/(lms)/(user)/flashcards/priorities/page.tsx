@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   Card,
@@ -25,6 +26,8 @@ import { toast } from "sonner";
 type PriorityCategory = { id: string; name?: string; cardCount?: number; priority: number };
 
 export default function FlashCardPrioritiesPage() {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const [categories, setCategories] = useState<PriorityCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingPriority, setSavingPriority] = useState<string | null>(null);
@@ -36,7 +39,7 @@ export default function FlashCardPrioritiesPage() {
       const data = res.data?.data ?? res.data;
       setCategories(data.categories ?? []);
     } catch (err) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to load priorities";
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToLoadPriorities");
       toast.error(msg);
       setCategories([]);
     } finally {
@@ -51,9 +54,9 @@ export default function FlashCardPrioritiesPage() {
       setCategories((prev) =>
         prev.map((c) => (c.id === categoryId ? { ...c, priority } : c))
       );
-      toast.success("Priority updated");
+      toast.success(t("priorityUpdated"));
     } catch (err) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to update priority";
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToUpdatePriority");
       toast.error(msg);
     } finally {
       setSavingPriority(null);
@@ -68,16 +71,16 @@ export default function FlashCardPrioritiesPage() {
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "Flash Cards", href: "/flashcards" },
-          { name: "My Priorities", href: "/flashcards/priorities" },
+          { name: tB("flashCards"), href: "/flashcards" },
+          { name: tB("myPriorities"), href: "/flashcards/priorities" },
         ]}
-        endtrail="My Priorities"
+        endtrail={tB("myPriorities")}
       />
       <div className="max-w-2xl mx-auto space-y-6 pb-8">
         <div>
-          <h1 className="text-2xl font-bold">My Category Priorities</h1>
+          <h1 className="text-2xl font-bold">{t("myCategoryPriorities")}</h1>
           <p className="text-muted-foreground mt-1">
-            Set your preferred focus (1–10). Higher priority categories appear more often in mixed study sessions. Your choices may be overridden by admin settings.
+            {t("setPreferredFocus")}
           </p>
         </div>
 
@@ -85,10 +88,10 @@ export default function FlashCardPrioritiesPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sliders className="h-5 w-5" />
-              Category Priorities
+              {t("categoryPriorities")}
             </CardTitle>
             <CardDescription>
-              1 = lowest, 10 = highest focus during study
+              {t("priorityDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -98,12 +101,12 @@ export default function FlashCardPrioritiesPage() {
               </div>
             ) : categories.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>No flash card categories yet.</p>
+                <p>{t("noCategoriesYet")}</p>
                 <p className="text-sm mt-1">
                   <Link href="/flashcards/create-category" className="text-primary hover:underline">
-                    Create a category
+                    {t("createCategoryLink")}
                   </Link>{" "}
-                  or browse flash cards to get started.
+                  {t("orBrowseToGetStarted")}
                 </p>
               </div>
             ) : (
@@ -116,7 +119,7 @@ export default function FlashCardPrioritiesPage() {
                     <div className="flex-1 min-w-0">
                       <span className="font-medium truncate block">{c.name}</span>
                       <span className="text-sm text-muted-foreground">
-                        {c.cardCount} card{c.cardCount !== 1 ? "s" : ""}
+                        {t("cardCount", { count: c.cardCount ?? 0 })}
                       </span>
                     </div>
                     <Select
@@ -153,7 +156,7 @@ export default function FlashCardPrioritiesPage() {
         <div className="flex gap-3">
           <Link href="/flashcards">
             <span className="text-sm text-muted-foreground hover:text-primary cursor-pointer">
-              ← Back to Flash Cards
+              {t("backToFlashCardsLink")}
             </span>
           </Link>
         </div>

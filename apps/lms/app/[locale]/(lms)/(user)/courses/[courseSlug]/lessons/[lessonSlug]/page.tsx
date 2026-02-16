@@ -1,9 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import {
   ArrowLeft,
   ChevronLeft,
@@ -51,6 +51,7 @@ function getPrevNext(flatLessons, currentLesson) {
 }
 
 export default function LessonPage() {
+  const tB = useTranslations("breadcrumbs");
   const params = useParams();
   const router = useRouter();
   const courseSlug = params?.courseSlug;
@@ -264,17 +265,17 @@ export default function LessonPage() {
           <div className="border-b border-border px-4 py-2 flex items-center gap-4 flex-wrap">
             <BreadCrumbCom
               crumbs={[
-                { name: "Training", href: "/training" },
-                { name: course?.title ?? "Course", href: `/courses/${courseSlugForLinks}` },
+                { name: tB("training"), href: "/training" },
+                { name: course?.title ?? tB("course"), href: `/courses/${courseSlugForLinks}` },
               ]}
-              endtrail={currentLesson?.title ?? "Lesson"}
+              endtrail={currentLesson?.title ?? tB("lesson")}
             />
             <Link
               href={`/courses/${courseSlugForLinks}`}
               className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to course
+              {tB("backToCourse")}
             </Link>
           </div>
 

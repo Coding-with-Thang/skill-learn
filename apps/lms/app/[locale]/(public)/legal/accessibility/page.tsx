@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Heart,
@@ -22,16 +23,16 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@skill-learn/ui/components/button";
 import { cn } from "@skill-learn/lib/utils";
 
-const sections = [
-  { id: "commitment", name: "Our Commitment", icon: Heart },
-  { id: "conformance", name: "Conformance Status", icon: CheckCircle2 },
-  { id: "compatibility", name: "Compatibility", icon: Layout },
-  { id: "technical-specs", name: "Technical Specs", icon: Code2 },
-  { id: "feedback", name: "Feedback Mechanism", icon: MessageSquare },
-];
-
 export default function AccessibilityPage() {
+  const t = useTranslations("legal");
   const [activeSection, setActiveSection] = useState("commitment");
+  const sections = [
+    { id: "commitment", name: t("ourCommitment"), icon: Heart },
+    { id: "conformance", name: t("conformanceStatus"), icon: CheckCircle2 },
+    { id: "compatibility", name: t("compatibility"), icon: Layout },
+    { id: "technical-specs", name: t("technicalSpecs"), icon: Code2 },
+    { id: "feedback", name: t("feedbackMechanism"), icon: MessageSquare },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,21 +69,21 @@ export default function AccessibilityPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-            <span className="hover:text-brand-teal cursor-pointer">Legal</span>
+            <span className="hover:text-brand-teal cursor-pointer">{t("legal")}</span>
             <ChevronRight className="w-4 h-4" />
-            <span className="text-slate-900 font-medium">Accessibility Statement</span>
+            <span className="text-slate-900 font-medium">{t("accessibilityStatement")}</span>
           </nav>
 
           <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
             <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 tracking-tight">
-              Accessibility Statement
+              {t("accessibilityStatement")}
             </h1>
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-xs font-bold uppercase tracking-wider">
               WCAG 2.1 AA
             </div>
           </div>
           <p className="text-xl text-slate-600 max-w-3xl leading-relaxed">
-            Our commitment to providing an inclusive and barrier-free learning experience for every student and professional using the Skill-Learn platform.
+            {t("accessibilityIntro")}
           </p>
         </div>
       </section>
@@ -94,8 +95,8 @@ export default function AccessibilityPage() {
           <aside className="lg:w-72 shrink-0">
             <div className="sticky top-10">
               <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
-                <h3 className="text-sm font-bold text-slate-900 mb-1 tracking-tight">Table of Contents</h3>
-                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">Quick Navigation</p>
+                <h3 className="text-sm font-bold text-slate-900 mb-1 tracking-tight">{t("tableOfContents")}</h3>
+                <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">{t("quickNavigation")}</p>
                 <nav className="space-y-1">
                   {sections.map((section) => {
                     const Icon = section.icon;

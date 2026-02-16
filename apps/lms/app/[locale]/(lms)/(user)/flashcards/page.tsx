@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import {
   Card,
@@ -53,6 +53,7 @@ type Category = { id: string; name?: string };
 type FlashcardsHomeData = { decks?: Deck[]; sharedDecks?: SharedDeck[]; categories?: Category[]; recommended?: unknown[]; stats?: { dueToday?: number; needsAttention?: number }; limits?: { maxDecks?: number; currentDeckCount?: number; canCreateDeck?: boolean } };
 
 export default function FlashCardsHomePage() {
+  const t = useTranslations("flashcards");
   const router = useRouter();
   const [data, setData] = useState<FlashcardsHomeData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,12 +90,12 @@ export default function FlashCardsHomePage() {
     setAcceptingDeckId(deckId);
     try {
       await api.post("/flashcards/decks/accept", { deckId });
-      toast.success("Deck added to your collection");
+      toast.success(t("deckAdded"));
       const res = await api.get("/flashcards/home");
       setData((res.data?.data ?? res.data) as FlashcardsHomeData);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to accept deck");
+      toast.error(e.response?.data?.error || t("failedToAccept"));
     } finally {
       setAcceptingDeckId(null);
     }
@@ -146,16 +147,16 @@ export default function FlashCardsHomePage() {
           <div className="flex-1 space-y-8 text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">Flashcards Hub</span>
+              <span className="text-[10px] font-bold tracking-widest text-white/50 uppercase">{t("flashcardsHub")}</span>
             </div>
 
             <div className="space-y-4">
               <h1 className="text-4xl md:text-brand-teal lg:text-6xl font-bold text-white leading-tight">
-                Mastery Through <br />
-                <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">Repetition</span>
+                {t("masteryThroughRepetition")} <br />
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-blue-400">{t("repetition")}</span>
               </h1>
               <p className="max-w-xl text-lg text-white/60 leading-relaxed mx-auto lg:mx-0">
-                Unlock the power of your memory. Use spaced repetition to cement knowledge, browse expert categories, or dive into your custom-crafted study sets.
+                {t("unlockPowerMemory")}
               </p>
             </div>
 
@@ -163,12 +164,12 @@ export default function FlashCardsHomePage() {
               <Link href="/flashcards/create-card">
                 <Button size="lg" className="h-14 rounded-4xl bg-linear-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 border-none px-10 font-bold text-white shadow-lg shadow-cyan-500/20 text-lg">
                   <Plus className="mr-2 h-5 w-5" />
-                  Create Cards
+                  {t("createCards")}
                 </Button>
               </Link>
               <Link href="/flashcards/decks">
                 <Button size="lg" variant="outline" className="h-14 rounded-4xl bg-white/5 border-white/10 text-white hover:bg-white/10 px-10 font-bold backdrop-blur-md text-lg">
-                  View All Cards
+                  {t("viewAllCards")}
                 </Button>
               </Link>
             </div>
@@ -196,10 +197,10 @@ export default function FlashCardsHomePage() {
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-blue-500" />
             </div>
-            <h2 className="text-2xl font-bold">Smart Recommendations</h2>
+            <h2 className="text-2xl font-bold">{t("smartRecommendations")}</h2>
           </div>
           <Link href="/flashcards/priorities" className="text-sm font-semibold text-blue-500 hover:underline">
-            View Priority
+            {t("viewPriority")}
           </Link>
         </div>
 
@@ -219,16 +220,16 @@ export default function FlashCardsHomePage() {
               />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-foreground">Due Today</h3>
+              <h3 className="text-xl font-bold text-foreground">{t("dueToday")}</h3>
               <p className="text-sm text-muted-foreground">
-                {(stats?.dueToday ?? 12)} cards ready for review to maintain your streak.
+                {t("cardsReadyReview", { count: stats?.dueToday ?? 12 })}
               </p>
             </div>
             <Button
               onClick={() => startStudy({ virtualDeck: "due_today", limit: 25 })}
               className="w-full rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-black hover:opacity-90 transition-opacity h-14 font-bold text-base px-8"
             >
-              Start Session
+              {t("startSession")}
             </Button>
           </div>
 
@@ -247,16 +248,16 @@ export default function FlashCardsHomePage() {
               />
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-foreground">Needs Attention</h3>
+              <h3 className="text-xl font-bold text-foreground">{t("needsAttention")}</h3>
               <p className="text-sm text-muted-foreground">
-                Focus on {(stats?.needsAttention ?? 8)} low mastery cards from "Product Features".
+                {t("cardsNeedReview", { count: stats?.needsAttention ?? 8 })}
               </p>
             </div>
             <Button
               onClick={() => startStudy({ virtualDeck: "needs_attention", limit: 25 })}
               className="w-full rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-black hover:opacity-90 transition-opacity h-14 font-bold text-base px-8"
             >
-              Review Focus
+              {t("studyNow")}
             </Button>
           </div>
 
@@ -292,7 +293,7 @@ export default function FlashCardsHomePage() {
               <LayoutGrid className="w-5 h-5 text-teal-500" />
             </div>
             <h2 className="text-2xl font-bold">
-              My Decks
+              {t("yourDecks")}
               <span className="ml-2 text-sm font-normal text-muted-foreground">
                 ({currentDeckCount}/{maxDecks == null || maxDecks < 0 ? "∞" : maxDecks})
               </span>
@@ -371,7 +372,7 @@ export default function FlashCardsHomePage() {
                       href={`/flashcards/decks/${deck.id}`}
                       onClick={(e) => e.stopPropagation()}
                       className="absolute top-4 right-4 p-2 rounded-lg bg-white/20 backdrop-blur-md hover:bg-white/30 transition-colors z-10"
-                      title="Edit deck"
+                      title={t("editDeck")}
                     >
                       <Pencil className="w-5 h-5 text-white" />
                     </Link>
@@ -423,7 +424,7 @@ export default function FlashCardsHomePage() {
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
               <Share2 className="w-5 h-5 text-amber-500" />
             </div>
-            <h2 className="text-2xl font-bold">Shared with you</h2>
+            <h2 className="text-2xl font-bold">{t("sharedWithYou")}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {sharedDecks.map((d) => (

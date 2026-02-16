@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
 import api from "@skill-learn/lib/utils/axios";
@@ -37,6 +38,7 @@ type StudySessionConfig = {
 };
 
 export default function FlashCardStudyPage() {
+  const t = useTranslations("flashcards");
   const router = useRouter();
   const { user } = useUser();
   const searchParams = useSearchParams();
@@ -314,17 +316,17 @@ export default function FlashCardStudyPage() {
               size="sm"
               onClick={() => {
                 shuffleCards();
-                toast.success("Deck shuffled");
+                toast.success(t("deckShuffled"));
               }}
               className="rounded-full h-9 px-4 gap-2"
             >
               <Shuffle className="w-4 h-4" />
-              <span className="hidden sm:inline">Shuffle</span>
+              <span className="hidden sm:inline">{t("shuffle")}</span>
             </Button>
           )}
           <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/10 border border-orange-500/20">
             <Zap className="w-4 h-4 text-orange-500 fill-orange-500" />
-            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{streak} Day Streak</span>
+            <span className="text-sm font-bold text-orange-600 dark:text-orange-400">{t("dayStreak", { count: streak })}</span>
           </div>
           <Avatar className="w-10 h-10 border-2 border-border shadow-sm">
             <AvatarImage src={user?.imageUrl} />
@@ -489,8 +491,8 @@ export default function FlashCardStudyPage() {
                   )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-indigo-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                  <h3 className="text-lg font-bold text-indigo-500">Mastered</h3>
-                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Skip for Now</p>
+                  <h3 className="text-lg font-bold text-indigo-500">{t("mastered")}</h3>
+                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">{t("skipForNow")}</p>
                 </Card>
               </motion.div>
             )}
@@ -499,10 +501,10 @@ export default function FlashCardStudyPage() {
 
         {/* 6. Shortcuts Indicators */}
         <div className="flex flex-wrap justify-center gap-3 py-4">
-          <ShortcutPill keyName="1" label="HARD" />
-          <ShortcutPill keyName="2" label="GOOD" />
-          <ShortcutPill keyName="3" label="EASY" />
-          <ShortcutPill keyName="SPACE" label="FLIP" className="ml-4" />
+          <ShortcutPill keyName="1" label={t("studyHard")} />
+          <ShortcutPill keyName="2" label={t("studyGood")} />
+          <ShortcutPill keyName="3" label={t("studyEasy")} />
+          <ShortcutPill keyName="SPACE" label={t("flip")} className="ml-4" />
         </div>
       </main>
 
@@ -514,7 +516,7 @@ export default function FlashCardStudyPage() {
           disabled={!hasPrev()}
           className="rounded-xl h-12 px-6 font-bold"
         >
-          <ChevronLeft className="w-5 h-5 mr-2" /> Previous
+          <ChevronLeft className="w-5 h-5 mr-2" /> {t("previous")}
         </Button>
 
         {sessionConfig?.deckIds?.length === 1 && (
@@ -525,10 +527,10 @@ export default function FlashCardStudyPage() {
               disabled={hiding}
               className="rounded-xl h-12 px-6 text-muted-foreground hover:text-brand-teal destructive font-bold"
             >
-              <EyeOff className="w-4 h-4 mr-2" /> {hiding ? "Hiding..." : "Hide"}
+              <EyeOff className="w-4 h-4 mr-2" /> {hiding ? t("hiding") : t("hide")}
             </Button>
             {hidingError && (
-              <span className="text-xs text-brand-teal destructive">Could not hide card</span>
+              <span className="text-xs text-brand-teal destructive">{t("couldNotHideCard")}</span>
             )}
           </div>
         )}
@@ -546,7 +548,7 @@ export default function FlashCardStudyPage() {
           disabled={!hasNext() && isFlipped && sessionConfig?.mode !== "infinite"}
           className="rounded-xl h-12 px-6 font-bold"
         >
-          {isFlipped ? "Next" : "Reveal"} <RotateCw className="w-4 h-4 ml-2" />
+          {isFlipped ? t("next") : t("reveal")} <RotateCw className="w-4 h-4 ml-2" />
         </Button>
       </div>
     </div>

@@ -1,41 +1,52 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/shared/Logo";
 
 export default function LandingFooter() {
-  const footerLinks = {
-    Product: [
-      { name: "Features", href: "/features" },
-      "Gantt charts",
-      "AI"
+  const t = useTranslations("footerLanding");
+  const tFooter = useTranslations("footer");
+
+  const footerLinks: Record<string, Array<{ nameKey: string; href: string }>> = {
+    product: [
+      { nameKey: "features", href: "/features" },
+      { nameKey: "ganttCharts", href: "#" },
+      { nameKey: "ai", href: "#" },
     ],
-    Business: [
-      "All teams",
-      "Marketing",
-      "Creative",
-      "Project Management",
-      "Product Development",
-      "Business Operations",
+    business: [
+      { nameKey: "allTeams", href: "#" },
+      { nameKey: "marketing", href: "#" },
+      { nameKey: "creative", href: "#" },
+      { nameKey: "projectManagement", href: "#" },
+      { nameKey: "productDevelopment", href: "#" },
+      { nameKey: "businessOperations", href: "#" },
     ],
-    Resources: [
-      { name: "Help Center", href: "/support/faq" },
-      { name: "Community", href: "/onboarding/welcome" },
-      { name: "Pricing", href: "/pricing" },
-      { name: "Sitemap", href: "/sitemap" },
-      { name: "Case Studies", href: "/resources/case-studies/techflow" },
-      { name: "Contact Us", href: "/contact" },
-      { name: "Support", href: "/support/faq" },
-      { name: "Careers", href: "/careers" },
-      { name: "Changelog", href: "/changelog" },
+    resources: [
+      { nameKey: "helpCenter", href: "/support/faq" },
+      { nameKey: "community", href: "/onboarding/start" },
+      { nameKey: "pricing", href: "/pricing" },
+      { nameKey: "sitemap", href: "/sitemap" },
+      { nameKey: "caseStudies", href: "/resources/case-studies/techflow" },
+      { nameKey: "contactUs", href: "/contact" },
+      { nameKey: "support", href: "/support/faq" },
+      { nameKey: "careers", href: "/careers" },
+      { nameKey: "changelog", href: "/changelog" },
     ],
-    Legal: [
-      { name: "Legal Hub", href: "/legal" },
-      { name: "Privacy Policy", href: "/legal/privacy-policy" },
-      { name: "Terms of Service", href: "/legal/terms-of-condition" },
-      { name: "Accessibility", href: "/legal/accessibility" },
-      { name: "Compliance", href: "/legal/compliance" }
-    ]
+    legal: [
+      { nameKey: "legalHub", href: "/legal" },
+      { nameKey: "privacyPolicy", href: "/legal/privacy-policy" },
+      { nameKey: "termsOfService", href: "/legal/terms-of-condition" },
+      { nameKey: "accessibility", href: "/legal/accessibility" },
+      { nameKey: "compliance", href: "/legal/compliance" },
+    ],
+  };
+
+  const categoryLabels: Record<string, string> = {
+    product: "product",
+    business: "business",
+    resources: "resources",
+    legal: "legal",
   };
 
   return (
@@ -44,15 +55,15 @@ export default function LandingFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
-              <h3 className="font-bold text-lg mb-6 text-white/90">{category}</h3>
+              <h3 className="font-bold text-lg mb-6 text-white/90">{t(categoryLabels[category] ?? "product")}</h3>
               <ul className="space-y-3">
                 {links.map((link, index) => (
                   <li key={index}>
                     <Link
-                      href={typeof link === "string" ? "#" : link.href}
+                      href={link.href}
                       className="text-white/70 hover:text-white transition-colors text-sm font-medium flex items-center gap-1 group"
                     >
-                      {typeof link === "string" ? link : link.name}
+                      {t(link.nameKey)}
                     </Link>
                   </li>
                 ))}
@@ -64,15 +75,15 @@ export default function LandingFooter() {
           <div className="flex flex-col md:flex-row items-center gap-8">
             <Logo className="" textClassName="text-white" imageClassName="" />
             <p className="text-white/50 text-xs font-medium tracking-wide">
-              © {new Date().getFullYear()} SKILL-LEARN INC. ALL RIGHTS RESERVED.
+              {t("copyright", { year: new Date().getFullYear() })}
             </p>
           </div>
           <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
             <Link href="/legal" className="text-white/60 hover:text-white transition-colors">
-              Legal Hub
+              {tFooter("legalHub")}
             </Link>
             <Link href="/sitemap" className="text-white/60 hover:text-white transition-colors">
-              Sitemap
+              {tFooter("sitemap")}
             </Link>
           </div>
         </div>

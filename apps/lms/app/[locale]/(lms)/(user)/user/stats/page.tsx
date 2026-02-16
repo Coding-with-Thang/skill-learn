@@ -1,14 +1,12 @@
 import { auth } from "@clerk/nextjs/server"
-import { getLocale } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
+import { redirect } from "next/navigation";
 import UserStats from "@/components/user/UserStats";
 
 export default async function StatsPage() {
   const { userId } = await auth()
 
   if (!userId) {
-    const locale = await getLocale();
-    redirect({ href: "/sign-in", locale });
+    redirect("/sign-in")
   }
 
   return (

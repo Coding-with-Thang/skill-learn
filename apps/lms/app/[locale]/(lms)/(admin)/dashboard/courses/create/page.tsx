@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react";
-import { useRouter } from "@/i18n/navigation";
-import { Link } from "@/i18n/navigation";
+import { useRouter, Link } from "@/i18n/navigation";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { courseSchema, courseStatusOptions } from "@/lib/zodSchemas"

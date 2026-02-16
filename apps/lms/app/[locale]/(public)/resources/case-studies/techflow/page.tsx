@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import {
@@ -23,6 +24,7 @@ import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { cn } from "@skill-learn/lib/utils";
 
 export default function CaseStudyPage() {
+  const t = useTranslations("resources");
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     whileInView: { opacity: 1, y: 0 },
@@ -31,10 +33,10 @@ export default function CaseStudyPage() {
   };
 
   const snapshot = [
-    { icon: Building2, label: "Industry", value: "Fintech & Payments", color: "text-blue-600 bg-blue-50" },
-    { icon: Users, label: "Company Size", value: "500 - 2,000 Employees", color: "text-indigo-600 bg-indigo-50" },
-    { icon: Layout, label: "Modules Used", value: "Gamified Learning, Analytics", color: "text-emerald-600 bg-emerald-50" },
-    { icon: MapPin, label: "Location", value: "San Francisco, USA", color: "text-orange-600 bg-orange-50" }
+    { icon: Building2, label: t("industry"), value: "Fintech & Payments", color: "text-blue-600 bg-blue-50" },
+    { icon: Users, label: t("companySize"), value: "500 - 2,000 Employees", color: "text-indigo-600 bg-indigo-50" },
+    { icon: Layout, label: t("modulesUsed"), value: "Gamified Learning, Analytics", color: "text-emerald-600 bg-emerald-50" },
+    { icon: MapPin, label: t("location"), value: "San Francisco, USA", color: "text-orange-600 bg-orange-50" }
   ];
 
   return (
@@ -45,12 +47,12 @@ export default function CaseStudyPage() {
           <div className="relative w-64">
             <input
               type="text"
-              placeholder="Search case studies..."
+              placeholder={t("searchCaseStudies")}
               className="w-full h-8 pl-8 pr-4 bg-slate-50 border-none rounded-full text-xs focus:ring-1 focus:ring-brand-teal/20"
             />
             <Target className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           </div>
-          <Button variant="ghost" className="h-8 text-xs font-bold text-slate-600 px-3">Schedule Demo</Button>
+          <Button variant="ghost" className="h-8 text-xs font-bold text-slate-600 px-3">{t("scheduleDemo")}</Button>
           <div className="w-8 h-8 rounded-full bg-slate-200 border border-slate-100 overflow-hidden">
             <Image src="https://api.dicebear.com/7.x/avataaars/svg?seed=7" alt="User" width={32} height={32} />
           </div>
@@ -60,11 +62,11 @@ export default function CaseStudyPage() {
       {/* Breadcrumbs */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ol className="flex items-center gap-2 text-sm font-medium text-slate-400">
-          <li><Link href="/" className="hover:text-brand-teal transition-colors">Home</Link></li>
+          <li><Link href="/" className="hover:text-brand-teal transition-colors">{t("home")}</Link></li>
           <li><ChevronRight className="w-4 h-4" /></li>
-          <li><Link href="/resources" className="hover:text-brand-teal transition-colors">Resources</Link></li>
+          <li><Link href="/resources" className="hover:text-brand-teal transition-colors">{t("title")}</Link></li>
           <li><ChevronRight className="w-4 h-4" /></li>
-          <li className="text-slate-600">Case Studies</li>
+          <li className="text-slate-600">{t("caseStudies")}</li>
         </ol>
       </nav>
 
@@ -76,13 +78,13 @@ export default function CaseStudyPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <div className="flex items-center gap-4 mb-6">
-              <span className="px-3 py-1 bg-brand-teal/10 text-brand-teal rounded-full text-[10px] font-black uppercase tracking-wider">SUCCESS STORY</span>
+              <span className="px-3 py-1 bg-brand-teal/10 text-brand-teal rounded-full text-[10px] font-black uppercase tracking-wider">{t("successStory")}</span>
               <span className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                <Clock className="w-3 h-3" /> 8 min read
+                <Clock className="w-3 h-3" /> {t("minRead")}
               </span>
             </div>
             <h1 className="text-4xl md:text-brand-teal lg:text-6xl font-extrabold text-[#1B1B53] mb-8 leading-[1.1] tracking-tight">
-              How TechFlow increased employee productivity by <span className="text-[#00D181]">40%</span> using Skill-Learn
+              {t("techflowHeroTitleBefore")}<span className="text-[#00D181]">40%</span>{t("techflowHeroTitleAfter")}
             </h1>
             <div className="flex items-center gap-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <span className="flex items-center gap-2"><Calendar className="w-3 h-3" /> Oct 24, 2024</span>
@@ -112,7 +114,7 @@ export default function CaseStudyPage() {
           {/* Left Column: Snapshot & Progress */}
           <aside className="lg:col-span-3 space-y-8">
             <Card className="rounded-[32px] border-none shadow-sm overflow-hidden p-8 bg-white">
-              <h3 className="text-lg font-extrabold text-[#1B1B53] mb-8">Case Study Snapshot</h3>
+              <h3 className="text-lg font-extrabold text-[#1B1B53] mb-8">{t("caseStudySnapshot")}</h3>
               <div className="space-y-6">
                 {snapshot.map((item, idx) => (
                   <div key={idx} className="bg-slate-50/50 rounded-4xl p-4 flex items-center gap-4 group hover:bg-white hover:shadow-md transition-all">
@@ -128,13 +130,13 @@ export default function CaseStudyPage() {
               </div>
               <Button className="w-full h-14 bg-brand-teal hover:bg-brand-teal-dark text-white rounded-xl mt-8 flex items-center gap-3 font-bold group">
                 <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
-                Download PDF
+                {t("downloadPdf")}
               </Button>
             </Card>
 
             <div className="px-4">
               <div className="flex justify-between items-end mb-3">
-                <span className="text-[10px] font-black text-[#1B1B53] uppercase tracking-widest">Reading Progress</span>
+                <span className="text-[10px] font-black text-[#1B1B53] uppercase tracking-widest">{t("readingProgress")}</span>
                 <span className="text-[10px] font-black text-brand-teal tracking-widest">45%</span>
               </div>
               <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -150,7 +152,7 @@ export default function CaseStudyPage() {
             <motion.section {...fadeInUp}>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-8 h-1 bg-brand-teal rounded-full" />
-                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">The Challenge</h2>
+                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">{t("theChallenge")}</h2>
               </div>
               <div className="prose prose-slate max-w-none">
                 <p className="text-lg text-slate-600 leading-relaxed mb-8">
@@ -197,7 +199,7 @@ export default function CaseStudyPage() {
             <motion.section {...fadeInUp}>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-8 h-1 bg-brand-teal rounded-full" />
-                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">The Solution</h2>
+                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">{t("theSolution")}</h2>
               </div>
               <p className="text-lg text-slate-600 leading-relaxed mb-12">
                 TechFlow implemented Skill-Learn's Enterprise platform, focusing on the <b>Gamified Learning</b> and <b>Custom Analytics</b> modules. The solution was rolled out in three phases:
@@ -219,7 +221,7 @@ export default function CaseStudyPage() {
             <motion.section {...fadeInUp}>
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-8 h-1 bg-brand-teal rounded-full" />
-                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">The Results</h2>
+                <h2 className="text-2xl font-black text-[#1B1B53] uppercase tracking-wider">{t("theResults")}</h2>
               </div>
 
               <Card className="rounded-[40px] border-none shadow-sm p-12 bg-white mb-12">
@@ -275,14 +277,14 @@ export default function CaseStudyPage() {
         >
           <div className="absolute inset-0 bg-linear-to-br from-brand-teal/20 to-transparent" />
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-4xl md:text-brand-teal font-extrabold mb-8 tracking-tight">Ready to see similar results for your team?</h2>
-            <p className="text-lg text-white/70 mb-12 font-medium">Join over 500+ forward-thinking companies using Skill-Learn to scale their engineering talent and boost operational efficiency.</p>
+            <h2 className="text-4xl md:text-brand-teal font-extrabold mb-8 tracking-tight">{t("readyToSeeResults")}</h2>
+            <p className="text-lg text-white/70 mb-12 font-medium">{t("joinOver500")}</p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button className="h-14 px-8 bg-brand-teal hover:bg-brand-teal-dark text-white font-black rounded-4xl shadow-xl shadow-brand-teal/20">
-                Schedule a Free Demo
+                {t("scheduleFreeDemo")}
               </Button>
               <Button variant="outline" className="h-14 px-8 border-white/20 text-white font-bold rounded-4xl hover:bg-white/10 backdrop-blur-md">
-                View All Case Studies
+                {t("viewAllCaseStudies")}
               </Button>
             </div>
           </div>

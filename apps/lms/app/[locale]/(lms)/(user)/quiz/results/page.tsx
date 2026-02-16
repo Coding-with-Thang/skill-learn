@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useRouter } from "@/i18n/navigation"
 import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore"
 import { Button } from "@skill-learn/ui/components/button"
@@ -23,7 +24,7 @@ const formatDate = (date?: Date) => {
 };
 
 // Collapsible Question Component
-const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => {
+const QuestionItem = ({ question, index, userResponse, showCorrectAnswers, t }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   // If no response found, treat as incorrect/skipped
@@ -48,7 +49,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
                 {question.text}
               </h3>
               {!isOpen && (
-                <p className="text-sm text-muted-foreground font-medium">Click to view details</p>
+                <p className="text-sm text-muted-foreground font-medium">{t("clickToViewDetails")}</p>
               )}
             </div>
           </div>
@@ -58,7 +59,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
               "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
               isCorrect ? "bg-green-500/20 text-green-600 dark:text-green-400" : "bg-red-500/20 text-red-600 dark:text-red-400"
             )}>
-              {isCorrect ? "Correct" : "Incorrect"}
+              {isCorrect ? t("correct") : t("incorrect")}
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
               {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
@@ -118,7 +119,7 @@ const QuestionItem = ({ question, index, userResponse, showCorrectAnswers }) => 
                         "text-xs font-bold uppercase tracking-wide",
                         isAnswerCorrect ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                       )}>
-                        (Your Answer)
+                        {t("yourAnswer")}
                       </span>
                     )}
                     {icon}
@@ -145,6 +146,7 @@ type QuizResults = {
 };
 
 export default function ResultsPage() {
+  const t = useTranslations("quizResults");
   const router = useRouter();
   const { selectedQuiz, quizResponses } = useQuizStartStore();
   const [results, setResults] = useState<QuizResults | null>(null);
@@ -164,7 +166,7 @@ export default function ResultsPage() {
 
       const savedResults = sessionStorage.getItem('lastQuizResults');
       if (!savedResults) {
-        setError('No quiz results found');
+        setError(t("noQuizResultsFound"));
         router.replace("/training");
         return;
       }
@@ -173,8 +175,8 @@ export default function ResultsPage() {
         const parsedResults = JSON.parse(savedResults);
         setResults(parsedResults);
       } catch (error) {
-        toast.error("Failed to load quiz results");
-        setError(error instanceof Error ? error.message : "Failed to load quiz results");
+        toast.error(t("failedToLoadQuizResults"));
+        setError(error instanceof Error ? error.message : t("failedToLoadQuizResults"));
         router.replace("/training");
       }
     }
@@ -239,7 +241,7 @@ export default function ResultsPage() {
         <header className="space-y-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              <span>{selectedQuiz?.category?.name || "Product Knowledge"}</span>
+              <span>{selectedQuiz?.category?.name || t("productKnowledge")}</span>
               <span className="text-muted-foreground/60">•</span>
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -247,7 +249,7 @@ export default function ResultsPage() {
               </div>
             </div>
             <h1 className="text-3xl md:text-4xl font-extrabold text-foreground tracking-tight">
-              {selectedQuiz?.title || "Assessment Module"}
+              {selectedQuiz?.title || t("assessmentModule")}
             </h1>
           </div>
 
@@ -258,7 +260,7 @@ export default function ResultsPage() {
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Final Score</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("finalScore")}</span>
                   <div className="p-1.5 bg-green-500/20 text-green-600 dark:text-green-400 rounded-full">
                     <Trophy className="w-4 h-4" />
                   </div>
@@ -271,7 +273,7 @@ export default function ResultsPage() {
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Correct Answers</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("correctAnswersLabel")}</span>
                   <div className="p-1.5 bg-primary/20 text-primary rounded-full">
                     <ListChecks className="w-4 h-4" />
                   </div>
@@ -287,7 +289,7 @@ export default function ResultsPage() {
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Status</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("status")}</span>
                   <div className={cn("p-1.5 rounded-full", results.hasPassed ? "bg-green-500/20 text-green-600 dark:text-green-400" : "bg-red-500/20 text-red-600 dark:text-red-400")}>
                     {results.hasPassed ? <CheckCircle className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                   </div>
@@ -296,7 +298,7 @@ export default function ResultsPage() {
                   "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider w-fit",
                   results.hasPassed ? "bg-green-500/20 text-green-700 dark:text-green-300" : "bg-red-500/20 text-red-700 dark:text-red-300"
                 )}>
-                  {results.hasPassed ? "PASSED" : "FAILED"}
+                  {results.hasPassed ? t("passedCaps") : t("failedCaps")}
                 </span>
               </CardContent>
             </Card>
@@ -305,7 +307,7 @@ export default function ResultsPage() {
             <Card className={cn("border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1 bg-card border-border", pointsCardBg)}>
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Points Scored</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("pointsScored")}</span>
                   <div className={cn("p-1.5 rounded-full", pointsIconBg)}>
                     <PointsIcon className={cn("w-4 h-4", isPerfect && "animate-bounce")} />
                   </div>
@@ -320,7 +322,7 @@ export default function ResultsPage() {
             <Card className="border-0 shadow-sm hover:shadow-md transition-shadow col-span-2 lg:col-span-1 bg-card border-border">
               <CardContent className="p-5 flex flex-col justify-between h-full">
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Time Taken</span>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("timeTaken")}</span>
                   <div className="p-1.5 bg-primary/20 text-primary rounded-full">
                     <Timer className="w-4 h-4" />
                   </div>
@@ -334,7 +336,7 @@ export default function ResultsPage() {
         {/* 2. Accuracy Visualization */}
         <Card className="border-0 shadow-sm rounded-4xl overflow-hidden bg-card border-border">
           <CardContent className="p-8">
-            <h3 className="text-lg font-bold text-foreground mb-6 text-center">Accuracy</h3>
+            <h3 className="text-lg font-bold text-foreground mb-6 text-center">{t("accuracy")}</h3>
             <div className="flex flex-col items-center justify-center">
               <div className="relative w-48 h-48 min-w-[192px] min-h-[192px] mb-6">
                 <ResponsiveContainer width="100%" height="100%" minHeight={192}>
@@ -358,7 +360,7 @@ export default function ResultsPage() {
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-3xl font-extrabold text-foreground">{results.score}%</span>
-                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Correct</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{t("correctShort")}</span>
                 </div>
               </div>
 
@@ -366,13 +368,13 @@ export default function ResultsPage() {
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm" />
                   <span className="text-sm font-medium text-foreground">
-                    Correct <span className="font-bold ml-1">({results.correctAnswers})</span>
+                    {t("correctShort")} <span className="font-bold ml-1">({results.correctAnswers})</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm" />
                   <span className="text-sm font-medium text-foreground">
-                    Incorrect <span className="font-bold ml-1">({results.totalQuestions - results.correctAnswers})</span>
+                    {t("incorrect")} <span className="font-bold ml-1">({results.totalQuestions - results.correctAnswers})</span>
                   </span>
                 </div>
               </div>
@@ -385,8 +387,8 @@ export default function ResultsPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Question Review</h2>
-                <p className="text-muted-foreground text-sm">Review all quiz questions and your submitted answers.</p>
+                <h2 className="text-xl font-bold text-foreground">{t("questionReview")}</h2>
+                <p className="text-muted-foreground text-sm">{t("reviewAllQuestionsAndAnswers")}</p>
               </div>
             </div>
 
@@ -398,6 +400,7 @@ export default function ResultsPage() {
                   index={index}
                   userResponse={results.detailedResponses?.find(r => r.questionId === question.id)}
                   showCorrectAnswers={showCorrectAnswers}
+                  t={t}
                 />
               ))}
             </div>
@@ -407,7 +410,7 @@ export default function ResultsPage() {
         {/* 4. Footer Actions */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-10 border-t border-border">
           <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-2 text-sm">
-            <span className="text-muted-foreground">Next recommended module: </span>
+            <span className="text-muted-foreground">{t("nextRecommendedModule")} </span>
             <span className="font-bold text-primary cursor-pointer hover:underline flex items-center gap-1">
               Advanced Hazard Analysis <ArrowRight className="w-3 h-3" />
             </span>
@@ -420,7 +423,7 @@ export default function ResultsPage() {
               onClick={() => router.push(`/quiz/start/${selectedQuiz?.id}`)}
             >
               <RotateCcw className="w-4 h-4 mr-2" />
-              Retake Quiz
+              {t("retakeQuiz")}
             </Button>
 
             <Button
@@ -429,7 +432,7 @@ export default function ResultsPage() {
               onClick={() => router.push("/user/stats")}
             >
               <Eye className="w-4 h-4 mr-2" />
-              View Status
+              {t("viewStatus")}
             </Button>
 
             <Button
@@ -437,7 +440,7 @@ export default function ResultsPage() {
               onClick={() => router.push("/training")}
             >
               <LayoutDashboard className="w-4 h-4 mr-2" />
-              Return to Dashboard
+              {t("returnToDashboard")}
             </Button>
           </div>
         </div>

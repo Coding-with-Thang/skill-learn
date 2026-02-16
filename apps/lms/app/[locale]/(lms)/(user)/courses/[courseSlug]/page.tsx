@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
-import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import { ArrowLeft, ArrowRight, Clock, Play, Star, CheckCircle2, Zap } from "lucide-react";
 import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate";
 import { buttonVariants } from "@skill-learn/ui/components/button";
@@ -71,6 +71,8 @@ function formatDuration(minutes) {
 }
 
 export default function CoursePage() {
+  const t = useTranslations("training");
+  const tB = useTranslations("breadcrumbs");
   const params = useParams();
   const router = useRouter();
   const courseSlug = params?.courseSlug;
@@ -163,14 +165,14 @@ export default function CoursePage() {
       <div className="min-h-screen">
         <div className="px-4 sm:px-8 md:px-12 py-6">
           <BreadCrumbCom
-            crumbs={[{ name: "Training", href: "/training" }]}
-            endtrail={loading ? "Course" : course?.title ?? "Course"}
+            crumbs={[{ name: tB("training"), href: "/training" }]}
+            endtrail={loading ? tB("course") : course?.title ?? tB("course")}
           />
 
           {loading && (
             <div className="flex flex-col items-center justify-center py-16">
               <Loader />
-              <p className="mt-4 text-muted-foreground">Loading course...</p>
+              <p className="mt-4 text-muted-foreground">{t("loadingCourse")}</p>
             </div>
           )}
 
@@ -182,7 +184,7 @@ export default function CoursePage() {
                 className={buttonVariants({ variant: "outline" })}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Training
+                {t("backToTraining")}
               </Link>
             </div>
           )}

@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import {
   Target,
@@ -32,11 +33,12 @@ import {
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { Link } from '@/i18n/navigation'
 
-const categories = [
-  { id: 'milestones', name: 'Learning Milestones', color: '#06b6d4', progress: '3 / 8', icon: GraduationCap },
-  { id: 'quiz', name: 'Quiz Master', color: '#f59e0b', progress: '5 / 12', icon: Brain },
-  { id: 'flashcards', name: 'Flashcard Expert', color: '#3b82f6', progress: '1 / 10', icon: Layout },
-  { id: 'games', name: 'Game Legends', color: '#ec4899', progress: '0 / 6', icon: Gamepad2 }
+// Categories will be translated in the component
+const getCategories = (t) => [
+  { id: 'milestones', name: t("learningMilestones"), color: '#06b6d4', progress: '3 / 8', icon: GraduationCap },
+  { id: 'quiz', name: t("quizMaster"), color: '#f59e0b', progress: '5 / 12', icon: Brain },
+  { id: 'flashcards', name: t("flashcardExpert"), color: '#3b82f6', progress: '1 / 10', icon: Layout },
+  { id: 'games', name: t("gameLegends"), color: '#ec4899', progress: '0 / 6', icon: Gamepad2 }
 ]
 
 const achievements = [
@@ -215,7 +217,7 @@ const achievements = [
   }
 ]
 
-const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
+const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement, t }) => {
   const sizeClasses = {
     sm: "w-12 h-12",
     md: "w-24 h-24",
@@ -277,7 +279,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
             <div className="space-y-1">
               <h3 className="font-black text-xl uppercase tracking-tight text-foreground">{achievement.title}</h3>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                {isLocked ? "Knowledge Objective" : `Earned ${achievement.earnedDate}`}
+                {isLocked ? t("knowledgeObjective") : t("earnedDate", { date: achievement.earnedDate })}
               </p>
             </div>
             {!isLocked && (
@@ -290,7 +292,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
           <div className="space-y-3">
             <div className="space-y-1">
               <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest flex items-center gap-2">
-                <Info className="w-3 h-3" /> Details
+                <Info className="w-3 h-3" /> {t("details")}
               </p>
               <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                 {achievement.description}
@@ -300,7 +302,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
             <div className="space-y-1">
               <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest flex items-center gap-2">
                 {isLocked ? <Target className="w-3 h-3" /> : <BookOpen className="w-3 h-3" />}
-                {isLocked ? "Mission" : "The Story"}
+                {isLocked ? t("mission") : t("theStory")}
               </p>
               <p className="text-sm italic font-medium text-foreground leading-relaxed">
                 {isLocked ? achievement.howToUnlock : achievement.story}
@@ -310,7 +312,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement }) => {
 
           <div className="pt-2">
             <Badge className={`${isLocked ? 'bg-muted text-muted-foreground' : 'bg-green-500/10 text-green-600 dark:text-green-400'} border-none font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-widest`}>
-              {isLocked ? "Status: Locked" : "Status: Legend Unlocked"}
+              {isLocked ? t("statusLocked") : t("statusLegendUnlocked")}
             </Badge>
           </div>
         </div>
@@ -328,10 +330,12 @@ function Badge({ children, className }) {
 }
 
 export default function AchievementsPage() {
+  const t = useTranslations("achievements");
+  const categories = getCategories(t);
   return (
     <div className="min-h-screen bg-background pb-20 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-8">
-        <BreadCrumbCom crumbs={[]} endtrail="Achievements" />
+        <BreadCrumbCom crumbs={[]} endtrail={t("title")} />
 
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mt-8 gap-6">
@@ -340,10 +344,10 @@ export default function AchievementsPage() {
             animate={{ opacity: 1, x: 0 }}
           >
             <h1 className="text-4xl md:text-6xl font-black text-foreground tracking-tight leading-tight">
-              Digital Trophy Case
+              {t("digitalTrophyCase")}
             </h1>
             <p className="text-muted-foreground mt-3 text-xl font-medium">
-              Your journey of excellence, immortalized in 3D badges.
+              {t("journeyExcellence")}
             </p>
           </motion.div>
 
@@ -354,12 +358,12 @@ export default function AchievementsPage() {
           >
             <Button variant="outline" className="rounded-full bg-card shadow-sm border-border h-12 px-6 font-bold hover:bg-muted transition-all">
               <Filter className="w-4 h-4 mr-2 text-muted-foreground" />
-              All Categories
+              {t("allCategories")}
             </Button>
             <Link href="/leaderboard">
               <Button className="rounded-full bg-cyan-500 hover:bg-cyan-600 text-white border-none shadow-xl shadow-cyan-500/20 h-12 px-8 font-bold transition-all hover:scale-105 active:scale-95">
                 <Award className="w-4 h-4 mr-2" />
-                View Ranking
+                {t("viewRanking")}
               </Button>
             </Link>
           </motion.div>
@@ -383,6 +387,7 @@ export default function AchievementsPage() {
                 achievement={achievements.find(a => a.id === 'early-adopter')}
                 icon={(achievements.find(a => a.id === 'early-adopter'))?.icon}
                 isLocked={(achievements.find(a => a.id === 'early-adopter'))?.isLocked ?? true}
+                t={t}
               />
             </div>
 
@@ -390,24 +395,24 @@ export default function AchievementsPage() {
               <div className="space-y-4">
                 <div className="inline-flex items-center px-4 py-2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-black uppercase tracking-[0.2em] shadow-inner">
                   <Star className="w-3 h-3 mr-2 fill-current" />
-                  Latest Achievement
+                  {t("latestAchievement")}
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black text-foreground leading-[1.1]">
-                  First Record Breaker
+                  {t("firstRecordBreaker")}
                 </h2>
                 <p className="text-muted-foreground text-xl leading-relaxed max-w-2xl font-medium">
-                  A legendary beginning! You earned this for setting your very first personal best in the Flashcard Mastery challenge. This is the first of many milestones.
+                  {t("firstRecordBreakerDesc")}
                 </p>
               </div>
 
               <div className="flex flex-wrap justify-center lg:justify-start gap-5">
                 <Button className="rounded-full bg-foreground text-background hover:opacity-90 px-10 h-14 font-extrabold text-lg shadow-2xl transition-all">
                   <Share2 className="w-5 h-5 mr-3" />
-                  Share to Team
+                  {t("shareToTeam")}
                 </Button>
                 <div className="flex items-center px-8 h-14 rounded-full border border-border bg-background/50 backdrop-blur-md text-muted-foreground shadow-sm">
                   <Calendar className="w-5 h-5 mr-3 text-cyan-500" />
-                  <span className="text-base font-bold">Earned Oct 24, 2023</span>
+                  <span className="text-base font-bold">{t("earned")} Oct 24, 2023</span>
                 </div>
               </div>
             </div>
@@ -433,7 +438,7 @@ export default function AchievementsPage() {
                     <div className="flex items-center gap-2 mt-1">
                       <category.icon className="w-4 h-4" style={{ color: category.color }} />
                       <span className="text-muted-foreground text-sm font-bold uppercase tracking-widest leading-none">
-                        Progress: {category.progress}
+                        {t("progress")}: {category.progress}
                       </span>
                     </div>
                   </div>
@@ -454,6 +459,7 @@ export default function AchievementsPage() {
                         color={achievement.color}
                         isLocked={achievement.isLocked}
                         size="md"
+                        t={t}
                       />
                       <div className="mt-6 space-y-1 transform transition-transform group-hover:translate-y-1 font-sans">
                         <h4 className={`font-black text-base uppercase tracking-tight ${achievement.isLocked ? 'text-muted-foreground/40' : 'text-foreground'}`}>
@@ -465,7 +471,7 @@ export default function AchievementsPage() {
                           </div>
                         )}
                         {achievement.isLocked && (
-                          <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-[0.2em]">Locked</p>
+                          <p className="text-[10px] text-muted-foreground/30 font-bold uppercase tracking-[0.2em]">{t("locked")}</p>
                         )}
                       </div>
                     </div>

@@ -6,9 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skil
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { ArrowLeft, Clock, BookOpen } from "lucide-react";
-import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
-import { redirect } from "@/i18n/navigation";
+import { notFound, redirect } from 'next/navigation';
 import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 import { resolveCourseId } from "@/lib/courses";
 
@@ -53,8 +51,7 @@ export default async function PreviewCoursePage({ params }) {
 
     // Use slug in URL when available: redirect if current URL has id instead of slug
     if (course.slug && looksLikeObjectId(courseIdOrSlug) && courseIdOrSlug === course.id) {
-        const locale = await getLocale();
-        redirect({ href: `/dashboard/courses/${course.slug}/preview`, locale });
+        redirect(`/dashboard/courses/${course.slug}/preview`);
     }
 
     return (

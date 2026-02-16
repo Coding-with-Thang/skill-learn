@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Link } from "@/i18n/navigation";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -150,6 +151,7 @@ const JOB_DETAILS = {
 };
 
 export default function JobDescriptionPage() {
+  const t = useTranslations("careers");
   const params = useParams();
   const jobId = Array.isArray(params.jobId) ? params.jobId[0] : params.jobId;
 
@@ -188,7 +190,7 @@ export default function JobDescriptionPage() {
         <div className="container px-4 mx-auto">
           <Link href="/careers" className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-teal-600 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to all roles
+            {t("backToAllRoles")}
           </Link>
         </div>
       </div>
@@ -208,7 +210,7 @@ export default function JobDescriptionPage() {
                 </Badge>
                 <div className="flex items-center text-sm text-slate-500 gap-1.5 ml-auto md:ml-0">
                   <Calendar className="w-4 h-4" />
-                  Posted 2 days ago
+                  {t("postedDaysAgo")}
                 </div>
               </div>
 
@@ -218,21 +220,21 @@ export default function JobDescriptionPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 p-6 bg-slate-50 rounded-4xl border border-slate-100">
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Location</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">{t("location")}</p>
                   <div className="flex items-center gap-2 font-medium text-slate-700">
                     <MapPin className="w-4 h-4 text-teal-600" />
                     {job.location}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Type</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">{t("type")}</p>
                   <div className="flex items-center gap-2 font-medium text-slate-700">
                     <Briefcase className="w-4 h-4 text-teal-600" />
                     {job.type}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Salary</p>
+                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">{t("salary")}</p>
                   <div className="flex items-center gap-2 font-medium text-slate-700">
                     <DollarSign className="w-4 h-4 text-teal-600" />
                     {job.salary}
@@ -241,12 +243,12 @@ export default function JobDescriptionPage() {
               </div>
 
               <div className="prose prose-slate max-w-none">
-                <h3 className="text-xl font-bold text-slate-900 mb-4">About the Role</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-4">{t("aboutTheRole")}</h3>
                 <p className="text-slate-600 text-lg leading-relaxed mb-10">
                   {job.description}
                 </p>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Responsibilities</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-6">{t("responsibilities")}</h3>
                 <ul className="space-y-4 mb-10 list-none p-0">
                   {job.responsibilities.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-slate-600 leading-relaxed">
@@ -256,7 +258,7 @@ export default function JobDescriptionPage() {
                   ))}
                 </ul>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Requirements</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-6">{t("requirements")}</h3>
                 <ul className="space-y-4 mb-10 list-none p-0">
                   {job.requirements.map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-slate-600 leading-relaxed">
@@ -266,7 +268,7 @@ export default function JobDescriptionPage() {
                   ))}
                 </ul>
 
-                <h3 className="text-xl font-bold text-slate-900 mb-6">Benefits</h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-6">{t("benefits")}</h3>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 list-none p-0">
                   {job.benefits.map((item, i) => (
                     <li key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-slate-600 text-sm font-medium">
@@ -283,7 +285,7 @@ export default function JobDescriptionPage() {
             <div className="bg-white border border-slate-200 rounded-[2rem] p-8 shadow-xl shadow-slate-100/50 sticky top-24">
               <Link href={`/careers/${jobId}/apply`}>
                 <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-14 rounded-4xl mb-4 group shadow-lg shadow-teal-100">
-                  Apply for this role
+                  {t("applyForThisRole")}
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -291,7 +293,7 @@ export default function JobDescriptionPage() {
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1 rounded-xl border-slate-200">
                   <Share2 className="w-4 h-4 mr-2" />
-                  Share
+                  {t("share")}
                 </Button>
                 <Button variant="outline" size="icon" className="rounded-xl border-slate-200">
                   <Bookmark className="w-4 h-4" />
@@ -302,11 +304,11 @@ export default function JobDescriptionPage() {
 
               <div className="space-y-6 text-sm">
                 <div>
-                  <h4 className="font-bold text-slate-900 mb-1">Hiring Manager</h4>
+                  <h4 className="font-bold text-slate-900 mb-1">{t("hiringManager")}</h4>
                   <p className="text-slate-500">Alex Chen, Head of Engineering</p>
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 mb-1">Typical Process</h4>
+                  <h4 className="font-bold text-slate-900 mb-1">{t("typicalProcess")}</h4>
                   <p className="text-slate-500 leading-relaxed">
                     1. Intro Call (30m)<br />
                     2. Technical Deep Dive (60m)<br />

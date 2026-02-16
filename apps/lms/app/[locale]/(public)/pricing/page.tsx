@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -38,6 +39,9 @@ const pricingTiers = [
   {
     id: "free",
     name: "Free",
+    nameKey: "free",
+    descKey: "forSmallTeams",
+    ctaKey: "startFree",
     description: "Perfect for small teams getting started with learning management",
     price: { monthly: 0, annually: 0 },
     icon: Zap,
@@ -67,6 +71,9 @@ const pricingTiers = [
   {
     id: "starter",
     name: "Starter",
+    nameKey: "starter",
+    descKey: "forSmallTeams",
+    ctaKey: "startTrial",
     description: "Perfect for small teams getting started with learning management",
     price: { monthly: 15, annually: 12 },
     icon: Users,
@@ -95,6 +102,10 @@ const pricingTiers = [
   {
     id: "pro",
     name: "Pro",
+    nameKey: "pro",
+    descKey: "forGrowingOrgs",
+    ctaKey: "startTrial",
+    badgeKey: "mostPopular",
     description: "For growing organizations that need more power and flexibility",
     price: { monthly: 29, annually: 24 },
     icon: Rocket,
@@ -125,6 +136,9 @@ const pricingTiers = [
   {
     id: "enterprise",
     name: "Enterprise",
+    nameKey: "enterprise",
+    descKey: "forEnterprise",
+    ctaKey: "contactSales",
     description: "For large organizations requiring enterprise-grade features",
     price: { monthly: "Custom", annually: "Custom" },
     icon: Building2,
@@ -152,129 +166,175 @@ const pricingTiers = [
   },
 ];
 
-// Feature comparison data
-const featureCategories = [
+// Feature comparison data - will be translated in component
+const getFeatureCategories = (t) => [
   {
     name: "Users & Content",
+    nameKey: "usersContent",
     icon: Users,
     features: [
-      { name: "Team members", free: "5", starter: "10", pro: "100", enterprise: "Unlimited" },
-      { name: "Courses", free: "5", starter: "Unlimited", pro: "Unlimited", enterprise: "Unlimited" },
-      { name: "Storage", free: "1 GB", starter: "10 GB", pro: "25 GB", enterprise: "Unlimited" },
-      { name: "File uploads", free: "100 MB/file", starter: "500 MB/file", pro: "1 GB/file", enterprise: "No limit" },
+      { name: "Team members", nameKey: "teamMembers", free: "5", starter: "10", pro: "100", enterprise: t("unlimitedUsers") },
+      { name: "Courses", nameKey: "courses", free: "5", starter: t("unlimitedCourses"), pro: t("unlimitedCourses"), enterprise: t("unlimitedCourses") },
+      { name: "Storage", nameKey: "storage", free: "1 GB", starter: "10 GB", pro: "25 GB", enterprise: t("unlimitedUsers") },
+      { name: "File uploads", nameKey: "fileUploads", free: "100 MB/file", starter: "500 MB/file", pro: "1 GB/file", enterprise: t("unlimitedUsers") },
     ],
   },
   {
     name: "Learning Features",
+    nameKey: "learningFeatures",
     icon: BookOpen,
     features: [
-      { name: "Quizzes & assessments", free: "Basic", starter: "Advanced", pro: "Advanced", enterprise: "Advanced" },
-      { name: "Course certificates", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Learning paths", free: false, starter: true, pro: true, enterprise: true },
-      { name: "SCORM support", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Quizzes & assessments", nameKey: "quizzesAssessments", free: "Basic", starter: "Advanced", pro: "Advanced", enterprise: "Advanced" },
+      { name: "Course certificates", nameKey: "courseCertificates", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Learning paths", nameKey: "learningPaths", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SCORM support", nameKey: "scormSupport", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Gamification",
+    nameKey: "gamification",
     icon: Trophy,
     features: [
-      { name: "Points system", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Leaderboards", free: "Basic", starter: "Full", pro: "Full", enterprise: "Custom" },
-      { name: "Badges & achievements", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Rewards store", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Games & activities", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Points system", nameKey: "pointsSystem", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Leaderboards", nameKey: "leaderboards", free: "Basic", starter: "Full", pro: "Full", enterprise: "Custom" },
+      { name: "Badges & achievements", nameKey: "badgesAchievements", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Rewards store", nameKey: "rewardsStore", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Games & activities", nameKey: "gamesActivities", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Analytics & Reports",
+    nameKey: "analyticsReports",
     icon: BarChart3,
     features: [
-      { name: "Basic reports", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Advanced analytics", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Custom dashboards", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Data export", free: "CSV", starter: "CSV, Excel", pro: "CSV, Excel", enterprise: "All formats" },
+      { name: "Basic reports", nameKey: "basicReports", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Advanced analytics", nameKey: "advancedAnalytics", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Custom dashboards", nameKey: "customDashboards", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Data export", nameKey: "dataExport", free: "CSV", starter: "CSV, Excel", pro: "CSV, Excel", enterprise: "All formats" },
     ],
   },
   {
     name: "Administration",
+    nameKey: "administration",
     icon: Shield,
     features: [
-      { name: "Role management", free: "Custom", starter: "Custom", pro: "Custom", enterprise: "Advanced" },
-      { name: "Feature controls", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Audit logs", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Bulk operations", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Role management", nameKey: "roleManagement", free: "Custom", starter: "Custom", pro: "Custom", enterprise: "Advanced" },
+      { name: "Feature controls", nameKey: "featureControls", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Audit logs", nameKey: "auditLogs", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Bulk operations", nameKey: "bulkOperations", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Security & Compliance",
+    nameKey: "securityCompliance",
     icon: Lock,
     features: [
-      { name: "SSL encryption", free: true, starter: true, pro: true, enterprise: true },
-      { name: "SSO integration", free: false, starter: true, pro: true, enterprise: true },
-      { name: "SAML/SCIM", free: false, starter: true, pro: true, enterprise: true },
-      { name: "SOC 2 Type II", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Data residency", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SSL encryption", nameKey: "sslEncryption", free: true, starter: true, pro: true, enterprise: true },
+      { name: "SSO integration", nameKey: "ssoIntegration", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SAML/SCIM", nameKey: "samlScim", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SOC 2 Type II", nameKey: "soc2Type2", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Data residency", nameKey: "dataResidency", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
   {
     name: "Support",
+    nameKey: "support",
     icon: Headphones,
     features: [
-      { name: "Email support", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Priority support", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Phone support", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Dedicated CSM", free: false, starter: true, pro: true, enterprise: true },
-      { name: "SLA guarantee", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Email support", nameKey: "emailSupport", free: true, starter: true, pro: true, enterprise: true },
+      { name: "Priority support", nameKey: "prioritySupport", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Phone support", nameKey: "phoneSupport", free: false, starter: true, pro: true, enterprise: true },
+      { name: "Dedicated CSM", nameKey: "dedicatedCsm", free: false, starter: true, pro: true, enterprise: true },
+      { name: "SLA guarantee", nameKey: "slaGuarantee", free: false, starter: true, pro: true, enterprise: true },
     ],
   },
 ];
 
-// FAQ data
-const faqs = [
+// FAQ data - will be translated in component
+const getFaqs = (t) => [
   {
-    question: "Can I try before I buy?",
-    answer: "Yes! Our Pro plan comes with a 14-day free trial. No credit card required. You can also start with our Free plan and upgrade anytime.",
+    question: t("faq1Question"),
+    answer: t("faq1Answer"),
   },
   {
-    question: "What happens when I exceed my user limit?",
-    answer: "We'll notify you when you're approaching your limit. You can upgrade your plan at any time to accommodate more users. We won't lock you out suddenly.",
+    question: t("faq2Question"),
+    answer: t("faq2Answer"),
   },
   {
-    question: "Can I switch plans later?",
-    answer: "Absolutely! You can upgrade or downgrade your plan at any time. When upgrading, you'll have immediate access to new features. When downgrading, changes take effect at your next billing cycle.",
+    question: t("faq3Question"),
+    answer: t("faq3Answer"),
   },
   {
-    question: "Is there a discount for annual billing?",
-    answer: "Yes! When you choose annual billing, you save approximately 17% compared to monthly billing. That's like getting 2 months free!",
+    question: t("faq4Question"),
+    answer: t("faq4Answer"),
   },
   {
-    question: "Do you offer discounts for non-profits or education?",
-    answer: "Yes, we offer special pricing for non-profit organizations and educational institutions. Contact our sales team to learn more about our discount programs.",
+    question: t("faq5Question"),
+    answer: t("faq5Answer"),
   },
   {
-    question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and for Enterprise customers, we also support invoicing and wire transfers.",
+    question: t("faq6Question"),
+    answer: t("faq6Answer"),
   },
   {
-    question: "Can I cancel anytime?",
-    answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period. We don't believe in lock-in contracts.",
+    question: t("faq7Question"),
+    answer: t("faq7Answer"),
   },
   {
-    question: "Is my data secure?",
-    answer: "Absolutely. We use industry-standard encryption, regular security audits, and comply with GDPR. Enterprise plans include additional security features like SSO and SOC 2 compliance.",
+    question: t("faq8Question"),
+    answer: t("faq8Answer"),
   },
 ];
 
+// Helper function to translate feature names
+const translateFeatureName = (name, t) => {
+  const featureMap = {
+    "Up to 5 users": t("upTo5Users"),
+    "Up to 10 users": t("upTo10Users"),
+    "Up to 100 users": t("upTo100Users"),
+    "Unlimited users": t("unlimitedUsers"),
+    "5 courses": "5 courses",
+    "Unlimited courses": t("unlimitedCourses"),
+    "Basic quizzes": "Basic quizzes",
+    "Advanced quizzes": "Advanced quizzes",
+    "Point system": t("pointsSystem"),
+    "Basic leaderboard": t("leaderboards") + " (Basic)",
+    "Full leaderboard": t("leaderboards") + " (Full)",
+    "Custom leaderboards": t("leaderboards") + " (Custom)",
+    "Email support": t("emailSupport"),
+    "24/7 phone support": t("phoneSupport"),
+    "Standard analytics": t("basicReports"),
+    "Advanced analytics": t("advancedAnalytics"),
+    "Enterprise analytics": t("advancedAnalytics"),
+    "Custom branding": "Custom branding",
+    "SSO integration": t("ssoIntegration"),
+    "SSO/SAML/SCIM": t("samlScim"),
+    "Priority support": t("prioritySupport"),
+    "Advanced security": t("advancedSecurity"),
+    "Gamification suite": t("gamification"),
+    "Full gamification": t("gamification"),
+    "API access": "API access",
+    "White-label solution": "White-label solution",
+    "Dedicated CSM": t("dedicatedCsm"),
+    "SOC 2 compliance": t("soc2Type2"),
+  };
+  return featureMap[name] || name;
+};
+
 // Pricing card component
 function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
+  const t = useTranslations("pricing");
   const Icon = tier.icon;
   const price = isAnnual ? tier.price.annually : tier.price.monthly;
   const isCustom = price === "Custom";
   const isLoadingThis = isLoading && loadingPlan === tier.id;
+  const name = tier.nameKey ? t(tier.nameKey) : tier.name;
+  const description = tier.descKey ? t(tier.descKey) : tier.description;
+  const ctaLabel = tier.ctaKey ? t(tier.ctaKey) : tier.cta;
+  const badgeLabel = tier.badgeKey ? t(tier.badgeKey) : tier.badge;
 
   const handleClick = () => {
     if (tier.id === "enterprise") {
-      // Open contact form or email
       window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry";
       return;
     }
@@ -293,20 +353,18 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
         tier.bgColor
       )}
     >
-      {/* Popular badge */}
-      {tier.badge && (
+      {badgeLabel && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center">
           <span className={cn(
             "inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg",
             "bg-linear-to-r", tier.color
           )}>
             <Sparkles className="w-4 h-4" />
-            {tier.badge}
+            {badgeLabel}
           </span>
         </div>
       )}
 
-      {/* Header */}
       <div className="text-center mb-6">
         <div className={cn(
           "inline-flex items-center justify-center w-14 h-14 rounded-xl mb-4",
@@ -314,23 +372,22 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
         )}>
           <Icon className="w-7 h-7 text-white" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{tier.name}</h3>
-        <p className="text-gray-600 text-sm">{tier.description}</p>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{name}</h3>
+        <p className="text-gray-600 text-sm">{description}</p>
       </div>
 
-      {/* Price */}
       <div className="text-center mb-6 pb-6 border-b border-gray-200">
         {isCustom ? (
-          <div className="text-4xl font-bold text-gray-900">Custom</div>
+          <div className="text-4xl font-bold text-gray-900">{t("custom")}</div>
         ) : (
           <div className="flex items-baseline justify-center gap-1">
             <span className="text-brand-teal font-bold">${price}</span>
-            <span className="text-gray-600">/user/month</span>
+            <span className="text-gray-600">{t("perUserMonth")}</span>
           </div>
         )}
         {!isCustom && isAnnual && (
           <p className="text-sm text-green-600 mt-2">
-            Save ${(tier.price.monthly - tier.price.annually) * 12}/year
+            {t("saveYear", { amount: (tier.price.monthly - tier.price.annually) * 12 })}
           </p>
         )}
         <p className="text-sm text-gray-500 mt-2">{tier.users}</p>
@@ -338,7 +395,9 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
 
       {/* Features */}
       <ul className="space-y-3 mb-8 grow">
-        {tier.features.map((feature, idx) => (
+        {tier.features.map((feature, idx) => {
+          const featureName = feature.nameKey ? t(feature.nameKey) : translateFeatureName(feature.name, t);
+          return (
           <li key={idx} className="flex items-start gap-3">
             {feature.included ? (
               <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
@@ -349,10 +408,11 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
               "text-sm",
               feature.included ? "text-gray-700" : "text-gray-400"
             )}>
-              {feature.name}
+              {featureName}
             </span>
           </li>
-        ))}
+          );
+        })}
       </ul>
 
       {/* CTA */}
@@ -372,11 +432,11 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
         {isLoadingThis ? (
           <>
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            Processing...
+            {t("processing")}
           </>
         ) : (
           <>
-            {tier.cta}
+            {ctaLabel}
             <ArrowRight className="w-5 h-5 ml-2" />
           </>
         )}
@@ -387,7 +447,9 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
 
 // Feature comparison table
 function FeatureComparison() {
-  const [expandedCategories, setExpandedCategories] = useState(new Set(["Users & Content"]));
+  const t = useTranslations("pricing");
+  const featureCategories = getFeatureCategories(t);
+  const [expandedCategories, setExpandedCategories] = useState(new Set([t("usersContent")]));
 
   const toggleCategory = (name) => {
     setExpandedCategories((prev) => {
@@ -410,39 +472,39 @@ function FeatureComparison() {
   return (
     <div className="mt-20">
       <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-        Compare All Features
+        {t("compareAllFeatures")}
       </h2>
       <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-        Not sure which plan is right for you? Compare all features side by side.
+        {t("compareDescription")}
       </p>
 
       <div className="overflow-x-auto">
         <div className="min-w-[800px]">
           {/* Header */}
           <div className="grid grid-cols-5 gap-4 mb-4 sticky top-0 bg-white z-10 py-4 border-b border-gray-100">
-            <div className="font-semibold text-gray-900">Features</div>
+            <div className="font-semibold text-gray-900">{t("features")}</div>
             <div className="text-center">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-sm">
                 <Zap className="w-3.5 h-3.5" />
-                Free
+                {t("free")}
               </span>
             </div>
             <div className="text-center">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-teal/5 text-brand-teal rounded-lg font-semibold text-sm">
                 <Users className="w-3.5 h-3.5" />
-                Starter
+                {t("starter")}
               </span>
             </div>
             <div className="text-center">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-teal/10 text-brand-teal rounded-lg font-semibold text-sm border border-brand-teal/20">
                 <Rocket className="w-3.5 h-3.5" />
-                Pro
+                {t("pro")}
               </span>
             </div>
             <div className="text-center">
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm">
                 <Building2 className="w-3.5 h-3.5" />
-                Enterprise
+                {t("enterprise")}
               </span>
             </div>
           </div>
@@ -450,7 +512,8 @@ function FeatureComparison() {
           {/* Categories */}
           {featureCategories.map((category) => {
             const Icon = category.icon;
-            const isExpanded = expandedCategories.has(category.name);
+            const categoryName = category.nameKey ? t(category.nameKey) : category.name;
+            const isExpanded = expandedCategories.has(categoryName);
 
             return (
               <div key={category.name} className="mb-2">
@@ -461,7 +524,7 @@ function FeatureComparison() {
                 >
                   <div className="flex items-center gap-3">
                     <Icon className="w-5 h-5 text-gray-600" />
-                    <span className="font-semibold text-gray-900">{category.name}</span>
+                    <span className="font-semibold text-gray-900">{categoryName}</span>
                     <ChevronDown className={cn(
                       "w-4 h-4 text-gray-400 transition-transform",
                       isExpanded && "rotate-180"
@@ -472,18 +535,21 @@ function FeatureComparison() {
                 {/* Features */}
                 {isExpanded && (
                   <div className="border-l-2 border-gray-100 ml-6 mt-2 space-y-1">
-                    {category.features.map((feature, idx) => (
+                    {category.features.map((feature, idx) => {
+                      const featureName = feature.nameKey ? t(feature.nameKey) : feature.name;
+                      return (
                       <div
                         key={idx}
                         className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-4xl-lg"
                       >
-                        <div className="text-sm text-gray-600 pl-4">{feature.name}</div>
+                        <div className="text-sm text-gray-600 pl-4">{featureName}</div>
                         <div className="text-center">{renderValue(feature.free)}</div>
                         <div className="text-center">{renderValue(feature.starter)}</div>
                         <div className="text-center">{renderValue(feature.pro)}</div>
                         <div className="text-center">{renderValue(feature.enterprise)}</div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -497,15 +563,17 @@ function FeatureComparison() {
 
 // FAQ section
 function FAQSection() {
+  const t = useTranslations("pricing");
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const faqs = getFaqs(t);
 
   return (
     <div className="mt-20">
       <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
-        Frequently Asked Questions
+        {t("frequentlyAskedQuestions")}
       </h2>
       <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-        Got questions? We&apos;ve got answers. If you can&apos;t find what you&apos;re looking for, feel free to contact us.
+        {t("faqDescription")}
       </p>
 
       <div className="max-w-3xl mx-auto space-y-4">
@@ -538,6 +606,7 @@ function FAQSection() {
 
 // Main pricing page
 export default function PricingPage() {
+  const t = useTranslations("pricing");
   const [isAnnual, setIsAnnual] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState(null);
@@ -550,7 +619,7 @@ export default function PricingPage() {
     // For free plan, redirect to sign up
     if (planId === "free") {
       if (isSignedIn) {
-        toast.success("You're already on a plan. Check your dashboard for details.");
+        toast.success(t("alreadyOnPlan"));
         router.push("/dashboard");
       } else {
         router.push("/sign-up");
@@ -577,7 +646,7 @@ export default function PricingPage() {
 
       if (!response.ok) {
         if (data.redirectToPortal) {
-          toast.info("You already have an active subscription. Redirecting to billing portal...");
+          toast.info(t("alreadyHaveSubscription"));
           // Redirect to billing portal
           const portalResponse = await fetch("/api/stripe/portal", {
             method: "POST",
@@ -596,12 +665,12 @@ export default function PricingPage() {
         }
 
         if (data.contactSales) {
-          toast.info("Enterprise plan requires a custom quote. Please contact sales.");
+          toast.info(t("enterpriseRequiresQuote"));
           window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry";
           return;
         }
 
-        throw new Error(data.error || "Failed to start checkout");
+        throw new Error(data.error || t("failedToStartCheckout"));
       }
 
       // Redirect to Stripe checkout (or mock onboarding for development)
@@ -610,7 +679,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to start checkout. Please try again.");
+      toast.error(error instanceof Error ? error.message : t("failedToStartCheckout"));
     } finally {
       setIsLoading(false);
       setLoadingPlan(null);
@@ -629,14 +698,13 @@ export default function PricingPage() {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 bg-brand-teal/10 text-brand-teal rounded-full text-sm font-semibold mb-6">
               <Gift className="w-4 h-4" />
-              14-day free trial on Pro plan
+              {t("freeTrialBadge")}
             </span>
             <h1 className="text-4xl md:text-brand-teal font-bold text-gray-900 mb-6">
-              Simple, Transparent Pricing
+              {t("heroTitle")}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              Choose the perfect plan for your organization. Start free, upgrade when you need more.
-              No hidden fees, no surprises.
+              {t("heroDescription")}
             </p>
 
             {/* Billing toggle */}
@@ -650,7 +718,7 @@ export default function PricingPage() {
                     : "text-gray-600 hover:text-gray-900"
                 )}
               >
-                Monthly
+                {t("monthly")}
               </button>
               <button
                 onClick={() => setIsAnnual(true)}
@@ -661,9 +729,9 @@ export default function PricingPage() {
                     : "text-gray-600 hover:text-gray-900"
                 )}
               >
-                Annual
+                {t("annual")}
                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                  Save 17%
+                  {t("save17")}
                 </span>
               </button>
             </div>
@@ -695,23 +763,23 @@ export default function PricingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
             <div className="flex flex-col items-center gap-2 text-center">
               <Shield className="w-8 h-8 text-brand-teal" />
-              <span className="text-sm font-semibold text-gray-900">SSL Encrypted</span>
-              <span className="text-xs text-gray-500">256-bit encryption</span>
+              <span className="text-sm font-semibold text-gray-900">{t("sslEncrypted")}</span>
+              <span className="text-xs text-gray-500">{t("bitEncryption")}</span>
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
               <Clock className="w-8 h-8 text-brand-teal" />
-              <span className="text-sm font-semibold text-gray-900">99.9% Uptime</span>
-              <span className="text-xs text-gray-500">Guaranteed SLA</span>
+              <span className="text-sm font-semibold text-gray-900">{t("uptime")}</span>
+              <span className="text-xs text-gray-500">{t("guaranteedSla")}</span>
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
               <Globe className="w-8 h-8 text-brand-teal" />
-              <span className="text-sm font-semibold text-gray-900">GDPR Compliant</span>
-              <span className="text-xs text-gray-500">Data protection</span>
+              <span className="text-sm font-semibold text-gray-900">{t("gdprCompliant")}</span>
+              <span className="text-xs text-gray-500">{t("dataProtection")}</span>
             </div>
             <div className="flex flex-col items-center gap-2 text-center">
               <Headphones className="w-8 h-8 text-brand-teal" />
-              <span className="text-sm font-semibold text-gray-900">24/7 Support</span>
-              <span className="text-xs text-gray-500">Enterprise plans</span>
+              <span className="text-sm font-semibold text-gray-900">{t("support247")}</span>
+              <span className="text-xs text-gray-500">{t("enterprisePlans")}</span>
             </div>
           </div>
         </div>
@@ -740,10 +808,10 @@ export default function PricingPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Transform Your Training?
+              {t("readyToTransform")}
             </h2>
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
-              Join thousands of organizations using Skill-Learn to engage, train, and grow their teams.
+              {t("joinThousands")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -755,11 +823,11 @@ export default function PricingPage() {
                 {isLoading && loadingPlan === "pro" ? (
                   <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
+                    {t("processing")}
                   </>
                 ) : (
                   <>
-                    Start Free Trial
+                    {t("startFreeTrial")}
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </>
                 )}
@@ -771,11 +839,11 @@ export default function PricingPage() {
                 className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold"
               >
                 <MessageSquare className="w-5 h-5 mr-2" />
-                Talk to Sales
+                {t("talkToSales")}
               </Button>
             </div>
             <p className="text-white/70 text-sm mt-6">
-              No credit card required • 14-day free trial • Cancel anytime
+              {t("noCreditCardRequired")}
             </p>
           </motion.div>
         </div>
@@ -784,7 +852,7 @@ export default function PricingPage() {
       {/* Footer note */}
       <section className="py-8 bg-gray-900 text-center">
         <p className="text-gray-400 text-sm">
-          All prices are in USD. Taxes may apply based on your location.
+          {t("allPricesUsd")}
         </p>
       </section>
     </main>

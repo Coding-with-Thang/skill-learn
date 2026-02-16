@@ -1,12 +1,13 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { ArrowRight, Sparkles, Heart, Zap, Coffee, Infinity, Rocket, Grid3X3 } from 'lucide-react';
 import { Dancing_Script } from 'next/font/google';
 // Placeholder images (add profile.png and business.jpg to apps/lms/public to use your own)
 const profileShot = 'https://images.unsplash.com/photo-1708531375354-484e4ac78453?w=500&auto=format&fit=crop&q=60';
 const businessLady = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=500&auto=format&fit=crop&q=60';
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from '@/i18n/navigation';
 
 const dancingScript = Dancing_Script({
     subsets: ['latin'],
@@ -38,6 +39,7 @@ const teamMembers = [
 ];
 
 export default function AboutPage() {
+    const t = useTranslations('about');
     const router = useRouter();
     return (
         <main className="w-full bg-white">
@@ -48,8 +50,8 @@ export default function AboutPage() {
                         {/* Left Content */}
                         <div className="space-y-6">
                             <h1 className="text-brand-teal md:text-6xl lg:text-7xl font-bold leading-tight">
-                                Igniting <span className="relative italic text-purple-600 inline-block">
-                                    Potential
+                                {t('heroTitle1')} <span className="relative italic text-purple-600 inline-block">
+                                    {t('heroTitle2')}
                                     <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
                                             <linearGradient id="underlineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -60,10 +62,10 @@ export default function AboutPage() {
                                         <path d="M2 9C50 3 100 7 198 5" stroke="url(#underlineGradient)" strokeWidth="3" strokeLinecap="round" />
                                     </svg>
                                 </span>,<br />
-                                Building Futures.
+                                {t('heroTitle3')}
                             </h1>
                             <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-md">
-                                We empower the future of learning with AI-driven insights and personalized growth paths. Our mission is to make skill development accessible, engaging, and impactful for everyone.
+                                {t('heroSubtitle')}
                             </p>
                             <div className="flex items-center gap-4 text-sm mt-4">
                                 <div className="flex -space-x-3">
@@ -93,8 +95,8 @@ export default function AboutPage() {
                                     </div>
                                 </div>
                                 <div className="flex flex-col -space-y-1">
-                                    <span className="font-bold text-gray-900 text-base">2.4k+</span>
-                                    <span className="text-gray-500 text-xs font-medium">Happy Learners</span>
+                                    <span className="font-bold text-gray-900 text-base">{t('happyLearnersCount')}</span>
+                                    <span className="text-gray-500 text-xs font-medium">{t('happyLearners')}</span>
                                 </div>
                             </div>
                         </div>
@@ -108,7 +110,7 @@ export default function AboutPage() {
                             <div className="relative w-full aspect-square rounded-3xl overflow-hidden shadow-2xl border-8 border-white">
                                 <Image
                                     src={businessLady}
-                                    alt="Team member"
+                                    alt={t('teamMemberAlt')}
                                     fill
                                     className="object-cover"
                                     priority
@@ -128,7 +130,7 @@ export default function AboutPage() {
                             <div className="relative w-full aspect-4/5 rounded-[3rem] overflow-hidden shadow-2xl">
                                 <Image
                                     src={profileShot}
-                                    alt="Humanizing Tech"
+                                    alt={t('humanizingTechAlt')}
                                     fill
                                     className="object-cover grayscale"
                                 />
@@ -139,9 +141,9 @@ export default function AboutPage() {
                                         <div className="bg-blue-500/20 w-12 h-12 rounded-4xl items-center justify-center mb-4">
                                             <Heart className="w-6 h-6 text-blue-600 fill-blue-600" />
                                         </div>
-                                        <h4 className="text-xl font-bold text-gray-900 mb-2">Human-First Design</h4>
+                                        <h4 className="text-xl font-bold text-gray-900 mb-2">{t('humanFirstTitle')}</h4>
                                         <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                                            Every solution we build starts with the people who will use it.
+                                            {t('humanFirstDesc')}
                                         </p>
                                     </div>
                                 </div>
@@ -152,11 +154,11 @@ export default function AboutPage() {
                         <div className="space-y-10">
                             <div className="space-y-6">
                                 <h2 className="md:text-6xl font-bold leading-tight tracking-tight text-[#1a2b3b]">
-                                    Humanizing Tech<br />
-                                    <span className="text-[#00a884]">with Purpose.</span>
+                                    {t('humanizingTechTitle')}<br />
+                                    <span className="text-[#00a884]">{t('humanizingTechWith')}</span>
                                 </h2>
                                 <p className="text-lg md:text-xl text-gray-500 leading-relaxed font-medium">
-                                    Skill-Learn was born from a simple realization: the future isn't about machines replacing humans, but about machines empowering them. We create exceptional workplaces where people are the primary asset.
+                                    {t('humanizingTechParagraph')}
                                 </p>
                             </div>
 
@@ -164,11 +166,11 @@ export default function AboutPage() {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="bg-[#f4fbf9] rounded-4xl p-8 space-y-2">
                                     <div className="text-4xl font-bold text-gray-900">100k+</div>
-                                    <div className="text-xs font-bold text-[#00a884] tracking-widest uppercase">Learners</div>
+                                    <div className="text-xs font-bold text-[#00a884] tracking-widest uppercase">{t('learnersStat')}</div>
                                 </div>
                                 <div className="bg-[#f4f7ff] rounded-4xl p-8 space-y-2">
                                     <div className="text-4xl font-bold text-gray-900">150+</div>
-                                    <div className="text-xs font-bold text-[#6366f1] tracking-widest uppercase">Global Partners</div>
+                                    <div className="text-xs font-bold text-[#6366f1] tracking-widest uppercase">{t('globalPartnersStat')}</div>
                                 </div>
                             </div>
                         </div>
@@ -180,9 +182,9 @@ export default function AboutPage() {
             <section className="py-16 md:py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-brand-teal lg:text-6xl font-bold mb-6">Our Guiding Light</h2>
+                        <h2 className="text-4xl md:text-brand-teal lg:text-6xl font-bold mb-6">{t('ourGuidingLight')}</h2>
                         <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-                            These values aren't just posters on a wall. They are the heartbeat of everything we create.
+                            {t('guidingLightSubtitle')}
                         </p>
                     </div>
 
@@ -204,9 +206,9 @@ export default function AboutPage() {
                             <div className="relative z-10 w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
                                 <Sparkles className="w-10 h-10 text-emerald-500" />
                             </div>
-                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">Deep Engagement</h3>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">{t('deepEngagement')}</h3>
                             <p className="relative z-10 text-slate-800 font-semibold leading-relaxed transition-colors duration-500">
-                                Personalized attention, cutting through complexity.
+                                {t('deepEngagementDesc')}
                             </p>
                         </div>
 
@@ -225,9 +227,9 @@ export default function AboutPage() {
                             <div className="relative z-10 w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
                                 <Infinity className="w-10 h-10 text-indigo-500" />
                             </div>
-                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">Seasoned Expertise</h3>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">{t('seasonedExpertise')}</h3>
                             <p className="relative z-10 text-slate-800 font-semibold text-lg leading-relaxed max-w-md transition-colors duration-500">
-                                Deep industry knowledge meets fresh perspective. We don't just follow trends; we define them.
+                                {t('seasonedExpertiseDesc')}
                             </p>
                         </div>
 
@@ -246,9 +248,9 @@ export default function AboutPage() {
                             <div className="relative z-10 w-20 h-20 rounded-full bg-blue-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
                                 <Rocket className="w-10 h-10 text-blue-500" />
                             </div>
-                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">Efficiency Unleashed</h3>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 mt-auto text-slate-900 transition-colors duration-500">{t('efficiencyUnleashed')}</h3>
                             <p className="relative z-10 text-slate-800 font-semibold text-lg leading-relaxed max-w-xl transition-colors duration-500">
-                                We optimize your human capital investment by removing friction and focusing on high-impact growth strategies.
+                                {t('efficiencyUnleashedDesc')}
                             </p>
                         </div>
 
@@ -267,9 +269,9 @@ export default function AboutPage() {
                             <div className="relative z-10 w-20 h-20 rounded-full bg-pink-50 flex items-center justify-center mb-10 group-hover:scale-110 transition-transform duration-500">
                                 <Grid3X3 className="w-10 h-10 text-pink-500" />
                             </div>
-                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">Tailored Solutions</h3>
+                            <h3 className="relative z-10 text-2xl font-bold mb-4 text-slate-900 transition-colors duration-500">{t('tailoredSolutions')}</h3>
                             <p className="relative z-10 text-slate-800 font-semibold leading-relaxed transition-colors duration-500">
-                                Your organization is unique. Your learning ecosystem should be too. We build for your specific DNA.
+                                {t('tailoredSolutionsDesc')}
                             </p>
                         </div>
                     </div>
@@ -280,9 +282,9 @@ export default function AboutPage() {
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="grid lg:grid-cols-2 gap-16 items-center">
                         <div>
-                            <h2 className="text-4xl md:text-brand-teal font-bold mb-6">Our Culture</h2>
+                            <h2 className="text-4xl md:text-brand-teal font-bold mb-6">{t('ourCulture')}</h2>
                             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                At Skill-Learn, we believe that the best work happens when people feel empowered, inspired, and supported. We're building a space where creativity meets technology.
+                                {t('ourCultureDesc')}
                             </p>
 
                             <div className="space-y-6">
@@ -291,8 +293,8 @@ export default function AboutPage() {
                                         <Heart className="w-6 h-6 text-pink-500" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-lg">People First</h4>
-                                        <p className="text-gray-500">We nurture talent and value every voice in our community.</p>
+                                        <h4 className="font-bold text-lg">{t('peopleFirst')}</h4>
+                                        <p className="text-gray-500">{t('peopleFirstDesc')}</p>
                                     </div>
                                 </div>
 
@@ -301,8 +303,8 @@ export default function AboutPage() {
                                         <Zap className="w-6 h-6 text-yellow-500" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-lg">Fast Iteration</h4>
-                                        <p className="text-gray-500">We move quickly, learn from mistakes, and scale what works.</p>
+                                        <h4 className="font-bold text-lg">{t('fastIteration')}</h4>
+                                        <p className="text-gray-500">{t('fastIterationDesc')}</p>
                                     </div>
                                 </div>
 
@@ -311,8 +313,8 @@ export default function AboutPage() {
                                         <Coffee className="w-6 h-6 text-orange-500" />
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-lg">Work-Life Harmony</h4>
-                                        <p className="text-gray-500">We optimize for focus and results, not hours at the desk.</p>
+                                        <h4 className="font-bold text-lg">{t('workLifeHarmony')}</h4>
+                                        <p className="text-gray-500">{t('workLifeHarmonyDesc')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -369,7 +371,7 @@ export default function AboutPage() {
                 <div className="max-w-7xl mx-auto px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl md:text-brand-teal font-bold mb-4">
-                            Minds Behind<br />the Mission
+                            {t('mindsBehindMission')}
                         </h2>
                     </div>
 
@@ -410,19 +412,18 @@ export default function AboutPage() {
                             {/* Left Content */}
                             <div className="space-y-6">
                                 <p className="text-sm font-semibold text-cyan-600 tracking-wider uppercase">
-                                    Join the Collective
+                                    {t('joinTheCollective')}
                                 </p>
                                 <h2 className="text-4xl md:text-brand-teal lg:text-6xl font-bold leading-tight">
-                                    Want to shape<br />
-                                    the <span className={`${dancingScript.className} text-blue-600 italic`}>future</span> of<br />
-                                    learning?
+                                    {t('ctaTitle1')}<br />
+                                    {t('ctaTitle2')} <span className={`${dancingScript.className} text-blue-600 italic`}>{t('ctaTitle3')}</span>
                                 </h2>
                                 <p className="text-base md:text-lg text-gray-600 leading-relaxed max-w-md">
-                                    We are looking for dreamers, builders, and disruptors who are ready to redefine how talent is developed in the AI era.
+                                    {t('ctaSubtitle')}
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <button className="inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-full font-semibold hover:bg-gray-800 transition-colors" onClick={() => router.push('/careers')}>
-                                        View Open Positions <ArrowRight className="w-5 h-5" />
+                                        {t('viewOpenPositions')} <ArrowRight className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
@@ -439,8 +440,7 @@ export default function AboutPage() {
                                                 </svg>
                                             </div>
                                             <h3 className="text-2xl font-bold text-gray-900 leading-tight">
-                                                your <span className={`${dancingScript.className} text-purple-600 italic`}>future</span><br />
-                                                is calling
+                                                {t('yourFutureIsCalling')}
                                             </h3>
                                         </div>
 
@@ -454,7 +454,7 @@ export default function AboutPage() {
                                         {/* Apply Now Button */}
                                         <div className="pt-4">
                                             <div className="text-right">
-                                                <span className="text-sm font-semibold text-gray-400 tracking-wider uppercase">Apply Now</span>
+                                                <span className="text-sm font-semibold text-gray-400 tracking-wider uppercase">{t('applyNow')}</span>
                                             </div>
                                         </div>
                                     </div>

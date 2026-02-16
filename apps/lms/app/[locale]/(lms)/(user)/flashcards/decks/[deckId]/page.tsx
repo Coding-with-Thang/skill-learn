@@ -1,9 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import {
   Card,
@@ -22,6 +22,8 @@ import { toast } from "sonner";
 type DeckShape = { id: string; name?: string; isPublic?: boolean; cardIds?: string[]; hiddenCardIds?: string[]; cards?: { id: string; question?: string }[] };
 
 export default function DeckSettingsPage() {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const params = useParams();
   const router = useRouter();
   const deckId = params?.deckId;
@@ -41,7 +43,7 @@ export default function DeckSettingsPage() {
         setDeck((d?.deck ?? null) as DeckShape | null);
       })
       .catch(() => {
-        toast.error("Deck not found");
+        toast.error(t("deckNotFound"));
         router.push("/flashcards");
       })
       .finally(() => setLoading(false));
@@ -55,10 +57,10 @@ export default function DeckSettingsPage() {
       });
       const d = res.data?.data ?? res.data;
       setDeck((prev) => (prev ? { ...prev, isPublic: d?.deck?.isPublic ?? !prev.isPublic } : prev));
-      toast.success(deck?.isPublic ? "Deck is now private" : "Deck is now shared with your workspace");
+      toast.success(deck?.isPublic ? t("deckNowPrivate") : t("deckNowShared"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to update");
+      toast.error(e.response?.data?.error || t("failedToUpdate"));
     } finally {
       setSharing(false);
     }
@@ -84,10 +86,10 @@ export default function DeckSettingsPage() {
           }
           : prev
       );
-      toast.success("Card removed from deck");
+      toast.success(t("cardRemovedFromDeck"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to remove");
+      toast.error(e.response?.data?.error || t("failedToRemove"));
     } finally {
       setToggling(null);
     }
@@ -107,10 +109,10 @@ export default function DeckSettingsPage() {
         else hidden.add(cardId);
         return { ...prev, hiddenCardIds: Array.from(hidden) };
       });
-      toast.success(currentlyHidden ? "Card unhidden" : "Card hidden");
+      toast.success(currentlyHidden ? t("cardUnhidden") : t("cardHidden"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to update");
+      toast.error(e.response?.data?.error || t("failedToUpdate"));
     } finally {
       setToggling(null);
     }
@@ -126,17 +128,17 @@ export default function DeckSettingsPage() {
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "Flash Cards", href: "/flashcards" },
-          { name: deck.name, href: `/flashcards/decks/${deckId}` },
+          { name: tB("flashCards"), href: "/flashcards" },
+          { name: deck.name ?? "", href: `/flashcards/decks/${deckId}` },
         ]}
-        endtrail={deck.name}
+        endtrail={deck.name ?? ""}
       />
       <div className="max-w-2xl mx-auto space-y-6 pb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Deck: {deck.name}</h1>
+            <h1 className="text-2xl font-bold">{t("deckLabel")}: {deck.name}</h1>
             <p className="text-muted-foreground mt-1">
-              Hide cards you don&apos;t want to study. Hidden cards won&apos;t appear in study sessions.
+              {t("hideCardsDescription")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -146,7 +148,7 @@ export default function DeckSettingsPage() {
               onClick={() => setShareDialogOpen(true)}
             >
               <Share2 className="h-4 w-4 mr-2" />
-              Share to users
+              {t("shareToUsers")}
             </Button>
             <Button
               variant={deck.isPublic ? "default" : "outline"}
@@ -154,7 +156,7 @@ export default function DeckSettingsPage() {
               onClick={toggleShare}
               disabled={sharing}
             >
-              {deck.isPublic ? "Shared with workspace" : "Share with workspace"}
+              {deck.isPublic ? t("sharedWithWorkspace") : t("shareWithWorkspace")}
             </Button>
           </div>
         </div>
@@ -173,12 +175,12 @@ export default function DeckSettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Visible cards ({visibleCards.length})</CardTitle>
-            <CardDescription>These cards will appear when you study this deck</CardDescription>
+            <CardTitle>{t("visibleCards")} ({visibleCards.length})</CardTitle>
+            <CardDescription>{t("visibleCardsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {visibleCards.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4">No visible cards.</p>
+              <p className="text-muted-foreground text-sm py-4">{t("noVisibleCards")}</p>
             ) : (
               visibleCards.map((c) => (
                 <div
@@ -194,7 +196,7 @@ export default function DeckSettingsPage() {
                       disabled={toggling === c.id}
                     >
                       <EyeOff className="h-4 w-4 mr-1" />
-                      Hide
+                      {t("hide")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -204,7 +206,7 @@ export default function DeckSettingsPage() {
                       disabled={toggling === c.id}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Remove
+                      {t("remove")}
                     </Button>
                   </div>
                 </div>
@@ -215,12 +217,12 @@ export default function DeckSettingsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Hidden cards ({hiddenCards.length})</CardTitle>
-            <CardDescription>Unhide to include them in study sessions again</CardDescription>
+            <CardTitle>{t("hiddenCards")} ({hiddenCards.length})</CardTitle>
+            <CardDescription>{t("unhideToInclude")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {hiddenCards.length === 0 ? (
-              <p className="text-muted-foreground text-sm py-4">No hidden cards.</p>
+              <p className="text-muted-foreground text-sm py-4">{t("noHiddenCards")}</p>
             ) : (
               hiddenCards.map((c) => (
                 <div
@@ -236,7 +238,7 @@ export default function DeckSettingsPage() {
                       disabled={toggling === c.id}
                     >
                       <Eye className="h-4 w-4 mr-1" />
-                      Unhide
+                      {t("unhide")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -246,7 +248,7 @@ export default function DeckSettingsPage() {
                       disabled={toggling === c.id}
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Remove
+                      {t("remove")}
                     </Button>
                   </div>
                 </div>
@@ -257,13 +259,13 @@ export default function DeckSettingsPage() {
 
         <div className="flex flex-wrap gap-3">
           <Button onClick={() => router.push(`/flashcards/study?deckId=${deckId}&limit=25`)}>
-            Study this deck
+            {t("studyThisDeck")}
           </Button>
           <Link href={`/flashcards/deck-builder?deckId=${deckId}`}>
-            <Button variant="outline">Add or remove cards</Button>
+            <Button variant="outline">{t("addOrRemoveCards")}</Button>
           </Link>
           <Link href="/flashcards">
-            <Button variant="outline">Back to Flash Cards</Button>
+            <Button variant="outline">{t("backToFlashCards")}</Button>
           </Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   ShieldCheck,
@@ -26,57 +27,57 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@skill-learn/ui/components/button";
 import { cn } from "@skill-learn/lib/utils";
 
-const sections = [
-  { id: "overview", name: "Security Overview", icon: Shield },
-  { id: "compliance", name: "Compliance & Audits", icon: CheckCircle2 },
-  { id: "encryption", name: "Data Encryption", icon: Lock },
-  { id: "infrastructure", name: "Infrastructure", icon: Server },
-  { id: "privacy", name: "Privacy Policy", icon: Database },
-];
-
-const certifications = [
-  { name: "SOC2 Type II", icon: ShieldCheck },
-  { name: "GDPR Compliant", icon: Globe },
-  { name: "ISO 27001", icon: CheckCircle2 },
-  { name: "CCPA / HIPAA", icon: Lock },
-];
-
-const securityStandards = [
-  {
-    title: "Encryption at Rest & Transit",
-    description: "All data is encrypted at rest using AES-256 with FIPS 140-2 compliant hardware security modules. In transit, data is protected via TLS 1.3 with Perfect Forward Secrecy.",
-    icon: Key,
-    features: ["AES-256 Encryption", "SHA-256 Hashing"],
-  },
-  {
-    title: "Global Data Residency",
-    description: "Select where your primary data resides to meet local regulatory requirements. We offer multi-region availability across AWS and Azure infrastructure.",
-    icon: Globe,
-    features: ["US, EU, and APAC Regions", "Local Data Siloing"],
-  },
-  {
-    title: "Disaster Recovery",
-    description: "Real-time streaming replication to multi-AZ secondary databases. Continuous backups are stored in durable object storage with versioning enabled.",
-    icon: Database,
-    features: ["1-hour Recovery Point Objective (RPO)", "4-hour Recovery Time Objective (RTO)"],
-  },
-  {
-    title: "Identity & Access Control",
-    description: "Granular Role-Based Access Control (RBAC) and support for enterprise SSO (SAML 2.0, OIDC). Multi-factor authentication is mandatory for all administrative actions.",
-    icon: Fingerprint,
-    features: ["SSO & MFA Integration", "Audit Logs for all Events"],
-  },
-];
-
-const technicalSpecs = [
-  { parameter: "Transport Layer Security", protocol: "TLS 1.3 / 1.2 Minimum", status: "MANDATORY", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-100" },
-  { parameter: "API Authentication", protocol: "OAuth 2.0 / Bearer Tokens", status: "ACTIVE", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-100" },
-  { parameter: "Log Retention", protocol: "12-Month Audit Trail", status: "STANDARD", statusColor: "text-blue-700 bg-blue-50 border-blue-100" },
-  { parameter: "Pentesting Frequency", protocol: "Quarterly 3rd-Party Audits", status: "VERIFIED", statusColor: "text-purple-700 bg-purple-50 border-purple-100" },
-];
-
 export default function CompliancePage() {
+  const t = useTranslations("legal");
   const [activeSection, setActiveSection] = useState("overview");
+  const sections = [
+    { id: "overview", name: t("securityOverview"), icon: Shield },
+    { id: "compliance", name: t("complianceAndAudits"), icon: CheckCircle2 },
+    { id: "encryption", name: t("dataEncryption"), icon: Lock },
+    { id: "infrastructure", name: t("infrastructure"), icon: Server },
+    { id: "privacy", name: t("privacyPolicyLink"), icon: Database },
+  ];
+
+  const certifications = [
+    { name: "SOC2 Type II", icon: ShieldCheck },
+    { name: "GDPR Compliant", icon: Globe },
+    { name: "ISO 27001", icon: CheckCircle2 },
+    { name: "CCPA / HIPAA", icon: Lock },
+  ];
+
+  const securityStandards = [
+    {
+      title: "Encryption at Rest & Transit",
+      description: "All data is encrypted at rest using AES-256 with FIPS 140-2 compliant hardware security modules. In transit, data is protected via TLS 1.3 with Perfect Forward Secrecy.",
+      icon: Key,
+      features: ["AES-256 Encryption", "SHA-256 Hashing"],
+    },
+    {
+      title: "Global Data Residency",
+      description: "Select where your primary data resides to meet local regulatory requirements. We offer multi-region availability across AWS and Azure infrastructure.",
+      icon: Globe,
+      features: ["US, EU, and APAC Regions", "Local Data Siloing"],
+    },
+    {
+      title: "Disaster Recovery",
+      description: "Real-time streaming replication to multi-AZ secondary databases. Continuous backups are stored in durable object storage with versioning enabled.",
+      icon: Database,
+      features: ["1-hour Recovery Point Objective (RPO)", "4-hour Recovery Time Objective (RTO)"],
+    },
+    {
+      title: "Identity & Access Control",
+      description: "Granular Role-Based Access Control (RBAC) and support for enterprise SSO (SAML 2.0, OIDC). Multi-factor authentication is mandatory for all administrative actions.",
+      icon: Fingerprint,
+      features: ["SSO & MFA Integration", "Audit Logs for all Events"],
+    },
+  ];
+
+  const technicalSpecs = [
+    { parameter: "Transport Layer Security", protocol: "TLS 1.3 / 1.2 Minimum", status: "MANDATORY", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-100" },
+    { parameter: "API Authentication", protocol: "OAuth 2.0 / Bearer Tokens", status: "ACTIVE", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-100" },
+    { parameter: "Log Retention", protocol: "12-Month Audit Trail", status: "STANDARD", statusColor: "text-blue-700 bg-blue-50 border-blue-100" },
+    { parameter: "Pentesting Frequency", protocol: "Quarterly 3rd-Party Audits", status: "VERIFIED", statusColor: "text-purple-700 bg-purple-50 border-purple-100" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -113,21 +114,21 @@ export default function CompliancePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-            <span className="hover:text-brand-teal cursor-pointer">Security Center</span>
+            <span className="hover:text-brand-teal cursor-pointer">{t("securityCenter")}</span>
             <ChevronRight className="w-4 h-4" />
-            <span className="text-slate-900 font-medium">Compliance</span>
+            <span className="text-slate-900 font-medium">{t("compliance")}</span>
           </nav>
 
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-bold uppercase tracking-wider mb-6">
             <RefreshCw className="w-3 h-3 mr-2" />
-            Version 2.4 - Effective July 2024
+            {t("versionEffective")}
           </div>
 
           <h1 className="text-4xl md:text-brand-teal font-bold mb-6 tracking-tight">
-            Enterprise-Grade <span className="text-emerald-600">Data Protection</span> & Compliance
+            {t("enterpriseDataProtection")}
           </h1>
           <p className="text-xl text-slate-600 leading-relaxed max-w-3xl">
-            Skill-Learn utilizes defense-in-depth security strategies, AES-256 encryption, and global compliance standards to ensure your workforce data remains private and secure.
+            {t("complianceIntro")}
           </p>
         </div>
       </section>
@@ -139,7 +140,7 @@ export default function CompliancePage() {
         <aside className="lg:w-64 shrink-0">
           <div className="sticky top-10 space-y-8">
             <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
-              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">On this page</p>
+              <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">{t("onThisPage")}</p>
               <nav className="space-y-1">
                 {sections.map((section) => {
                   const Icon = section.icon;
@@ -167,10 +168,10 @@ export default function CompliancePage() {
             </div>
 
             <div className="bg-emerald-600 rounded-4xl p-6 text-white shadow-lg shadow-emerald-600/20">
-              <p className="text-[10px] uppercase tracking-widest text-emerald-100/60 font-bold mb-2">Need more info?</p>
-              <p className="text-xs text-emerald-50 leading-relaxed mb-6">Contact our Data Protection Officer for detailed inquiries.</p>
+              <p className="text-[10px] uppercase tracking-widest text-emerald-100/60 font-bold mb-2">{t("needMoreInfo")}</p>
+              <p className="text-xs text-emerald-50 leading-relaxed mb-6">{t("contactDpoDescription")}</p>
               <button className="w-full py-2.5 bg-white text-emerald-600 text-xs font-bold rounded-xl transition-all hover:bg-emerald-50 shadow-md">
-                Contact DPO
+                {t("contactDpo")}
               </button>
             </div>
           </div>

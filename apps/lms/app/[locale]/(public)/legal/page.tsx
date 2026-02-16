@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -15,38 +16,39 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
-const legalPages = [
-  {
-    title: "Privacy Policy",
-    description: "Learn how we handle and protect your personal data.",
-    href: "/legal/privacy-policy",
-    icon: Lock,
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    title: "Terms & Conditions",
-    description: "The rules and regulations for using our platform.",
-    href: "/legal/terms-of-condition",
-    icon: FileText,
-    color: "bg-purple-50 text-purple-600",
-  },
-  {
-    title: "Accessibility",
-    description: "Our commitment to making learning accessible to everyone.",
-    href: "/legal/accessibility",
-    icon: Accessibility,
-    color: "bg-emerald-50 text-emerald-600",
-  },
-  {
-    title: "Security & Compliance",
-    description: "Enterprise-grade data protection and certifications.",
-    href: "/legal/compliance",
-    icon: Shield,
-    color: "bg-slate-50 text-slate-600",
-  },
-];
-
 export default function LegalHubPage() {
+  const t = useTranslations("legal");
+  
+  const legalPages = [
+    {
+      title: t("privacyPolicy"),
+      description: t("privacyPolicyDesc"),
+      href: "/legal/privacy-policy",
+      icon: Lock,
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: t("termsConditions"),
+      description: t("termsConditionsDesc"),
+      href: "/legal/terms-of-condition",
+      icon: FileText,
+      color: "bg-purple-50 text-purple-600",
+    },
+    {
+      title: t("accessibility"),
+      description: t("accessibilityDesc"),
+      href: "/legal/accessibility",
+      icon: Accessibility,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      title: t("securityCompliance"),
+      description: t("securityComplianceDesc"),
+      href: "/legal/compliance",
+      icon: Shield,
+      color: "bg-slate-50 text-slate-600",
+    },
+  ];
   return (
     <div className="min-h-screen bg-[#F8F9FB] font-sans">
       {/* Hero Section */}
@@ -58,10 +60,10 @@ export default function LegalHubPage() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
-              Legal Hub
+              {t("legalHub")}
             </h1>
             <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
-              Find all the legal documentation, policies, and compliance statements for the Skill-Learn platform in one place.
+              {t("legalHubSubtitle")}
             </p>
           </motion.div>
         </div>
@@ -93,7 +95,7 @@ export default function LegalHubPage() {
                       {page.description}
                     </p>
                     <div className="flex items-center text-sm font-bold text-brand-teal group-hover:gap-2 transition-all">
-                      Read Documentation <ArrowRight className="w-4 h-4 ml-1" />
+                      {t("readDocumentation")} <ArrowRight className="w-4 h-4 ml-1" />
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import Image from "next/image"
 import { EnhancedButton } from "@skill-learn/ui/components/enhanced-button"
 import { InteractiveCard, } from "@skill-learn/ui/components/interactive-card"
@@ -32,95 +33,95 @@ import api from "@skill-learn/lib/utils/axios";
 import { Loader } from "@skill-learn/ui/components/loader"
 
 // Sub-components
-const RewardsHero = () => (
-  <div className="w-full bg-linear-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden">
-    <div className="relative z-10 max-w-2xl">
-      <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-        Rewards Dashboard
-      </h1>
-      <p className="text-blue-100 text-lg">
-        Earn points to unlock and redeem rewards from a wide variety of choices.
-      </p>
-    </div>
+const RewardsHero = ({ t }) => (
+    <div className="w-full bg-linear-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden">
+      <div className="relative z-10 max-w-2xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+          {t("rewardsDashboard")}
+        </h1>
+        <p className="text-blue-100 text-lg">
+          {t("earnPointsUnlock")}
+        </p>
+      </div>
     {/* Abstract shape decoration matching mockup */}
     <div className="absolute right-0 top-0 h-full w-1/3 bg-white/10 blur-3xl transform rotate-12 translate-x-1/4 -translate-y-1/4" />
     <div className="absolute right-0 bottom-0 h-2/3 w-1/4 bg-blue-500/20 blur-2xl rounded-full translate-x-1/8 translate-y-1/4" />
   </div>
 )
 
-const PointsBalance = ({ points }) => {
-  // Mock next tier data since store doesn't have it yet
-  const nextTierPoints = 8000;
-  const pointsToNextTier = Math.max(0, nextTierPoints - points);
-  const progress = Math.min(UI.MAX_PERCENTAGE, (points / nextTierPoints) * UI.MAX_PERCENTAGE);
+  const PointsBalance = ({ points, t }) => {
+    // Mock next tier data since store doesn't have it yet
+    const nextTierPoints = 8000;
+    const pointsToNextTier = Math.max(0, nextTierPoints - points);
+    const progress = Math.min(UI.MAX_PERCENTAGE, (points / nextTierPoints) * UI.MAX_PERCENTAGE);
 
-  return (
-    <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="font-semibold text-gray-900 text-lg">Your Points Balance</h3>
-        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-          <Coins size={24} />
-        </div>
-      </div>
-
-      <div>
-        <div className="flex items-baseline gap-2 mb-2">
-          <span className="text-4xl font-bold text-gray-900">
-            {new Intl.NumberFormat('en-US').format(points || 0)}
-          </span>
-          <span className="text-gray-500">Available Points</span>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full bg-blue-600 rounded-full transition-all ease-out`}
-              style={{ width: `${progress}%`, transitionDuration: `${UI.TRANSITION_DURATION_MS}ms` }}
-            />
+    return (
+      <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="font-semibold text-gray-900 text-lg">{t("yourPointsBalance")}</h3>
+          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+            <Coins size={24} />
           </div>
-          <p className="text-sm text-gray-500">
-            {pointsToNextTier} points until next tier
-          </p>
         </div>
-      </div>
-    </div>
-  )
-}
 
-const DailyStreak = () => {
-  // Using existing store structure or default 0
-  const { streak } = usePointsStore();
-  const currentStreak = streak?.current || 0;
-
-  return (
-    <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-semibold text-gray-900 text-lg">Daily Streak</h3>
-        <div className="flex gap-1">
-          {[...Array(UI.STREAK_DISPLAY_DOTS)].map((_, i) => (
-            <div key={i} className={`w-2 h-2 rounded-full ${i === 4 ? 'bg-yellow-400' : 'border border-gray-300'}`} />
-          ))}
-        </div>
-      </div>
-      <div className="text-right text-xs font-medium text-orange-500 mb-4">Streak Bonus</div>
-
-      <div className="flex items-end justify-between">
         <div>
           <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-4xl font-bold text-gray-900">{currentStreak}</span>
-            <span className="text-gray-500">Current Streak</span>
+            <span className="text-4xl font-bold text-gray-900">
+              {new Intl.NumberFormat('en-US').format(points || 0)}
+            </span>
+            <span className="text-gray-500">{t("availablePoints")}</span>
           </div>
-          <p className="text-sm text-gray-500 max-w-[200px]">
-            Nice! <span className="font-semibold text-gray-900">5 days away</span> from unlocking your 500-point bonus.
-          </p>
-        </div>
-        <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-100">
-          <Gift className="text-yellow-600 h-8 w-8" />
+
+          <div className="mt-4 space-y-2">
+            <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-blue-600 rounded-full transition-all ease-out`}
+                style={{ width: `${progress}%`, transitionDuration: `${UI.TRANSITION_DURATION_MS}ms` }}
+              />
+            </div>
+            <p className="text-sm text-gray-500">
+              {t("pointsUntilNextTier", { points: pointsToNextTier })}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
+
+  const DailyStreak = ({ t }) => {
+    // Using existing store structure or default 0
+    const { streak } = usePointsStore();
+    const currentStreak = streak?.current || 0;
+
+    return (
+      <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-semibold text-gray-900 text-lg">{t("dailyStreak")}</h3>
+          <div className="flex gap-1">
+            {[...Array(UI.STREAK_DISPLAY_DOTS)].map((_, i) => (
+              <div key={i} className={`w-2 h-2 rounded-full ${i === 4 ? 'bg-yellow-400' : 'border border-gray-300'}`} />
+            ))}
+          </div>
+        </div>
+        <div className="text-right text-xs font-medium text-orange-500 mb-4">{t("streakBonus")}</div>
+
+        <div className="flex items-end justify-between">
+          <div>
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-4xl font-bold text-gray-900">{currentStreak}</span>
+              <span className="text-gray-500">{t("currentStreak")}</span>
+            </div>
+            <p className="text-sm text-gray-500 max-w-[200px]">
+              {t("niceDaysAway", { days: 5 })}
+            </p>
+          </div>
+          <div className="bg-yellow-50 p-3 rounded-xl border border-yellow-100">
+            <Gift className="text-yellow-600 h-8 w-8" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
 const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
   const { isOneTime, max, isFullyRedeemed } = status || {};
@@ -238,16 +239,17 @@ const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
 }
 
 const ClaimButton = ({ redemption, onClaim }) => {
+  const t = useTranslations("rewards")
   const [claiming, setClaiming] = useState(false)
 
   const handleClaim = async () => {
     setClaiming(true)
     try {
       await onClaim(redemption)
-      toast.success("Successfully claimed reward!")
+      toast.success(t("successfullyClaimedReward"))
     } catch (error) {
       console.error('Error claiming reward:', error)
-      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to claim reward";
+      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToClaimReward");
       toast.error(msg)
     } finally {
       setClaiming(false)
@@ -593,6 +595,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
 }
 
 export default function RewardsPage() {
+  const t = useTranslations("rewards");
   const { fetchRewardsComplete, rewards, rewardHistory, isLoading, redeemReward } = useRewardStore()
   const { points, fetchUserData } = usePointsStore()
   const [redeemingRewardId, setRedeemingRewardId] = useState<string | null>(null)
@@ -664,7 +667,7 @@ export default function RewardsPage() {
     try {
       const result = await redeemReward(selectedReward.id)
       if (result.success) {
-        toast.success(result.message || `Successfully redeemed ${selectedReward.prize}`)
+        toast.success(result.message || t("successfullyRedeemed"))
         // Refresh rewards and history (already done by redeemReward, but ensure UI is updated)
         await fetchRewardsComplete()
         // Close modal on success
@@ -675,7 +678,7 @@ export default function RewardsPage() {
       // Only show additional notification if store didn't handle it
       const err = error as { response?: { data?: { error?: string } } };
       if (!err.response?.data?.error) {
-        toast.error('Failed to redeem reward')
+        toast.error(t("failedToRedeemReward"))
       }
     } finally {
       setRedeemingRewardId(null)
@@ -689,7 +692,7 @@ export default function RewardsPage() {
       // Refresh rewards and history after claiming
       await fetchRewardsComplete()
     } catch (error) {
-      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to claim reward';
+      const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToClaimReward");
       toast.error(msg);
       throw error;
     }
@@ -707,11 +710,11 @@ export default function RewardsPage() {
     >
       <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
         <div className="max-w-7xl mx-auto pb-20">
-          <RewardsHero />
+          <RewardsHero t={t} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <PointsBalance points={points} />
-            <DailyStreak />
+            <PointsBalance points={points} t={t} />
+            <DailyStreak t={t} />
           </div>
           {/* Featured Reward */}
           {featuredReward && (
@@ -736,7 +739,7 @@ export default function RewardsPage() {
               <div className="flex gap-2">
                 {/* Placeholder for filters if needed, or simple text for now */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Sort by:</span>
+                  <span className="text-sm text-gray-500">{t("sortBy")}</span>
                   <select className="text-sm border-gray-300 rounded-4xld shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white py-1.5 pl-3 pr-8">
                     <option>Popularity</option>
                     <option>Cost: Low to High</option>

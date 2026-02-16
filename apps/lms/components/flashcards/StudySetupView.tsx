@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@skill-learn/lib/utils/axios";
 import { Card } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
@@ -20,10 +21,10 @@ import { motion } from "framer-motion";
 import { cn } from "@skill-learn/lib/utils";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 
-const STUDY_MODES = [
-  { id: "once", label: "Play through once", desc: "Go through all cards, then end", icon: Play },
-  { id: "infinite", label: "Infinite until quit", desc: "Keep cycling until you exit", icon: Infinity },
-  { id: "time", label: "Time based", desc: "Study for a set duration", icon: Clock },
+const getStudyModes = (t: (key: string) => string) => [
+  { id: "once", label: t("playThroughOnce"), desc: t("goThroughAllCards"), icon: Play },
+  { id: "infinite", label: t("infiniteUntilQuit"), desc: t("keepCyclingUntilExit"), icon: Infinity },
+  { id: "time", label: t("timeBased"), desc: t("studyForSetDuration"), icon: Clock },
 ];
 
 const DURATION_OPTIONS = [5, 10, 15, 20, 30, 45, 60];
@@ -43,6 +44,8 @@ export default function StudySetupView({
   error?: string | null;
   onClearError?: () => void;
 }) {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<StudyHomeData | null>(null);
   const [mode, setMode] = useState("once");
@@ -132,8 +135,10 @@ export default function StudySetupView({
 
   const breadcrumbTrail =
     data?.decks?.[0] != null
-      ? `Study Session ${data.decks[0].name ?? "..."} - ${data.decks[0].cardIds?.length ?? 0} cards`
-      : "Study Session";
+      ? t("studySessionWithDeck", { name: data.decks[0].name ?? "...", count: data.decks[0].cardIds?.length ?? 0 })
+      : t("studySession");
+
+  const studyModes = getStudyModes(t);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -145,7 +150,7 @@ export default function StudySetupView({
       <div className="max-w-2xl mx-auto w-full px-6 py-12 space-y-10">
         <BreadCrumbCom
           crumbs={[
-            { name: "Flash Cards", href: "/flashcards" },
+            { name: tB("flashCards"), href: "/flashcards" },
           ]}
           endtrail={breadcrumbTrail}
         />
@@ -159,21 +164,21 @@ export default function StudySetupView({
             <p className="flex-1 text-sm font-medium text-brand-tealestructive">{error}</p>
             {onClearError && (
               <Button variant="ghost" size="sm" onClick={onClearError} className="text-brand-tealestructive hover:bg-destructive/10">
-                Dismiss
+                {t("dismiss")}
               </Button>
             )}
           </motion.div>
         )}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Study Session</h1>
-          <p className="text-muted-foreground">Choose how you want to study and which content to use</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("studySession")}</h1>
+          <p className="text-muted-foreground">{t("chooseHowToStudy")}</p>
         </div>
 
         {/* Mode selector - media player style */}
         <Card className="p-6 rounded-3xl border-border bg-card/80 backdrop-blur">
-          <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Study mode</Label>
+          <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{t("studyMode")}</Label>
           <div className="grid grid-cols-3 gap-3 mt-4">
-            {STUDY_MODES.map((m) => (
+            {studyModes.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -198,7 +203,7 @@ export default function StudySetupView({
               animate={{ opacity: 1, height: "auto" }}
               className="mt-4 pt-4 border-t border-border"
             >
-              <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Duration</Label>
+              <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{t("duration")}</Label>
               <div className="flex flex-wrap gap-2 mt-3">
                 {DURATION_OPTIONS.map((mins) => (
                   <Button

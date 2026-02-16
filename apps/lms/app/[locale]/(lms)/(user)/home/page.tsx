@@ -2,7 +2,7 @@
 
 import { SignedIn, useUser } from '@clerk/nextjs'
 import { useEffect } from 'react';
-import { useRouter } from "@/i18n/navigation";
+import { useRouter } from '@/i18n/navigation';
 import { LoadingPage } from "@skill-learn/ui/components/loading"
 
 // New Widgets

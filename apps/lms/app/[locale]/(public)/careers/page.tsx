@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import {
@@ -20,72 +21,78 @@ import { Badge } from "@skill-learn/ui/components/badge";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { useRouter } from "@/i18n/navigation";
 
-const JOBS = [
+const getJobs = (t: (key: string) => string) => [
   {
     id: "senior-frontend-engineer",
-    title: "Senior Frontend Engineer (React)",
-    department: "Engineering",
-    location: "San Francisco / Remote",
-    type: "Full-time",
+    titleKey: "jobSeniorFrontendTitle",
+    departmentKey: "engineering",
+    locationKey: "locationSanFranciscoRemote",
+    typeKey: "fullTime",
     isNew: true,
   },
   {
     id: "product-designer",
-    title: "Product Designer (LMS)",
-    department: "Product",
-    location: "London / Remote",
-    type: "Full-time",
+    titleKey: "jobProductDesignerTitle",
+    departmentKey: "product",
+    locationKey: "locationLondonRemote",
+    typeKey: "fullTime",
     isNew: false,
   },
   {
     id: "strategic-account-executive",
-    title: "Strategic Account Executive",
-    department: "Sales",
-    location: "Vancouver / Remote",
-    type: "Full-time",
+    titleKey: "jobStrategicAccountTitle",
+    departmentKey: "sales",
+    locationKey: "locationVancouverRemote",
+    typeKey: "fullTime",
     isNew: true,
   },
   {
     id: "technical-content-marketer",
-    title: "Technical Content Marketer",
-    department: "Marketing",
-    location: "Toronto / Remote",
-    type: "Full-time",
+    titleKey: "jobTechnicalContentTitle",
+    departmentKey: "marketing",
+    locationKey: "locationTorontoRemote",
+    typeKey: "fullTime",
     isNew: false,
   },
 ];
 
-const CULTURE_PERKS = [
+const getCulturePerks = (t: (key: string) => string) => [
   {
     icon: <Globe className="w-6 h-6 text-teal-600" />,
-    title: "Remote-First Culture",
-    description: "We focus on outcomes, not hours. Work from anywhere in the world with a distributed team of experts."
+    titleKey: "remoteFirstCulture",
+    descKey: "remoteFirstDesc",
   },
   {
     icon: <BookOpen className="w-6 h-6 text-teal-600" />,
-    title: "Continuous Learning",
-    description: "$2,000 annual budget for books, courses, conferences, or any professional growth initiative."
+    titleKey: "continuousLearning",
+    descKey: "continuousLearningDesc",
   },
   {
     icon: <Heart className="w-6 h-6 text-teal-600" />,
-    title: "Health & Wellness",
-    description: "Comprehensive private medical insurance for you and your family, plus premium gym memberships."
-  }
+    titleKey: "healthWellness",
+    descKey: "healthWellnessDesc",
+  },
 ];
 
 export default function CareersPage() {
+  const t = useTranslations("careers");
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDept, setSelectedDept] = useState("All Departments");
+  const [selectedDept, setSelectedDept] = useState(t("allDepartments"));
+
+  const JOBS = getJobs(t);
+  const CULTURE_PERKS = getCulturePerks(t);
 
   const filteredJobs = JOBS.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.department.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDept = selectedDept === "All Departments" || job.department === selectedDept;
+    const title = t(job.titleKey);
+    const department = t(job.departmentKey);
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      department.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDept = selectedDept === t("allDepartments") || department === selectedDept;
     return matchesSearch && matchesDept;
   });
 
-  const departments = ["All Departments", ...new Set(JOBS.map(job => job.department))];
+  const departments = [t("allDepartments"), ...new Set(JOBS.map(job => t(job.departmentKey)))];
 
   const scrollToOpenings = () => {
     const element = document.getElementById('openings');
@@ -109,14 +116,14 @@ export default function CareersPage() {
             transition={{ duration: 0.6 }}
           >
             <Badge variant="outline" className="mb-4 border-teal-200 text-teal-700 bg-teal-50 px-4 py-1">
-              Work with us
+              {t("workWithUs")}
             </Badge>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-slate-900 mb-6">
-              Help Us Revolutionize How <br />
-              the <span className="text-teal-600">World Learns</span>
+              {t("helpRevolutionize")} <br />
+              {t("worldLearns")}
             </h1>
             <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-10">
-              Join a remote-first team building the next generation of interactive education tools for the world&apos;s leading enterprises.
+              {t("joinRemoteTeam")}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button
@@ -124,10 +131,10 @@ export default function CareersPage() {
                 className="bg-teal-600 hover:bg-teal-700 text-white rounded-full px-8 shadow-lg shadow-teal-200"
                 onClick={scrollToOpenings}
               >
-                View Openings
+                {t("viewOpenings")}
               </Button>
               <Button variant="outline" size="lg" className="rounded-full px-8 bg-white" onClick={() => router.push('/about')}>
-                Our Mission
+                {t("ourMission")}
               </Button>
             </div>
           </motion.div>
@@ -138,8 +145,8 @@ export default function CareersPage() {
       <section className="py-20 bg-white">
         <div className="container px-4 mx-auto">
           <div className="mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Our Culture & Perks</h2>
-            <p className="text-slate-600">Everything you need to do your best work, wherever you are.</p>
+            <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("ourCulturePerks")}</h2>
+            <p className="text-slate-600">{t("everythingYouNeed")}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -156,8 +163,8 @@ export default function CareersPage() {
                     <div className="w-12 h-12 rounded-4xl bg-teal-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                       {perk.icon}
                     </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-3">{perk.title}</h3>
-                    <p className="text-slate-600 leading-relaxed">{perk.description}</p>
+                    <h3 className="text-xl font-bold text-slate-900 mb-3">{t(perk.titleKey)}</h3>
+                    <p className="text-slate-600 leading-relaxed">{t(perk.descKey)}</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -171,15 +178,15 @@ export default function CareersPage() {
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">Open Positions</h2>
-              <p className="text-slate-600">Join us in shaping the future of enterprise learning.</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("openPositions")}</h2>
+              <p className="text-slate-600">{t("joinUsShaping")}</p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <div className="relative w-full sm:w-80">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
-                  placeholder="Search roles..."
+                  placeholder={t("searchRoles")}
                   className="pl-10 bg-white border-slate-200"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -217,26 +224,26 @@ export default function CareersPage() {
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
                           <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
-                            {job.title}
+                            {t(job.titleKey)}
                           </h3>
                           {job.isNew && (
-                            <Badge className="bg-teal-500 text-white border-0 uppercase text-[10px]">New</Badge>
+                            <Badge className="bg-teal-500 text-white border-0 uppercase text-[10px]">{t("new")}</Badge>
                           )}
                         </div>
                         <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-sm text-slate-500">
                           <div className="flex items-center gap-1.5">
                             <Briefcase className="w-4 h-4 text-slate-400" />
-                            {job.department}
+                            {t(job.departmentKey)}
                           </div>
                           <div className="flex items-center gap-1.5">
                             <MapPin className="w-4 h-4 text-slate-400" />
-                            {job.location}
+                            {t(job.locationKey)}
                           </div>
                         </div>
                       </div>
 
                       <Button variant="outline" className="group/btn border-slate-200 text-slate-900 group-hover:bg-teal-600 group-hover:border-teal-600 rounded-xl px-6">
-                        View Role
+                        {t("viewRole")}
                         <ChevronRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
                       </Button>
                     </div>
@@ -245,9 +252,9 @@ export default function CareersPage() {
               ))
             ) : (
               <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                <p className="text-slate-500">No positions found matching your criteria.</p>
-                <Button variant="link" onClick={() => { setSearchQuery(""); setSelectedDept("All Departments") }} className="text-teal-600">
-                  Clear all filters
+                <p className="text-slate-500">{t("noPositionsFound")}</p>
+                <Button variant="link" onClick={() => { setSearchQuery(""); setSelectedDept(t("allDepartments")) }} className="text-teal-600">
+                  {t("clearAllFilters")}
                 </Button>
               </div>
             )}
@@ -262,13 +269,13 @@ export default function CareersPage() {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
           <div className="relative z-10 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Don&apos;t see a fit?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">{t("dontSeeFit")}</h2>
             <p className="text-slate-400 text-lg mb-10">
-              We&apos;re always looking for talented people who share our passion for education and technology. Send us your resume for future openings.
+              {t("alwaysLooking")}
             </p>
             <Link href="/careers/spontaneous/apply">
               <Button size="lg" className="bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold rounded-full px-10 h-14 group">
-                Spontaneous Application
+                {t("spontaneousApplication")}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>

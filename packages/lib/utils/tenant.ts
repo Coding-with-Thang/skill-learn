@@ -50,15 +50,19 @@ export async function getTenantContext() {
     );
   }
 
+  // When user has no tenant, return context with tenantId: null so routes can still
+  // return global content (e.g. courses/quizzes) instead of failing with 400.
   if (!user.tenantId) {
-    return NextResponse.json(
-      { 
-        error: "No tenant assigned",
-        message: "Please complete onboarding to set up your workspace",
-        redirectTo: "/onboarding/workspace"
+    return {
+      userId,
+      tenantId: null,
+      user: {
+        id: user.id,
+        role: user.role,
+        tenantId: user.tenantId,
       },
-      { status: 400 }
-    );
+      tenant: null,
+    };
   }
 
   await ensureUserHasDefaultRole(userId, user.tenantId);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -52,6 +53,7 @@ const teamSizes = [
 ];
 
 export default function OnboardingWorkspacePage() {
+  const t = useTranslations("onboarding");
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -98,7 +100,7 @@ export default function OnboardingWorkspacePage() {
     e.preventDefault();
 
     if (!formData.organizationName.trim()) {
-      toast.error("Organization name is required");
+      toast.error(t("organizationNameRequired"));
       return;
     }
 
@@ -123,7 +125,7 @@ export default function OnboardingWorkspacePage() {
         throw new Error(data.error || "Failed to create workspace");
       }
 
-      toast.success("Workspace created successfully!");
+      toast.success(t("workspaceCreatedSuccessfully"));
       setStep(2);
       setRolesLoading(true);
       try {
@@ -136,7 +138,7 @@ export default function OnboardingWorkspacePage() {
         }
       } catch (fetchErr) {
         console.error("Failed to load roles:", fetchErr);
-        toast.error("Could not load roles. Using default.");
+        toast.error(t("couldNotLoadRoles"));
         router.push("/onboarding/complete");
         return;
       } finally {
@@ -144,7 +146,7 @@ export default function OnboardingWorkspacePage() {
       }
     } catch (err) {
       console.error("Workspace creation error:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to create workspace");
+      toast.error(err instanceof Error ? err.message : t("failedToCreateWorkspace"));
     } finally {
       setLoading(false);
     }
@@ -153,7 +155,7 @@ export default function OnboardingWorkspacePage() {
   const handleDefaultRoleSubmit = async (e) => {
     e.preventDefault();
     if (!defaultRoleId) {
-      toast.error("Please select a default role");
+      toast.error(t("pleaseSelectDefaultRole"));
       return;
     }
     try {
@@ -167,11 +169,11 @@ export default function OnboardingWorkspacePage() {
       if (!response.ok) {
         throw new Error(data.error || "Failed to set default role");
       }
-      toast.success("Default role set.");
+      toast.success(t("defaultRoleSet"));
       router.push("/onboarding/complete");
     } catch (err) {
       console.error("Default role update error:", err);
-      toast.error(err instanceof Error ? err.message : "Failed to set default role");
+      toast.error(err instanceof Error ? err.message : t("failedToSetDefaultRole"));
     } finally {
       setLoading(false);
     }
@@ -183,7 +185,7 @@ export default function OnboardingWorkspacePage() {
         <Card>
           <CardContent className="p-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-brand-teal mx-auto" />
-            <p className="text-gray-600 mt-4">Loading...</p>
+            <p className="text-gray-600 mt-4">{t("loading")}</p>
           </CardContent>
         </Card>
       </div>
@@ -198,28 +200,28 @@ export default function OnboardingWorkspacePage() {
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
             ✓
           </div>
-          <span className="text-sm font-medium text-green-600">Payment</span>
+          <span className="text-sm font-medium text-green-600">{t("payment")}</span>
         </div>
         <div className="w-8 h-px bg-green-500" />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
             ✓
           </div>
-          <span className="text-sm font-medium text-green-600">Account</span>
+          <span className="text-sm font-medium text-green-600">{t("account")}</span>
         </div>
         <div className="w-8 h-px bg-gray-300" />
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step > 1 ? "bg-green-500 text-white" : "bg-brand-teal text-white"}`}>
             {step > 1 ? "✓" : "3"}
           </div>
-          <span className="text-sm font-medium text-brand-teal">Workspace</span>
+          <span className="text-sm font-medium text-brand-teal">{t("workspace")}</span>
         </div>
         <div className="w-8 h-px bg-gray-300" />
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step >= 2 ? "bg-brand-teal text-white" : "bg-gray-200 text-gray-500"}`}>
             {step > 2 ? "✓" : "4"}
           </div>
-          <span className={`text-sm font-medium ${step >= 2 ? "text-brand-teal" : "text-gray-500"}`}>Default role</span>
+          <span className={`text-sm font-medium ${step >= 2 ? "text-brand-teal" : "text-gray-500"}`}>{t("defaultRole")}</span>
         </div>
       </div>
 
@@ -233,16 +235,16 @@ export default function OnboardingWorkspacePage() {
             >
               <Building2 className="w-8 h-8 text-brand-teal" />
             </motion.div>
-            <CardTitle className="text-2xl">Set Up Your Workspace</CardTitle>
+            <CardTitle className="text-2xl">{t("setUpWorkspace")}</CardTitle>
             <CardDescription>
-              Create your organization&apos;s learning environment
+              {t("createOrgLearningEnv")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="organizationName">
-                  Organization Name <span className="text-red-500">*</span>
+                  {t("organizationName")} <span className="text-red-500">*</span>
                 </Label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -250,7 +252,7 @@ export default function OnboardingWorkspacePage() {
                     id="organizationName"
                     name="organizationName"
                     type="text"
-                    placeholder="Acme Corporation"
+                    placeholder={t("orgNamePlaceholder")}
                     value={formData.organizationName}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -260,7 +262,7 @@ export default function OnboardingWorkspacePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="subdomain">Workspace URL</Label>
+                <Label htmlFor="subdomain">{t("workspaceUrl")}</Label>
                 <div className="flex items-center">
                   <div className="relative flex-1">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -268,7 +270,7 @@ export default function OnboardingWorkspacePage() {
                       id="subdomain"
                       name="subdomain"
                       type="text"
-                      placeholder="acme"
+                      placeholder={t("subdomainPlaceholder")}
                       value={formData.subdomain}
                       onChange={handleInputChange}
                       className="pl-10 rounded-4xl-none"
@@ -280,19 +282,19 @@ export default function OnboardingWorkspacePage() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500">
-                  This will be your workspace&apos;s unique URL
+                  {t("workspaceUrlHint")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="industry">{t("industry")}</Label>
                 <Select
                   value={formData.industry}
                   onValueChange={(value) => handleSelectChange("industry", value)}
                 >
                   <SelectTrigger>
                     <Briefcase className="w-4 h-4 text-gray-400 mr-2" />
-                    <SelectValue placeholder="Select your industry" />
+                    <SelectValue placeholder={t("selectIndustry")} />
                   </SelectTrigger>
                   <SelectContent>
                     {industries.map((industry) => (
@@ -305,14 +307,14 @@ export default function OnboardingWorkspacePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="teamSize">Team Size</Label>
+                <Label htmlFor="teamSize">{t("teamSize")}</Label>
                 <Select
                   value={formData.teamSize}
                   onValueChange={(value) => handleSelectChange("teamSize", value)}
                 >
                   <SelectTrigger>
                     <Users className="w-4 h-4 text-gray-400 mr-2" />
-                    <SelectValue placeholder="Select team size" />
+                    <SelectValue placeholder={t("selectTeamSize")} />
                   </SelectTrigger>
                   <SelectContent>
                     {teamSizes.map((size) => (
@@ -330,7 +332,7 @@ export default function OnboardingWorkspacePage() {
                 ) : (
                   <CheckCircle2 className="w-5 h-5 mr-2" />
                 )}
-                Create Workspace
+                {t("createWorkspace")}
               </Button>
             </form>
           </CardContent>
@@ -347,9 +349,9 @@ export default function OnboardingWorkspacePage() {
             >
               <Shield className="w-8 h-8 text-brand-teal" />
             </motion.div>
-            <CardTitle className="text-2xl">Default Role for New Users</CardTitle>
+            <CardTitle className="text-2xl">{t("defaultRoleForNewUsers")}</CardTitle>
             <CardDescription>
-              New users and anyone without a role will get this role by default. You can change this later in settings.
+              {t("defaultRoleDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
@@ -360,20 +362,20 @@ export default function OnboardingWorkspacePage() {
             ) : (
               <form onSubmit={handleDefaultRoleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="defaultRoleId">Default role</Label>
+                  <Label htmlFor="defaultRoleId">{t("defaultRole")}</Label>
                   <Select
                     value={defaultRoleId}
                     onValueChange={setDefaultRoleId}
                   >
                     <SelectTrigger>
                       <Shield className="w-4 h-4 text-gray-400 mr-2" />
-                      <SelectValue placeholder="Select default role" />
+                      <SelectValue placeholder={t("selectDefaultRole")} />
                     </SelectTrigger>
                     <SelectContent>
                       {roles.map((role) => (
                         <SelectItem key={role.id} value={role.id}>
                           {role.roleAlias}
-                          {role.doesNotCountTowardSlotLimit && " (view-only, doesn’t count toward role limit)"}
+                          {role.doesNotCountTowardSlotLimit && t("viewOnlyRoleSuffix")}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -385,7 +387,7 @@ export default function OnboardingWorkspacePage() {
                   ) : (
                     <ArrowRight className="w-5 h-5 mr-2" />
                   )}
-                  Continue
+                  {t("continue")}
                 </Button>
               </form>
             )}
@@ -395,7 +397,7 @@ export default function OnboardingWorkspacePage() {
 
       {user && (
         <p className="text-sm text-center text-gray-500 mt-6">
-          Signed in as {user.primaryEmailAddress?.emailAddress}
+          {t("signedInAs")} {user.primaryEmailAddress?.emailAddress}
         </p>
       )}
     </div>

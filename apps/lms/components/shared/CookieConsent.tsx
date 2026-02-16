@@ -2,23 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Shield,
-  ChevronDown,
-  ChevronUp,
-  Settings,
-  Check,
-  ExternalLink,
-  Cookie,
-  X,
-  ShieldCheck
-} from "lucide-react";
+import { Shield, ChevronDown, ChevronUp, Cookie, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 
 const COOKIE_CONSENT_KEY = "skill_learn_cookie_consent";
 
 export function CookieConsent() {
+  const t = useTranslations("cookie");
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [preferences, setPreferences] = useState({
@@ -78,11 +70,11 @@ export function CookieConsent() {
               setIsExpanded(true);
             }}
             className="fixed bottom-6 right-6 z-[9998] p-3 bg-brand-teal text-white rounded-full shadow-lg hover:bg-brand-teal-dark transition-all group flex items-center gap-0 overflow-hidden"
-            title="Cookie Settings"
+            title={t("cookieSettings")}
           >
             <Cookie className="w-5 h-5 shrink-0" />
             <span className="max-w-0 overflow-hidden group-hover:max-w-[150px] group-hover:ml-2 transition-all duration-500 whitespace-nowrap text-[12px] font-bold">
-              Privacy Settings
+              {t("privacySettings")}
             </span>
           </motion.button>
         )}
@@ -103,7 +95,7 @@ export function CookieConsent() {
             <button
               onClick={() => setIsVisible(false)}
               className="absolute top-4 right-4 p-1 rounded-full hover:bg-slate-100 text-slate-400 transition-all z-10"
-              title="Close Settings"
+              title={t("closeSettings")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -113,9 +105,9 @@ export function CookieConsent() {
                   <Cookie className="w-5 h-5 text-brand-teal" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-base font-bold text-slate-900 mb-1 leading-tight">Privacy & Cookies</h3>
+                  <h3 className="text-base font-bold text-slate-900 mb-1 leading-tight">{t("privacyCookies")}</h3>
                   <p className="text-[12px] text-slate-500 leading-tight">
-                    We use cookies to enhance your experience and analyze platform traffic.
+                    {t("cookieDescription")}
                   </p>
                 </div>
               </div>
@@ -124,7 +116,7 @@ export function CookieConsent() {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="flex items-center gap-1 text-[12px] font-bold text-brand-teal mb-6 hover:text-brand-teal-dark transition-colors"
               >
-                Manage Preferences {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {t("managePreferences")} {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
 
               <AnimatePresence>
@@ -136,29 +128,27 @@ export function CookieConsent() {
                     className="overflow-hidden mb-6 space-y-3"
                   >
                     <p className="text-[10px] text-slate-400 mb-2 leading-tight italic">
-                      By clicking &apos;Accept All&apos;, you consent to our use of cookies.
+                      {t("acceptConsent")}
                     </p>
 
-                    {/* Essential */}
                     <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-2">
                           <Shield className="w-3.5 h-3.5 text-slate-400" />
-                          <span className="text-[12px] font-bold text-slate-800">Essential</span>
+                          <span className="text-[12px] font-bold text-slate-800">{t("essential")}</span>
                         </div>
                         <div className="w-8 h-5 bg-brand-teal/10 rounded-full flex items-center px-1 opacity-50">
                           <div className="w-3 h-3 bg-brand-teal rounded-full ml-auto" />
                         </div>
                       </div>
                       <p className="text-[10px] text-slate-500 leading-tight">
-                        Required for basic platform functionality.
+                        {t("essentialDesc")}
                       </p>
                     </div>
 
-                    {/* Analytics */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 hover:border-brand-teal/20 transition-all cursor-pointer" onClick={() => togglePreference('analytics')}>
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 hover:border-brand-teal/20 transition-all cursor-pointer" onClick={() => togglePreference("analytics")}>
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-bold text-slate-800">Analytics</span>
+                        <span className="text-[12px] font-bold text-slate-800">{t("analytics")}</span>
                         <div className={cn(
                           "w-8 h-5 rounded-full flex items-center px-1 transition-all",
                           preferences.analytics ? "bg-brand-teal" : "bg-slate-200"
@@ -171,10 +161,9 @@ export function CookieConsent() {
                       </div>
                     </div>
 
-                    {/* Marketing */}
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 hover:border-brand-teal/20 transition-all cursor-pointer" onClick={() => togglePreference('marketing')}>
+                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 hover:border-brand-teal/20 transition-all cursor-pointer" onClick={() => togglePreference("marketing")}>
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-bold text-slate-800">Marketing</span>
+                        <span className="text-[12px] font-bold text-slate-800">{t("marketing")}</span>
                         <div className={cn(
                           "w-8 h-5 rounded-full flex items-center px-1 transition-all",
                           preferences.marketing ? "bg-brand-teal" : "bg-slate-200"
@@ -197,19 +186,19 @@ export function CookieConsent() {
                       onClick={handleRejectAll}
                       className="flex-1 py-2 text-[12px] font-bold text-slate-600 bg-white border border-slate-200 rounded-lg"
                     >
-                      Reject
+                      {t("reject")}
                     </button>
                     <button
                       onClick={handleSavePreferences}
                       className="flex-1 py-2 text-[12px] font-bold text-brand-teal bg-white border border-brand-teal rounded-lg hover:bg-brand-teal/5 transition-all"
                     >
-                      Save
+                      {t("save")}
                     </button>
                     <button
                       onClick={handleAcceptAll}
                       className="flex-1 py-2 text-[12px] font-bold text-white bg-brand-teal rounded-lg shadow-md hover:bg-brand-teal-dark transition-all"
                     >
-                      All
+                      {t("all")}
                     </button>
                   </>
                 ) : (
@@ -218,22 +207,22 @@ export function CookieConsent() {
                       onClick={handleRejectAll}
                       className="flex-1 py-3 text-[12px] font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"
                     >
-                      Reject All
+                      {t("rejectAll")}
                     </button>
                     <button
                       onClick={handleAcceptAll}
                       className="flex-1 py-3 text-[12px] font-bold text-white bg-brand-teal rounded-xl shadow-md hover:bg-brand-teal-dark transition-all"
                     >
-                      Accept All
+                      {t("acceptAll")}
                     </button>
                   </>
                 )}
               </div>
 
               <div className="mt-5 flex items-center justify-center gap-3 text-[9px] font-bold uppercase tracking-widest text-slate-400">
-                <Link href="/legal/privacy-policy" className="hover:text-brand-teal transition-colors">Privacy</Link>
+                <Link href="/legal/privacy-policy" className="hover:text-brand-teal transition-colors">{t("privacy")}</Link>
                 <div className="w-1 h-1 rounded-full bg-slate-300" />
-                <Link href="/legal/terms-of-condition" className="hover:text-brand-teal transition-colors">Terms</Link>
+                <Link href="/legal/terms-of-condition" className="hover:text-brand-teal transition-colors">{t("terms")}</Link>
               </div>
             </div>
           </motion.div>

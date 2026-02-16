@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
     FileText,
@@ -24,18 +25,18 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@skill-learn/ui/components/button";
 import { cn } from "@skill-learn/lib/utils";
 
-const sections = [
-    { id: "acceptable-use", name: "Acceptable Use", icon: Shield },
-    { id: "intellectual-property", name: "Intellectual Property", icon: Lock },
-    { id: "user-obligations", name: "User Obligations", icon: UserCheck },
-    { id: "limitation-of-liability", name: "Limitation of Liability", icon: Scale },
-    { id: "termination", name: "Termination", icon: LogOut },
-    { id: "contact", name: "Contact", icon: Mail },
-];
-
 export default function TermsOfConditionPage() {
+    const t = useTranslations("legal");
     const [activeSection, setActiveSection] = useState("acceptable-use");
     const [searchQuery, setSearchQuery] = useState("");
+    const sections = [
+        { id: "acceptable-use", name: t("acceptableUse"), icon: Shield },
+        { id: "intellectual-property", name: t("intellectualProperty"), icon: Lock },
+        { id: "user-obligations", name: t("userObligations"), icon: UserCheck },
+        { id: "limitation-of-liability", name: t("limitationOfLiability"), icon: Scale },
+        { id: "termination", name: t("termination"), icon: LogOut },
+        { id: "contact", name: t("contact"), icon: Mail },
+    ];
 
     useEffect(() => {
         const handleScroll = () => {
@@ -72,25 +73,25 @@ export default function TermsOfConditionPage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Breadcrumbs */}
                     <nav className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-                        <span className="hover:text-brand-teal cursor-pointer">Legal Documentation</span>
+                        <span className="hover:text-brand-teal cursor-pointer">{t("legalDocumentation")}</span>
                         <ChevronRight className="w-4 h-4" />
-                        <span className="text-slate-900 font-medium">Terms & Conditions</span>
+                        <span className="text-slate-900 font-medium">{t("termsAndConditions")}</span>
                     </nav>
 
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div>
                             <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-4 tracking-tight">
-                                Terms & Conditions
+                                {t("termsAndConditions")}
                             </h1>
                             <p className="text-lg text-slate-500 leading-relaxed">
-                                Please read these terms carefully before using our platform. <span className="font-semibold text-slate-400 ml-2">Last Updated: October 24, 2023</span>
+                                {t("termsIntro")} <span className="font-semibold text-slate-400 ml-2">{t("lastUpdatedOctober")}</span>
                             </p>
                         </div>
 
                         <div className="flex items-center gap-3">
                             <Button variant="outline" className="flex items-center gap-2 bg-white border-slate-200">
                                 <FileDown className="w-4 h-4" />
-                                Download PDF
+                                {t("downloadPdf")}
                             </Button>
                             <Button variant="ghost" size="icon" className="rounded-full bg-slate-100 text-slate-600">
                                 <Printer className="w-4 h-4" />
@@ -107,7 +108,7 @@ export default function TermsOfConditionPage() {
                     <aside className="lg:w-72 shrink-0">
                         <div className="sticky top-10 space-y-8">
                             <div className="bg-white rounded-4xl p-6 shadow-sm border border-slate-100">
-                                <h3 className="text-sm font-bold text-slate-900 mb-4 tracking-tight">Table of Contents</h3>
+                                <h3 className="text-sm font-bold text-slate-900 mb-4 tracking-tight">{t("tableOfContents")}</h3>
                                 <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-4">Quick Navigation</p>
                                 <nav className="space-y-1">
                                     {sections.map((section) => {
@@ -141,7 +142,7 @@ export default function TermsOfConditionPage() {
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                                         <input
                                             type="text"
-                                            placeholder="Find keyword..."
+                                            placeholder={t("findKeyword")}
                                             className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-teal/20 transition-all"
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}

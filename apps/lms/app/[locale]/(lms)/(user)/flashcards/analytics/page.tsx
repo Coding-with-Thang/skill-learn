@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   Card,
@@ -17,6 +18,8 @@ import { ExposureMasteryBarChart } from "@/components/flashcards/ExposureMastery
 type AnalyticsData = { byCategory?: { categoryName?: string; avgExposure?: number; avgMastery?: number }[]; totalCards?: number; totalExposures?: number; avgMasteryOverall?: number };
 
 export default function FlashCardsAnalyticsPage() {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,28 +47,28 @@ export default function FlashCardsAnalyticsPage() {
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "Flash Cards", href: "/flashcards" },
-          { name: "My Analytics", href: "/flashcards/analytics" },
+          { name: tB("flashCards"), href: "/flashcards" },
+          { name: tB("myAnalytics"), href: "/flashcards/analytics" },
         ]}
-        endtrail="My Analytics"
+        endtrail={tB("myAnalytics")}
       />
       <div className="max-w-4xl mx-auto space-y-6 pb-8">
         <div>
-          <h1 className="text-2xl font-bold">Learning Analytics</h1>
+          <h1 className="text-2xl font-bold">{t("learningAnalytics")}</h1>
           <p className="text-muted-foreground mt-1">
-            Exposure and mastery by category.
+            {t("exposureAndMastery")}
           </p>
         </div>
 
         {(data?.totalCards ?? 0) === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
-              <p>No study data yet.</p>
+              <p>{t("noStudyDataYet")}</p>
               <p className="text-sm mt-1">
-                Start studying to see your exposure vs mastery charts.
+                {t("startStudyingToSee")}
               </p>
               <Link href="/flashcards" className="text-primary hover:underline mt-4 inline-block">
-                Go to Flash Cards
+                {t("goToFlashCards")}
               </Link>
             </CardContent>
           </Card>
@@ -74,19 +77,19 @@ export default function FlashCardsAnalyticsPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>Cards studied</CardDescription>
+                  <CardDescription>{t("cardsStudied")}</CardDescription>
                   <CardTitle className="text-2xl">{data?.totalCards ?? 0}</CardTitle>
                 </CardHeader>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>Total exposures</CardDescription>
+                  <CardDescription>{t("totalExposures")}</CardDescription>
                   <CardTitle className="text-2xl">{data?.totalExposures ?? 0}</CardTitle>
                 </CardHeader>
               </Card>
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>Avg mastery</CardDescription>
+                  <CardDescription>{t("avgMastery")}</CardDescription>
                   <CardTitle className="text-2xl">
                     {((data?.avgMasteryOverall ?? 0) * 100).toFixed(0)}%
                   </CardTitle>
@@ -97,7 +100,7 @@ export default function FlashCardsAnalyticsPage() {
             {chartData.length > 0 && (
               <ExposureMasteryBarChart
                 chartData={chartData}
-                description="Higher exposure = more reviews. Mastery = correct / exposures."
+                description={t("chartDescription")}
               />
             )}
           </>
@@ -107,7 +110,7 @@ export default function FlashCardsAnalyticsPage() {
           href="/flashcards"
           className="text-sm text-muted-foreground hover:text-primary"
         >
-          ← Back to Flash Cards
+          {t("backToFlashCardsLink")}
         </Link>
       </div>
     </>

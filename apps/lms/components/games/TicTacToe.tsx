@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
 import {
   Select,
@@ -62,6 +63,7 @@ const minimax = (squares, depth, isMaximizing) => {
 };
 
 const TicTacToe = () => {
+  const t = useTranslations("games");
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
   const [winner, setWinner] = useState<"X" | "O" | "draw" | null>(null);
@@ -189,10 +191,10 @@ const TicTacToe = () => {
   return (
     <div className="flex flex-col items-center">
       <div className="mb-8 flex items-center gap-4">
-        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Difficulty</span>
+        <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">{t("difficulty")}</span>
         <Select defaultValue="easy" onValueChange={handleDifficultyChange}>
           <SelectTrigger className="w-32 rounded-xl border-none bg-slate-100 font-bold text-slate-600">
-            <SelectValue placeholder="Difficulty" />
+            <SelectValue placeholder={t("difficulty")} />
           </SelectTrigger>
           <SelectContent className="rounded-xl border-none shadow-xl">
             <SelectItem value="easy">Easy</SelectItem>

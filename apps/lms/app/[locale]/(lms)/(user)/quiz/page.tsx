@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { useTranslations } from "next-intl"
 import { useRouter } from "@/i18n/navigation"
 import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore"
 import api from "@skill-learn/lib/utils/axios";
@@ -34,7 +35,7 @@ const shuffleArray = (array) => {
 
 type QuizQuestionResponse = { questionId: string; selectedOptionIds?: string[]; isCorrect?: boolean; question?: string; selectedAnswer?: string; correctAnswer?: string };
 
-const QuestionMedia = ({ question }: { question: { imageUrl?: string; videoUrl?: string } }) => {
+const QuestionMedia = ({ question, alt }: { question: { imageUrl?: string; videoUrl?: string }; alt: string }) => {
     const [mediaError, setMediaError] = useState(false);
 
     // If no media exists or there's an error, don't render anything
@@ -62,7 +63,7 @@ const QuestionMedia = ({ question }: { question: { imageUrl?: string; videoUrl?:
             <div className="relative w-full h-64 mb-8 bg-secondary/10 rounded-xl overflow-hidden">
                 <Image
                     src={question.imageUrl}
-                    alt="Question illustration"
+                    alt={alt}
                     fill
                     className="object-contain"
                     sizes="(max-width: 768px) 100vw, 768px"
@@ -76,6 +77,7 @@ const QuestionMedia = ({ question }: { question: { imageUrl?: string; videoUrl?:
 };
 
 export default function QuizScreenPage() {
+    const t = useTranslations("quiz");
     const router = useRouter();
     const { selectedQuiz, setSelectedQuiz, setQuizResponses } = useQuizStartStore();
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -222,7 +224,7 @@ export default function QuizScreenPage() {
             // Final validation: Check if quiz has questions with proper structure
             if (!quiz.questions || !Array.isArray(quiz.questions) || quiz.questions.length === 0) {
                 console.error("[Quiz Debug] Quiz has no questions after fetch:", quiz);
-                toast.error("This quiz has no questions available. Please select another quiz.");
+                toast.error(t("selectAnotherQuiz"));
                 router.push("/training");
                 return;
             }
@@ -232,7 +234,7 @@ export default function QuizScreenPage() {
             if (!questionsAreValid) {
                 console.error("[Quiz Debug] Quiz questions are missing text or options:", quiz.questions);
                 console.log("[Quiz Debug] Sample question structure:", quiz.questions[0]);
-                toast.error("Quiz data is incomplete. Please try again.");
+                toast.error(t("quizDataIncomplete"));
                 router.push("/training");
                 return;
             }
@@ -436,7 +438,7 @@ export default function QuizScreenPage() {
                 }
             } catch (e) {
                 handleErrorWithNotification(e, "Failed to save quiz results");
-                toast.warning("Quiz results saved locally only");
+                toast.warning(t("quizResultsSavedLocally"));
             }
 
             router.replace("/quiz/results");
@@ -581,10 +583,10 @@ export default function QuizScreenPage() {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center p-8">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">No Questions Available</h1>
-                    <p className="text-gray-600 mb-6">This quiz does not have any questions. Please select another quiz.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">{t("noQuestionsTitle")}</h1>
+                    <p className="text-gray-600 mb-6">{t("noQuestionsDescription")}</p>
                     <Button onClick={() => router.push("/training")} className="bg-blue-600 hover:bg-blue-700">
-                        Go Back to Training
+                        {t("goBackToTraining")}
                     </Button>
                 </div>
             </div>
@@ -604,10 +606,10 @@ export default function QuizScreenPage() {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center p-8">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Question Not Found</h1>
-                    <p className="text-gray-600 mb-6">Unable to load the current question. Please try again.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">{t("questionNotFound")}</h1>
+                    <p className="text-gray-600 mb-6">{t("questionNotFoundDescription")}</p>
                     <Button onClick={() => router.push("/training")} className="bg-blue-600 hover:bg-blue-700">
-                        Go Back to Training
+                        {t("goBackToTraining")}
                     </Button>
                 </div>
             </div>
@@ -631,8 +633,8 @@ export default function QuizScreenPage() {
     return (
         <FeatureGate
             feature="course_quizzes"
-            featureName="Course Quizzes"
-            fallback={<FeatureDisabledPage featureName="Course Quizzes" />}
+            featureName={t("courseQuizzes")}
+            fallback={<FeatureDisabledPage featureName={t("courseQuizzes")} />}
         >
             <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
                 {/* Header */}
@@ -645,15 +647,15 @@ export default function QuizScreenPage() {
                             </div>
                             <div>
                                 <h1 className="text-lg font-bold text-gray-900 leading-tight">{selectedQuiz?.title}</h1>
-                                <p className="text-sm text-muted-foreground">{selectedQuiz?.description || "Assessment"}</p>
+                                <p className="text-sm text-muted-foreground">{selectedQuiz?.description || t("assessment")}</p>
                             </div>
                         </div>
 
                         {/* Center: Progress */}
                         <div className="flex-1 w-full md:max-w-xl flex flex-col gap-2">
                             <div className="flex justify-between text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                <span>Question {currentIndex + 1} of {shuffledQuestionsMemo.length}</span>
-                                <span>{Math.round(progressPercentage)}% completed</span>
+                                <span>{t("question")} {currentIndex + 1} {t("of")} {shuffledQuestionsMemo.length}</span>
+                                <span>{Math.round(progressPercentage)}{t("percentCompleted")}</span>
                             </div>
                             <Progress value={progressPercentage} className="h-2" />
                         </div>
@@ -668,7 +670,7 @@ export default function QuizScreenPage() {
                             )}
                             <Button variant="ghost" className="hidden md:flex items-center gap-2 text-gray-500 hover:text-red-500" onClick={handleSaveAndExit}>
                                 <X className="w-5 h-5" />
-                                Save & Exit
+                                {t("saveAndExit")}
                             </Button>
                         </div>
                     </div>
@@ -682,16 +684,16 @@ export default function QuizScreenPage() {
                             <>
                                 <div className="mb-2">
                                     <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase tracking-wider">
-                                        Multiple Choice
+                                        {t("multipleChoice")}
                                     </span>
                                 </div>
 
                                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
-                                    {currentQuestion.text || "Question text not available"}
+                                    {currentQuestion.text || t("questionTextNotAvailable")}
                                 </h2>
-                                <p className="text-gray-500 mb-8">Select all that apply.</p>
+                                <p className="text-gray-500 mb-8">{t("selectAllThatApply")}</p>
 
-                                <QuestionMedia question={currentQuestion} />
+                                <QuestionMedia question={currentQuestion} alt={t("questionIllustration")} />
 
                                 {/* Options */}
                                 <div className="space-y-4">
@@ -728,8 +730,8 @@ export default function QuizScreenPage() {
                                         })
                                     ) : (
                                         <div className="p-8 text-center text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
-                                            <p className="text-lg font-medium">No options available for this question.</p>
-                                            <p className="text-sm mt-2">Please contact support if this issue persists.</p>
+                                            <p className="text-lg font-medium">{t("noOptionsAvailable")}</p>
+                                            <p className="text-sm mt-2">{t("contactSupportIfPersists")}</p>
                                         </div>
                                     )}
                                 </div>
@@ -748,11 +750,11 @@ export default function QuizScreenPage() {
                             className="px-6 py-6 text-base font-semibold border-gray-300 text-gray-700 hover:bg-gray-50"
                         >
                             <ChevronLeft className="w-5 h-5 mr-2" />
-                            Previous
+                            {t("previous")}
                         </Button>
 
                         <div className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest">
-                            Auto-saved
+                            {t("autoSaved")}
                         </div>
 
                         <Button
@@ -760,7 +762,7 @@ export default function QuizScreenPage() {
                             disabled={selectedOptions.length === 0 || isTransitioning}
                             className="px-8 py-6 text-base font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200"
                         >
-                            {currentIndex === shuffledQuestionsMemo.length - 1 ? "Finish Quiz" : "Next Question"}
+                            {currentIndex === shuffledQuestionsMemo.length - 1 ? t("finishQuiz") : t("nextQuestion")}
                             <ChevronRight className="w-5 h-5 ml-2" />
                         </Button>
                     </div>

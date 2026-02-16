@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   BookOpen,
   CreditCard,
@@ -34,168 +35,102 @@ import {
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/shared/Logo";
 
-// Define navigation data with feature requirements
-const getNavData = () => ({
-  navGroups: [
-    {
-      label: "ADMIN DASHBOARD",
-      items: [
-        {
-          title: "Overview",
-          url: "/dashboard",
-          icon: Layout,
-          isActive: true,
-        },
-        {
-          title: "Categories",
-          url: "/dashboard/categories",
-          icon: ChartBarStacked,
-          feature: "categories",
-          items: [
-            {
-              title: "Manage Categories",
-              url: "/dashboard/categories",
-            },
-          ],
-        },
-        {
-          title: "Courses",
-          url: "/dashboard/courses",
-          icon: BookOpen,
-          feature: "training_courses",
-          items: [
-            {
-              title: "Manage Courses",
-              url: "/dashboard/courses",
-            },
-            {
-              title: "Course Creator",
-              url: "/dashboard/courses/create",
-            },
-          ],
-        },
-        {
-          title: "Quiz Management",
-          url: "/dashboard/quizzes",
-          icon: FileQuestion,
-          feature: "course_quizzes",
-          items: [
-            {
-              title: "Manage Quizzes",
-              url: "/dashboard/quizzes",
-            },
-            {
-              title: "Quiz Creator",
-              url: "/dashboard/quizzes/quiz-manager",
-            },
-          ],
-        },
-        {
-          title: "Flash Cards",
-          url: "/dashboard/flashcards-analytics",
-          icon: Layers,
-          feature: "flash_cards",
-          items: [
-            {
-              title: "Analytics & Suggestions",
-              url: "/dashboard/flashcards-analytics",
-            },
-            {
-              title: "Priorities & Settings",
-              url: "/dashboard/flashcards-priorities",
-            },
-            {
-              title: "Manage Cards",
-              url: "/dashboard/flashcards-cards",
-            },
-            {
-              title: "Manage Categories",
-              url: "/dashboard/flashcards-categories",
-            },
-            {
-              title: "Bulk Import",
-              url: "/dashboard/flashcards-import",
-            },
-            {
-              title: "Learning Analytics",
-              url: "/dashboard/flashcards-learning-analytics",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: "ORGANIZATION",
-      items: [
-        {
-          title: "Billing",
-          url: "/dashboard/billing",
-          icon: CreditCard,
-        },
-        {
-          title: "Features",
-          url: "/dashboard/features",
-          icon: ToggleLeft,
-        },
-        {
-          title: "Roles",
-          url: "/dashboard/roles",
-          icon: Shield,
-          feature: "custom_roles",
-          items: [
-            {
-              title: "Manage Roles",
-              url: "/dashboard/roles",
-            },
-            {
-              title: "User Assignments",
-              url: "/dashboard/user-roles",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      label: "PLATFORM",
-      items: [
-        {
-          title: "Rewards",
-          url: "/dashboard/rewards",
-          icon: Gift,
-          feature: "rewards_store",
-        },
-        {
-          title: "Users",
-          url: "/dashboard/users",
-          icon: Users,
-        },
-        {
-          title: "Documentation",
-          url: "/dashboard/documentation",
-          icon: FileText,
-        },
-        {
-          title: "Settings",
-          url: "/dashboard/settings",
-          icon: Settings,
-          items: [
-            {
-              title: "General",
-              url: "/dashboard/settings",
-            },
-            {
-              title: "Audit Logs",
-              url: "/dashboard/audit-logs",
-              feature: "audit_logs",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-});
+function getNavData(t: (key: string) => string) {
+  return {
+    navGroups: [
+      {
+        label: t("groupAdminDashboard"),
+        items: [
+          {
+            title: t("overview"),
+            url: "/dashboard",
+            icon: Layout,
+            isActive: true,
+          },
+          {
+            title: t("categories"),
+            url: "/dashboard/categories",
+            icon: ChartBarStacked,
+            feature: "categories",
+            items: [{ title: t("manageCategories"), url: "/dashboard/categories" }],
+          },
+          {
+            title: t("courses"),
+            url: "/dashboard/courses",
+            icon: BookOpen,
+            feature: "training_courses",
+            items: [
+              { title: t("manageCourses"), url: "/dashboard/courses" },
+              { title: t("courseCreator"), url: "/dashboard/courses/create" },
+            ],
+          },
+          {
+            title: t("quizzes"),
+            url: "/dashboard/quizzes",
+            icon: FileQuestion,
+            feature: "course_quizzes",
+            items: [
+              { title: t("manageQuizzes"), url: "/dashboard/quizzes" },
+              { title: t("quizCreator"), url: "/dashboard/quizzes/quiz-manager" },
+            ],
+          },
+          {
+            title: t("flashCards"),
+            url: "/dashboard/flashcards-analytics",
+            icon: Layers,
+            feature: "flash_cards",
+            items: [
+              { title: t("analyticsSuggestions"), url: "/dashboard/flashcards-analytics" },
+              { title: t("prioritiesSettings"), url: "/dashboard/flashcards-priorities" },
+              { title: t("manageCards"), url: "/dashboard/flashcards-cards" },
+              { title: t("manageCardCategories"), url: "/dashboard/flashcards-categories" },
+              { title: t("bulkImport"), url: "/dashboard/flashcards-import" },
+              { title: t("learningAnalytics"), url: "/dashboard/flashcards-learning-analytics" },
+            ],
+          },
+        ],
+      },
+      {
+        label: t("groupOrganization"),
+        items: [
+          { title: t("billing"), url: "/dashboard/billing", icon: CreditCard },
+          { title: t("features"), url: "/dashboard/features", icon: ToggleLeft },
+          {
+            title: t("roles"),
+            url: "/dashboard/roles",
+            icon: Shield,
+            feature: "custom_roles",
+            items: [
+              { title: t("manageRoles"), url: "/dashboard/roles" },
+              { title: t("userAssignments"), url: "/dashboard/user-roles" },
+            ],
+          },
+        ],
+      },
+      {
+        label: t("groupPlatform"),
+        items: [
+          { title: t("rewards"), url: "/dashboard/rewards", icon: Gift, feature: "rewards_store" },
+          { title: t("users"), url: "/dashboard/users", icon: Users },
+          { title: t("documentation"), url: "/dashboard/documentation", icon: FileText },
+          {
+            title: t("settings"),
+            url: "/dashboard/settings",
+            icon: Settings,
+            items: [
+              { title: t("general"), url: "/dashboard/settings" },
+              { title: t("auditLogs"), url: "/dashboard/audit-logs", feature: "audit_logs" },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+}
 
 export function AppSidebar({ ...props }) {
+  const t = useTranslations("admin");
+  const tNav = useTranslations("nav");
   const isEnabled = useFeaturesStore((s) => s.isEnabled);
   const isLoading = useFeaturesStore((s) => s.isLoading);
   const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
@@ -205,11 +140,12 @@ export function AppSidebar({ ...props }) {
   }, [fetchFeatures]);
 
   const filteredNavGroups = useMemo(() => {
+    const data = getNavData(t);
     if (isLoading) {
-      return getNavData().navGroups;
+      return data.navGroups;
     }
 
-    return getNavData()
+    return data
       .navGroups.map((group) => ({
         ...group,
         items: group.items
@@ -256,10 +192,10 @@ export function AppSidebar({ ...props }) {
                 </div>
                 <div className="grid flex-1 self-end text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold uppercase tracking-tight text-[11px]">
-                    Back to Home
+                    {tNav("backToHome")}
                   </span>
                   <span className="truncate text-[10px] text-muted-foreground uppercase font-black">
-                    Main Dashboard
+                    {tNav("mainDashboard")}
                   </span>
                 </div>
               </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import api from "@skill-learn/lib/utils/axios";
 import { useUser } from "@clerk/nextjs";
@@ -91,10 +92,10 @@ const PodiumPosition = ({ user, position, metric }) => {
   );
 };
 
-const LeaderboardTable = ({ data, type }) => {
+const LeaderboardTable = ({ data, type, t }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">No data available</div>
+      <div className="text-center py-8 text-gray-500">{t("noDataAvailable")}</div>
     );
   }
 
@@ -103,14 +104,14 @@ const LeaderboardTable = ({ data, type }) => {
       <table className="w-full">
         <thead>
           <tr className="bg-gray-50">
-            <th className="px-6 py-3 text-left">Rank</th>
-            <th className="px-6 py-3 text-left">User</th>
+            <th className="px-6 py-3 text-left">{t("rank")}</th>
+            <th className="px-6 py-3 text-left">{t("user")}</th>
             {type === "points" ? (
-              <th className="px-6 py-3 text-right">Points</th>
+              <th className="px-6 py-3 text-right">{t("totalPoints")}</th>
             ) : (
               <>
-                <th className="px-6 py-3 text-right">Average Score</th>
-                <th className="px-6 py-3 text-right">Quizzes Taken</th>
+                <th className="px-6 py-3 text-right">{t("averageScore")}</th>
+                <th className="px-6 py-3 text-right">{t("quizzesTaken")}</th>
               </>
             )}
           </tr>
@@ -134,7 +135,7 @@ const LeaderboardTable = ({ data, type }) => {
                       {(entry.username || "?")[0].toUpperCase()}
                     </div>
                   )}
-                  <span>{entry.username || "Anonymous"}</span>
+                  <span>{entry.username || t("anonymous")}</span>
                 </div>
               </td>
               {type === "points" ? (
@@ -160,6 +161,7 @@ const LeaderboardTable = ({ data, type }) => {
 };
 
 export default function LeaderboardPage() {
+  const t = useTranslations("leaderboard");
   const [activeTab, setActiveTab] = useState("points");
   const [pointsData, setPointsData] = useState([]);
   const [quizData, setQuizData] = useState([]);
@@ -191,7 +193,7 @@ export default function LeaderboardPage() {
         setQuizData(quizData?.leaderboard || quizData || []);
       } catch (err) {
         console.error("Error fetching leaderboards:", err);
-        setError("Failed to load leaderboards");
+        setError(t("failedToLoad"));
       } finally {
         setIsLoading(false);
       }
@@ -208,7 +210,7 @@ export default function LeaderboardPage() {
     return (
       <div className="container mx-auto p-4">
         <div className="flex justify-center items-center min-h-[400px]">
-          <div className="text-gray-500">Loading leaderboards...</div>
+          <div className="text-gray-500">{t("loading")}</div>
         </div>
       </div>
     );
@@ -219,7 +221,7 @@ export default function LeaderboardPage() {
       <div className="container mx-auto p-4">
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="text-gray-500">
-            Please sign in to view leaderboards
+            {t("pleaseSignIn")}
           </div>
         </div>
       </div>
@@ -239,16 +241,19 @@ export default function LeaderboardPage() {
   return (
     <FeatureGate
       feature="leaderboards"
-      featureName="Leaderboards"
-      fallback={<FeatureDisabledPage featureName="Leaderboards" />}
+      featureName={t("title")}
+      fallback={<FeatureDisabledPage featureName={t("title")} />}
     >
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <BreadCrumbCom crumbs={[]} endtrail="Leaderboard" />
+          <BreadCrumbCom crumbs={[]} endtrail={t("title")} />
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <h1 className="text-3xl font-bold">Leaderboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
+            <p className="text-gray-500 mt-1">{t("subtitle")}</p>
+          </div>
 
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
@@ -261,7 +266,7 @@ export default function LeaderboardPage() {
               )}
             >
               <Trophy className="w-4 h-4" />
-              Lifetime Points
+              {t("pointsLeaderboard")}
             </button>
             <button
               onClick={() => setActiveTab("quiz")}
@@ -273,7 +278,7 @@ export default function LeaderboardPage() {
               )}
             >
               <Award className="w-4 h-4" />
-              Quiz Performance
+              {t("quizLeaderboard")}
             </button>
           </div>
         </div>
@@ -282,7 +287,7 @@ export default function LeaderboardPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="text-center">
-              {activeTab === "points" ? "Top Points Leaders" : "Top Quiz Performers"}
+              {activeTab === "points" ? t("topPointsLeaders") : t("topQuizPerformers")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -312,7 +317,7 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                No data available
+                {t("noDataAvailable")}
               </div>
             )}
           </CardContent>
@@ -321,8 +326,8 @@ export default function LeaderboardPage() {
         {/* Full Leaderboard Table */}
         {remaining.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">Full Rankings</h2>
-            <LeaderboardTable data={remaining} type={activeTab} />
+            <h2 className="text-xl font-bold mb-4">{t("fullRankings")}</h2>
+            <LeaderboardTable data={remaining} type={activeTab} t={t} />
           </div>
         )}
       </div>

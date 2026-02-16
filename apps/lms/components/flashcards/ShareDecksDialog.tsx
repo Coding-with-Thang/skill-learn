@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@skill-learn/lib/utils/axios";
 import {
   Dialog,
@@ -30,6 +31,7 @@ export default function ShareDecksDialog({
   decks: DeckItem[];
   onSuccess?: () => void;
 }) {
+  const t = useTranslations("flashcards");
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedDeckIds, setSelectedDeckIds] = useState<Set<string>>(new Set());
   const [recipientMode, setRecipientMode] = useState<"all" | "specific">("specific");
@@ -52,7 +54,7 @@ export default function ShareDecksDialog({
         setRecipients(d?.recipients ?? []);
       })
       .catch(() => {
-        toast.error("Failed to load recipients");
+        toast.error(t("failedToLoadRecipients"));
         setRecipients([]);
       })
       .finally(() => setLoading(false));
@@ -96,14 +98,14 @@ export default function ShareDecksDialog({
   const handleSubmit = async () => {
     const deckIds = Array.from(selectedDeckIds);
     if (deckIds.length === 0) {
-      toast.error("Select at least one deck");
+      toast.error(t("selectAtLeastOneDeck"));
       return;
     }
 
     const recipientUserIds =
       recipientMode === "all" ? "all" : Array.from(selectedUserIds);
     if (recipientMode === "specific" && recipientUserIds.length === 0) {
-      toast.error("Select at least one recipient");
+      toast.error(t("selectAtLeastOneRecipient"));
       return;
     }
 

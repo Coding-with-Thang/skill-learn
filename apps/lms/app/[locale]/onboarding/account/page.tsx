@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "@/i18n/navigation";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useUser, useSignUp, useSignIn } from "@clerk/nextjs";
 import { motion } from "framer-motion";
 import {
@@ -20,9 +21,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skil
 import { Input } from "@skill-learn/ui/components/input";
 import { Label } from "@skill-learn/ui/components/label";
 import { toast } from "sonner";
-import { Link } from "@/i18n/navigation";
 
 export default function OnboardingAccountPage() {
+  const t = useTranslations("onboarding");
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams.get("session_id");
@@ -64,7 +65,7 @@ export default function OnboardingAccountPage() {
     if (!signUpLoaded) return;
 
     if (formData.password !== formData.confirmPassword) {
-      setPasswordError("Passwords must match");
+      setPasswordError(t("passwordsMustMatch"));
       return;
     }
     setPasswordError("");
@@ -86,10 +87,10 @@ export default function OnboardingAccountPage() {
       });
 
       setMode("verify");
-      toast.success("Verification code sent to your email!");
+      toast.success(t("weSentCode"));
     } catch (err) {
       console.error("Sign up error:", err);
-      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Failed to create account";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || t("failedToCreateAccount");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -114,12 +115,12 @@ export default function OnboardingAccountPage() {
         // Create user in database
         await createUserInDatabase();
 
-        toast.success("Account created successfully!");
+        toast.success(t("youreAllSet"));
         router.push(`/onboarding/workspace?session_id=${sessionId}`);
       }
     } catch (err) {
       console.error("Verification error:", err);
-      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Invalid verification code";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || t("invalidVerificationCode");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -145,7 +146,7 @@ export default function OnboardingAccountPage() {
       }
     } catch (err) {
       console.error("Sign in error:", err);
-      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || "Invalid credentials";
+      const errorMessage = (err as { errors?: Array<{ message?: string }> })?.errors?.[0]?.message || t("invalidCredentials");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -176,7 +177,7 @@ export default function OnboardingAccountPage() {
         <Card>
           <CardContent className="p-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-brand-teal mx-auto" />
-            <p className="text-gray-600 mt-4">Loading...</p>
+            <p className="text-gray-600 mt-4">{t("loading")}</p>
           </CardContent>
         </Card>
       </div>
@@ -191,35 +192,35 @@ export default function OnboardingAccountPage() {
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
             ✓
           </div>
-          <span className="text-sm font-medium text-green-600">Payment</span>
+          <span className="text-sm font-medium text-green-600">{t("payment")}</span>
         </div>
         <div className="w-8 h-px bg-gray-300" />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-brand-teal rounded-full flex items-center justify-center text-white text-sm font-medium">
             2
           </div>
-          <span className="text-sm font-medium text-brand-teal">Account</span>
+          <span className="text-sm font-medium text-brand-teal">{t("account")}</span>
         </div>
         <div className="w-8 h-px bg-gray-300" />
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-sm font-medium">
             3
           </div>
-          <span className="text-sm text-gray-400">Workspace</span>
+          <span className="text-sm text-gray-400">{t("workspaceStep")}</span>
         </div>
       </div>
 
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
-            {mode === "verify" ? "Verify Your Email" : mode === "signup" ? "Create Your Account" : "Welcome Back"}
+            {mode === "verify" ? t("verifyYourEmail") : mode === "signup" ? t("createYourAccount") : t("welcomeBack")}
           </CardTitle>
           <CardDescription>
             {mode === "verify"
-              ? "Enter the verification code sent to your email"
+              ? t("enterVerificationCode")
               : mode === "signup"
-                ? "Set up your account to get started"
-                : "Sign in to continue with your subscription"
+                ? t("setUpAccountToGetStarted")
+                : t("signInToContinue")
             }
           </CardDescription>
         </CardHeader>
@@ -227,11 +228,11 @@ export default function OnboardingAccountPage() {
           {mode === "verify" ? (
             <form onSubmit={handleVerification} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="code">Verification Code</Label>
+                <Label htmlFor="code">{t("verificationCode")}</Label>
                 <Input
                   id="code"
                   type="text"
-                  placeholder="Enter 6-digit code"
+                  placeholder={t("verificationCodePlaceholder")}
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                   className="text-center text-2xl tracking-widest"
@@ -245,16 +246,16 @@ export default function OnboardingAccountPage() {
                 ) : (
                   <CheckCircle2 className="w-5 h-5 mr-2" />
                 )}
-                Verify Email
+                {t("verify")}
               </Button>
               <p className="text-sm text-center text-gray-500">
-                Didn&apos;t receive the code?{" "}
+                {t("didntReceiveCode")}{" "}
                 <button
                   type="button"
                   onClick={() => signUp?.prepareEmailAddressVerification({ strategy: "email_code" })}
                   className="text-brand-teal hover:underline"
                 >
-                  Resend
+                  {t("resendCode")}
                 </button>
               </p>
             </form>
@@ -262,14 +263,14 @@ export default function OnboardingAccountPage() {
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName">{t("firstName")}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <Input
                       id="firstName"
                       name="firstName"
                       type="text"
-                      placeholder="John"
+                      placeholder={t("firstNamePlaceholder")}
                       value={formData.firstName}
                       onChange={handleInputChange}
                       className="pl-10"
@@ -278,12 +279,12 @@ export default function OnboardingAccountPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">{t("lastName")}</Label>
                   <Input
                     id="lastName"
                     name="lastName"
                     type="text"
-                    placeholder="Doe"
+                    placeholder={t("lastNamePlaceholder")}
                     value={formData.lastName}
                     onChange={handleInputChange}
                     required
@@ -292,14 +293,14 @@ export default function OnboardingAccountPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="john@company.com"
+                    placeholder={t("emailPlaceholder")}
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -309,14 +310,14 @@ export default function OnboardingAccountPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
+                    placeholder={t("passwordPlaceholder")}
                     value={formData.password}
                     onChange={handleInputChange}
                     className={`pl-10 pr-10 ${passwordError ? "border-red-500" : ""}`}
@@ -333,19 +334,19 @@ export default function OnboardingAccountPage() {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500">
-                  Must be at least 8 characters
+                  {t("passwordMinLength")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Re-enter password"
+                    placeholder={t("confirmPasswordPlaceholder")}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className={`pl-10 pr-10 ${passwordError ? "border-red-500" : ""}`}
@@ -363,32 +364,32 @@ export default function OnboardingAccountPage() {
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
                 ) : null}
-                Create Account
+                {t("signUp")}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
               <p className="text-sm text-center text-gray-500">
-                Already have an account?{" "}
+                {t("alreadyHaveAccount")}{" "}
                 <button
                   type="button"
                   onClick={() => setMode("signin")}
                   className="text-brand-teal hover:underline"
                 >
-                  Sign in
+                  {t("signIn")}
                 </button>
               </p>
             </form>
           ) : (
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("email")}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="john@company.com"
+                    placeholder={t("emailPlaceholder")}
                     value={formData.email}
                     onChange={handleInputChange}
                     className="pl-10"
@@ -398,14 +399,14 @@ export default function OnboardingAccountPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t("password")}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     id="password"
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Your password"
+                    placeholder={t("signInPasswordPlaceholder")}
                     value={formData.password}
                     onChange={handleInputChange}
                     className="pl-10 pr-10"
@@ -425,18 +426,18 @@ export default function OnboardingAccountPage() {
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
                 ) : null}
-                Sign In
+                {t("signIn")}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
               <p className="text-sm text-center text-gray-500">
-                Don&apos;t have an account?{" "}
+                {t("dontHaveAccount")}{" "}
                 <button
                   type="button"
                   onClick={() => setMode("signup")}
                   className="text-brand-teal hover:underline"
                 >
-                  Create one
+                  {t("signUp")}
                 </button>
               </p>
             </form>

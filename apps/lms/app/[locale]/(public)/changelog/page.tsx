@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@skill-learn/database";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -32,6 +33,7 @@ const getTagStyles = (tag) => {
 };
 
 export default async function ChangelogPage() {
+  const t = await getTranslations("changelog");
   let updates: Awaited<ReturnType<typeof prisma.changelog.findMany>> = [];
   let years: number[] = [];
   let tagCounts: Record<string, number> = {};
@@ -76,10 +78,10 @@ export default async function ChangelogPage() {
         <div className="container px-4 mx-auto">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 mb-3">
-              What&apos;s New
+              {t("whatsNew")}
             </h1>
             <p className="text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-              Follow the latest updates, feature releases, and improvements to the Skill-Learn platform.
+              {t("followLatestUpdates")}
             </p>
           </div>
         </div>
@@ -162,7 +164,7 @@ export default async function ChangelogPage() {
                 </div>
               )) : (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
-                  <p className="text-slate-500">No updates yet. Check back soon!</p>
+                  <p className="text-slate-500">{t("noUpdatesYet")}</p>
                 </div>
               )}
             </div>
@@ -177,19 +179,19 @@ export default async function ChangelogPage() {
                   <Bell className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">Stay Updated</h3>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">{t("stayUpdated")}</h3>
                   <p className="text-sm text-slate-500 leading-relaxed">
-                    Get the latest platform updates delivered straight to your inbox.
+                    {t("getLatestUpdates")}
                   </p>
                 </div>
                 <form className="space-y-3">
                   <input
                     type="email"
-                    placeholder="work@company.com"
+                    placeholder={t("emailPlaceholder")}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all text-sm"
                   />
                   <Button className="w-full bg-teal-500 hover:bg-teal-400 text-slate-900 font-bold h-12 rounded-xl">
-                    Subscribe
+                    {t("subscribe")}
                   </Button>
                 </form>
               </CardContent>
@@ -198,25 +200,25 @@ export default async function ChangelogPage() {
             {/* Archive Section */}
             <div className="space-y-4 px-2">
               <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Release Archive
+                <Calendar className="w-4 h-4" /> {t("releaseArchive")}
               </h3>
               <div className="space-y-2">
                 {years.map(year => (
                   <button key={year} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-white hover:shadow-sm border border-transparent hover:border-slate-100 transition-all group">
-                    <span className="text-slate-600 group-hover:text-slate-900 font-medium">{year} Updates</span>
+                    <span className="text-slate-600 group-hover:text-slate-900 font-medium">{year} {t("updates")}</span>
                     <Badge variant="secondary" className="bg-slate-100 text-slate-500 rounded-full h-6 px-2 min-w-[24px]">
                       {updates.filter(u => new Date(u.releaseDate).getFullYear() === year).length}
                     </Badge>
                   </button>
                 ))}
-                {years.length === 0 && <p className="text-xs text-slate-400">No archive available.</p>}
+                {years.length === 0 && <p className="text-xs text-slate-400">{t("noArchiveAvailable")}</p>}
               </div>
             </div>
 
             {/* Categories Section */}
             <div className="space-y-4 px-2 pt-4">
               <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <Search className="w-4 h-4" /> Categories
+                <Search className="w-4 h-4" /> {t("categories")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(tagCounts).map(([tag, count]) => (

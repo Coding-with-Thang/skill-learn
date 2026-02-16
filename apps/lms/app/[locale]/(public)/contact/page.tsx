@@ -1,17 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   Mail,
   Phone,
   MapPin,
   Send,
-  ChevronRight,
   Globe,
-  Building,
-  Users,
-  MessageCircle,
-  ArrowRight
 } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 import { Input } from "@skill-learn/ui/components/input";
@@ -30,16 +26,17 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function ContactPage() {
+  const t = useTranslations("contact");
+  const tFooter = useTranslations("footer");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-    toast.success("Message sent! We'll get back to you soon.");
+    toast.success(t("messageSent"));
     setIsSubmitting(false);
     e.target.reset();
   };
@@ -47,21 +44,21 @@ export default function ContactPage() {
   const contactInfo = [
     {
       icon: Mail,
-      label: "EMAIL US",
+      labelKey: "emailUs" as const,
       value: "support@skill-learn.com",
       href: "mailto:support@skill-learn.com",
       color: "bg-emerald-50 text-emerald-600"
     },
     {
       icon: Phone,
-      label: "CALL SALES",
+      labelKey: "callSales" as const,
       value: "+1 (555) 000-0000",
       href: "tel:+15550000000",
       color: "bg-blue-50 text-blue-600"
     },
     {
       icon: MapPin,
-      label: "VISIT OFFICE",
+      labelKey: "visitOffice" as const,
       value: "123 Learning Way, San Francisco, CA",
       href: "#",
       color: "bg-cyan-50 text-cyan-600"
@@ -87,19 +84,19 @@ export default function ContactPage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-brand-teal/10 text-brand-teal rounded-full text-xs font-bold uppercase tracking-widest mb-8">
-              Support Hub
+              {t("supportHub")}
             </div>
             <h1 className="text-brand-teal md:text-6xl font-extrabold text-[#1B1B53] mb-8 tracking-tight leading-[1.1]">
-              Contact Our Team
+              {t("contactTeam")}
             </h1>
             <p className="text-xl text-slate-600 mb-12 max-w-lg leading-relaxed">
-              Have questions about our LMS? We typically respond within 2 hours to help you scale your learning infrastructure.
+              {t("contactIntro")}
             </p>
 
             <div className="space-y-6 mb-12">
               {contactInfo.map((item, idx) => (
                 <motion.a
-                  key={item.label}
+                  key={item.labelKey}
                   href={item.href}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -111,7 +108,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                      {item.label}
+                      {t(item.labelKey)}
                     </span>
                     <span className="text-lg font-bold text-[#1B1B53] group-hover:text-brand-teal transition-colors">
                       {item.value}
@@ -123,7 +120,7 @@ export default function ContactPage() {
 
             <div className="pt-8 border-t border-slate-200">
               <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">
-                Trusted by 500+ global enterprises
+                {t("trustedBy")}
               </p>
               <div className="flex items-center gap-8 opacity-40 grayscale group-hover:grayscale-0 transition-all">
                 {trustedLogos.map((logo) => (
@@ -143,20 +140,20 @@ export default function ContactPage() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
-                    <Label htmlFor="name" className="text-sm font-bold text-slate-900 ml-1">Full Name</Label>
+                    <Label htmlFor="name" className="text-sm font-bold text-slate-900 ml-1">{t("fullName")}</Label>
                     <Input
                       id="name"
-                      placeholder="John Doe"
+                      placeholder={t("fullNamePlaceholder")}
                       required
                       className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label htmlFor="email" className="text-sm font-bold text-slate-900 ml-1">Work Email</Label>
+                    <Label htmlFor="email" className="text-sm font-bold text-slate-900 ml-1">{t("workEmail")}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="john@company.com"
+                      placeholder={t("emailPlaceholder")}
                       required
                       className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
@@ -165,34 +162,34 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-3">
-                    <Label htmlFor="company" className="text-sm font-bold text-slate-900 ml-1">Company Name</Label>
+                    <Label htmlFor="company" className="text-sm font-bold text-slate-900 ml-1">{t("companyName")}</Label>
                     <Input
                       id="company"
-                      placeholder="Enter your company"
+                      placeholder={t("companyPlaceholder")}
                       className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label htmlFor="department" className="text-sm font-bold text-slate-900 ml-1">Department</Label>
+                    <Label htmlFor="department" className="text-sm font-bold text-slate-900 ml-1">{t("department")}</Label>
                     <Select>
                       <SelectTrigger className="h-14 rounded-4xl bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all px-6">
-                        <SelectValue placeholder="Select department" />
+                        <SelectValue placeholder={t("selectDepartment")} />
                       </SelectTrigger>
                       <SelectContent className="rounded-4xl border-slate-100 shadow-xl p-2">
-                        <SelectItem value="sales" className="rounded-xl py-3 cursor-pointer">Sales & Marketing</SelectItem>
-                        <SelectItem value="support" className="rounded-xl py-3 cursor-pointer">Technical Support</SelectItem>
-                        <SelectItem value="billing" className="rounded-xl py-3 cursor-pointer">Billing & Finance</SelectItem>
-                        <SelectItem value="partnership" className="rounded-xl py-3 cursor-pointer">Partnerships</SelectItem>
+                        <SelectItem value="sales" className="rounded-xl py-3 cursor-pointer">{t("salesMarketing")}</SelectItem>
+                        <SelectItem value="support" className="rounded-xl py-3 cursor-pointer">{t("technicalSupport")}</SelectItem>
+                        <SelectItem value="billing" className="rounded-xl py-3 cursor-pointer">{t("billingFinance")}</SelectItem>
+                        <SelectItem value="partnership" className="rounded-xl py-3 cursor-pointer">{t("partnerships")}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="message" className="text-sm font-bold text-slate-900 ml-1">Message</Label>
+                  <Label htmlFor="message" className="text-sm font-bold text-slate-900 ml-1">{t("message")}</Label>
                   <Textarea
                     id="message"
-                    placeholder="How can we help you today?"
+                    placeholder={t("messagePlaceholder")}
                     required
                     className="min-h-[160px] rounded-[32px] bg-slate-50 border-transparent focus:bg-white focus:border-brand-teal/30 focus:ring-0 transition-all p-8 resize-none"
                   />
@@ -206,17 +203,17 @@ export default function ContactPage() {
                   {isSubmitting ? (
                     <div className="flex items-center gap-3">
                       <div className="w-5 h-5 border-2 border-brand-dark-blue/20 border-t-brand-dark-blue rounded-full animate-spin" />
-                      Sending...
+                      {t("sending")}
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-3">
-                      Send Message <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      {t("sendMessage")} <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     </div>
                   )}
                 </Button>
 
                 <p className="text-center text-[10px] text-slate-400 font-medium">
-                  By clicking send, you agree to our <Link href="/legal/privacy-policy" className="text-slate-600 underline">Privacy Policy</Link> and <Link href="/legal/terms-of-condition" className="text-slate-600 underline">Terms of Service</Link>.
+                  {t("agreeTo")} <Link href="/legal/privacy-policy" className="text-slate-600 underline">{tFooter("privacyPolicy")}</Link> and <Link href="/legal/terms-of-condition" className="text-slate-600 underline">{tFooter("termsOfService")}</Link>.
                 </p>
               </form>
             </Card>
@@ -249,10 +246,10 @@ export default function ContactPage() {
             <Card className="p-8 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] text-white">
               <h3 className="text-2xl font-bold mb-3 flex items-center gap-3">
                 <Globe className="w-6 h-6 text-emerald-400" />
-                Global Presence
+                {t("globalPresence")}
               </h3>
               <p className="text-white/70 leading-relaxed font-medium">
-                Supporting enterprise teams across 45+ countries with localized training solutions and 24/7 technical assistance.
+                {t("globalPresenceDesc")}
               </p>
             </Card>
           </div>

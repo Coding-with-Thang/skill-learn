@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react'
-import { Link, useRouter } from "@/i18n/navigation"
+import { Link, useRouter } from '@/i18n/navigation'
 import { useCoursesStore } from "@skill-learn/lib/stores/coursesStore"
 
 export default function CourseEditLink({ courseId, href, children, previewUrl, className }) {

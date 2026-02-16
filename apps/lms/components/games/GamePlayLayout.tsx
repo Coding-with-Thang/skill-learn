@@ -1,7 +1,8 @@
 "use client";
 
 import React from 'react';
-import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from '@/i18n/navigation';
 import {
   ArrowLeft,
   Trophy,
@@ -64,6 +65,7 @@ const GamePlayLayout = ({
   onResume?: () => void;
   isPaused?: boolean;
 }) => {
+  const t = useTranslations("games");
   const { user } = useUser();
 
   return (
@@ -74,7 +76,7 @@ const GamePlayLayout = ({
           <Link href="/games">
             <Button variant="outline" className="rounded-full bg-white/90 hover:bg-white text-[#5DA39F] border-none shadow-sm gap-2">
               <ArrowLeft className="h-4 w-4" />
-              <span className="font-semibold">Back to Games</span>
+              <span className="font-semibold">{t("backToGames")}</span>
             </Button>
           </Link>
           <div className="flex flex-col">

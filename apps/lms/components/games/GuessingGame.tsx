@@ -1,12 +1,14 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
-import { usePathname } from "@/i18n/navigation";
+import { usePathname } from '@/i18n/navigation';
 import { Button } from "@skill-learn/ui/components/button";
 import QuizModal from "@/components/quiz/QuizModal"
 
 export default function NumberGuessingGame() {
+  const t = useTranslations("games");
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -66,7 +68,7 @@ export default function NumberGuessingGame() {
           type="number"
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
-          placeholder="Enter a number..."
+          placeholder={t("enterANumber")}
           disabled={gameOver}
           className="w-full h-16 bg-white rounded-4xl border-none text-center text-2xl font-black text-slate-800 focus:ring-4 focus:ring-cyan-200 transition-all outline-none"
         />

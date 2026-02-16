@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy,
@@ -19,49 +20,50 @@ import {
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 
-const scenes = [
-  {
-    id: "pain",
-    title: "Employee training is boring.",
-    subtitle: "Endless PDFs. Uninspired videos. Zero engagement.",
-    color: "bg-slate-900",
-    textStyle: "text-slate-400",
-  },
-  {
-    id: "hook",
-    title: "Not anymore.",
-    subtitle: "Transform your team's potential with Skill-Learn.",
-    color: "bg-indigo-950",
-    textStyle: "text-white",
-    image: "/ad-hero.png",
-  },
-  {
-    id: "gamify",
-    title: "Play. Learn. Win.",
-    subtitle: "Gamified learning paths that actually stick.",
-    color: "bg-teal-950",
-    textStyle: "text-teal-100",
-    icons: [Gamepad2, BrainCircuit, Target],
-  },
-  {
-    id: "rewards",
-    title: "Rewards for Growth.",
-    subtitle: "Earn points, hit streaks, and redeem real perks.",
-    color: "bg-purple-950",
-    textStyle: "text-purple-100",
-    icons: [Trophy, Star, Sparkles],
-  },
-  {
-    id: "cta",
-    title: "The Future of Learning is Here.",
-    subtitle: "Join the next generation of knowledge seekers.",
-    color: "bg-black",
-    textStyle: "text-white",
-    cta: true,
-  }
-];
-
 export default function VideoAdPage() {
+  const t = useTranslations("videoAd");
+  
+  const scenes = [
+    {
+      id: "pain",
+      title: t("employeeTrainingBoring"),
+      subtitle: t("endlessPdfs"),
+      color: "bg-slate-900",
+      textStyle: "text-slate-400",
+    },
+    {
+      id: "hook",
+      title: t("notAnymore"),
+      subtitle: t("transformPotential"),
+      color: "bg-indigo-950",
+      textStyle: "text-white",
+      image: "/ad-hero.png",
+    },
+    {
+      id: "gamify",
+      title: t("playLearnWin"),
+      subtitle: t("gamifiedLearning"),
+      color: "bg-teal-950",
+      textStyle: "text-teal-100",
+      icons: [Gamepad2, BrainCircuit, Target],
+    },
+    {
+      id: "rewards",
+      title: t("rewardsForGrowth"),
+      subtitle: t("earnPoints"),
+      color: "bg-purple-950",
+      textStyle: "text-purple-100",
+      icons: [Trophy, Star, Sparkles],
+    },
+    {
+      id: "cta",
+      title: t("futureOfLearning"),
+      subtitle: t("joinNextGen"),
+      color: "bg-black",
+      textStyle: "text-white",
+      cta: true,
+    }
+  ];
   const [currentScene, setCurrentScene] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
@@ -163,7 +165,7 @@ export default function VideoAdPage() {
                 href="/sign-in"
                 className="px-12 py-5 bg-white text-black font-bold text-xl rounded-full hover:scale-105 transition-transform shadow-2xl flex items-center gap-2 group"
               >
-                Get Started Free
+                {t("getStartedFree")}
                 <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button
@@ -171,7 +173,7 @@ export default function VideoAdPage() {
                 className="px-12 py-5 bg-white/10 backdrop-blur-md text-white font-bold text-xl rounded-full hover:bg-white/20 transition-all border border-white/30 flex items-center gap-2"
               >
                 <RotateCcw className="w-6 h-6" />
-                Replay Ad
+                {t("replayAd")}
               </button>
             </motion.div>
           )}
@@ -216,7 +218,7 @@ export default function VideoAdPage() {
           }}
           className="absolute bottom-8 right-8 px-6 py-3 bg-black/40 backdrop-blur-md border border-white/20 text-white rounded-full hover:bg-black/60 transition-colors flex items-center gap-2 text-sm font-semibold"
         >
-          Skip Scene <ChevronRight className="w-4 h-4" />
+          {t("skipScene")} <ChevronRight className="w-4 h-4" />
         </button>
       )}
 

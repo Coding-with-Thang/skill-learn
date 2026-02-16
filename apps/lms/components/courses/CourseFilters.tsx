@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useTransition } from 'react'
-import { useRouter } from "@/i18n/navigation"
+import { useRouter } from '@/i18n/navigation'
 import { LoadingSpinner } from '@skill-learn/ui/components/loading'
 import { useCoursesStore } from "@skill-learn/lib/stores/coursesStore"
 

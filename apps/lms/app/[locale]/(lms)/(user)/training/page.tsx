@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion"
 import { LayoutGrid, BookOpen, GraduationCap, Heart, Filter, Grid3x3, List, X } from "lucide-react"
@@ -52,7 +53,8 @@ const getCourseProgressData = (course, userProgressData = null) => {
 }
 
 export default function TrainingPage() {
-
+  const t = useTranslations("training")
+  const tNav = useTranslations("nav")
   const router = useRouter()
   const { isLoaded: clerkLoaded } = useUser()
   const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoryStore()
@@ -200,12 +202,12 @@ export default function TrainingPage() {
         moduleCount,
         progress,
         status,
-        category: c.category?.name || "Uncategorized"
+        category: c.category?.name || t("uncategorized")
       }
     })
 
     setAllCourses(transformedCourses as TransformedCourse[])
-  }, [rawCourses, userProgress]) // Re-transform when raw courses or user progress changes
+  }, [rawCourses, userProgress, t]) // Re-transform when raw courses, user progress, or locale changes
 
   // Fetch all quizzes from /api/quizzes (wait for Clerk so auth token is sent)
   useEffect(() => {
@@ -247,7 +249,7 @@ export default function TrainingPage() {
           const q = quiz as QuizItem;
           return {
             ...q,
-            categoryName: q.category?.name ?? q.categoryName ?? "Uncategorized",
+            categoryName: q.category?.name ?? q.categoryName ?? t("uncategorized"),
             categoryId: q.category?.id ?? q.categoryId,
           };
         });
@@ -261,7 +263,7 @@ export default function TrainingPage() {
     }
 
     fetchAllQuizzes()
-  }, [clerkLoaded])
+  }, [clerkLoaded, t])
 
   // Filter and search logic
   const filteredCourses = useMemo(() => {
@@ -361,13 +363,13 @@ export default function TrainingPage() {
   return (
     <FeatureGate
       feature="training_courses"
-      featureName="Training Courses"
-      fallback={<FeatureDisabledPage featureName="Training Courses" />}
+      featureName={t("featureName")}
+      fallback={<FeatureDisabledPage featureName={t("featureName")} />}
     >
       <div className="flex min-h-screen">
         {/* Sidebar */}
         <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-6 sticky top-0 h-screen overflow-y-auto">
-          <h2 className="text-lg font-bold text-foreground mb-6">Training Categories</h2>
+          <h2 className="text-lg font-bold text-foreground mb-6">{t("trainingCategories")}</h2>
 
           {/* Category Tabs */}
           <div className="space-y-2 mb-6">
@@ -384,7 +386,7 @@ export default function TrainingPage() {
               )}
             >
               <LayoutGrid className="h-5 w-5" />
-              <span className="font-medium">All Content</span>
+              <span className="font-medium">{t("allContent")}</span>
             </button>
 
             <button
@@ -401,7 +403,7 @@ export default function TrainingPage() {
             >
               <div className="flex items-center gap-3">
                 <BookOpen className="h-5 w-5" />
-                <span className="font-medium">Courses</span>
+                <span className="font-medium">{t("courses")}</span>
               </div>
               <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
                 {stats.totalCourses}
@@ -422,7 +424,7 @@ export default function TrainingPage() {
             >
               <div className="flex items-center gap-3">
                 <GraduationCap className="h-5 w-5" />
-                <span className="font-medium">Quizzes</span>
+                <span className="font-medium">{t("quizzes")}</span>
               </div>
               <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">
                 {stats.totalQuizzes}
@@ -440,13 +442,13 @@ export default function TrainingPage() {
               )}
             >
               <Heart className="h-5 w-5" />
-              <span className="font-medium">My Favorites</span>
+              <span className="font-medium">{t("myFavorites")}</span>
             </button>
           </div>
 
           {/* Category Filters */}
           <div className="border-t border-border pt-6">
-            <h3 className="text-sm font-semibold text-foreground mb-3">Filter by Category</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">{t("filterByCategory")}</h3>
             {isLoading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
@@ -469,14 +471,14 @@ export default function TrainingPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No categories available</p>
+              <p className="text-sm text-muted-foreground">{t("noCategoriesAvailable")}</p>
             )}
           </div>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 md:px-12 py-8">
-          <BreadCrumbCom crumbs={[]} endtrail="Training" />
+          <BreadCrumbCom crumbs={[]} endtrail={tNav("training")} />
 
           {/* Header */}
           <motion.div
@@ -485,10 +487,10 @@ export default function TrainingPage() {
             className="mt-6 mb-8"
           >
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-              My Training Hub
+              {t("myTrainingHub")}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg">
-              Explore courses and quizzes to enhance your skills and knowledge
+              {t("subtitle")}
             </p>
           </motion.div>
 
@@ -499,7 +501,7 @@ export default function TrainingPage() {
                 value={searchQuery}
                 onChange={setSearchQuery}
                 onClear={() => setSearchQuery("")}
-                placeholder="Search courses and quizzes..."
+                placeholder={t("searchPlaceholder")}
                 className="flex-1"
               />
 
@@ -513,7 +515,7 @@ export default function TrainingPage() {
                   )}
                 >
                   <Filter className="h-4 w-4" />
-                  Filters
+                  {t("filters")}
                   {hasActiveFilters && (
                     <span className="bg-brand-teal text-white text-xs px-1.5 py-0.5 rounded-full">
                       {selectedCategories.length +
@@ -531,7 +533,7 @@ export default function TrainingPage() {
                         ? "bg-brand-teal text-white"
                         : "bg-background hover:bg-muted"
                     )}
-                    aria-label="Grid view"
+                    aria-label={t("gridView")}
                   >
                     <Grid3x3 className="h-4 w-4" />
                   </button>
@@ -543,7 +545,7 @@ export default function TrainingPage() {
                         ? "bg-brand-teal text-white"
                         : "bg-background hover:bg-muted"
                     )}
-                    aria-label="List view"
+                    aria-label={t("listView")}
                   >
                     <List className="h-4 w-4" />
                   </button>
@@ -564,13 +566,13 @@ export default function TrainingPage() {
 
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Status" />
+                        <SelectValue placeholder={t("status")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="not-started">Not Started</SelectItem>
-                        <SelectItem value="in-progress">In Progress</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="all">{t("allStatus")}</SelectItem>
+                        <SelectItem value="not-started">{t("notStarted")}</SelectItem>
+                        <SelectItem value="in-progress">{t("inProgress")}</SelectItem>
+                        <SelectItem value="completed">{t("completed")}</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -581,7 +583,7 @@ export default function TrainingPage() {
                         className="gap-2"
                       >
                         <X className="h-4 w-4" />
-                        Clear Filters
+                        {t("clearFilters")}
                       </EnhancedButton>
                     )}
                   </div>
@@ -595,7 +597,7 @@ export default function TrainingPage() {
             <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
               {contentMessage}
               {contentMessage.includes("onboarding") && (
-                <a href="/onboarding/workspace" className="ml-2 font-medium underline">Go to onboarding</a>
+                <Link href="/onboarding/workspace" className="ml-2 font-medium underline">{t("goToOnboarding")}</Link>
               )}
             </div>
           )}
@@ -608,7 +610,7 @@ export default function TrainingPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                     <BookOpen className="h-6 w-6 text-brand-teal" />
-                    Courses
+                    {t("courses")}
                     <span className="text-sm font-normal text-muted-foreground">
                       ({filteredCourses.length})
                     </span>
@@ -618,7 +620,7 @@ export default function TrainingPage() {
                 {coursesLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader />
-                    <p className="mt-4 text-muted-foreground">Loading courses...</p>
+                    <p className="mt-4 text-muted-foreground">{t("loadingCourses")}</p>
                   </div>
                 ) : filteredCourses.length > 0 ? (
                   <div className={cn(
@@ -637,7 +639,7 @@ export default function TrainingPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    {contentMessage || "No courses found matching your filters"}
+                    {contentMessage || t("noCoursesFound")}
                   </div>
                 )}
               </section>
@@ -649,7 +651,7 @@ export default function TrainingPage() {
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                     <GraduationCap className="h-6 w-6 text-brand-teal" />
-                    Quizzes
+                    {t("quizzes")}
                     <span className="text-sm font-normal text-muted-foreground">
                       ({filteredQuizzes.length})
                     </span>
@@ -659,7 +661,7 @@ export default function TrainingPage() {
                 {quizzesLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <Loader />
-                    <p className="mt-4 text-muted-foreground">Loading quizzes...</p>
+                    <p className="mt-4 text-muted-foreground">{t("loadingQuizzes")}</p>
                   </div>
                 ) : filteredQuizzes.length > 0 ? (
                   <div className={cn(
@@ -687,7 +689,7 @@ export default function TrainingPage() {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
-                    {contentMessage || "No quizzes found matching your filters"}
+                    {contentMessage || t("noQuizzesFound")}
                   </div>
                 )}
               </section>

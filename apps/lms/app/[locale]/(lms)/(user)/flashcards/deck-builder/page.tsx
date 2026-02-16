@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import { useFlashCardDeckBuilderStore } from "@skill-learn/lib/stores/flashCardDeckBuilderStore";
@@ -25,6 +26,8 @@ type CardItem = { id: string; categoryId?: string; category?: { id: string }; qu
 type CategoryItem = { id: string; name: string };
 
 export default function DeckBuilderPage() {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const router = useRouter();
   const searchParams = useSearchParams();
   const deckId = searchParams.get("deckId");
@@ -98,7 +101,7 @@ export default function DeckBuilderPage() {
           setSelectedCards(deckData.cardIds ?? []);
         }
       } catch (err) {
-        toast.error("Failed to load data");
+        toast.error(t("failedToLoadData"));
       } finally {
         setLoading(false);
       }
@@ -112,11 +115,11 @@ export default function DeckBuilderPage() {
   const handleSave = async () => {
     const name = (deckName ?? "").trim();
     if (!name) {
-      toast.error("Deck name is required");
+      toast.error(t("deckNameRequired"));
       return;
     }
     if (!isEdit && !limits.canCreateDeck) {
-      toast.error("Deck limit reached. Upgrade your plan for more decks.");
+      toast.error(t("deckLimitReached"));
       return;
     }
 
@@ -139,7 +142,7 @@ export default function DeckBuilderPage() {
           cardIds,
           categoryIds,
         });
-        toast.success("Deck updated");
+        toast.success(t("deckUpdated"));
       } else {
         await api.post("/flashcards/decks", {
           name,
@@ -147,13 +150,13 @@ export default function DeckBuilderPage() {
           cardIds,
           categoryIds,
         });
-        toast.success("Deck created");
+        toast.success(t("deckCreated"));
       }
       reset();
       router.push("/flashcards");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to save deck");
+      toast.error(e.response?.data?.error || t("failedToSaveDeck"));
     } finally {
       setSaving(false);
     }
@@ -165,44 +168,42 @@ export default function DeckBuilderPage() {
     <>
       <BreadCrumbCom
         crumbs={[
-          { name: "Flash Cards", href: "/flashcards" },
-          { name: isEdit ? "Edit Deck" : "Deck Builder", href: "/flashcards/deck-builder" },
+          { name: tB("flashCards"), href: "/flashcards" },
+          { name: isEdit ? tB("editDeck") : tB("deckBuilder"), href: "/flashcards/deck-builder" },
         ]}
-        endtrail={isEdit ? "Edit Deck" : "Deck Builder"}
+        endtrail={isEdit ? tB("editDeck") : tB("deckBuilder")}
       />
       <div className="max-w-4xl mx-auto space-y-8 pb-8">
         <div>
-          <h1 className="text-3xl font-bold">{isEdit ? "Edit Deck" : "Deck Builder"}</h1>
+          <h1 className="text-3xl font-bold">{isEdit ? tB("editDeck") : tB("deckBuilder")}</h1>
           <p className="text-muted-foreground mt-1">
-            {isEdit
-              ? "Add or remove cards. Cards can be in multiple decks."
-              : "Select cards across categories. Categories are for organization — add any cards you want."}
+            {isEdit ? t("addOrRemoveCardsSubtitle") : t("selectCardsSubtitle")}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Deck details</CardTitle>
-            <CardDescription>Name and optional description</CardDescription>
+            <CardTitle>{t("deckDetails")}</CardTitle>
+            <CardDescription>{t("nameAndOptionalDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t("name")}</Label>
               <Input
                 id="name"
                 value={deckName}
                 onChange={(e) => setDeckName(e.target.value)}
-                placeholder="My deck"
+                placeholder={t("myDeckPlaceholder")}
                 className="mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="desc">Description (optional)</Label>
+              <Label htmlFor="desc">{t("descriptionOptional")}</Label>
               <Textarea
                 id="desc"
                 value={deckDescription}
                 onChange={(e) => setDeckDescription(e.target.value)}
-                placeholder="What this deck covers..."
+                placeholder={t("whatThisDeckCovers")}
                 className="mt-1"
                 rows={2}
               />
@@ -212,14 +213,16 @@ export default function DeckBuilderPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Select cards</CardTitle>
+            <CardTitle>{t("selectCards")}</CardTitle>
             <CardDescription>
-              {getSelectedIds().length}{limits.maxCardsPerDeck >= 0 ? `/${limits.maxCardsPerDeck}` : ""} selected. Cards can be in multiple decks — add any that help you learn.
+              {t("selectedCountDescription", {
+                count: `${getSelectedIds().length}${limits.maxCardsPerDeck >= 0 ? `/${limits.maxCardsPerDeck}` : ""}`,
+              })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {categories.length === 0 ? (
-              <p className="text-muted-foreground py-4">No categories. Create cards first.</p>
+              <p className="text-muted-foreground py-4">{t("noCategoriesCreateCardsFirst")}</p>
             ) : (
               <div className="space-y-6">
                 {categories.map((cat) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import {
@@ -39,6 +40,8 @@ const emptyCard = () => ({ question: "", answer: "", tags: "", difficulty: "none
 type CategoryItem = { id: string; name: string };
 
 export default function CreateFlashCardPage() {
+  const t = useTranslations("flashcards");
+  const tB = useTranslations("breadcrumbs");
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -87,7 +90,7 @@ export default function CreateFlashCardPage() {
           (typeof maxCardsPerDeck === "number" && maxCardsPerDeck >= 0 ? maxCardsPerDeck : 500);
         if (batch != null && batch > 0) setBatchLimit(batch);
       })
-      .catch(() => toast.error("Failed to load data"))
+      .catch(() => toast.error(t("failedToLoadData")))
       .finally(() => setLoading(false));
     // Intentionally run once on mount to load categories/limits
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,11 +111,11 @@ export default function CreateFlashCardPage() {
     e.preventDefault();
     const valid = getValidCards();
     if (!valid.length || !categoryId) {
-      toast.error("Add at least one card with question and answer, and select a category");
+      toast.error(t("addAtLeastOneCard"));
       return;
     }
     if (valid.length > batchLimit) {
-      toast.error(`Maximum ${batchLimit} cards per batch (subscription limit)`);
+      toast.error(t("maxCardsPerBatch", { limit: batchLimit }));
       return;
     }
 
@@ -129,11 +132,11 @@ export default function CreateFlashCardPage() {
       };
       const res = await api.post("/flashcards/cards/bulk", payload);
       const created = res.data?.data?.created ?? res.data?.created ?? valid.length;
-      toast.success(`Created ${created} card${created !== 1 ? "s" : ""} successfully!`);
+      toast.success(t("createdCardsSuccess", { count: created }));
       router.push("/flashcards");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to create cards");
+      toast.error(e.response?.data?.error || t("failedToCreateCards"));
     } finally {
       setSaving(false);
     }
@@ -148,10 +151,9 @@ export default function CreateFlashCardPage() {
         <div className="py-6">
           <BreadCrumbCom
             crumbs={[
-              { name: "Home", href: "/home" },
-              { name: "Flash Cards", href: "/flashcards" },
+              { name: tB("flashCards"), href: "/flashcards" },
             ]}
-            endtrail="Create Flash Cards"
+            endtrail={tB("createFlashCards")}
           />
         </div>
 
@@ -166,11 +168,13 @@ export default function CreateFlashCardPage() {
 
           <div className="space-y-2">
             <h1 className="text-4xl md:text-brand-teal font-black tracking-tight">
-              Create Flash Cards
+              {t("createFlashCardsTitle")}
             </h1>
             <p className="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto">
-              Create one card or add up to {batchLimit} cards
-              {subscriptionTier ? ` (${subscriptionTier} plan)` : ""}, then submit to create them all at once.
+              {t("createUpToBatch", {
+                batchLimit,
+                plan: subscriptionTier ? ` (${subscriptionTier} plan)` : "",
+              })}
             </p>
           </div>
         </div>
@@ -185,11 +189,11 @@ export default function CreateFlashCardPage() {
                 <div className="space-y-2.5">
                   <Label htmlFor="category" className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
                     <LayoutGrid className="h-4 w-4 text-blue-500" />
-                    Category (for all cards)
+                    {t("categoryForAllCards")}
                   </Label>
                   <Select value={categoryId} onValueChange={setCategoryId}>
                     <SelectTrigger id="category" className="h-14 rounded-4xl bg-background border-border shadow-sm transition-all focus:ring-2 focus:ring-primary/20">
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder={t("selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((c) => (
@@ -209,10 +213,14 @@ export default function CreateFlashCardPage() {
                 <div className="flex items-center justify-between flex-wrap gap-4 px-1">
                   <div className="space-y-1">
                     <Label className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      Batch Contents
+                      {t("batchContents")}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      {getValidCards().length} ready to create • {cards.length}/{batchLimit} slots used
+                      {t("readyToCreate", {
+                        ready: getValidCards().length,
+                        used: cards.length,
+                        limit: batchLimit,
+                      })}
                     </p>
                   </div>
                   <Button
@@ -222,10 +230,10 @@ export default function CreateFlashCardPage() {
                     onClick={addCard}
                     disabled={cards.length >= batchLimit}
                     className="rounded-xl h-10 px-4 border-primary/20 hover:bg-primary/5 hover:border-primary/40 transition-all font-bold"
-                    title={cards.length >= batchLimit ? `Limit reached (${batchLimit} per batch)` : "Add another card"}
+                    title={cards.length >= batchLimit ? t("limitReached", { limit: batchLimit }) : t("addCard")}
                   >
                     <Plus className="h-4 w-4 mr-1.5" />
-                    Add Card {cards.length < batchLimit && `(${batchLimit - cards.length} left)`}
+                    {cards.length < batchLimit ? t("addCardLeft", { left: batchLimit - cards.length }) : t("addCard")}
                   </Button>
                 </div>
 
@@ -245,7 +253,7 @@ export default function CreateFlashCardPage() {
                             #{idx + 1}
                           </div>
                           <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                            Flash Card Details
+                            {t("flashCardDetails")}
                           </span>
                         </div>
                         {cards.length > 1 && (
@@ -265,12 +273,12 @@ export default function CreateFlashCardPage() {
                         <div className="space-y-2.5">
                           <Label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 px-1">
                             <HelpCircle className="h-3.5 w-3.5 text-orange-500" />
-                            Question
+                            {t("question")}
                           </Label>
                           <Textarea
                             value={card.question}
                             onChange={(e) => updateCard(idx, "question", e.target.value)}
-                            placeholder="What do you want to remember?"
+                            placeholder={t("questionPlaceholder")}
                             className="min-h-[120px] rounded-xl bg-background border-border p-4 text-base focus:ring-primary/20 resize-none"
                           />
                         </div>
@@ -278,12 +286,12 @@ export default function CreateFlashCardPage() {
                         <div className="space-y-2.5">
                           <Label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-400 px-1">
                             <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-                            Answer
+                            {t("answer")}
                           </Label>
                           <Textarea
                             value={card.answer}
                             onChange={(e) => updateCard(idx, "answer", e.target.value)}
-                            placeholder="The answer or definition..."
+                            placeholder={t("answerPlaceholder")}
                             className="min-h-[120px] rounded-xl bg-background border-border p-4 text-base focus:ring-primary/20 resize-none"
                           />
                         </div>
@@ -293,32 +301,32 @@ export default function CreateFlashCardPage() {
                         <div className="space-y-2">
                           <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 px-1">
                             <Tag className="h-3.5 w-3.5 text-cyan-500" />
-                            Tags <span className="text-[10px] font-normal opacity-70">(comma-separated)</span>
+                            {t("tags")} <span className="text-[10px] font-normal opacity-70">{t("tagsCommaSeparated")}</span>
                           </Label>
                           <Input
                             value={card.tags}
                             onChange={(e) => updateCard(idx, "tags", e.target.value)}
-                            placeholder="vocabulary, chapter-1"
+                            placeholder={t("tagsPlaceholder")}
                             className="h-12 rounded-xl bg-background/50 border-border focus:ring-primary/20"
                           />
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5 px-1">
                             <BarChart className="h-3.5 w-3.5 text-emerald-500" />
-                            Difficulty <span className="text-[10px] font-normal opacity-70">(auto-study)</span>
+                            {t("difficulty")} <span className="text-[10px] font-normal opacity-70">{t("difficultyAutoStudy")}</span>
                           </Label>
                           <Select
                             value={card.difficulty}
                             onValueChange={(v) => updateCard(idx, "difficulty", v)}
                           >
                             <SelectTrigger className="h-12 rounded-xl bg-background/50 border-border focus:ring-primary/20">
-                              <SelectValue placeholder="None" />
+                              <SelectValue placeholder={t("noneRecommended")} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="none">None (Recommended)</SelectItem>
-                              <SelectItem value="easy">Easy</SelectItem>
-                              <SelectItem value="good">Good</SelectItem>
-                              <SelectItem value="hard">Hard</SelectItem>
+                              <SelectItem value="none">{t("noneRecommended")}</SelectItem>
+                              <SelectItem value="easy">{t("easy")}</SelectItem>
+                              <SelectItem value="good">{t("good")}</SelectItem>
+                              <SelectItem value="hard">{t("hard")}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -336,7 +344,7 @@ export default function CreateFlashCardPage() {
                   className="h-14 px-8 rounded-4xl font-bold text-slate-500 hover:text-slate-900 transition-all w-full sm:w-auto"
                   onClick={() => router.push("/flashcards")}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -349,8 +357,8 @@ export default function CreateFlashCardPage() {
                     <Send className="mr-2.5 h-4.5 w-4.5" />
                   )}
                   {saving
-                    ? "Creating Batch..."
-                    : `Create ${getValidCards().length} Flash Card${getValidCards().length !== 1 ? "s" : ""}`}
+                    ? t("creatingBatch")
+                    : t("createNFlashCards", { count: getValidCards().length })}
                 </Button>
               </div>
             </form>

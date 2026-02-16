@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -23,68 +24,61 @@ import { Button } from "@skill-learn/ui/components/button";
 import { Card } from "@skill-learn/ui/components/card";
 import { cn } from "@skill-learn/lib/utils";
 
-const faqData = [
+const getFaqData = (t: (key: string) => string) => [
   {
-    category: "Platform Features",
+    categoryKey: "platformFeatures",
     icon: Cpu,
     id: "platform-features",
     questions: [
-      {
-        q: "How do I create my first course?",
-        a: "To create your first course, navigate to the 'Instructor Dashboard' and click on the '+ New Course' button. You can then use our drag-and-drop builder to add modules, quizzes, and multimedia content. Detailed tutorials are available in our 'Learning Center' category."
-      },
-      {
-        q: "Can I white-label the student interface?",
-        a: "Yes! Skill-Learn offers extensive white-labeling options for Enterprise customers. You can customize the domain, brand colors, logo, and even the email templates sent to your students."
-      },
-      {
-        q: "What file types are supported for uploads?",
-        a: "We support a wide range of file types including MP4 for videos, PDF for documents, ZIP for SCORM packages, and all major image formats (JPG, PNG, SVG). Maximum file size depends on your subscription plan."
-      }
-    ]
+      { qKey: "platformQ1", aKey: "platformA1" },
+      { qKey: "platformQ2", aKey: "platformA2" },
+      { qKey: "platformQ3", aKey: "platformA3" },
+    ],
   },
   {
-    category: "Billing & Plans",
+    categoryKey: "billingPlans",
     icon: CreditCard,
     id: "billing-plans",
     questions: [
-      {
-        q: "What payment methods do you accept?",
-        a: "We accept all major credit cards (Visa, Mastercard, American Express), PayPal, and bank transfers for larger enterprise accounts. For annual billing, we also support invoicing with Net-30 terms."
-      },
-      {
-        q: "Can I change my plan at any time?",
-        a: "Absolutely! You can upgrade or downgrade your plan at any time from your billing settings. Upgrades take effect immediately on a prorated basis, while downgrades take effect at the start of your next billing cycle."
-      }
-    ]
+      { qKey: "billingQ1", aKey: "billingA1" },
+      { qKey: "billingQ2", aKey: "billingA2" },
+    ],
   },
   {
-    category: "Technical Support",
+    categoryKey: "technicalSupport",
     icon: Settings,
     id: "technical-support",
     questions: [
-      {
-        q: "Does Skill-Learn offer SSO?",
-        a: "Yes, we support Single Sign-On (SSO) via SAML 2.0, Okta, and Microsoft Azure AD for Enterprise plans. This allows your team to log in using their existing corporate credentials securely."
-      }
-    ]
-  }
+      { qKey: "techQ1", aKey: "techA1" },
+    ],
+  },
 ];
 
-const categories = [
-  { id: "general", label: "General", icon: HelpCircle },
-  { id: "billing-plans", label: "Billing & Plans", icon: CreditCard },
-  { id: "platform-features", label: "Platform Features", icon: Cpu },
-  { id: "technical-support", label: "Technical Support", icon: Settings },
-  { id: "security-privacy", label: "Security & Privacy", icon: ShieldCheck },
-];
+  const categories = [
+    { id: "general", labelKey: "general", icon: HelpCircle },
+    { id: "billing-plans", labelKey: "billingPlans", icon: CreditCard },
+    { id: "platform-features", labelKey: "platformFeatures", icon: Cpu },
+    { id: "technical-support", labelKey: "technicalSupport", icon: Settings },
+    { id: "security-privacy", labelKey: "securityPrivacy", icon: ShieldCheck },
+  ];
 
 export default function FAQPage() {
+  const t = useTranslations("faq");
+  const tNav = useTranslations("nav");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("platform-features");
-  const [expandedItems, setExpandedItems] = useState({});
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
-  const toggleExpand = (id) => {
+  const faqData = getFaqData(t).map((section) => ({
+    ...section,
+    category: t(section.categoryKey),
+    questions: section.questions.map((faq) => ({
+      q: t(faq.qKey),
+      a: t(faq.aKey),
+    })),
+  }));
+
+  const toggleExpand = (id: string) => {
     setExpandedItems(prev => ({
       ...prev,
       [id]: !prev[id]
@@ -104,11 +98,11 @@ export default function FAQPage() {
       {/* Breadcrumbs */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ol className="flex items-center gap-2 text-sm font-medium text-slate-400">
-          <li><Link href="/" className="hover:text-brand-teal transition-colors">Home</Link></li>
+          <li><Link href="/" className="hover:text-brand-teal transition-colors">{t("home")}</Link></li>
           <li><ChevronRight className="w-4 h-4" /></li>
-          <li><Link href="/support" className="hover:text-brand-teal transition-colors">Support</Link></li>
+          <li><Link href="/support" className="hover:text-brand-teal transition-colors">{t("support")}</Link></li>
           <li><ChevronRight className="w-4 h-4" /></li>
-          <li className="text-slate-600">FAQ Hub</li>
+          <li className="text-slate-600">{t("faqHub")}</li>
         </ol>
       </nav>
 
@@ -125,10 +119,10 @@ export default function FAQPage() {
 
           <div className="relative z-10 max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-brand-teal font-extrabold text-white mb-6 tracking-tight">
-              How can we help you today?
+              {t("howCanWeHelp")}
             </h1>
             <p className="text-brand-teal text-lg font-medium mb-12">
-              Search our knowledge base for answers to common questions about the Skill-Learn platform.
+              {t("searchKnowledgeBase")}
             </p>
 
             <div className="relative max-w-2xl mx-auto group">
@@ -136,7 +130,7 @@ export default function FAQPage() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for answers (e.g., 'API integration', 'Invoices')..."
+                placeholder={t("searchPlaceholder")}
                 className="h-16 pl-14 pr-6 rounded-4xl bg-white border-none shadow-xl focus:ring-2 focus:ring-brand-teal/20 text-lg transition-all"
               />
             </div>
@@ -151,7 +145,7 @@ export default function FAQPage() {
           {/* Sidebar */}
           <aside className="lg:col-span-3">
             <div className="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100 sticky top-24">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 px-4">Categories</h3>
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-6 px-4">{t("categories")}</h3>
               <nav className="space-y-1">
                 {categories.map((cat) => {
                   const Icon = cat.icon;
@@ -167,19 +161,19 @@ export default function FAQPage() {
                       )}
                     >
                       <Icon className="w-5 h-5 shrink-0" />
-                      <span className="text-sm">{cat.label}</span>
+                      <span className="text-sm">{t(cat.labelKey)}</span>
                     </button>
                   );
                 })}
               </nav>
 
               <div className="mt-12 p-6 bg-slate-50 rounded-4xl">
-                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">STILL NEED HELP?</h4>
+                <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-2">{t("stillNeedHelp")}</h4>
                 <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-                  Can't find what you're looking for? Our team is here to help.
+                  {t("cantFindLookingFor")}
                 </p>
                 <Button className="w-full bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-bold rounded-xl h-11">
-                  Contact Support
+                  {t("contactSupport")}
                 </Button>
               </div>
             </div>
@@ -190,8 +184,8 @@ export default function FAQPage() {
             {filteredFaqs.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
                 <HelpCircle className="w-12 h-12 text-slate-200 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-slate-900 mb-2">No results found</h3>
-                <p className="text-slate-500">We couldn't find any questions matching "{searchQuery}". Try a different search term or browse our categories.</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{t("noResults")}</h3>
+                <p className="text-slate-500">{t("tryDifferent")}</p>
               </div>
             ) : (
               filteredFaqs.map((section) => {
@@ -206,7 +200,7 @@ export default function FAQPage() {
                   >
                     <div className="flex items-center gap-3 px-4">
                       <Icon className="w-5 h-5 text-brand-teal" />
-                      <h2 className="text-xl font-extrabold text-[#1B1B53]">{section.category}</h2>
+                      <h2 className="text-xl font-extrabold text-[#1B1B53]">{t(section.categoryKey)}</h2>
                     </div>
 
                     <div className="space-y-4">
@@ -267,18 +261,18 @@ export default function FAQPage() {
       {/* Footer CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
         <div className="bg-white rounded-[40px] p-12 md:p-16 border border-slate-100 shadow-sm text-center">
-          <h2 className="text-3xl font-extrabold text-[#1B1B53] mb-4 tracking-tight">Can't find the answer?</h2>
+          <h2 className="text-3xl font-extrabold text-[#1B1B53] mb-4 tracking-tight">{t("cantFindAnswer")}</h2>
           <p className="text-slate-500 mb-12 max-w-xl mx-auto font-medium">
-            Our support experts are available 24/7 to help you with any questions or technical issues.
+            {t("supportExpertsAvailable")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button className="h-14 px-8 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black rounded-4xl flex items-center gap-3 shadow-lg shadow-emerald-500/10">
               <Mail className="w-5 h-5" />
-              Email Support
+              {t("emailSupport")}
             </Button>
             <Button variant="outline" className="h-14 px-8 border-slate-100 text-[#1B1B53] font-bold rounded-4xl flex items-center gap-3 hover:bg-slate-50">
               <MessageCircle className="w-5 h-5" />
-              Live Chat
+              {t("liveChat")}
             </Button>
           </div>
         </div>

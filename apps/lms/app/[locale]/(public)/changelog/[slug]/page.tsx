@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@skill-learn/database";
 import { Badge } from "@skill-learn/ui/components/badge";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
@@ -27,8 +28,9 @@ const getTagStyles = (tag) => {
   return styles[tag.toLowerCase()] || styles.default;
 };
 
-export default async function ChangelogDetailPage({ params }) {
+export default async function ChangelogDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const t = await getTranslations("changelog");
 
   let update: Awaited<ReturnType<typeof prisma.changelog.findUnique>>;
   let relatedUpdates: Awaited<ReturnType<typeof prisma.changelog.findMany>> = [];
@@ -62,7 +64,7 @@ export default async function ChangelogDetailPage({ params }) {
         <div className="mb-8">
           <Link href="/changelog" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-teal-600 transition-colors group">
             <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            Back to Changelog
+            {t("backToChangelog")}
           </Link>
         </div>
 
@@ -126,7 +128,7 @@ export default async function ChangelogDetailPage({ params }) {
                       )}
                     </div>
                     <div>
-                      <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-1">Author</div>
+                      <div className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-1">{t("author")}</div>
                       <div className="font-bold text-slate-900 text-lg">{update.authorName}</div>
                     </div>
                   </div>
@@ -146,13 +148,13 @@ export default async function ChangelogDetailPage({ params }) {
                     {(update.newFeaturesCount ?? 0) > 0 && (
                       <div className="pr-6">
                         <div className="text-3xl font-black text-teal-500">{update.newFeaturesCount ?? 0}</div>
-                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">New Features</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t("newFeatures")}</div>
                       </div>
                     )}
                     {(update.bugFixesCount ?? 0) > 0 && (
                       <div className={`${(update.newFeaturesCount ?? 0) > 0 ? 'px-6 border-l' : ''}`}>
                         <div className="text-3xl font-black text-slate-800">{update.bugFixesCount ?? 0}</div>
-                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Bug Fixes</div>
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">{t("bugFixes")}</div>
                       </div>
                     )}
                   </div>
@@ -195,14 +197,14 @@ export default async function ChangelogDetailPage({ params }) {
 
                 {/* Subscribe */}
                 <div className="pt-8 border-t space-y-4">
-                  <h4 className="font-bold text-slate-900">Never miss an update</h4>
+                  <h4 className="font-bold text-slate-900">{t("neverMissUpdate")}</h4>
                   <p className="text-xs text-slate-500 leading-relaxed">
-                    Join 5,000+ developers getting release notes delivered straight to their inbox.
+                    {t("joinDevelopers")}
                   </p>
                   <form className="space-y-2">
-                    <input type="email" placeholder="Email address" className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20" />
+                    <input type="email" placeholder={t("emailAddress")} className="w-full px-4 py-3 rounded-xl border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20" />
                     <Button className="w-full bg-slate-900 text-white font-bold h-12 rounded-xl">
-                      Subscribe
+                      {t("subscribe")}
                     </Button>
                   </form>
                 </div>
@@ -216,9 +218,9 @@ export default async function ChangelogDetailPage({ params }) {
       {relatedUpdates.length > 0 && (
         <section className="container px-4 mx-auto max-w-5xl py-24 mt-24 border-t">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Related Updates</h2>
+            <h2 className="text-2xl font-bold text-slate-900">{t("relatedUpdates")}</h2>
             <Link href="/changelog" className="text-teal-600 font-bold flex items-center gap-2 hover:underline">
-              View Changelog <ChevronRight className="w-4 h-4" />
+              {t("viewChangelog")} <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

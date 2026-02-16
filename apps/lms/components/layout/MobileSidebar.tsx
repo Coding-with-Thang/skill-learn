@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
   type LucideIcon,
@@ -25,6 +26,9 @@ import {
 } from "@skill-learn/ui/components/sheet";
 
 export default function MobileSidebar() {
+  const t = useTranslations("nav");
+  const tAdmin = useTranslations("admin");
+  const tCommon = useTranslations("common");
   const pathname = usePathname();
   const hasAnyPermission = usePermissionsStore((s) => s.hasAnyPermission);
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
@@ -39,38 +43,36 @@ export default function MobileSidebar() {
     fetchFeatures();
   }, [fetchFeatures]);
 
-  // Check for admin permissions instead of roles
   const isOperations = hasAnyPermission([
-    'dashboard.admin',
-    'dashboard.manager',
-    'users.create',
-    'users.update',
-    'roles.assign'
+    "dashboard.admin",
+    "dashboard.manager",
+    "users.create",
+    "users.update",
+    "roles.assign",
   ]);
 
   type NavItem = { label: string; href: string; icon: LucideIcon; feature?: string; special?: boolean };
-  // Admin Navigation Items
+
   const adminNavItems: NavItem[] = [
-    { label: "Overview", href: "/dashboard", icon: LayoutGrid },
-    { label: "Users", href: "/dashboard/users", icon: User },
-    { label: "Courses", href: "/dashboard/courses", icon: GraduationCap, feature: "training_courses" },
-    { label: "Quizzes", href: "/dashboard/quizzes", icon: ShieldCheck, feature: "course_quizzes" },
-    { label: "Flash Cards", href: "/dashboard/flashcards-analytics", icon: Layers, feature: "flash_cards" },
-    { label: "Categories", href: "/dashboard/categories", icon: BarChart2, feature: "categories" },
-    { label: "Rewards", href: "/dashboard/rewards", icon: Trophy, feature: "rewards_store" },
-    { label: "Audit Logs", href: "/dashboard/audit-logs", icon: ShieldCheck, feature: "audit_logs" },
-    { label: "Settings", href: "/dashboard/settings", icon: ShieldCheck },
+    { label: tAdmin("overview"), href: "/dashboard", icon: LayoutGrid },
+    { label: tAdmin("users"), href: "/dashboard/users", icon: User },
+    { label: tAdmin("courses"), href: "/dashboard/courses", icon: GraduationCap, feature: "training_courses" },
+    { label: tAdmin("quizzes"), href: "/dashboard/quizzes", icon: ShieldCheck, feature: "course_quizzes" },
+    { label: tAdmin("flashCards"), href: "/dashboard/flashcards-analytics", icon: Layers, feature: "flash_cards" },
+    { label: tAdmin("categories"), href: "/dashboard/categories", icon: BarChart2, feature: "categories" },
+    { label: tAdmin("rewards"), href: "/dashboard/rewards", icon: Trophy, feature: "rewards_store" },
+    { label: tAdmin("auditLogs"), href: "/dashboard/audit-logs", icon: ShieldCheck, feature: "audit_logs" },
+    { label: tAdmin("settings"), href: "/dashboard/settings", icon: ShieldCheck },
   ];
 
-  // User Navigation Items
   const userNavItems: NavItem[] = [
-    { label: "Dashboard", href: "/home", icon: LayoutGrid },
-    { label: "Training", href: "/training", icon: GraduationCap, feature: "training_courses" },
-    { label: "Flash Cards", href: "/flashcards", icon: Layers, feature: "flash_cards" },
-    { label: "Report Card", href: "/user/stats", icon: BarChart2, feature: "user_stats" },
-    { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
-    { label: "Achievements", href: "/achievements", icon: Trophy },
-    { label: "Rewards", href: "/rewards", icon: Trophy, feature: "rewards_store" },
+    { label: t("dashboard"), href: "/home", icon: LayoutGrid },
+    { label: t("training"), href: "/training", icon: GraduationCap, feature: "training_courses" },
+    { label: t("flashCards"), href: "/flashcards", icon: Layers, feature: "flash_cards" },
+    { label: t("reportCard"), href: "/user/stats", icon: BarChart2, feature: "user_stats" },
+    { label: t("games"), href: "/games", icon: Gamepad2, feature: "games" },
+    { label: t("achievements"), href: "/achievements", icon: Trophy },
+    { label: t("rewards"), href: "/rewards", icon: Trophy, feature: "rewards_store" },
   ];
 
   const isAdminRoute = pathname?.startsWith('/dashboard');
@@ -84,14 +86,14 @@ export default function MobileSidebar() {
   // Add link to switch between views if user has access
   if (isOperations && !isAdminRoute) {
     items.push({
-      label: "Admin Dashboard",
+      label: t("adminDashboard"),
       href: "/dashboard",
       icon: ShieldCheck,
       special: true,
     });
   } else if (isAdminRoute) {
     items.push({
-      label: "Back to App",
+      label: t("backToApp"),
       href: "/home",
       icon: LayoutGrid,
     });
@@ -145,8 +147,8 @@ export default function MobileSidebar() {
                   <User className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-gray-700">Need Help?</span>
-                  <span className="text-[10px] text-gray-500">Contact Support</span>
+                  <span className="text-xs font-semibold text-gray-700">{tCommon("needHelp")}</span>
+                  <span className="text-[10px] text-gray-500">{tCommon("contactSupport")}</span>
                 </div>
               </div>
             </div>

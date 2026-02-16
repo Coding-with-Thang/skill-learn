@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
@@ -19,31 +20,32 @@ import { Button } from "@skill-learn/ui/components/button";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { Link } from "@/i18n/navigation";
 
-const quickStartItems = [
-  {
-    icon: BookOpen,
-    title: "Create Your First Course",
-    description: "Set up a course to train your team",
-    href: "/dashboard/courses/create",
-  },
-  {
-    icon: Users,
-    title: "Invite Team Members",
-    description: "Add learners to your workspace",
-    href: "/dashboard/users",
-  },
-  {
-    icon: Upload,
-    title: "Upload Learning Content",
-    description: "Add videos, documents, or quizzes",
-    href: "/dashboard/quizzes",
-  },
-];
-
 export default function OnboardingCompletePage() {
+  const t = useTranslations("onboarding");
   const router = useRouter();
   const { isSignedIn, user, isLoaded } = useUser();
   const [countdown, setCountdown] = useState(5);
+  
+  const quickStartItems = [
+    {
+      icon: BookOpen,
+      title: t("createYourFirstCourse"),
+      description: t("setUpCourseTeam"),
+      href: "/dashboard/courses/create",
+    },
+    {
+      icon: Users,
+      title: t("inviteTeamMembers"),
+      description: t("addLearnersWorkspace"),
+      href: "/dashboard/users",
+    },
+    {
+      icon: Upload,
+      title: t("uploadLearningContent"),
+      description: t("addVideosDocumentsQuizzes"),
+      href: "/dashboard/quizzes",
+    },
+  ];
 
   // Trigger confetti on mount
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function OnboardingCompletePage() {
         <Card>
           <CardContent className="p-8 text-center">
             <Loader2 className="w-8 h-8 animate-spin text-brand-teal mx-auto" />
-            <p className="text-gray-600 mt-4">Loading...</p>
+            <p className="text-gray-600 mt-4">{t("loading")}</p>
           </CardContent>
         </Card>
       </div>
@@ -124,7 +126,7 @@ export default function OnboardingCompletePage() {
             transition={{ delay: 0.2 }}
             className="text-3xl font-bold text-gray-900 mb-3"
           >
-            You&apos;re All Set! 🎉
+            {t("youreAllSet")} 🎉
           </motion.h1>
 
           <motion.p
@@ -133,12 +135,12 @@ export default function OnboardingCompletePage() {
             transition={{ delay: 0.3 }}
             className="text-lg text-gray-600 mb-6"
           >
-            Welcome to Skill-Learn, {user?.firstName || "there"}! Your workspace is ready.
+            {t("welcomeToSkillLearn", { name: user?.firstName || "there" })}
           </motion.p>
 
           {/* Completion Steps */}
           <div className="flex items-center justify-center gap-2 mb-8">
-            {["Payment", "Account", "Workspace"].map((step, idx) => (
+            {[t("payment"), t("account"), t("workspaceStep")].map((step, idx) => (
               <div key={step} className="flex items-center gap-2">
                 {idx > 0 && <div className="w-8 h-px bg-green-500" />}
                 <div className="flex items-center gap-2">
@@ -154,7 +156,7 @@ export default function OnboardingCompletePage() {
           <Button asChild size="lg" className="min-w-[200px]">
             <Link href="/dashboard">
               <LayoutDashboard className="w-5 h-5 mr-2" />
-              Go to Dashboard
+              {t("goToDashboard")}
               {countdown > 0 && (
                 <span className="ml-2 text-sm opacity-70">({countdown}s)</span>
               )}
@@ -170,7 +172,7 @@ export default function OnboardingCompletePage() {
         transition={{ delay: 0.5 }}
       >
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
-          Quick Start Guide
+          {t("quickStartGuide")}
         </h2>
         <div className="grid gap-4">
           {quickStartItems.map((item, idx) => (
@@ -206,11 +208,11 @@ export default function OnboardingCompletePage() {
         transition={{ delay: 1 }}
         className="text-sm text-center text-gray-500 mt-8"
       >
-        Need help getting started?{" "}
+        {t("needHelpGettingStarted")}{" "}
         <a href="mailto:support@skill-learn.com" className="text-brand-teal hover:underline">
-          Contact our support team
+          {t("contactSupportTeam")}
         </a>{" "}
-        or check out our{" "}
+        {t("orCheckDocumentation")}{" "}
         <Link href="/docs" className="text-brand-teal hover:underline">
           documentation
         </Link>

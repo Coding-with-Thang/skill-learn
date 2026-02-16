@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore";
@@ -19,6 +20,8 @@ import { Loader } from "@skill-learn/ui/components/loader";
 import BreadCrumbCom from "@/components/shared/BreadCrumb";
 
 export default function SelectedQuizPage() {
+  const t = useTranslations("quizStart");
+  const tB = useTranslations("breadcrumbs");
   const router = useRouter();
   const { selectedQuiz } = useQuizStartStore();
   const [stats, setStats] = useState<{ attempts?: number; completed?: number; bestScore?: number; averageScore?: number } | null>(null);
@@ -27,7 +30,7 @@ export default function SelectedQuizPage() {
   const startQuiz = async () => {
     if (!selectedQuiz?.id || !selectedQuiz?.categoryId) {
       console.error("Invalid quiz data:", selectedQuiz);
-      alert("Invalid quiz data. Please try selecting the quiz again.");
+      alert(t("invalidQuizData"));
       router.push("/training");
       return;
     }
@@ -38,7 +41,7 @@ export default function SelectedQuizPage() {
       selectedQuiz.questions.length === 0
     ) {
       console.error("Quiz has no questions:", selectedQuiz);
-      alert("This quiz has no questions available. Please contact an administrator.");
+      alert(t("noQuestionsContactAdmin"));
       return;
     }
 
@@ -54,7 +57,7 @@ export default function SelectedQuizPage() {
       if ((error as { response?: { status?: number } })?.response?.status === 401) {
         router.push("/sign-in");
       } else {
-        alert("Failed to start quiz. Please try again.");
+        alert(t("failedToStartQuiz"));
       }
     }
   };
@@ -94,7 +97,7 @@ export default function SelectedQuizPage() {
       !Array.isArray(selectedQuiz.questions) ||
       selectedQuiz.questions.length === 0
     ) {
-      alert("This quiz has no questions available. Redirecting to training page.");
+      alert(t("noQuestionsRedirect"));
       router.push("/training");
       return;
     }
@@ -116,7 +119,7 @@ export default function SelectedQuizPage() {
       {/* Breadcrumb row - muted, small, above main card */}
       <div className="text-sm text-muted-foreground mb-6 [&_*]:text-inherit [&_*]:text-sm">
         <BreadCrumbCom
-          crumbs={[{ name: "Training", href: "/training" }]}
+          crumbs={[{ name: tB("training"), href: "/training" }]}
           endtrail={selectedQuiz?.title}
         />
       </div>
@@ -129,8 +132,7 @@ export default function SelectedQuizPage() {
             {selectedQuiz?.title}
           </h1>
           <p className="text-muted-foreground text-base max-w-xl mx-auto leading-relaxed">
-            {selectedQuiz?.description ||
-              "Master the art of communication, leadership, and emotional intelligence. This assessment will help you identify your strengths and areas for growth."}
+            {selectedQuiz?.description || t("defaultDescription")}
           </p>
         </header>
 
@@ -141,7 +143,7 @@ export default function SelectedQuizPage() {
               <Trophy className="h-5 w-5" />
             </span>
             <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted-foreground mb-0.5">
-              BEST SCORE
+              {t("bestScoreLabel")}
             </span>
             <span className="text-lg font-bold text-foreground">
               {bestScore != null ? `${Number(bestScore).toFixed(1)}%` : "—"}
@@ -153,7 +155,7 @@ export default function SelectedQuizPage() {
               <BarChart2 className="h-5 w-5" />
             </span>
             <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted-foreground mb-0.5">
-              AVERAGE
+              {t("averageLabel")}
             </span>
             <span className="text-lg font-bold text-foreground">
               {averageScore != null ? `${Number(averageScore).toFixed(1)}%` : "—"}
@@ -165,7 +167,7 @@ export default function SelectedQuizPage() {
               <CheckCircle2 className="h-5 w-5" />
             </span>
             <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted-foreground mb-0.5">
-              PASSING
+              {t("passingLabel")}
             </span>
             <span className="text-lg font-bold text-foreground">{passingScore}%</span>
           </div>
@@ -175,10 +177,10 @@ export default function SelectedQuizPage() {
               <Clock className="h-5 w-5" />
             </span>
             <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide text-muted-foreground mb-0.5">
-              TIME LIMIT
+              {t("timeLimitLabel")}
             </span>
             <span className="text-lg font-bold text-foreground">
-              {timeLimit ? `${timeLimit} min` : "None"}
+              {timeLimit ? `${timeLimit} min` : t("noTimeLimit")}
             </span>
           </div>
         </div>
@@ -190,25 +192,25 @@ export default function SelectedQuizPage() {
         <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 mb-8">
           <div className="flex items-center gap-2">
             <HelpCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground">Questions</span>
+            <span className="text-sm text-muted-foreground">{t("questionsLabel")}</span>
             <span className="text-sm font-bold text-foreground">
-              {questionCount} {questionCount === 1 ? "Question" : "Questions"}
+              {questionCount} {questionCount === 1 ? t("question") : t("questionsPlural")}
             </span>
           </div>
           <div className="hidden sm:block w-px h-5 bg-border shrink-0" aria-hidden />
           <div className="flex items-center gap-2">
             <RotateCw className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground">Attempts</span>
+            <span className="text-sm text-muted-foreground">{t("attemptsLabel")}</span>
             <span className="text-sm font-bold text-foreground">
-              {attempts} Attempted
+              {attempts} {t("attempted")}
             </span>
           </div>
           <div className="hidden sm:block w-px h-5 bg-border shrink-0" aria-hidden />
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground">Completions</span>
+            <span className="text-sm text-muted-foreground">{t("completions")}</span>
             <span className="text-sm font-bold text-foreground">
-              {completed} {completed === 1 ? "Completed" : "Completed"}
+              {completed} {t("completed")}
             </span>
           </div>
         </div>
@@ -221,10 +223,10 @@ export default function SelectedQuizPage() {
             className="px-8 py-6 text-base font-semibold rounded-xl bg-primary text-primary-foreground hover:bg-primary-hover focus-visible:ring-ring-primary"
           >
             <Play className="h-5 w-5 fill-current" />
-            Start Quiz
+            {t("startQuiz")}
           </Button>
           <p className="mt-4 text-xs text-muted-foreground max-w-sm">
-            By starting, you agree to our assessment guidelines and honor code.
+            {t("assessmentGuidelines")}
           </p>
         </div>
 
@@ -232,7 +234,7 @@ export default function SelectedQuizPage() {
         <footer className="pt-6 border-t border-border">
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 shrink-0" />
-            Verified Assessment
+            {t("verifiedAssessment")}
           </p>
         </footer>
       </div>
