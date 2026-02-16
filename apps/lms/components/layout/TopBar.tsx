@@ -20,11 +20,8 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
   return (
     <header className="fixed top-0 left-0 right-0 z-2000 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all gap-4">
       <div className="flex items-center gap-4">
-        {adminMode ? (
-          <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
-        ) : (
-          <MobileSidebar />
-        )}
+        {!adminMode && <MobileSidebar />}
+        <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
       </div>
 
       <div className="flex items-center gap-8">
