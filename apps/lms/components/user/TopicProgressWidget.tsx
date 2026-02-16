@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@skill-learn/ui/components/card";
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default function TopicProgressWidget() {
   const data = [

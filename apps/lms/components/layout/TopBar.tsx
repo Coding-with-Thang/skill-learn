@@ -7,6 +7,7 @@ import { UserButtonWrapper } from '@/components/auth/UserButtonWrapper';
 import { useUser } from "@clerk/nextjs";
 import { useUserRole } from "@skill-learn/lib/hooks/useUserRole";
 import { SearchCommand } from "./SearchCommand";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 export default function TopBar({ adminMode = false }: { adminMode?: boolean } = {}) {
@@ -56,6 +57,8 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
           </button>
 
           <ThemeToggle />
+
+          <LanguageSwitcher className="hidden sm:flex" />
 
           <div 
             className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer"

@@ -5,7 +5,7 @@ import Image from "next/image";
 import api from "@skill-learn/lib/utils/axios";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@skill-learn/ui/components/card";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 import { Trophy } from "lucide-react";
 

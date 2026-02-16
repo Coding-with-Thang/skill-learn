@@ -13,7 +13,7 @@ import {
   X,
   ShieldCheck
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 
 const COOKIE_CONSENT_KEY = "skill_learn_cookie_consent";

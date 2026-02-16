@@ -31,7 +31,7 @@ import {
   SidebarTrigger,
   SidebarSeparator,
 } from "@skill-learn/ui/components/sidebar";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/shared/Logo";
 
 // Define navigation data with feature requirements

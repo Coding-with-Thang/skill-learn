@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 
 export function NavLink({ href, icon: Icon, children, mobile, variant }: { href: string; icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; mobile?: boolean; variant?: string }) {

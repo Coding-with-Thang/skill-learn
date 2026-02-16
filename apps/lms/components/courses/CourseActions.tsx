@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { toast } from "sonner";
 import axios from "axios";
 import {
@@ -21,7 +21,7 @@ import {
 } from "@skill-learn/ui/components/dialog"
 import { Button } from "@skill-learn/ui/components/button"
 import { MoreVertical, Pencil, Eye, Trash2, Loader2 } from "lucide-react"
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 export default function CourseActions({ courseId, courseSlug }) {
   const slugOrId = courseSlug ?? courseId;

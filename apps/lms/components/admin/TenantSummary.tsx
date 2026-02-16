@@ -13,7 +13,7 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useBillingStore } from "@skill-learn/lib/stores/billingStore";
 
 export function TenantSummary() {

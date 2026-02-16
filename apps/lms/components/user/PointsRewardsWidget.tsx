@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { usePointsStore } from "@skill-learn/lib/stores/pointsStore";
 import api from "@skill-learn/lib/utils/axios";

@@ -1,53 +1,80 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import { rateLimiter } from "../../packages/lib/utils/rateLimit";
 import { publicRoutes, rateLimits } from "@/config/routes";
+import { routing } from "./i18n/routing";
 
-const isPublicRoute = createRouteMatcher(publicRoutes);
+// Match pathnames with locale prefix (e.g. /en/sign-in)
+const localePrefix = `/(${routing.locales.join("|")})`;
+const publicRoutesWithLocale = [
+  localePrefix, // /en or /fr (landing)
+  ...publicRoutes.filter((r) => r !== "/").map((r) => `${localePrefix}${r}`),
+];
+const isPublicRoute = createRouteMatcher(publicRoutesWithLocale);
+const intlMiddleware = createIntlMiddleware(routing);
+
+/**
+ * Strip locale prefix (e.g. /en, /fr) from pathname for route matching.
+ */
+function getPathnameWithoutLocale(pathname: string): string {
+  const withoutLocale = pathname.replace(/^\/(en|fr)(?=\/|$)/, "") || "/";
+  return withoutLocale;
+}
+
+/**
+ * Get locale from pathname (en or fr), default en.
+ */
+function getLocaleFromPathname(pathname: string): string {
+  const match = pathname.match(/^\/(en|fr)(?=\/|$)/);
+  return match?.[1] ?? "en";
+}
 
 /**
  * Check if a route is in the (public) directory
  * Routes in app/(public)/ are automatically public and don't require authentication
  * This follows security best practices by making public routes explicit via folder structure
  *
- * @param {string} pathname - The request pathname
+ * @param {string} pathname - The request pathname (without locale prefix)
  * @returns {boolean} - True if the route is in (public) directory
  */
-function isPublicDirectoryRoute(pathname) {
-  // Routes that are in app/(public)/ directory
-  // These patterns match the actual URL paths (route groups don't appear in URLs)
+function isPublicDirectoryRoute(pathname: string) {
   const publicDirectoryPatterns = [
-    /^\/about(\/.*)?$/, // /about
-    /^\/changelog(\/.*)?$/, // /changelog, /changelog/slug, etc.
-    /^\/contact(\/.*)?$/, // /contact
-    /^\/features(\/.*)?$/, // /features
-    /^\/legal(\/.*)?$/, // /legal, /legal/privacy-policy, etc.
-    /^\/pricing(\/.*)?$/, // /pricing
-    /^\/resources(\/.*)?$/, // /resources, /resources/case-studies/techflow, etc.
-    /^\/sitemap(\/.*)?$/, // /sitemap
-    /^\/support(\/.*)?$/, // /support, /support/faq, etc.
-    /^\/careers(\/.*)?$/, // /careers, /careers/job-id, etc.
-    /^\/video-ad(\/.*)?$/, // /video-ad
+    /^\/about(\/.*)?$/,
+    /^\/changelog(\/.*)?$/,
+    /^\/contact(\/.*)?$/,
+    /^\/features(\/.*)?$/,
+    /^\/legal(\/.*)?$/,
+    /^\/pricing(\/.*)?$/,
+    /^\/resources(\/.*)?$/,
+    /^\/sitemap(\/.*)?$/,
+    /^\/support(\/.*)?$/,
+    /^\/careers(\/.*)?$/,
+    /^\/video-ad(\/.*)?$/,
   ];
-
   return publicDirectoryPatterns.some((pattern) => pattern.test(pathname));
 }
 
 const proxy = clerkMiddleware(async (auth, req) => {
   try {
-    const { userId } = await auth();
-    const { pathname } = req.nextUrl;
-
-    // Handle redirects for landing page and home page
-    // Redirect authenticated users from landing page (/) to home page (/home)
-    if (userId && pathname === "/") {
-      const homeUrl = new URL("/home", req.url);
-      return NextResponse.redirect(homeUrl);
+    // Run next-intl first (locale redirects, e.g. / -> /en)
+    const intlResponse = await intlMiddleware(req);
+    if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
+      return intlResponse;
     }
 
-    // Redirect unauthenticated users from home page (/home) to landing page (/)
-    if (!userId && pathname === "/home") {
-      const landingUrl = new URL("/", req.url);
+    const { userId } = await auth();
+    const { pathname } = req.nextUrl;
+    const pathWithoutLocale = getPathnameWithoutLocale(pathname);
+    const locale = getLocaleFromPathname(pathname);
+
+    // Handle redirects for landing page and home page (locale-aware)
+    if (userId && (pathWithoutLocale === "/" || pathWithoutLocale === "")) {
+      const homeUrl = new URL(`/${locale}/home`, req.url);
+      return NextResponse.redirect(homeUrl);
+    }
+    if (!userId && pathWithoutLocale === "/home") {
+      const landingUrl = new URL(`/${locale}`, req.url);
       return NextResponse.redirect(landingUrl);
     }
 
@@ -59,10 +86,9 @@ const proxy = clerkMiddleware(async (auth, req) => {
       req.headers.get("x-real-ip") ||
       "unknown";
 
-    // Check if route is public (either in publicRoutes config or in (public) directory)
-    // Routes in app/(public)/ are automatically public - this follows security best practices
-    // by making public routes explicit via folder structure
-    const isPublic = isPublicRoute(req) || isPublicDirectoryRoute(pathname);
+    // Check if route is public (pathname has locale prefix; match without it for (public) dir)
+    const isPublic =
+      isPublicRoute(req) || isPublicDirectoryRoute(pathWithoutLocale);
     const isProtected = !isPublic;
 
     // Apply rate limiting based on route type
@@ -87,10 +113,12 @@ const proxy = clerkMiddleware(async (auth, req) => {
     }
 
     // Check authentication for protected routes
-    // Routes are protected if they're NOT in publicRoutes config AND NOT in app/(public)/ directory
     if (isProtected) {
       await auth.protect();
     }
+
+    // Return intl response when no redirect so locale headers are preserved
+    return intlResponse ?? NextResponse.next();
   } catch (err) {
     // NEXT_REDIRECT is a special Next.js error used for redirects - don't treat it as an error
     if (err instanceof Error && err.message === "NEXT_REDIRECT") {

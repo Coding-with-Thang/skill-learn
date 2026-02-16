@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/shared/Logo";
 
 export default function LandingFooter() {

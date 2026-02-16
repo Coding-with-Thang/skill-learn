@@ -1,5 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "@skill-learn/ui/components/sonner"
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
+import { Toaster } from "@skill-learn/ui/components/sonner";
 import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
 import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
@@ -18,19 +20,25 @@ const mono = JetBrains_Mono({
 });
 
 const poppins = Poppins({
-  weight: ['400', '500', '600', '700'],
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   variable: "--font-display",
   display: "swap",
 });
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Skill-Learn",
   description: "Gamify your knowledge - have a blast learning",
   icons: {
     icon: "/favicon.ico",
+  },
+  alternates: {
+    languages: {
+      en: "/en",
+      fr: "/fr",
+    },
   },
 };
 
@@ -41,14 +49,15 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps): ReactNode {
+export default async function RootLayout({
+  children,
+}: RootLayoutProps): Promise<ReactNode> {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <ClerkProvider
-    // appearance={{
-    //   baseTheme: dark // Optional: if you want to use the dark theme
-    // }}
-    >
-      <html lang="en" suppressHydrationWarning>
+    <ClerkProvider>
+      <html lang={locale} suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <script
@@ -68,14 +77,16 @@ export default function RootLayout({ children }: RootLayoutProps): ReactNode {
             }}
           />
         </head>
-        <body className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}>
-          <ErrorBoundaryProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-            <Toaster />
-            <CookieConsent />
-          </ErrorBoundaryProvider>
+        <body
+          className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}
+        >
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <ErrorBoundaryProvider>
+              <LayoutWrapper>{children}</LayoutWrapper>
+              <Toaster />
+              <CookieConsent />
+            </ErrorBoundaryProvider>
+          </NextIntlClientProvider>
         </body>
       </html>
     </ClerkProvider>

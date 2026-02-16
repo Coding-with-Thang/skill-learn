@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import Link from 'next/link'
+import { Link } from "@/i18n/navigation"
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
 import { Pagination as UIPagination, PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis } from '@skill-learn/ui/components/pagination'
 import { buttonVariants } from '@skill-learn/ui/components/button'

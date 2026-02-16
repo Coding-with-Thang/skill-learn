@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
-import { usePathname } from 'next/navigation';
+import { usePathname } from "@/i18n/navigation";
 import { Button } from "@skill-learn/ui/components/button";
 import QuizModal from "@/components/quiz/QuizModal"
 

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@skill-learn/ui/components/dialog";
 import { cn } from "@skill-learn/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 
 export function SearchCommand({ isOpen, setIsOpen }) {
   const router = useRouter();
