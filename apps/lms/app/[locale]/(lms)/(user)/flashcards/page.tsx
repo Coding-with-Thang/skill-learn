@@ -115,18 +115,18 @@ export default function FlashCardsHomePage() {
     router.push(`/flashcards/study${search ? `?${search}` : ""}`);
   };
 
-  // Helper to get category icon and color
-  const getCategoryTheme = (categoryName) => {
-    const name = categoryName?.toLowerCase() || '';
-    if (name.includes('security')) return { icon: Shield, color: '#0a6673', label: 'SECURITY', sub: 'Privacy 101' };
-    if (name.includes('sale')) return { icon: Banknote, color: '#8c3a63', label: 'SALES', sub: 'Sales Mastery' };
-    if (name.includes('product')) return { icon: Lightbulb, color: '#1a735a', label: 'PRODUCT', sub: 'v2.0 Updates' };
-    if (name.includes('onboarding')) return { icon: Rocket, color: '#1a735a', label: 'ONBOARDING', sub: 'New Joiner' };
-    if (name.includes('engineer')) return { icon: Terminal, color: '#3b4896', label: 'ENGINEERING', sub: 'Tech Stack' };
-    if (name.includes('design')) return { icon: Compass, color: '#1a735a', label: 'DESIGN', sub: 'UI/UX' };
-    if (name.includes('ethics')) return { icon: ShieldCheck, color: '#8c2a38', label: 'ETHICS', sub: 'Compliance' };
-    if (name.includes('hr')) return { icon: Users, color: '#8c3a63', label: 'SALES & HR', sub: 'Team Culture' };
-    return { icon: BookOpen, color: '#64748b', label: 'GENERAL', sub: 'Misc' };
+  // Helper to get category icon and color (labels from i18n)
+  const getCategoryTheme = (categoryName: string | undefined) => {
+    const name = categoryName?.toLowerCase() || "";
+    if (name.includes("security")) return { icon: Shield, color: "#0a6673", label: t("categorySecurity"), sub: t("categorySubPrivacy") };
+    if (name.includes("sale")) return { icon: Banknote, color: "#8c3a63", label: t("categorySales"), sub: t("categorySubSales") };
+    if (name.includes("product")) return { icon: Lightbulb, color: "#1a735a", label: t("categoryProduct"), sub: t("categorySubProduct") };
+    if (name.includes("onboarding")) return { icon: Rocket, color: "#1a735a", label: t("categoryOnboarding"), sub: t("categorySubOnboarding") };
+    if (name.includes("engineer")) return { icon: Terminal, color: "#3b4896", label: t("categoryEngineering"), sub: t("categorySubTech") };
+    if (name.includes("design")) return { icon: Compass, color: "#1a735a", label: t("categoryDesign"), sub: t("categorySubDesign") };
+    if (name.includes("ethics")) return { icon: ShieldCheck, color: "#8c2a38", label: t("categoryEthics"), sub: t("categorySubCompliance") };
+    if (name.includes("hr")) return { icon: Users, color: "#8c3a63", label: t("categorySalesHr"), sub: t("categorySubTeam") };
+    return { icon: BookOpen, color: "#64748b", label: t("categoryGeneral"), sub: t("categorySubMisc") };
   };
 
   return (
@@ -270,16 +270,16 @@ export default function FlashCardsHomePage() {
               <Badge className="bg-cyan-500 hover:bg-cyan-600 text-[10px] font-bold py-1 px-3">NEW</Badge>
             </div>
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-foreground">Company Focus</h3>
+              <h3 className="text-xl font-bold text-foreground">{t("companyFocus")}</h3>
               <p className="text-sm text-muted-foreground">
-                Admin-prioritized categories: 2024 Compliance.
+                {t("companyFocusDesc")}
               </p>
             </div>
             <Button
               onClick={() => startStudy({ virtualDeck: "company_focus", limit: 25 })}
               className="w-full rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-black hover:opacity-90 transition-opacity h-14 font-bold text-base px-8"
             >
-              Go to Deck
+              {t("goToDeck")}
             </Button>
           </div>
         </div>
@@ -321,12 +321,12 @@ export default function FlashCardsHomePage() {
               disabled={decks.length === 0}
             >
               <Share2 className="mr-2 h-4 w-4" />
-              Share
+              {t("share")}
             </Button>
             <Link href="/flashcards/deck-builder">
               <Button className="rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white border-none font-bold h-11 px-8">
                 <Plus className="mr-2 h-4 w-4" />
-                New Deck
+                {t("newDeck")}
               </Button>
             </Link>
           </div>
@@ -385,7 +385,7 @@ export default function FlashCardsHomePage() {
                   <div className="p-4 flex items-center justify-between bg-card text-card-foreground flex-1">
                     <div>
                       <p className="text-sm font-bold text-foreground line-clamp-1">{theme.sub}</p>
-                      <p className="text-xs text-muted-foreground">{visibleCount} Cards</p>
+                      <p className="text-xs text-muted-foreground">{t("cardsCount", { count: visibleCount })}</p>
                     </div>
                     <div className="p-2.5 rounded-full bg-cyan-500 text-white shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform">
                       <Play className="w-4 h-4 fill-current" />
@@ -404,12 +404,10 @@ export default function FlashCardsHomePage() {
                   <Plus className="w-6 h-6 text-slate-400 group-hover:text-white" />
                 </div>
                 <h4 className="font-bold text-slate-800 dark:text-slate-200">
-                  {decks.length > 0 ? "Create New Deck" : "Create First Deck"}
+                  {decks.length > 0 ? t("createNewDeck") : t("createFirstDeckCta")}
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {decks.length > 0
-                    ? "Add another set to your collection and keep growing."
-                    : "Your personalized learning sanctuary starts here."}
+                  {decks.length > 0 ? t("addAnotherSet") : t("sanctuaryStartsHere")}
                 </p>
               </Card>
             </Link>
@@ -435,7 +433,7 @@ export default function FlashCardsHomePage() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">{d.name}</CardTitle>
                   <CardDescription>
-                    {d.cardCount} cards · by {d.ownerUsername}
+                    {t("cardsByOwner", { count: d.cardCount ?? 0, owner: d.ownerUsername ?? "" })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -449,7 +447,7 @@ export default function FlashCardsHomePage() {
                     {acceptingDeckId === d.id ? (
                       <Loader className="h-4 w-4 animate-spin mr-2" />
                     ) : null}
-                    Accept
+                    {t("accept")}
                   </Button>
                 </CardContent>
               </Card>
@@ -464,7 +462,7 @@ export default function FlashCardsHomePage() {
           <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center">
             <LayoutGrid className="w-5 h-5 text-indigo-500" />
           </div>
-          <h2 className="text-2xl font-bold">Explore Knowledge Areas</h2>
+          <h2 className="text-2xl font-bold">{t("exploreKnowledgeAreas")}</h2>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -506,17 +504,15 @@ export default function FlashCardsHomePage() {
           </div>
 
           <h3 className="text-3xl font-bold">
-            {decks.length > 0 ? "Keep that learning momentum going!" : "Ready for your first mastery breakthrough?"}
+            {decks.length > 0 ? t("keepMomentum") : t("firstBreakthrough")}
           </h3>
           <p className="text-muted">
-            {decks.length > 0
-              ? "Expand your knowledge by creating a new deck or continue mastering your current ones."
-              : "Create a custom deck or import from your team's shared library. Our smart algorithms will handle the repetition schedule for you."}
+            {decks.length > 0 ? t("expandKnowledgeCta") : t("createOrImportCta")}
           </p>
 
           <Link href="/flashcards/deck-builder">
             <Button size="lg" className="rounded-4xl bg-cyan-500 hover:bg-cyan-600 border-none px-14 font-bold text-white h-16 text-lg shadow-xl shadow-cyan-500/20 mt-4">
-              {decks.length > 0 ? "Create Another Deck" : "Create Your First Deck"}
+              {decks.length > 0 ? t("createAnotherDeck") : t("createYourFirstDeck")}
             </Button>
           </Link>
         </div>

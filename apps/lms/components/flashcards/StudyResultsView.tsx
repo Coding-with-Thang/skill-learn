@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
@@ -11,7 +12,7 @@ type StudyStats = { studied?: number; correct?: number; uniqueShown?: number };
 
 export default function StudyResultsView({
   stats = {},
-  deckName = "Session",
+  deckName = "",
   streak = 0,
   onReview,
 }: {
@@ -20,6 +21,7 @@ export default function StudyResultsView({
   streak?: number;
   onReview?: () => void;
 }) {
+  const t = useTranslations("flashcards");
   const { studied = 0, correct = 0, uniqueShown } = stats;
   const cardsStudied = uniqueShown ?? studied;
   const accuracy = studied > 0 ? Math.round((correct / studied) * 100) : 0;
@@ -41,12 +43,12 @@ export default function StudyResultsView({
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
             <Trophy className="w-5 h-5 text-amber-500" />
             <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-              SESSION COMPLETE
+              {t("sessionComplete")}
             </span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">Great work!</h1>
+          <h1 className="text-4xl font-bold tracking-tight">{t("greatWork")}</h1>
           <p className="text-muted-foreground">
-            You studied <span className="font-semibold text-foreground">{deckName}</span>
+            {t("youStudied")} <span className="font-semibold text-foreground">{deckName}</span>
           </p>
         </motion.div>
 
@@ -64,7 +66,7 @@ export default function StudyResultsView({
               </div>
               <div>
                 <p className="text-2xl font-bold">{cardsStudied}</p>
-                <p className="text-sm text-muted-foreground">Cards Studied</p>
+                <p className="text-sm text-muted-foreground">{t("cardsStudiedLabel")}</p>
               </div>
             </div>
           </Card>
@@ -76,7 +78,7 @@ export default function StudyResultsView({
               </div>
               <div>
                 <p className="text-2xl font-bold">{accuracy}%</p>
-                <p className="text-sm text-muted-foreground">Accuracy</p>
+                <p className="text-sm text-muted-foreground">{t("accuracy")}</p>
               </div>
             </div>
           </Card>
@@ -87,8 +89,8 @@ export default function StudyResultsView({
                 <Flame className="w-6 h-6 text-orange-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{streak} Days</p>
-                <p className="text-sm text-muted-foreground">Active Streak</p>
+                <p className="text-2xl font-bold">{t("streakDays", { count: streak })}</p>
+                <p className="text-sm text-muted-foreground">{t("activeStreak")}</p>
               </div>
             </div>
           </Card>
@@ -107,7 +109,7 @@ export default function StudyResultsView({
               className="w-full h-14 rounded-4xl text-base font-bold bg-linear-to-r from-cyan-500 to-indigo-500 hover:from-cyan-600 hover:to-indigo-600"
             >
               <Sparkles className="w-5 h-5 mr-2" />
-              Finish & Return
+              {t("finishAndReturn")}
             </Button>
           </Link>
           <Button
@@ -117,12 +119,12 @@ export default function StudyResultsView({
             className="flex-1 h-14 rounded-4xl text-base font-bold"
           >
             <RotateCw className="w-5 h-5 mr-2" />
-            Review Session
+            {t("reviewSession")}
           </Button>
         </motion.div>
 
         <p className="text-center text-sm text-muted-foreground">
-          Keep your streak going by studying again soon.
+          {t("keepStreakGoing")}
         </p>
       </div>
     </div>

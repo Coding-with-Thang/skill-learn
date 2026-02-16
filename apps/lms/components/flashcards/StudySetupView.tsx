@@ -214,7 +214,7 @@ export default function StudySetupView({
                     onClick={() => setDurationMinutes(mins)}
                     className="rounded-xl"
                   >
-                    {mins} min
+                    {t("minShort", { count: mins })}
                   </Button>
                 ))}
               </div>
@@ -224,12 +224,12 @@ export default function StudySetupView({
 
         {/* Deck / source selection */}
         <Card className="p-6 rounded-3xl border-border bg-card/80 backdrop-blur">
-          <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Content</Label>
-          <p className="text-sm text-muted-foreground mt-1 mb-4">Select deck(s) or a smart session</p>
+          <Label className="text-sm font-bold text-muted-foreground uppercase tracking-wider">{t("contentLabel")}</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-4">{t("selectDeckOrSmart")}</p>
 
           {decks.length > 0 && (
             <div className="space-y-2 mb-6">
-              <span className="text-xs font-semibold text-muted-foreground uppercase">Your decks</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase">{t("yourDecksLabel")}</span>
               <div className="max-h-40 overflow-y-auto space-y-2 rounded-lg border p-3">
                 {decks.map((deck) => {
                   const visibleCount = (deck.cardIds?.length ?? 0) - (deck.hiddenCardIds?.length ?? 0);
@@ -245,7 +245,7 @@ export default function StudySetupView({
                         className="flex-1 cursor-pointer text-sm font-medium"
                       >
                         {deck.name}
-                        <span className="text-muted-foreground ml-1">({visibleCount} cards)</span>
+                        <span className="text-muted-foreground ml-1">({t("cardsLabel", { count: visibleCount })})</span>
                       </Label>
                     </div>
                   );
@@ -255,7 +255,7 @@ export default function StudySetupView({
           )}
 
           <div className="space-y-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase">Smart sessions</span>
+            <span className="text-xs font-semibold text-muted-foreground uppercase">{t("smartSessions")}</span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {recommended.map((r) => {
                 const vId = r.id?.replace(/-/g, "_");
@@ -283,7 +283,7 @@ export default function StudySetupView({
                       <span className="font-semibold text-sm block">{r.name}</span>
                       <span className="text-xs text-muted-foreground line-clamp-2">{r.description}</span>
                       <span className="text-xs font-bold text-muted-foreground mt-1 block">
-                        {r.cardCount ?? 0} cards
+                        {t("cardsLabel", { count: r.cardCount ?? 0 })}
                       </span>
                     </div>
                   </button>
@@ -300,11 +300,11 @@ export default function StudySetupView({
             disabled={!canStart}
             className="w-full h-16 rounded-4xl text-lg font-bold bg-linear-to-r from-indigo-500 to-cyan-500 hover:from-indigo-600 hover:to-cyan-600 disabled:opacity-50"
           >
-            Start Session
+            {t("startSessionButton")}
             <ChevronRight className="w-5 h-5 ml-2" />
           </Button>
           {!canStart && (
-            <p className="text-center text-sm text-muted-foreground">Select at least one deck or a smart session</p>
+            <p className="text-center text-sm text-muted-foreground">{t("selectOneDeckOrSmart")}</p>
           )}
         </div>
       </div>

@@ -33,6 +33,25 @@ import {
 import BreadCrumbCom from "@/components/shared/BreadCrumb"
 import { Link } from '@/i18n/navigation'
 
+// Map achievement id to translation key prefix (camelCase)
+const ACHIEVEMENT_ID_TO_KEY: Record<string, string> = {
+  'early-adopter': 'earlyAdopter',
+  'fast-reader': 'fastReader',
+  'streak-7': 'streak7',
+  'knowledge-sage': 'knowledgeSage',
+  'curiosity-killed-boredom': 'curiousMind',
+  'perfect-score': 'perfectScore',
+  'quiz-speed': 'speedDemon',
+  'steady-hand': 'steadyHand',
+  'unshakable': 'unshakable',
+  'card-shark': 'cardShark',
+  'combo-master': 'comboMaster',
+  'night-owl': 'nightOwl',
+  'speed-runner': 'speedRunner',
+  'top-tier': 'topTier',
+  'social-warrior': 'socialWarrior',
+}
+
 // Categories will be translated in the component
 const getCategories = (t) => [
   { id: 'milestones', name: t("learningMilestones"), color: '#06b6d4', progress: '3 / 8', icon: GraduationCap },
@@ -41,181 +60,38 @@ const getCategories = (t) => [
   { id: 'games', name: t("gameLegends"), color: '#ec4899', progress: '0 / 6', icon: Gamepad2 }
 ]
 
-const achievements = [
-  // Learning Milestones
-  {
-    id: 'early-adopter',
-    title: 'Early Adopter',
-    description: 'Joined the platform during the beta launch.',
-    story: "You were among the first 1,000 pioneers to join Skill-Learn. Your early feedback helped shape the system we have today. A true visionary!",
-    howToUnlock: "Register your account during the Beta phase.",
-    icon: GraduationCap,
-    category: 'milestones',
-    earnedDate: 'Sep 12, 2023',
-    isLocked: false,
-    color: 'from-cyan-400 to-cyan-600',
-  },
-  {
-    id: 'fast-reader',
-    title: 'Fast Reader',
-    description: 'Completed your first course in less than 3 days.',
-    story: "Witness the speed of a focused mind! You demolished your first curriculum with surgical precision and blistering pace.",
-    howToUnlock: "Complete all lessons in a standard course within 72 hours of starting.",
-    icon: BookOpen,
-    category: 'milestones',
-    earnedDate: 'Oct 05, 2023',
-    isLocked: false,
-    color: 'from-purple-500 to-purple-700',
-  },
-  {
-    id: 'streak-7',
-    title: 'Week on Fire',
-    description: 'Maintained a 7-day study streak.',
-    story: "Consistency is the mother of mastery. For seven sunrises and sunsets, you showed up for your future self. The heat is on!",
-    howToUnlock: "Complete at least one learning activity every day for 7 consecutive days.",
-    icon: Flame,
-    category: 'milestones',
-    earnedDate: 'Oct 01, 2023',
-    isLocked: false,
-    color: 'from-orange-400 to-orange-600',
-  },
-  {
-    id: 'knowledge-sage',
-    title: 'Knowledge Sage',
-    description: 'Complete 50 lessons to reach sage status.',
-    story: "The path of the sage is long and winding. Though your journey is only beginning, your dedication to the pursuit of truth is evident.",
-    howToUnlock: "Reach a total of 50 completed lessons across any course category.",
-    icon: Lock,
-    category: 'milestones',
-    isLocked: true,
-  },
-  {
-    id: 'curiosity-killed-boredom',
-    title: 'Curious Mind',
-    description: 'Explore 5 different course categories.',
-    story: "You don't just stay in your lane; you explore the whole highway. Your multidisciplinary approach makes you a versatile learner.",
-    howToUnlock: "Open and view the introduction of courses from 5 unique categories.",
-    icon: Telescope,
-    category: 'milestones',
-    earnedDate: 'Dec 15, 2023',
-    isLocked: false,
-    color: 'from-teal-400 to-teal-600',
-  },
-
-  // Quiz Master
-  {
-    id: 'perfect-score',
-    title: 'Perfect Score',
-    description: 'Earned for scoring 100% on a professional level quiz.',
-    story: "Flawless victory! Every question met its match. Your precision in the Professional Digital Marketing quiz set a new standard for excellence.",
-    howToUnlock: "Complete any 'Advanced' or 'Professional' level quiz with zero incorrect answers.",
-    icon: Brain,
-    category: 'quiz',
-    earnedDate: 'Oct 20, 2023',
-    isLocked: false,
-    color: 'from-amber-400 to-amber-600',
-  },
-  {
-    id: 'quiz-speed',
-    title: 'Speed Demon',
-    description: 'Complete a quiz in under 30 seconds.',
-    story: "Did you even read the questions? Your synapses must be firing at light speed to process and answer that fast. A lightning learner!",
-    howToUnlock: "Complete a 10-question quiz in under 30 seconds with at least 80% accuracy.",
-    icon: Zap,
-    category: 'quiz',
-    isLocked: true,
-  },
-  {
-    id: 'steady-hand',
-    title: 'Steady Hand',
-    description: 'Score 90% or higher on 5 quizzes in a row.',
-    story: "Reliability is your middle name. You don't just succeed; you maintain success over the long haul. A pillar of competence.",
-    howToUnlock: "Achieve a score of 90%+ on five consecutive quizzes without any breaks.",
-    icon: ShieldCheck,
-    category: 'quiz',
-    earnedDate: 'Nov 12, 2023',
-    isLocked: false,
-    color: 'from-emerald-400 to-emerald-600',
-  },
-  {
-    id: 'unshakable',
-    title: 'Unshakable',
-    description: 'Get a perfect score after 3 failed attempts.',
-    story: "Resilience personified. You didn't let failure stop you; you used it as a stepping stone to reach perfection. The ultimate comeback!",
-    howToUnlock: "Score 100% on a quiz that you previously failed (below 60%) at least 3 times.",
-    icon: Rocket,
-    category: 'quiz',
-    isLocked: true,
-  },
-
-  // Flashcard Expert
-  {
-    id: 'card-shark',
-    title: 'Card Shark',
-    description: 'Mastered your first set of 50 flashcards.',
-    icon: Layout,
-    category: 'flashcards',
-    earnedDate: 'Today',
-    isLocked: false,
-    color: 'from-blue-400 to-blue-600',
-    story: "The cards have no secrets from you. You flipped through the 'React Fundamentals' deck like a pro, committing every detail to long-term memory.",
-    howToUnlock: "Successfully reach 'Mastered' status for 50 unique flashcards."
-  },
-  {
-    id: 'combo-master',
-    title: 'Combo Master',
-    description: 'Get 20 correct answers in a row.',
-    story: "You found the rhythm. Each flip was a win. You built a chain of knowledge that couldn't be broken. Keep the momentum!",
-    howToUnlock: "Achieve a streak of 20 'Got It' or 'Mastered' responses in a single flashcard study session.",
-    icon: Lock,
-    category: 'flashcards',
-    isLocked: true,
-  },
-  {
-    id: 'night-owl',
-    title: 'Night Owl',
-    description: 'Study flashcards for 1 hour after midnight.',
-    story: "While the world sleeps, you grow. These late-night sessions are where the real gains are made. The darkness fuels your focus.",
-    howToUnlock: "Maintain an active flashcard study session for 60+ minutes between 12:00 AM and 4:00 AM local time.",
-    icon: Sparkles,
-    category: 'flashcards',
-    earnedDate: 'Jan 02, 2024',
-    isLocked: false,
-    color: 'from-indigo-600 to-slate-900',
-  },
-
-  // Game Legends
-  {
-    id: 'speed-runner',
-    title: 'Speed Runner',
-    description: 'Beat the memory game in under 30 seconds.',
-    story: "Your pattern recognition is superhuman. You mapped the grid and cleared it before the timer could even catch its breath.",
-    howToUnlock: "Complete a 'Large' grid Memory Game in under 30 seconds with 0 mistakes.",
-    icon: Lock,
-    category: 'games',
-    isLocked: true,
-  },
-  {
-    id: 'top-tier',
-    title: 'Top Tier',
-    description: 'Reach Diamond rank in the global leaderboard.',
-    story: "You stand atop the mountain. Thousands look up to your score. You aren't just a player; you are a legend among students.",
-    howToUnlock: "Enter the top 1% of the global points leaderboard at the end of a competitive season.",
-    icon: Lock,
-    category: 'games',
-    isLocked: true,
-  },
-  {
-    id: 'social-warrior',
-    title: 'Social Warrior',
-    description: 'Win 10 head-to-head challenges.',
-    story: "Conflict breeds growth. You tested your mettle against your peers and emerged victorious time and time again. Respect earned.",
-    howToUnlock: "Win 10 multiplayer 'Battle Mode' quizzes against live opponents.",
-    icon: Lock,
-    category: 'games',
-    isLocked: true,
-  }
+// Config: id, category, icon, color, isLocked, optional earnedDateKey
+const ACHIEVEMENT_CONFIG = [
+  { id: 'early-adopter', category: 'milestones', icon: GraduationCap, color: 'from-cyan-400 to-cyan-600', isLocked: false, earnedDateKey: 'earlyAdopterEarnedDate' },
+  { id: 'fast-reader', category: 'milestones', icon: BookOpen, color: 'from-purple-500 to-purple-700', isLocked: false, earnedDateKey: 'fastReaderEarnedDate' },
+  { id: 'streak-7', category: 'milestones', icon: Flame, color: 'from-orange-400 to-orange-600', isLocked: false, earnedDateKey: 'streak7EarnedDate' },
+  { id: 'knowledge-sage', category: 'milestones', icon: Lock, isLocked: true },
+  { id: 'curiosity-killed-boredom', category: 'milestones', icon: Telescope, color: 'from-teal-400 to-teal-600', isLocked: false, earnedDateKey: 'curiousMindEarnedDate' },
+  { id: 'perfect-score', category: 'quiz', icon: Brain, color: 'from-amber-400 to-amber-600', isLocked: false, earnedDateKey: 'perfectScoreEarnedDate' },
+  { id: 'quiz-speed', category: 'quiz', icon: Zap, isLocked: true },
+  { id: 'steady-hand', category: 'quiz', icon: ShieldCheck, color: 'from-emerald-400 to-emerald-600', isLocked: false, earnedDateKey: 'steadyHandEarnedDate' },
+  { id: 'unshakable', category: 'quiz', icon: Rocket, isLocked: true },
+  { id: 'card-shark', category: 'flashcards', icon: Layout, color: 'from-blue-400 to-blue-600', isLocked: false, earnedDateKey: 'cardSharkEarnedDate' },
+  { id: 'combo-master', category: 'flashcards', icon: Lock, isLocked: true },
+  { id: 'night-owl', category: 'flashcards', icon: Sparkles, color: 'from-indigo-600 to-slate-900', isLocked: false, earnedDateKey: 'nightOwlEarnedDate' },
+  { id: 'speed-runner', category: 'games', icon: Lock, isLocked: true },
+  { id: 'top-tier', category: 'games', icon: Lock, isLocked: true },
+  { id: 'social-warrior', category: 'games', icon: Lock, isLocked: true },
 ]
+
+function buildAchievements(t) {
+  return ACHIEVEMENT_CONFIG.map((c) => {
+    const key = ACHIEVEMENT_ID_TO_KEY[c.id]
+    return {
+      ...c,
+      title: t(`${key}Title`),
+      description: t(`${key}Description`),
+      story: t(`${key}Story`),
+      howToUnlock: t(`${key}HowToUnlock`),
+      earnedDate: c.earnedDateKey ? t(c.earnedDateKey) : undefined,
+    }
+  })
+}
 
 const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement, t }) => {
   const sizeClasses = {
@@ -249,7 +125,7 @@ const Badge3D = ({ icon: Icon, color, isLocked, size = "md", achievement, t }) =
 
         {size === 'lg' ? (
           <div className="flex flex-col items-center z-10">
-            <span className="text-white text-7xl sm:text-brand-teal font-black italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">1st</span>
+            <span className="text-white text-7xl sm:text-brand-teal font-black italic select-none drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]">{t("firstPlace")}</span>
             <div className="mt-[-10px] bg-sky-300 w-20 h-10 rounded-b-2xl flex items-center justify-center shadow-lg border-t border-sky-200 z-2000">
               <div className="w-10 h-5 border-2 border-white/50 rounded-full"></div>
             </div>
@@ -332,6 +208,7 @@ function Badge({ children, className }) {
 export default function AchievementsPage() {
   const t = useTranslations("achievements");
   const categories = getCategories(t);
+  const achievements = buildAchievements(t);
   return (
     <div className="min-h-screen bg-background pb-20 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-8">
@@ -384,9 +261,9 @@ export default function AchievementsPage() {
               <Badge3D
                 size="lg"
                 color="from-cyan-400 to-cyan-600"
-                achievement={achievements.find(a => a.id === 'early-adopter')}
-                icon={(achievements.find(a => a.id === 'early-adopter'))?.icon}
-                isLocked={(achievements.find(a => a.id === 'early-adopter'))?.isLocked ?? true}
+                achievement={achievements.find((a) => a.id === 'early-adopter')}
+                icon={GraduationCap}
+                isLocked={false}
                 t={t}
               />
             </div>
@@ -412,7 +289,7 @@ export default function AchievementsPage() {
                 </Button>
                 <div className="flex items-center px-8 h-14 rounded-full border border-border bg-background/50 backdrop-blur-md text-muted-foreground shadow-sm">
                   <Calendar className="w-5 h-5 mr-3 text-cyan-500" />
-                  <span className="text-base font-bold">{t("earned")} Oct 24, 2023</span>
+                  <span className="text-base font-bold">{t("earned")} {t("firstRecordBreakerEarnedDate")}</span>
                 </div>
               </div>
             </div>

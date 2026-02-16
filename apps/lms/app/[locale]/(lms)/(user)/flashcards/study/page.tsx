@@ -65,7 +65,7 @@ export default function FlashCardStudyPage() {
   const [sessionConfig, setSessionConfig] = useState<StudySessionConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const [deckName, setDeckName] = useState("Flash Cards Session");
+  const [deckName, setDeckName] = useState("");
   const [streak, setStreak] = useState(0);
   const [showHint, setShowHint] = useState(false);
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number | null>(null);
@@ -100,7 +100,7 @@ export default function FlashCardStudyPage() {
 
       if (sessionCards.length === 0) {
         setSessionConfig(null);
-        setStartError("No cards to study in the selected content.");
+        setStartError(t("noCardsToStudy"));
         return;
       }
 
@@ -110,12 +110,12 @@ export default function FlashCardStudyPage() {
 
       if (config.deckIds?.length === 1) {
         const deckRes = await api.get(`/flashcards/decks/${config.deckIds[0]}`);
-        setDeckName(deckRes.data?.data?.deck?.name || "Flash Cards Session");
+        setDeckName(deckRes.data?.data?.deck?.name || t("flashCardsSession"));
       } else if (config.deckIds?.length > 1) {
-        setDeckName(`${config.deckIds.length} Decks`);
+        setDeckName(t("decksCountLabel", { count: config.deckIds.length }));
       } else if (config.virtualDeck) {
-        const labels = { due_today: "Due Today", needs_attention: "Needs Attention", company_focus: "Company Focus" };
-        setDeckName(labels[config.virtualDeck] || "Smart Session");
+        const labels = { due_today: t("dueTodayLabel"), needs_attention: t("needsAttentionLabel"), company_focus: t("companyFocusLabel") };
+        setDeckName(labels[config.virtualDeck as keyof typeof labels] || t("smartSessionLabel"));
       }
 
       const userRes = await api.get("/user");
@@ -128,12 +128,12 @@ export default function FlashCardStudyPage() {
       }
     } catch (err) {
       setSessionConfig(null);
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to load study session.";
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToLoadSession");
       setStartError(msg);
     } finally {
       setLoading(false);
     }
-  }, [setCards]);
+  }, [setCards, t]);
 
   // Timer countdown for time-based mode
   useEffect(() => {
@@ -186,13 +186,13 @@ export default function FlashCardStudyPage() {
         feedback,
       });
 
-      const messages = {
-        needs_review: "We'll show this again soon.",
-        got_it: "Nicely done! Progress recorded.",
-        mastered: "Mastered! We'll extend the interval significantly."
+      const messages: Record<string, string> = {
+        needs_review: t("toastNeedsReview"),
+        got_it: t("toastGotIt"),
+        mastered: t("toastMastered"),
       };
 
-      toast.success(messages[feedback] || "Progress saved.");
+      toast.success(messages[feedback] || t("toastProgressSaved"));
 
       if (hasNext()) {
         setShowHint(false);
@@ -299,7 +299,7 @@ export default function FlashCardStudyPage() {
             onClick={() => setShowResults(true)}
             className="rounded-full h-11 px-5 border-border bg-card shadow-sm hover:shadow-md transition-all font-semibold"
           >
-            <ChevronLeft className="w-5 h-5 mr-2" /> Exit Study
+            <ChevronLeft className="w-5 h-5 mr-2" /> {t("exitStudy")}
           </Button>
         </div>
 
@@ -342,7 +342,7 @@ export default function FlashCardStudyPage() {
         <div className="space-y-4">
           <div className="flex justify-between items-end">
             <div className="space-y-1">
-              <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Session Progress</span>
+              <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">{t("sessionProgress")}</span>
               <div className="h-1.5 w-64 bg-muted rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
@@ -352,12 +352,12 @@ export default function FlashCardStudyPage() {
               </div>
             </div>
             <div className="text-right">
-              <span className="text-sm font-bold text-muted-foreground">{Math.round(progressPercent)}% Complete</span>
+              <span className="text-sm font-bold text-muted-foreground">{t("percentComplete", { percent: Math.round(progressPercent) })}</span>
             </div>
           </div>
           <div className="text-center">
             <span className="text-xs font-bold text-muted-foreground tracking-wide uppercase">
-              Card <span className="text-foreground">{currentIndex + 1}</span> of {cards.length}
+              {t("cardXOfY", { current: currentIndex + 1, total: cards.length })}
             </span>
           </div>
         </div>
@@ -389,7 +389,7 @@ export default function FlashCardStudyPage() {
                 {/* Category/Tag */}
                 <div className="mb-10 px-6 py-2 rounded-full bg-indigo-500/5 border border-indigo-500/10">
                   <span className="text-[10px] font-black tracking-[0.2em] text-indigo-600 dark:text-indigo-400 uppercase">
-                    {card.categoryName || "Knowledge Area"}
+                    {card.categoryName || t("knowledgeArea")}
                   </span>
                 </div>
 
@@ -409,7 +409,7 @@ export default function FlashCardStudyPage() {
                       transition={{ duration: 3, repeat: Infinity }}
                       className="text-muted-foreground font-semibold"
                     >
-                      Tap or press space to reveal answer
+                      {t("tapToReveal")}
                     </motion.p>
                   )}
 
@@ -440,7 +440,7 @@ export default function FlashCardStudyPage() {
                       )}
                     >
                       <Lightbulb className={cn("w-4 h-4 mr-2", showHint && "fill-current")} />
-                      Hint
+                      {t("hint")}
                     </Button>
                   </div>
                 )}
@@ -468,8 +468,8 @@ export default function FlashCardStudyPage() {
                   )}
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-rose-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                  <h3 className="text-lg font-bold text-rose-500">Need Review</h3>
-                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Show Again Soon</p>
+                  <h3 className="text-lg font-bold text-rose-500">{t("needReview")}</h3>
+                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">{t("showAgainSoon")}</p>
                 </Card>
 
                 {/* Got It */}
@@ -478,8 +478,8 @@ export default function FlashCardStudyPage() {
                   className="group cursor-pointer rounded-[24px] border-border bg-card hover:bg-emerald-500/2 hover:shadow-xl transition-all p-6 flex flex-col items-center text-center space-y-3 relative overflow-hidden"
                 >
                   <div className="absolute bottom-0 left-0 h-1 w-full bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                  <h3 className="text-lg font-bold text-emerald-500">Got It</h3>
-                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">Standard Spacing</p>
+                  <h3 className="text-lg font-bold text-emerald-500">{t("gotIt")}</h3>
+                  <p className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">{t("standardSpacing")}</p>
                 </Card>
 
                 {/* Mastered */}
