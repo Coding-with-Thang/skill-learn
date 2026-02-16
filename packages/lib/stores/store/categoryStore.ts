@@ -13,9 +13,18 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
-export const useCategoryStore = create(
+interface CategoryStore {
+  categories: unknown[];
+  isLoading: boolean;
+  error: string | null;
+  lastFetch: number | null;
+  fetchCategories: (force?: boolean) => Promise<unknown[]>;
+  reset: () => void;
+}
+
+export const useCategoryStore = create<CategoryStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       categories: [],
       isLoading: false,
       error: null,
@@ -32,7 +41,8 @@ export const useCategoryStore = create(
                 throw new Error("No data received from server");
               }
               // API returns standardized format: { success: true, data: { categories: [...] } }
-              const categories = parseApiResponse(response, "categories") || [];
+              const raw = parseApiResponse(response, "categories");
+              const categories = Array.isArray(raw) ? raw : [];
               set({
                 categories,
                 isLoading: false,
@@ -42,9 +52,7 @@ export const useCategoryStore = create(
             } catch (error) {
               handleErrorWithNotification(error, "Failed to load categories");
               set({
-                error:
-                  parseApiError(error) || error.response?.data?.message ||
-                  "Failed to fetch categories",
+                error: parseApiError(error) || "Failed to fetch categories",
                 isLoading: false,
               });
               throw error;
@@ -65,7 +73,7 @@ export const useCategoryStore = create(
     }),
     {
       name: "category-store",
-      partialize: (state) => ({
+      partialize: (state: CategoryStore) => ({
         categories: state.categories,
         lastFetch: state.lastFetch,
       }),

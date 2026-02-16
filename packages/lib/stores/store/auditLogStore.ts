@@ -11,7 +11,17 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
-export const useAuditLogStore = create((set, get) => ({
+/** Store state + actions type */
+interface AuditLogStore {
+  logs: unknown[];
+  pagination: unknown | null;
+  filters: { resource: string | null; action: string | null; startDate: string | null; endDate: string | null };
+  isLoading: boolean;
+  fetchLogs: (page?: number, force?: boolean) => Promise<{ logs: unknown[]; pagination: unknown }>;
+  setFilters: (newFilters: Partial<{ resource: string | null; action: string | null; startDate: string | null; endDate: string | null }>) => void;
+}
+
+export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
   logs: [],
   pagination: null,
   filters: {
@@ -51,17 +61,17 @@ export const useAuditLogStore = create((set, get) => ({
           const response = await api.get(`/admin/audit-logs?${queryParams}`);
 
           // API returns standardized format: { success: true, data: { logs, pagination } }
-          const responseData = parseApiResponse(response);
+          const responseData = parseApiResponse(response) as { logs?: unknown[]; pagination?: unknown } | null;
 
           set({
             logs: responseData?.logs || [],
-            pagination: responseData?.pagination || null,
+            pagination: responseData?.pagination ?? null,
             isLoading: false,
           });
 
           return {
             logs: responseData?.logs || [],
-            pagination: responseData?.pagination || null,
+            pagination: responseData?.pagination ?? null,
           };
         } catch (error) {
           console.error("Error fetching audit logs:", error);

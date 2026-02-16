@@ -24,6 +24,16 @@ import {
   TooltipTrigger,
 } from "./tooltip"
 
+type SidebarContextValue = {
+  state: string;
+  open: boolean;
+  setOpen: (value: boolean | ((prev: boolean) => boolean)) => void;
+  isMobile: boolean;
+  openMobile: boolean;
+  setOpenMobile: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
+};
+
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
@@ -31,7 +41,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-const SidebarContext = React.createContext(null)
+const SidebarContext = React.createContext<SidebarContextValue | null>(null)
 
 function useSidebar() {
   const context = React.useContext(SidebarContext)
@@ -473,6 +483,14 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
+type SidebarMenuButtonProps = React.ComponentPropsWithoutRef<typeof Slot> & {
+  asChild?: boolean;
+  isActive?: boolean;
+  variant?: "default" | "outline";
+  size?: "default" | "sm" | "lg";
+  tooltip?: string | { children?: React.ReactNode; [key: string]: unknown };
+};
+
 function SidebarMenuButton({
   asChild = false,
   isActive = false,
@@ -481,7 +499,7 @@ function SidebarMenuButton({
   tooltip,
   className,
   ...props
-}) {
+}: SidebarMenuButtonProps) {
   const Comp = asChild ? Slot : "button"
   const { isMobile, state } = useSidebar()
 

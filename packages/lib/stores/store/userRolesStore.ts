@@ -13,19 +13,36 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+/** Store state + actions type so get() is typed */
+interface UserRolesStore {
+  userRoles: unknown[];
+  roles: unknown[];
+  users: unknown[];
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
+  retryCount: number;
+  fetchUserRoles: (force?: boolean) => Promise<unknown>;
+  fetchRoles: (force?: boolean) => Promise<unknown>;
+  fetchUsers: (force?: boolean) => Promise<unknown>;
+  fetchAll: (force?: boolean) => Promise<void>;
+  assignRole: (userId: string, tenantRoleId: string) => Promise<unknown>;
+  removeRole: (userRoleId: string) => Promise<void>;
+  reset: () => void;
+}
+
 /**
  * User Roles Store
  * Manages user role assignments for LMS tenants
  */
-export const useUserRolesStore = create((set, get) => ({
-  // State
+export const useUserRolesStore = create<UserRolesStore>((set, get) => ({
   userRoles: [],
-  roles: [], // Active roles only
+  roles: [],
   users: [],
   isLoading: false,
   error: null,
   lastUpdated: null,
-  retryCount: 0, // Track retry attempts for UI feedback
+  retryCount: 0,
 
   // Fetch all user role assignments
   fetchUserRoles: async (force = false) => {
@@ -45,7 +62,8 @@ export const useUserRolesStore = create((set, get) => ({
               },
             }
           );
-          const userRoles = parseApiResponse(response, "userRoles") || [];
+          const raw = parseApiResponse(response, "userRoles");
+          const userRoles = Array.isArray(raw) ? raw : [];
 
           set({
             userRoles,
@@ -88,8 +106,8 @@ export const useUserRolesStore = create((set, get) => ({
               },
             }
           );
-          const data = parseApiResponse(response);
-          const roles = (data.roles || []).filter((r) => r.isActive);
+          const data = parseApiResponse(response) as { roles?: { isActive?: boolean }[] } | null;
+          const roles = (data?.roles ?? []).filter((r) => r.isActive);
 
           set({
             roles,
@@ -132,7 +150,8 @@ export const useUserRolesStore = create((set, get) => ({
               },
             }
           );
-          const users = parseApiResponse(response, "users") || [];
+          const raw = parseApiResponse(response, "users");
+          const users = Array.isArray(raw) ? raw : [];
 
           set({
             users,

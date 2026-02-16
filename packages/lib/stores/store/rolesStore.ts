@@ -13,11 +13,34 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+/** Store state + actions type so get() is typed */
+interface RolesStore {
+  roles: unknown[];
+  permissions: unknown[];
+  permissionsByCategory: Record<string, unknown>;
+  templates: unknown[];
+  tenant: unknown | null;
+  usedSlots: number;
+  availableSlots: number;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
+  retryCount: number;
+  fetchRoles: (force?: boolean) => Promise<unknown>;
+  fetchRolesForTenant: (tenantId: string, force?: boolean) => Promise<unknown[]>;
+  fetchPermissions: (force?: boolean) => Promise<unknown>;
+  fetchTemplates: (force?: boolean) => Promise<unknown[]>;
+  createRole: (roleData: unknown, tenantId?: string | null) => Promise<unknown>;
+  updateRole: (roleId: string, roleData: unknown, tenantId?: string | null) => Promise<unknown>;
+  deleteRole: (roleId: string, tenantId?: string | null) => Promise<void>;
+  reset: () => void;
+}
+
 /**
  * Roles Store
  * Manages roles for a tenant (used in both CMS and LMS)
  */
-export const useRolesStore = create((set, get) => ({
+export const useRolesStore = create<RolesStore>((set, get) => ({
   roles: [],
   permissions: [],
   permissionsByCategory: {},
@@ -48,19 +71,24 @@ export const useRolesStore = create((set, get) => ({
               },
             }
           );
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as {
+            roles?: unknown[];
+            tenant?: unknown;
+            usedSlots?: number;
+            availableSlots?: number;
+          } | null;
 
           set({
-            roles: data.roles || [],
-            tenant: data.tenant || null,
-            usedSlots: data.usedSlots ?? 0,
-            availableSlots: data.availableSlots ?? 0,
+            roles: data?.roles ?? [],
+            tenant: data?.tenant ?? null,
+            usedSlots: data?.usedSlots ?? 0,
+            availableSlots: data?.availableSlots ?? 0,
             isLoading: false,
             lastUpdated: Date.now(),
             retryCount: 0,
           });
 
-          return { roles: data.roles || [], tenant: data.tenant, usedSlots: data.usedSlots, availableSlots: data.availableSlots };
+          return { roles: data?.roles ?? [], tenant: data?.tenant, usedSlots: data?.usedSlots, availableSlots: data?.availableSlots };
         } catch (error) {
           handleErrorWithNotification(error, "Failed to load roles");
           set({
@@ -83,15 +111,15 @@ export const useRolesStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get(`/tenants/${tenantId}/roles`);
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as { roles?: unknown[] } | null;
 
           set({
-            roles: data.roles || [],
+            roles: data?.roles ?? [],
             isLoading: false,
             lastUpdated: Date.now(),
           });
 
-          return data.roles || [];
+          return data?.roles ?? [];
         } catch (error) {
           handleErrorWithNotification(error, "Failed to load roles");
           set({
@@ -113,22 +141,26 @@ export const useRolesStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get("/tenant/permissions");
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as {
+            categories?: string[];
+            permissions?: unknown[];
+            groupedByCategory?: Record<string, unknown>;
+          } | null;
 
-          const categories = data.categories || [];
-          const expanded = {};
+          const categories = data?.categories ?? [];
+          const expanded: Record<string, boolean> = {};
           categories.forEach((cat) => (expanded[cat] = true));
 
           set({
-            permissions: data.permissions || [],
-            permissionsByCategory: data.groupedByCategory || {},
+            permissions: data?.permissions ?? [],
+            permissionsByCategory: data?.groupedByCategory ?? {},
             isLoading: false,
             lastUpdated: Date.now(),
           });
 
           return {
-            permissions: data.permissions || [],
-            permissionsByCategory: data.groupedByCategory || {},
+            permissions: data?.permissions ?? [],
+            permissionsByCategory: data?.groupedByCategory ?? {},
             categories,
             expandedCategories: expanded,
           };
@@ -153,15 +185,15 @@ export const useRolesStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get("/tenant/templates");
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as { templateSets?: unknown[] } | null;
 
           set({
-            templates: data.templateSets || [],
+            templates: data?.templateSets ?? [],
             isLoading: false,
             lastUpdated: Date.now(),
           });
 
-          return data.templateSets || [];
+          return data?.templateSets ?? [];
         } catch (error) {
           handleErrorWithNotification(error, "Failed to load templates");
           set({

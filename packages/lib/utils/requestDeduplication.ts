@@ -41,7 +41,11 @@ export function createRequestDeduplicator() {
    * @param {number} options.cooldown - Cooldown period in milliseconds (default: 0, no cooldown)
    * @returns {Promise} The request promise (deduplicated if already in progress)
    */
-  function dedupe(key, requestFn, options = {}) {
+  function dedupe(
+    key: string,
+    requestFn: () => Promise<unknown>,
+    options: { force?: boolean; cooldown?: number } = {}
+  ) {
     const { force = false, cooldown = 0 } = options;
     const now = Date.now();
 

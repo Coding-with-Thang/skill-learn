@@ -30,25 +30,26 @@ export function apiWrapper(handler, options = {}) {
       
       // If handler returns data, wrap it in NextResponse
       return NextResponse.json(response);
-    } catch (error) {
+    } catch (error: unknown) {
       // Handle AppError instances
       if (error instanceof AppError) {
         return handleApiError(error);
       }
-      
-      // Handle validation errors
-      if (error.name === "ZodError") {
+
+      // Handle validation errors (Zod)
+      const err = error as { name?: string; errors?: unknown; code?: string };
+      if (err && typeof err === "object" && err.name === "ZodError") {
         return handleApiError(
           new AppError(
             "Validation error",
             ErrorType.VALIDATION,
-            { status: 400, details: error.errors }
+            { status: 400, details: err.errors }
           )
         );
       }
-      
+
       // Handle Prisma errors
-      if (error.code === "P2002") {
+      if (err && typeof err === "object" && err.code === "P2002") {
         return handleApiError(
           new AppError(
             "Duplicate entry - this record already exists",
@@ -57,8 +58,8 @@ export function apiWrapper(handler, options = {}) {
           )
         );
       }
-      
-      if (error.code === "P2025") {
+
+      if (err && typeof err === "object" && err.code === "P2025") {
         return handleApiError(
           new AppError(
             "Record not found",
@@ -67,7 +68,7 @@ export function apiWrapper(handler, options = {}) {
           )
         );
       }
-      
+
       // Handle generic errors
       return handleApiError(error);
     }

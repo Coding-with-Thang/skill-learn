@@ -13,12 +13,21 @@ export const ErrorType = {
 
 // Standard error response structure
 export class AppError extends Error {
-  constructor(message, type = ErrorType.UNKNOWN, details = null) {
+  type: string;
+  details: Record<string, unknown> | null;
+  timestamp: string;
+  status: number;
+
+  constructor(
+    message: string,
+    type: string = ErrorType.UNKNOWN,
+    details: Record<string, unknown> | null = null
+  ) {
     super(message);
     this.type = type;
     this.details = details;
     this.timestamp = new Date().toISOString();
-    this.status = details?.status || 500;
+    this.status = (details as { status?: number } | null)?.status ?? 500;
   }
 }
 
@@ -29,35 +38,33 @@ export class AppError extends Error {
  * @param {number|null} defaultStatus - Optional default status code
  * @returns {NextResponse} Standardized error response
  */
-export function handleApiError(error, customMessage = null, defaultStatus = null) {
+type ErrorLike = { response?: { status?: number; data?: { error?: string; message?: string } }; status?: number; message?: string };
+
+export function handleApiError(error: unknown, customMessage: string | null = null, defaultStatus: number | null = null) {
   console.error("API Error:", error);
 
-  // Determine status code
-  let status = defaultStatus || 500;
-  
+  let status: number = defaultStatus ?? 500;
   if (error instanceof AppError) {
-    status = error.status || error.details?.status || 500;
-  } else if (error.response?.status) {
-    status = error.response.status;
-  } else if (error.status) {
-    status = error.status;
+    const d = error.details as { status?: number } | null;
+    status = error.status ?? d?.status ?? 500;
+  } else {
+    const err = error as ErrorLike;
+    if (err?.response?.status != null) status = err.response.status;
+    else if (err?.status != null) status = err.status;
   }
 
-  // Determine error message
-  let message = customMessage || "An unexpected error occurred";
-  
+  let message: string = customMessage ?? "An unexpected error occurred";
   if (error instanceof AppError) {
     message = error.message;
-  } else if (error.response?.data?.error) {
-    message = error.response.data.error;
-  } else if (error.response?.data?.message) {
-    message = error.response.data.message;
-  } else if (error.message) {
-    message = error.message;
+  } else {
+    const err = error as ErrorLike;
+    if (err?.response?.data?.error) message = err.response.data.error;
+    else if (err?.response?.data?.message) message = err.response.data.message;
+    else if (err?.message) message = err.message;
   }
 
-  // Build error response
-  const errorResponse = {
+  // Build error response (typed to allow fieldErrors and dynamic keys from details)
+  const errorResponse: Record<string, unknown> = {
     success: false,
     error: message,
     type: error instanceof AppError ? error.type : ErrorType.UNKNOWN,
@@ -65,8 +72,8 @@ export function handleApiError(error, customMessage = null, defaultStatus = null
   };
 
   // Always include fieldErrors for validation errors so clients can show inline field errors
-  if (error instanceof AppError && error.details?.fieldErrors) {
-    errorResponse.fieldErrors = error.details.fieldErrors;
+  if (error instanceof AppError && error.details && "fieldErrors" in error.details) {
+    errorResponse.fieldErrors = (error.details as { fieldErrors: unknown }).fieldErrors;
   }
 
   // Copy safe extra keys from AppError.details (e.g. redirectToSignup, contactSales) to the response
@@ -83,7 +90,7 @@ export function handleApiError(error, customMessage = null, defaultStatus = null
   if (process.env.NODE_ENV === "development") {
     errorResponse.details = error instanceof AppError
       ? error.details
-      : error.details || error.stack;
+      : (error as ErrorLike & { details?: unknown; stack?: string }).details ?? (error instanceof Error ? error.stack : undefined);
   }
 
   return NextResponse.json(errorResponse, { status });
@@ -94,17 +101,18 @@ export function handleApiError(error, customMessage = null, defaultStatus = null
  * Returns error object instead of NextResponse
  * @deprecated Use handleApiError instead
  */
-export function handleApiErrorLegacy(error, customMessage = null) {
+export function handleApiErrorLegacy(error: unknown, customMessage: string | null = null) {
   console.error("API Error:", error);
+  const err = error as { message?: string; response?: { status?: number }; status?: number; details?: unknown; stack?: string };
 
-  const errorResponse = {
+  const errorResponse: Record<string, unknown> = {
     success: false,
-    error: customMessage || error.message || "An unexpected error occurred",
-    status: error.response?.status || error.status || 500,
+    error: customMessage || err?.message || "An unexpected error occurred",
+    status: err?.response?.status || err?.status || 500,
   };
 
   if (process.env.NODE_ENV === "development") {
-    errorResponse.details = error.details || error.stack;
+    errorResponse.details = err?.details ?? err?.stack;
   }
 
   return errorResponse;
@@ -134,8 +142,18 @@ export function handleClientError(
 }
 
 // Validate input data
-export function validateInput(data, rules) {
-  const errors = [];
+type ValidationRule = {
+  required?: boolean;
+  min?: number;
+  max?: number;
+  pattern?: RegExp;
+};
+
+export function validateInput(
+  data: Record<string, unknown>,
+  rules: Record<string, ValidationRule>
+) {
+  const errors: string[] = [];
 
   for (const [field, rule] of Object.entries(rules)) {
     const value = data[field];
@@ -144,15 +162,15 @@ export function validateInput(data, rules) {
       errors.push(`${field} is required`);
     }
 
-    if (rule.min && value < rule.min) {
+    if (rule.min != null && typeof value === "number" && value < rule.min) {
       errors.push(`${field} must be at least ${rule.min}`);
     }
 
-    if (rule.max && value > rule.max) {
+    if (rule.max != null && typeof value === "number" && value > rule.max) {
       errors.push(`${field} must be no more than ${rule.max}`);
     }
 
-    if (rule.pattern && !rule.pattern.test(value)) {
+    if (rule.pattern && value != null && !rule.pattern.test(String(value))) {
       errors.push(`${field} format is invalid`);
     }
   }

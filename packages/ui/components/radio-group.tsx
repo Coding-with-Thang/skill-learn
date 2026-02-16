@@ -20,10 +20,12 @@ function RadioGroup({
 
 function RadioGroupItem({
   className,
+  value,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>) {
   return (
     <RadioGroupPrimitive.Item
+      value={value}
       data-slot="radio-group-item"
       className={cn(
         "border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 aria-invalid:border-destructive bg-input aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",

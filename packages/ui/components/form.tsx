@@ -1,23 +1,23 @@
 "use client";
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { Controller, FormProvider, useFormContext, useFormState } from "react-hook-form";
+import { Controller, ControllerProps, FormProvider, useFormContext, useFormState } from "react-hook-form";
 
 import { cn } from "@skill-learn/lib/utils"
 import { Label } from "./label"
 
 const Form = FormProvider
 
-const FormFieldContext = React.createContext({})
+interface FormFieldContextValue {
+  name: string;
+}
+const FormFieldContext = React.createContext<FormFieldContextValue | null>(null)
 
-const FormField = (
-  {
-    ...props
-  }
-) => {
+const FormField = <TFieldValues extends object>(props: ControllerProps<TFieldValues>) => {
+  const { name, ...rest } = props;
   return (
-    <FormFieldContext.Provider value={{ name: props.name }}>
-      <Controller {...props} />
+    <FormFieldContext.Provider value={{ name }}>
+      <Controller name={name} {...rest} />
     </FormFieldContext.Provider>
   );
 }
@@ -26,8 +26,8 @@ const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
   const { getFieldState } = useFormContext()
-  const formState = useFormState({ name: fieldContext.name })
-  const fieldState = getFieldState(fieldContext.name, formState)
+  const formState = useFormState({ name: fieldContext?.name ?? "" })
+  const fieldState = getFieldState(fieldContext?.name ?? "", formState)
 
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
@@ -45,12 +45,17 @@ const useFormField = () => {
   }
 }
 
-const FormItemContext = React.createContext({})
+interface FormItemContextValue {
+  id: string;
+}
+const FormItemContext = React.createContext<FormItemContextValue>({ id: "" })
+
+type FormItemProps = React.HTMLAttributes<HTMLDivElement> & { className?: string };
 
 function FormItem({
   className,
   ...props
-}) {
+}: FormItemProps) {
   const id = React.useId()
 
   return (
@@ -60,10 +65,12 @@ function FormItem({
   );
 }
 
+type FormLabelProps = Omit<React.ComponentPropsWithoutRef<typeof Label>, "className"> & { className?: string };
+
 function FormLabel({
   className,
   ...props
-}) {
+}: FormLabelProps) {
   const { error, formItemId } = useFormField()
 
   return (
@@ -95,10 +102,12 @@ function FormControl({
   );
 }
 
+type FormDescriptionProps = React.HTMLAttributes<HTMLParagraphElement> & { className?: string };
+
 function FormDescription({
   className,
   ...props
-}) {
+}: FormDescriptionProps) {
   const { formDescriptionId } = useFormField()
 
   return (
@@ -110,10 +119,12 @@ function FormDescription({
   );
 }
 
+type FormMessageProps = React.HTMLAttributes<HTMLParagraphElement> & { className?: string };
+
 function FormMessage({
   className,
   ...props
-}) {
+}: FormMessageProps) {
   const { error, formMessageId } = useFormField()
   const body = error ? String(error?.message ?? "") : props.children
 

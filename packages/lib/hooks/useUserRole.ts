@@ -18,11 +18,11 @@ const RETRY_CONFIG = {
 export function useUserRole() {
   const { isLoaded: clerkLoaded, user } = useUser();
   const { getToken } = useAuth();
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const retryCountRef = useRef(0);
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchRole = useCallback(async () => {
     if (!clerkLoaded) {
@@ -59,7 +59,8 @@ export function useUserRole() {
       setRole(userData?.role);
       setError(null);
       retryCountRef.current = 0;
-    } catch (error) {
+    } catch (error: unknown) {
+      const err = error as { code?: string; response?: { status?: number; data?: { message?: string } }; message?: string };
       // Only show notification if not retrying (to avoid spam)
       if (retryCountRef.current >= RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES) {
         handleErrorWithNotification(error, "Failed to load user information");
@@ -68,9 +69,9 @@ export function useUserRole() {
       // Retry logic for temporary failures
       if (
         retryCountRef.current < RETRY_CONFIG.ROLE_FETCH_MAX_RETRIES &&
-        (error.code === "ECONNABORTED" ||
-          error.response?.status === 401 ||
-          error.response?.status >= 500)
+        (err.code === "ECONNABORTED" ||
+          err.response?.status === 401 ||
+          (err.response?.status != null && err.response.status >= 500))
       ) {
         retryCountRef.current += 1;
         timeoutRef.current = setTimeout(() => {
@@ -80,8 +81,8 @@ export function useUserRole() {
       }
 
       setError(
-        error.response?.data?.message ||
-          error.message ||
+        err.response?.data?.message ??
+          err.message ??
           "Failed to fetch user data"
       );
       setRole(null);

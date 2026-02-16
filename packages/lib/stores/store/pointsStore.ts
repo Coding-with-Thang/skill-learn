@@ -12,7 +12,20 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
-export const usePointsStore = create((set, get) => ({
+/** Store state + actions type for typed consumers */
+interface PointsStore {
+  points: number;
+  lifetimePoints: number;
+  dailyStatus: unknown;
+  streak: { current: number; longest: number; atRisk: boolean; nextMilestone: number; pointsToNextMilestone: number };
+  isLoading: boolean;
+  lastUpdated: number | null;
+  fetchUserData: (force?: boolean) => Promise<unknown>;
+  addPoints: (amount: number, reason: string) => Promise<unknown>;
+  spendPoints: (amount: number, reason: string) => Promise<boolean>;
+}
+
+export const usePointsStore = create<PointsStore>((set, get) => ({
   points: 0,
   lifetimePoints: 0,
   dailyStatus: null,
@@ -55,13 +68,24 @@ export const usePointsStore = create((set, get) => ({
           // Use new consolidated dashboard endpoint (combines points + streak)
           const response = await api.get("/user/dashboard");
           // API returns standardized format: { success: true, data: {...} }
-          const responseData = parseApiResponse(response);
+          const responseData = parseApiResponse(response) as {
+            dailyStatus?: unknown;
+            points?: number;
+            lifetimePoints?: number;
+            streak?: PointsStore["streak"];
+          } | null;
 
           const data = {
-            dailyStatus: responseData.dailyStatus,
-            points: responseData.points || 0,
-            lifetimePoints: responseData.lifetimePoints || 0,
-            streak: responseData.streak,
+            dailyStatus: responseData?.dailyStatus,
+            points: responseData?.points ?? 0,
+            lifetimePoints: responseData?.lifetimePoints ?? 0,
+            streak: responseData?.streak ?? {
+              current: 0,
+              longest: 0,
+              atRisk: false,
+              nextMilestone: 5,
+              pointsToNextMilestone: 5,
+            },
           };
 
           set({

@@ -16,10 +16,10 @@ export function useWelcomeContext() {
   const { points, lifetimePoints, streak, dailyStatus, fetchUserData } =
     usePointsStore();
 
-  const [leaderboardPosition, setLeaderboardPosition] = useState(null);
-  const [lastQuizScore, setLastQuizScore] = useState(null);
+  const [leaderboardPosition, setLeaderboardPosition] = useState<number | null>(null);
+  const [lastQuizScore, setLastQuizScore] = useState<number | null>(null);
   const [isFirstTime, setIsFirstTime] = useState(false);
-  const [lastActivityDate, setLastActivityDate] = useState(null);
+  const [lastActivityDate, setLastActivityDate] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -131,9 +131,9 @@ export function useWelcomeContext() {
       ? parseInt(localStorage.getItem(`visitCount_${user.id}`) || "0", 10)
       : 0,
 
-    // Daily status
-    todaysPoints: dailyStatus?.todaysPoints || 0,
-    canEarnPoints: dailyStatus?.canEarnPoints ?? true,
+    // Daily status (dailyStatus from store is unknown)
+    todaysPoints: (dailyStatus as { todaysPoints?: number } | null)?.todaysPoints || 0,
+    canEarnPoints: (dailyStatus as { canEarnPoints?: boolean } | null)?.canEarnPoints ?? true,
 
     // Loading state
     isLoading,

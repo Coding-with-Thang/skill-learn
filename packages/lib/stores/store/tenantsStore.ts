@@ -13,11 +13,37 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+/** Store state + actions type so get() is typed inside create() */
+interface TenantsStore {
+  tenants: unknown[];
+  currentTenant: unknown | null;
+  users: unknown[];
+  roles: unknown[];
+  userRoles: unknown[];
+  features: unknown[];
+  featuresByCategory: Record<string, unknown>;
+  allTenants: unknown[];
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
+  retryCount: number;
+  fetchTenants: (force?: boolean) => Promise<unknown>;
+  fetchTenant: (tenantId: string, force?: boolean) => Promise<unknown>;
+  fetchUsers: (tenantId: string, force?: boolean) => Promise<unknown>;
+  fetchRoles: (tenantId: string, force?: boolean) => Promise<unknown>;
+  fetchUserRoles: (tenantId: string, force?: boolean) => Promise<unknown>;
+  fetchFeatures: (tenantId: string, force?: boolean) => Promise<{ features: unknown[]; featuresByCategory: Record<string, unknown> }>;
+  createTenant: (tenantData: unknown) => Promise<unknown>;
+  updateTenant: (tenantId: string, tenantData: unknown) => Promise<unknown>;
+  deleteTenant: (tenantId: string) => Promise<void>;
+  reset: () => void;
+}
+
 /**
  * Tenants Store
  * Manages tenants for CMS super admin
  */
-export const useTenantsStore = create((set, get) => ({
+export const useTenantsStore = create<TenantsStore>((set, get) => ({
   // State
   tenants: [],
   currentTenant: null,

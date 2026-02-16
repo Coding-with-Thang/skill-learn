@@ -7,9 +7,10 @@ import { cn } from "@skill-learn/lib/utils"
 
 function TooltipProvider({
   delayDuration = 0,
+  children,
   ...props
-}) {
-  return (<TooltipPrimitive.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props} />);
+}: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>) {
+  return (<TooltipPrimitive.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props}>{children}</TooltipPrimitive.Provider>);
 }
 
 function Tooltip({
@@ -33,7 +34,7 @@ function TooltipContent({
   sideOffset = 0,
   children,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>) {
   return (
     (<TooltipPrimitive.Portal>
       <TooltipPrimitive.Content

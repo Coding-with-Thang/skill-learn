@@ -19,10 +19,10 @@ function PopoverTrigger({
 
 function PopoverContent({
   className,
-  align = "center",
+  align = "center" as const,
   sideOffset = 4,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content

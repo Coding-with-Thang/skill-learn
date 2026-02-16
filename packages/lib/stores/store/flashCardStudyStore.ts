@@ -1,10 +1,31 @@
 import { create } from "zustand";
 
+interface FlashCardStudyStore {
+  cards: unknown[];
+  currentIndex: number;
+  isFlipped: boolean;
+  isSubmitting: boolean;
+  totalDue: number;
+  totalNew: number;
+  setCards: (cards: unknown[], totalDue?: number, totalNew?: number) => void;
+  nextCard: () => void;
+  loopToStart: () => void;
+  shuffleCards: () => void;
+  prevCard: () => void;
+  flip: () => void;
+  setSubmitting: (v: boolean) => void;
+  getCurrentCard: () => unknown | null;
+  hasNext: () => boolean;
+  hasPrev: () => boolean;
+  removeCurrentCard: () => void;
+  reset: () => void;
+}
+
 /**
  * Flash Card Study Session Store
  * Holds current study session state: cards, index, flipped, feedback pending
  */
-export const useFlashCardStudyStore = create((set, get) => ({
+export const useFlashCardStudyStore = create<FlashCardStudyStore>((set, get) => ({
   cards: [],
   currentIndex: 0,
   isFlipped: false,

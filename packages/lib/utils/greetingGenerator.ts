@@ -544,7 +544,7 @@ function getDaysSinceLastActivity(lastActivityDate) {
   if (!lastActivityDate) return 0;
   const now = new Date();
   const last = new Date(lastActivityDate);
-  const diffTime = Math.abs(now - last);
+  const diffTime = Math.abs(now.getTime() - last.getTime());
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 }
@@ -573,11 +573,21 @@ function replacePlaceholders(text, context) {
  * @param {Object} context - User context data
  * @returns {Object} - Greeting object with text, subtext, and priority
  */
-export function generateGreeting(context = {}) {
-  const scenarios = [];
-  const visitCount = context.visitCount || 0;
+type GreetingContext = {
+  visitCount?: number;
+  isFirstTime?: boolean;
+  streak?: number;
+  streakAtRisk?: boolean;
+  leaderboardPosition?: number | null;
+  points?: number;
+  lastQuizScore?: number | null;
+  [key: string]: unknown;
+};
 
-  // First-time user (highest priority)
+export function generateGreeting(context: GreetingContext = {}) {
+  const scenarios: { priority: number; greeting: { text: string; subtext: string } }[] = [];
+  const visitCount = context.visitCount ?? 0;
+
   if (context.isFirstTime) {
     scenarios.push({
       priority: PRIORITY.FIRST_TIME,
@@ -585,27 +595,22 @@ export function generateGreeting(context = {}) {
     });
   }
 
-  // Streak milestones (5, 10, 30, 50, 100+ days)
-  if (
-    context.streak >= 5 &&
-    [5, 10, 30, 50, 100, 200, 365].includes(context.streak)
-  ) {
+  const streak = context.streak ?? 0;
+  if (streak >= 5 && [5, 10, 30, 50, 100, 200, 365].includes(streak)) {
     scenarios.push({
       priority: PRIORITY.STREAK_MILESTONE,
       greeting: getRotatedGreeting(visitCount, GREETINGS.streakMilestone),
     });
   }
 
-  // Streak at risk
-  if (context.streakAtRisk && context.streak > 0) {
+  if (context.streakAtRisk && streak > 0) {
     scenarios.push({
       priority: PRIORITY.STREAK_AT_RISK,
       greeting: getRotatedGreeting(visitCount, GREETINGS.streakAtRisk),
     });
   }
 
-  // Active streak (not at risk, not milestone)
-  if (context.streak > 0 && !context.streakAtRisk) {
+  if (streak > 0 && !context.streakAtRisk) {
     scenarios.push({
       priority: PRIORITY.STREAK_ACTIVE,
       greeting: getRotatedGreeting(visitCount, GREETINGS.streakActive),
@@ -641,10 +646,8 @@ export function generateGreeting(context = {}) {
   }
 
   // Points milestones (1000, 5000, 10000, 25000, 50000, 100000)
-  if (
-    context.points &&
-    [1000, 5000, 10000, 25000, 50000, 100000].includes(context.points)
-  ) {
+  const points = Number(context.points ?? 0);
+  if (points > 0 && [1000, 5000, 10000, 25000, 50000, 100000].includes(points)) {
     scenarios.push({
       priority: PRIORITY.POINTS_MILESTONE,
       greeting: getRotatedGreeting(visitCount, GREETINGS.pointsMilestone),
@@ -676,11 +679,8 @@ export function generateGreeting(context = {}) {
   }
 
   // Excellent quiz score (>80%)
-  if (
-    context.lastQuizScore &&
-    context.lastQuizScore > 80 &&
-    context.lastQuizScore < 100
-  ) {
+  const lastQuiz = Number(context.lastQuizScore ?? 0);
+  if (lastQuiz > 80 && lastQuiz < 100) {
     scenarios.push({
       priority: PRIORITY.QUIZ_PERFORMANCE,
       greeting: getRotatedGreeting(visitCount, GREETINGS.quizExcellent),
@@ -728,11 +728,9 @@ export function generateGreeting(context = {}) {
     greeting: getRotatedGreeting(visitCount, allTimeGreetings),
   });
 
-  // Sort by priority (highest first) and pick the top one
   scenarios.sort((a, b) => b.priority - a.priority);
-  const selectedScenario = scenarios[0];
+  const selectedScenario = scenarios[0]!;
 
-  // Replace placeholders
   const greeting = {
     text: replacePlaceholders(selectedScenario.greeting.text, context),
     subtext: replacePlaceholders(selectedScenario.greeting.subtext, context),

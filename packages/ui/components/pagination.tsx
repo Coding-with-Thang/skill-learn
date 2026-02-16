@@ -41,6 +41,15 @@ function PaginationItem({
   return <li data-slot="pagination-item" {...props} />;
 }
 
+type PaginationLinkSize = "default" | "icon" | "sm" | "lg";
+
+interface PaginationLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  className?: string;
+  isActive?: boolean;
+  size?: PaginationLinkSize;
+  asChild?: boolean;
+}
+
 function PaginationLink({
   className,
   isActive,
@@ -48,7 +57,7 @@ function PaginationLink({
   asChild = false,
   children,
   ...props
-}) {
+}: PaginationLinkProps) {
   const Comp = asChild ? Slot : 'a'
 
   return (

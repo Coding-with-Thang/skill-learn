@@ -75,6 +75,7 @@ export async function pointsAwarded(userId, points, reason) {
     userId,
     "create",
     "points",
+    null,
     `Awarded ${points} points: ${reason}`
   );
 }

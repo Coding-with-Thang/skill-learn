@@ -8,7 +8,7 @@ import { prisma } from "@skill-learn/database";
  * @param {string} userId - Clerk user ID
  * @param {string} tenantId - Tenant ID (optional, will lookup if not provided)
  */
-export async function syncUserMetadataToClerk(userId, tenantId = null) {
+export async function syncUserMetadataToClerk(userId: string, tenantId: string | null = null) {
   try {
     // If no tenantId provided, look up user's current tenant
     if (!tenantId) {
@@ -16,7 +16,7 @@ export async function syncUserMetadataToClerk(userId, tenantId = null) {
         where: { clerkId: userId },
         select: { tenantId: true },
       });
-      tenantId = user?.tenantId;
+      tenantId = user?.tenantId ?? null;
     }
 
     // If still no tenant, clear metadata
@@ -117,17 +117,18 @@ export async function syncUserMetadataToClerk(userId, tenantId = null) {
     );
 
     return { roles, permissions };
-  } catch (error) {
+  } catch (error: unknown) {
     // User may have been deleted from Clerk but still exists in DB (e.g. different env or stale data)
+    const err = error as { status?: number; statusCode?: number; code?: string; message?: string };
     const isNotFound =
-      error?.status === 404 ||
-      error?.statusCode === 404 ||
-      (error?.code === "api_response_error" && String(error?.message || "").includes("Not Found"));
+      err?.status === 404 ||
+      err?.statusCode === 404 ||
+      (err?.code === "api_response_error" && String(err?.message || "").includes("Not Found"));
     if (isNotFound) {
       console.warn(`[ClerkSync] Skipping sync for user ${userId}: not found in Clerk (404)`);
       return null;
     }
-    console.error(`[ClerkSync] Failed to sync metadata for user ${userId}:`, error.message);
+    console.error(`[ClerkSync] Failed to sync metadata for user ${userId}:`, err?.message ?? error);
     throw error;
   }
 }
@@ -139,13 +140,12 @@ export async function syncUserMetadataToClerk(userId, tenantId = null) {
  * @param {string} tenantId - Tenant ID
  * @param {string} roleId - The role that was updated (optional)
  */
-export async function syncTenantUsersMetadata(tenantId, roleId = null) {
+export async function syncTenantUsersMetadata(tenantId: string, roleId: string | null = null) {
   try {
     // Get all users with roles in this tenant
-    const whereClause = { tenantId };
-    if (roleId) {
-      whereClause.tenantRoleId = roleId;
-    }
+    const whereClause = roleId
+      ? { tenantId, tenantRoleId: roleId }
+      : { tenantId };
 
     const userRoles = await prisma.userRole.findMany({
       where: whereClause,
@@ -169,8 +169,9 @@ export async function syncTenantUsersMetadata(tenantId, roleId = null) {
 
     console.log(`[ClerkSync] Completed syncing ${userIds.length} users`);
     return { syncedCount: userIds.length };
-  } catch (error) {
-    console.error(`[ClerkSync] Failed to sync tenant users:`, error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : (error as { message?: string })?.message ?? error;
+    console.error(`[ClerkSync] Failed to sync tenant users:`, msg);
     throw error;
   }
 }
@@ -223,8 +224,9 @@ export async function assignUserToTenant(userId, tenantId, defaultRoleAlias = nu
     await syncUserMetadataToClerk(userId, tenantId);
 
     console.log(`[ClerkSync] Assigned user ${userId} to tenant ${tenantId}`);
-  } catch (error) {
-    console.error(`[ClerkSync] Failed to assign user to tenant:`, error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : (error as { message?: string })?.message ?? error;
+    console.error(`[ClerkSync] Failed to assign user to tenant:`, msg);
     throw error;
   }
 }
@@ -252,8 +254,9 @@ export async function removeUserFromTenant(userId, tenantId) {
     await syncUserMetadataToClerk(userId, null);
 
     console.log(`[ClerkSync] Removed user ${userId} from tenant ${tenantId}`);
-  } catch (error) {
-    console.error(`[ClerkSync] Failed to remove user from tenant:`, error.message);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : (error as { message?: string })?.message ?? error;
+    console.error(`[ClerkSync] Failed to remove user from tenant:`, msg);
     throw error;
   }
 }

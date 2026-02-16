@@ -10,7 +10,7 @@ if (privateKey && privateKey.includes('\\n')) {
     privateKey = privateKey.replace(/\\n/g, "\n")
 }
 
-let storage = null
+let storage: ReturnType<typeof admin.storage> | null = null
 
 if (!admin.apps.length) {
     try {
@@ -21,15 +21,19 @@ if (!admin.apps.length) {
             private_key: privateKey,
         }
 
-        // Only initialize if we have the required service account values
+        // Only initialize if we have the required service account values (firebase-admin expects camelCase)
         if (serviceAccount.project_id && serviceAccount.client_email && serviceAccount.private_key && storageBucket) {
             admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount),
+                credential: admin.credential.cert({
+                    projectId: serviceAccount.project_id,
+                    clientEmail: serviceAccount.client_email,
+                    privateKey: serviceAccount.private_key,
+                }),
                 storageBucket,
             })
             storage = admin.storage()
         } else {
-            const missingVars = []
+            const missingVars: string[] = []
             if (!projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID')
             if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL')
             if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY')
@@ -38,20 +42,20 @@ if (!admin.apps.length) {
         }
     } catch (e) {
         // If initialization fails, admin may already be initialized or config invalid
-        console.warn('Firebase Admin init error:', e?.message || e)
+        console.warn('Firebase Admin init error:', e instanceof Error ? e.message : e)
     }
 } else {
     try {
         storage = admin.storage()
     } catch (e) {
-        console.warn('Firebase Admin storage access error:', e?.message || e)
+        console.warn('Firebase Admin storage access error:', e instanceof Error ? e.message : e)
     }
 }
 
 export async function getSignedUrl(path, expiresDays = 7) {
     if (!path) return null
     if (!storage || !storage.bucket) {
-        const missingVars = []
+        const missingVars: string[] = []
         if (!projectId) missingVars.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID')
         if (!clientEmail) missingVars.push('FIREBASE_CLIENT_EMAIL')
         if (!privateKey) missingVars.push('FIREBASE_PRIVATE_KEY')
@@ -70,7 +74,7 @@ export async function getSignedUrl(path, expiresDays = 7) {
         const [signedUrl] = await fileRef.getSignedUrl({ action: 'read', expires: expiresAt })
         return signedUrl
     } catch (err) {
-        console.error('getSignedUrl error:', err?.message || err)
+        console.error('getSignedUrl error:', err instanceof Error ? err.message : err)
         return null
     }
 }

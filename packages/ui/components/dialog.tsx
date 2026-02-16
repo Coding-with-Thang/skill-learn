@@ -59,7 +59,7 @@ const RADIX_PORTAL_SELECTOR = [
 ].join(", ");
 
 function isInsideRadixPortal(el: EventTarget | null): boolean {
-  return el?.closest?.(RADIX_PORTAL_SELECTOR) ?? false;
+  return !!(el instanceof Element && el.closest(RADIX_PORTAL_SELECTOR));
 }
 
 function DialogContent({
@@ -70,7 +70,7 @@ function DialogContent({
   onFocusOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content>) {
-  const contentRef = React.useRef(null);
+  const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const handlePointerDownOutside = React.useCallback(
     (e) => {

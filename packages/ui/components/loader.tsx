@@ -38,13 +38,20 @@ const sizeClasses = {
  * <Loader variant="spinner" text="Deleting..." />
  * <Loader variant="page" text="Unlocking awesome insights..." />
  */
+interface LoaderProps {
+  variant?: "spinner" | "page" | "card" | "gif" | "fullscreen";
+  size?: "sm" | "md" | "lg" | "xl" | "icon";
+  className?: string;
+  text?: string;
+}
+
 export function Loader({
   variant = "spinner",
   size = "md",
   className,
   text,
   ...props
-}) {
+}: LoaderProps & React.HTMLAttributes<HTMLDivElement>) {
   // Default Spinner (optional custom text e.g. "Deleting...", "Saving...")
   if (variant === "spinner") {
     const icon = (
@@ -76,7 +83,6 @@ export function Loader({
           sizeClasses[size] || sizeClasses.md,
           className
         )}
-        {...props}
       />
     )
   }
@@ -105,7 +111,7 @@ export function Loader({
 
   // Fullscreen / Page Loader (Animated & Premium)
   if (variant === "page" || variant === "fullscreen") {
-    return <FullScreenLoader text={text} className={className} {...props} />
+    return <FullScreenLoader {...(text !== undefined && { text })} {...(className !== undefined && { className })} />
   }
 
   // Fallback
@@ -152,9 +158,9 @@ const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }) => (
   </motion.div>
 );
 
-const FullScreenLoader = ({ text }) => {
+const FullScreenLoader = ({ text, className }: { text?: string; className?: string }) => {
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col h-screen w-screen bg-slate-50 dark:bg-[#0F172A] overflow-hidden">
+    <div className={cn("fixed inset-0 z-[9999] flex flex-col h-screen w-screen bg-slate-50 dark:bg-[#0F172A] overflow-hidden", className)}>
       {/* Background Gradients - pushed to back */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-200">
         <motion.div

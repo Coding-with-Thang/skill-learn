@@ -79,7 +79,16 @@ export function getRetryAfterDelay(error) {
  * @param {Function} options.onRetry - Callback called before each retry (attempt, error, delay)
  * @returns {Promise} - Promise that resolves with the function result
  */
-export async function retryWithBackoff(fn, options = {}) {
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  options: {
+    maxRetries?: number;
+    baseDelay?: number;
+    maxDelay?: number;
+    shouldRetry?: (error: unknown) => boolean;
+    onRetry?: ((attempt: number, error: unknown, delay: number) => void) | null;
+  } = {}
+): Promise<T> {
   const {
     maxRetries = 3,
     baseDelay = 1000,

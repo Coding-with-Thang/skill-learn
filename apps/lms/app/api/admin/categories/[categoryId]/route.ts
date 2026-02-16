@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
@@ -82,9 +83,8 @@ export async function PUT(
     );
     const data = await validateRequestBody(request, categoryUpdateSchema);
 
-    // Update category (only include defined fields)
-    type CategoryUpdateFields = z.infer<typeof categoryUpdateSchema>;
-    const updateData: Partial<CategoryUpdateFields> = {};
+    // Update category (only include defined fields; type as Prisma input for exactOptionalPropertyTypes)
+    const updateData: Prisma.CategoryUpdateInput = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;

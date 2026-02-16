@@ -13,11 +13,29 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+/** Store state + actions type so get() is typed */
+interface BillingStore {
+  billing: unknown | null;
+  subscription: unknown | null;
+  tenant: unknown | null;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
+  retryCount: number;
+  fetchBillingData: (force?: boolean) => Promise<{ billing: unknown; subscription: unknown }>;
+  fetchTenant: (force?: boolean) => Promise<unknown>;
+  fetchTenantAndBilling: (force?: boolean) => Promise<{ tenant: unknown; billing: unknown }>;
+  openBillingPortal: () => Promise<unknown>;
+  cancelSubscription: () => Promise<unknown>;
+  resumeSubscription: () => Promise<unknown>;
+  reset: () => void;
+}
+
 /**
  * Billing Store
  * Manages billing and subscription data for LMS tenants
  */
-export const useBillingStore = create((set, get) => ({
+export const useBillingStore = create<BillingStore>((set, get) => ({
   // State
   billing: null,
   subscription: null,

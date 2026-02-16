@@ -4,8 +4,20 @@ import { Component } from "react"
 import { Button } from "./button"
 import { AlertCircle } from "lucide-react"
 
-export class ErrorBoundary extends Component {
-  constructor(props) {
+interface ErrorBoundaryProps {
+  children?: React.ReactNode;
+  message?: string;
+  className?: string;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props)
     this.state = {
       hasError: false,
@@ -14,11 +26,11 @@ export class ErrorBoundary extends Component {
     }
   }
 
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { hasError: true, error }
   }
 
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log the error to an error reporting service
     console.error('Error caught by error boundary:', error, errorInfo)
     this.setState({ errorInfo })
@@ -40,7 +52,7 @@ export class ErrorBoundary extends Component {
           errorInfo={this.state.errorInfo}
           reset={this.resetError}
           message={this.props.message || "Something went wrong!"}
-          className={this.props.className}
+          {...(this.props.className != null && { className: this.props.className })}
         />
       )
     }
@@ -49,13 +61,21 @@ export class ErrorBoundary extends Component {
   }
 }
 
+interface ErrorCardProps {
+  error: Error | null;
+  errorInfo?: React.ErrorInfo | null;
+  reset?: () => void;
+  message?: string;
+  className?: string;
+}
+
 export function ErrorCard({
   error,
   errorInfo,
   reset,
   message = "Something went wrong!",
   className = ""
-}) {
+}: ErrorCardProps) {
   return (
     <div className={`rounded-lg border bg-card text-card-foreground shadow-sm p-6 ${className}`}>
       <div className="flex flex-col items-center gap-4">

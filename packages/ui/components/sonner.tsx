@@ -5,12 +5,13 @@ import { Toaster as Sonner } from "sonner";
 
 const Toaster = ({
   ...props
-}) => {
+}: React.ComponentProps<typeof Sonner>) => {
   const { theme = "system" } = useTheme()
+  const safeTheme = (theme === "light" || theme === "dark" || theme === "system") ? theme : "system"
 
   return (
     (<Sonner
-      theme={theme}
+      theme={safeTheme}
       className="toaster group"
       style={
         {

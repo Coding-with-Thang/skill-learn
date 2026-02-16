@@ -12,12 +12,26 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
+/** Store state + actions type so consumers get typed store */
+interface FeaturesStore {
+  features: Record<string, boolean>;
+  isLoading: boolean;
+  error: string | null;
+  lastUpdated: number | null;
+  fetchFeatures: (force?: boolean) => Promise<Record<string, boolean>>;
+  isEnabled: (featureKey: string, defaultValue?: boolean) => boolean;
+  allEnabled: (featureKeys: string[]) => boolean;
+  anyEnabled: (featureKeys: string[]) => boolean;
+  refresh: () => Promise<Record<string, boolean>>;
+  reset: () => void;
+}
+
 /**
  * Features Store
  * Manages feature flags and feature checks
  * Replaces useFeatures hook for better performance and shared state
  */
-export const useFeaturesStore = create((set, get) => ({
+export const useFeaturesStore = create<FeaturesStore>((set, get) => ({
   // State
   features: {}, // { [featureKey]: boolean }
   isLoading: false,
@@ -32,8 +46,8 @@ export const useFeaturesStore = create((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get("/features");
-          const data = parseApiResponse(response);
-          const features = data.features || {};
+          const data = parseApiResponse(response) as { features?: Record<string, boolean> } | null;
+          const features = data?.features ?? {};
 
           set({
             features,
@@ -42,15 +56,14 @@ export const useFeaturesStore = create((set, get) => ({
           });
 
           return features;
-        } catch (error) {
-          // Use error message from response if available
-          const errorMessage =
-            parseApiError(error) || parseApiError(error) || "Failed to fetch features";
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { features?: Record<string, boolean> } } };
+          const errorMessage = parseApiError(error) || "Failed to fetch features";
 
           // If error response includes features, use them for graceful degradation
-          if (error.response?.data?.features) {
+          if (err.response?.data?.features) {
             set({
-              features: error.response.data.features,
+              features: err.response.data.features,
               isLoading: false,
             });
           } else {

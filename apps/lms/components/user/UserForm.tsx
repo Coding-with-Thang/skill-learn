@@ -57,13 +57,13 @@ export default function UserForm({ user = null, onSuccess }: UserFormProps) {
     const form = useForm({
         resolver: zodResolver(schema),
         defaultValues: {
-            firstName: user?.firstName || "",
-            lastName: user?.lastName || "",
-            username: user?.username || "",
+            firstName: user?.firstName != null ? String(user.firstName) : "",
+            lastName: user?.lastName != null ? String(user.lastName) : "",
+            username: user?.username != null ? String(user.username) : "",
             password: "",
             confirmPassword: "",
-            tenantRoleId: user?.tenantRoleId || defaultRoleId || "",
-            reportsToUserId: user?.reportsToUserId ?? "",
+            tenantRoleId: (user?.tenantRoleId != null ? String(user.tenantRoleId) : defaultRoleId) ?? "",
+            reportsToUserId: user?.reportsToUserId != null ? String(user.reportsToUserId) : "",
         },
     })
 

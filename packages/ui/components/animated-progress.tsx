@@ -1,7 +1,16 @@
 import * as React from "react"
 import { cn } from "@skill-learn/lib/utils"
 
-const AnimatedProgress = React.forwardRef(({
+type AnimatedProgressProps = React.HTMLAttributes<HTMLDivElement> & {
+  value?: number;
+  max?: number;
+  variant?: string;
+  size?: "sm" | "default" | "lg";
+  showLabel?: boolean;
+  animated?: boolean;
+};
+
+const AnimatedProgress = React.forwardRef<HTMLDivElement, AnimatedProgressProps>(({
   className,
   value = 0,
   max = 100,
@@ -78,8 +87,17 @@ const AnimatedProgress = React.forwardRef(({
 })
 AnimatedProgress.displayName = "AnimatedProgress"
 
-// Progress ring variant
-const AnimatedProgressRing = React.forwardRef(({
+type AnimatedProgressRingProps = React.HTMLAttributes<HTMLDivElement> & {
+  value?: number;
+  max?: number;
+  size?: number;
+  strokeWidth?: number;
+  variant?: string;
+  showLabel?: boolean;
+  animated?: boolean;
+};
+
+const AnimatedProgressRing = React.forwardRef<HTMLDivElement, AnimatedProgressRingProps>(({
   className,
   value = 0,
   max = 100,

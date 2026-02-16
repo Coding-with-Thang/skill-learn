@@ -1,5 +1,11 @@
 import axios from "axios";
 
+declare module "axios" {
+  interface InternalAxiosRequestConfig {
+    retryCount?: number;
+  }
+}
+
 // Cache durations (in milliseconds)
 const CACHE_DURATIONS = {
   CATEGORIES: 60 * 60 * 1000, // 1 hour
@@ -25,11 +31,17 @@ const api = axios.create({
   withCredentials: true, // Important for handling auth cookies
 });
 
+// Clerk on window (client-side); extend Window in app if needed
+type WindowWithClerk = Window & {
+  Clerk?: { session?: { getToken(): Promise<string | null>; end(): void } };
+};
+
 // Add auth header to every request
 api.interceptors.request.use(async (config) => {
   try {
-    if (window.Clerk?.session) {
-      const token = await window.Clerk.session.getToken();
+    const clerk = typeof window !== "undefined" ? (window as WindowWithClerk).Clerk : undefined;
+    if (clerk?.session) {
+      const token = await clerk.session.getToken();
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
       }
@@ -58,7 +70,7 @@ const cacheDurations = {
 api.interceptors.request.use(
   (config) => {
     // Clean up URL
-    config.url = config.url.replace(/^\/api\/api\//, "/api/");
+    if (config.url) config.url = config.url.replace(/^\/api\/api\//, "/api/");
 
     // Add retry count to config
     config.retryCount = config.retryCount || 0;
@@ -89,7 +101,7 @@ api.interceptors.request.use(
       const cacheDuration =
         isTenantPath || isAdminPath
           ? 0
-          : cacheDurations[config.url] || CACHE_DURATIONS.DEFAULT;
+          : cacheDurations[config.url ?? ""] ?? CACHE_DURATIONS.DEFAULT;
 
       if (
         cachedResponse &&
@@ -150,7 +162,9 @@ api.interceptors.response.use(
     // Handle auth errors
     if (response?.status === 401) {
       // Clear any stale auth state
-      window.Clerk?.session?.end();
+      if (typeof window !== "undefined") {
+        (window as WindowWithClerk).Clerk?.session?.end();
+      }
 
       // Don't redirect if we're already on the sign-in page
       if (!window.location.pathname.startsWith("/sign-in")) {

@@ -33,7 +33,7 @@ function SheetPortal({
 function SheetOverlay({
   className,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof SheetPrimitive.Overlay>) {
   return (
     (<SheetPrimitive.Overlay
       data-slot="sheet-overlay"
@@ -83,7 +83,7 @@ function SheetContent({
 function SheetHeader({
   className,
   ...props
-}) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     (<div
       data-slot="sheet-header"
@@ -95,7 +95,7 @@ function SheetHeader({
 function SheetFooter({
   className,
   ...props
-}) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     (<div
       data-slot="sheet-footer"
@@ -107,7 +107,7 @@ function SheetFooter({
 function SheetTitle({
   className,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof SheetPrimitive.Title>) {
   return (
     (<SheetPrimitive.Title
       data-slot="sheet-title"
@@ -119,7 +119,7 @@ function SheetTitle({
 function SheetDescription({
   className,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof SheetPrimitive.Description>) {
   return (
     (<SheetPrimitive.Description
       data-slot="sheet-description"

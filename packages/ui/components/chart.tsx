@@ -10,7 +10,11 @@ const THEMES = {
   dark: ".dark"
 }
 
-const ChartContext = React.createContext(null)
+type ChartContextValue = {
+  config: Record<string, { theme?: Record<string, string>; color?: string; label?: string; icon?: React.ComponentType }>;
+};
+
+const ChartContext = React.createContext<ChartContextValue | null>(null)
 
 function useChart() {
   const context = React.useContext(ChartContext)
@@ -22,7 +26,14 @@ function useChart() {
   return context
 }
 
-const ChartContainer = React.forwardRef(({ id, className, children, config, ...props }, ref) => {
+interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+  id?: string;
+  className?: string;
+  children?: React.ReactNode;
+  config?: Record<string, { theme?: Record<string, string>; color?: string; label?: string; icon?: React.ComponentType }>;
+}
+
+const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({ id, className, children, config = {}, ...props }, ref) => {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
@@ -46,11 +57,13 @@ const ChartContainer = React.forwardRef(({ id, className, children, config, ...p
 })
 ChartContainer.displayName = "Chart"
 
+type ChartStyleConfig = Record<string, { theme?: Record<string, string>; color?: string }>;
+
 const ChartStyle = ({
   id,
   config
-}) => {
-  const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
+}: { id: string; config?: ChartStyleConfig }) => {
+  const colorConfig = Object.entries(config ?? {}).filter(([, item]) => item.theme || item.color)
 
   if (!colorConfig.length) {
     return null
@@ -79,7 +92,23 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-const ChartTooltipContent = React.forwardRef((
+interface ChartTooltipContentProps {
+  active?: boolean;
+  payload?: Array<{ dataKey?: string; name?: string; value?: number; fill?: string; color?: string; payload?: Record<string, unknown> }>;
+  className?: string;
+  indicator?: "dot" | "line" | "dashed";
+  hideLabel?: boolean;
+  hideIndicator?: boolean;
+  label?: string | number;
+  labelFormatter?: (value: string | number | undefined, payload: unknown[]) => React.ReactNode;
+  labelClassName?: string;
+  formatter?: (value: number | undefined, name: string, item: unknown, index: number, payload: Record<string, unknown>) => React.ReactNode;
+  color?: string;
+  nameKey?: string;
+  labelKey?: string;
+}
+
+const ChartTooltipContent = React.forwardRef<HTMLDivElement, ChartTooltipContentProps>((
   {
     active,
     payload,
@@ -153,7 +182,8 @@ const ChartTooltipContent = React.forwardRef((
         {payload.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`
           const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+          const rawColor = color || item.payload?.fill || item.color;
+const indicatorColor = typeof rawColor === "string" ? rawColor : "currentColor"
 
           return (
             (<div
@@ -163,7 +193,7 @@ const ChartTooltipContent = React.forwardRef((
                 indicator === "dot" && "items-center"
               )}>
               {formatter && item?.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, index, item.payload)
+                formatter(item.value, item.name, item, index, item.payload ?? {})
               ) : (
                 <>
                   {itemConfig?.icon ? (
@@ -216,7 +246,15 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
-const ChartLegendContent = React.forwardRef((
+interface ChartLegendContentProps {
+  className?: string;
+  hideIcon?: boolean;
+  payload?: Array<{ dataKey?: string; value?: string | number; color?: string }>;
+  verticalAlign?: "top" | "bottom";
+  nameKey?: string;
+}
+
+const ChartLegendContent = React.forwardRef<HTMLDivElement, ChartLegendContentProps>((
   { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
   ref
 ) => {

@@ -17,6 +17,18 @@ import {
   FormDescription,
 } from "./form"
 
+export type FormSelectOption = string | { value: string; label: string };
+
+interface FormSelectProps {
+  name: string;
+  label?: React.ReactNode;
+  description?: React.ReactNode;
+  placeholder?: string;
+  options?: FormSelectOption[];
+  disabled?: boolean;
+  className?: string;
+}
+
 export function FormSelect({
   name,
   label,
@@ -26,7 +38,7 @@ export function FormSelect({
   disabled,
   className,
   ...props
-}) {
+}: FormSelectProps) {
   const { control } = useFormContext()
 
   return (
@@ -40,7 +52,7 @@ export function FormSelect({
             onValueChange={field.onChange}
             defaultValue={field.value}
             value={field.value}
-            disabled={disabled}
+            {...(disabled !== undefined && { disabled })}
             {...props}
           >
             <FormControl>

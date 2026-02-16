@@ -13,11 +13,8 @@ import { prisma } from "@skill-learn/database";
  * @param {string} tenantId - Tenant ID (optional, gets all if not provided)
  * @returns {Promise<Set<string>>} Set of permission names
  */
-export async function getUserPermissions(userId, tenantId = null) {
-  const where = { userId };
-  if (tenantId) {
-    where.tenantId = tenantId;
-  }
+export async function getUserPermissions(userId: string, tenantId: string | null = null) {
+  const where = tenantId ? { userId, tenantId } : { userId };
 
   const userRoles = await prisma.userRole.findMany({
     where,
@@ -73,7 +70,7 @@ export async function hasPermission(userId, permission, tenantId = null) {
  * @param {string} tenantId - Tenant ID (optional)
  * @returns {Promise<boolean>}
  */
-export async function hasAnyPermission(userId, permissionList, tenantId = null) {
+export async function hasAnyPermission(userId: string, permissionList: string[], tenantId: string | null = null) {
   const permissions = await getUserPermissions(userId, tenantId);
   return permissionList.some((p) => permissions.has(p));
 }

@@ -12,7 +12,10 @@ const RATE_LIMIT = {
 
 const requests = new Map();
 
-export const rateLimiter = async (ip, options = {}) => {
+export const rateLimiter = async (
+  ip: string,
+  options: { windowMs?: number; max?: number } = {}
+) => {
   const { windowMs = RATE_LIMIT.WINDOW_MS, max = RATE_LIMIT.MAX_REQUESTS } =
     options;
 

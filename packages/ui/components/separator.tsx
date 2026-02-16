@@ -7,10 +7,10 @@ import { cn } from "@skill-learn/lib/utils"
 
 function Separator({
   className,
-  orientation = "horizontal",
+  orientation = "horizontal" as const,
   decorative = true,
   ...props
-}) {
+}: React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>) {
   return (
     (<SeparatorPrimitive.Root
       data-slot="separator-root"

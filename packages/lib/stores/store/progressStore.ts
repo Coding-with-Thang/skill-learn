@@ -1,11 +1,21 @@
 import { create } from "zustand";
 import api from "../../utils/axios";
+import { parseApiError } from "../../utils/apiResponseParser";
+
+interface ProgressStore {
+  currentModule: { type: string; id: string } | null;
+  isLoading: boolean;
+  error: string | null;
+  stats: { completed: number; inProgress: number };
+  fetchProgress: () => Promise<void>;
+  resumeTraining: (router: { push: (url: string) => void }) => Promise<void>;
+  reset: () => void;
+}
 
 /**
  * Progress Store - Manages user training progress data
  */
-export const useProgressStore = create((set, get) => ({
-  // State
+export const useProgressStore = create<ProgressStore>((set, get) => ({
   currentModule: null,
   isLoading: false,
   error: null,
@@ -49,8 +59,8 @@ export const useProgressStore = create((set, get) => ({
         // For non-quiz modules, navigate to training page
         router.push(`/training`);
       }
-    } catch (error) {
-      set({ error: error.message });
+    } catch (error: unknown) {
+      set({ error: error instanceof Error ? error.message : "Failed to resume" });
     }
   },
 

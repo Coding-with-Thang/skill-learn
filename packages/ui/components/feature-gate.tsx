@@ -52,6 +52,15 @@ export function FeatureGate({
   return children
 }
 
+interface FeatureDisabledMessageProps {
+  featureName?: string;
+  title?: string;
+  description?: string;
+  showContactAdmin?: boolean;
+  showBackButton?: boolean;
+  className?: string;
+}
+
 /**
  * FeatureDisabledMessage component - Shows a message when a feature is disabled
  */
@@ -62,7 +71,7 @@ export function FeatureDisabledMessage({
   showContactAdmin = true,
   showBackButton = true,
   className = '',
-}) {
+}: FeatureDisabledMessageProps) {
   const displayName = featureName
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -108,6 +117,12 @@ export function FeatureDisabledMessage({
   )
 }
 
+interface FeatureDisabledPageProps {
+  featureName?: string;
+  title?: string;
+  description?: string;
+}
+
 /**
  * FeatureDisabledPage component - Full page version for route-level feature gating
  */
@@ -115,7 +130,7 @@ export function FeatureDisabledPage({
   featureName = 'This feature',
   title,
   description,
-}) {
+}: FeatureDisabledPageProps) {
   const displayName = featureName
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))

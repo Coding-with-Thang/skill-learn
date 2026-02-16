@@ -191,7 +191,7 @@ export const quizFinishSchema = z.object({
   hasPassed: z.boolean(),
   isPerfectScore: z.boolean(),
   timeSpent: z.number().int().nonnegative().optional(),
-  pointsBreakdown: z.record(z.any()).optional(),
+  pointsBreakdown: z.record(z.string(), z.any()).optional(),
 });
 
 // User schemas - tenant-only; roles are TenantRole via UserRole

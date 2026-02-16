@@ -44,7 +44,14 @@ const enhancedButtonVariants = cva(
   }
 )
 
-const EnhancedButton = React.forwardRef(({
+type EnhancedButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "success" | "warning" | "info";
+  size?: "default" | "sm" | "lg" | "xl" | "icon";
+  loading?: boolean;
+  asChild?: boolean;
+};
+
+const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(({
   className,
   variant,
   size,

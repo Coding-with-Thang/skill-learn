@@ -35,7 +35,7 @@ export default function PointsRewardsWidget() {
         const response = await api.get("/user/stats");
 
         // API returns standardized format: { success: true, data: {...} }
-        const statsData = parseApiResponse(response);
+        const statsData = parseApiResponse(response) as { categoryStats?: { completed: number }[] } | null;
         if (statsData?.categoryStats) {
           const completed = statsData.categoryStats.filter(
             stat => stat.completed > 0

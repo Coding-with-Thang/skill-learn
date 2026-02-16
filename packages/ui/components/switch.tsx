@@ -5,12 +5,17 @@ import * as SwitchPrimitive from "@radix-ui/react-switch"
 
 import { cn } from "@skill-learn/lib/utils"
 
+type SwitchProps = Omit<React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>, "className" | "style"> & {
+  className?: string;
+  style?: React.CSSProperties;
+};
+
 function Switch({
   className,
   checked = false,
   style: styleProp,
   ...props
-}) {
+}: SwitchProps) {
   const isChecked = Boolean(checked)
   const trackStyle = isChecked
     ? { backgroundColor: "var(--primary)", borderColor: "var(--primary)" }
@@ -38,7 +43,7 @@ function Switch({
         "min-w-[2.75rem]",
         className
       )}
-      style={{ ...styleProp, ...trackStyle }}
+      style={{ ...(styleProp ?? {}), ...trackStyle }}
       checked={checked}
       {...props}>
       <SwitchPrimitive.Thumb

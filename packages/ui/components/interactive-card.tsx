@@ -1,7 +1,12 @@
 import * as React from "react"
 import { cn } from "@skill-learn/lib/utils"
 
-const InteractiveCard = React.forwardRef(({
+interface InteractiveCardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "elevated" | "bordered";
+  interactive?: boolean;
+}
+
+const InteractiveCard = React.forwardRef<HTMLDivElement, InteractiveCardProps>(({
   className,
   children,
   variant = "default",
@@ -34,7 +39,7 @@ const InteractiveCard = React.forwardRef(({
 ))
 InteractiveCard.displayName = "InteractiveCard"
 
-const InteractiveCardHeader = React.forwardRef(({ className, ...props }, ref) => (
+const InteractiveCardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn("flex flex-col space-y-1.5 p-6", className)}
@@ -43,7 +48,7 @@ const InteractiveCardHeader = React.forwardRef(({ className, ...props }, ref) =>
 ))
 InteractiveCardHeader.displayName = "InteractiveCardHeader"
 
-const InteractiveCardTitle = React.forwardRef(({ className, ...props }, ref) => (
+const InteractiveCardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn("font-semibold leading-none tracking-tight", className)}
@@ -52,7 +57,7 @@ const InteractiveCardTitle = React.forwardRef(({ className, ...props }, ref) => 
 ))
 InteractiveCardTitle.displayName = "InteractiveCardTitle"
 
-const InteractiveCardDescription = React.forwardRef(({ className, ...props }, ref) => (
+const InteractiveCardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn("text-sm text-muted-foreground", className)}
@@ -61,12 +66,12 @@ const InteractiveCardDescription = React.forwardRef(({ className, ...props }, re
 ))
 InteractiveCardDescription.displayName = "InteractiveCardDescription"
 
-const InteractiveCardContent = React.forwardRef(({ className, ...props }, ref) => (
+const InteractiveCardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
 ))
 InteractiveCardContent.displayName = "InteractiveCardContent"
 
-const InteractiveCardFooter = React.forwardRef(({ className, ...props }, ref) => (
+const InteractiveCardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn("flex items-center p-6 pt-0", className)}

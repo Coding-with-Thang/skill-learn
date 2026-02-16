@@ -25,38 +25,31 @@
  * const response = await api.get('/user/stats');
  * const stats = parseApiResponse(response);
  */
-export function parseApiResponse(response, key = null) {
-  if (!response?.data) {
+type AxiosLikeResponse = { data?: { success?: boolean; data?: unknown; [key: string]: unknown } };
+
+export function parseApiResponse(response: unknown, key: string | null = null): unknown {
+  const res = response as AxiosLikeResponse;
+  if (!res?.data) {
     throw new Error("Invalid response: missing data");
   }
 
   // Check for standardized format: { success: true, data: T }
-  if (response.data.success !== undefined && response.data.data !== undefined) {
-    const data = response.data.data;
-    
-    // If a key is specified, extract it from the data object
+  if (res.data.success !== undefined && res.data.data !== undefined) {
+    const data = res.data.data as Record<string, unknown>;
     if (key) {
       return data[key] ?? data;
     }
-    
     return data;
   }
 
   // Legacy format handling (for backward compatibility during migration)
-  // Remove these once all routes are migrated
-  
-  // Legacy: { categories: [...] }, { rewards: [...] }, etc.
-  if (key && response.data[key]) {
-    return response.data[key];
+  if (key && res.data[key]) {
+    return res.data[key];
   }
-  
-  // Legacy: Direct array or object
-  if (Array.isArray(response.data) || (typeof response.data === 'object' && response.data !== null)) {
-    return response.data;
+  if (Array.isArray(res.data) || (typeof res.data === "object" && res.data !== null)) {
+    return res.data;
   }
-
-  // Fallback: return the entire response.data
-  return response.data;
+  return res.data;
 }
 
 /**

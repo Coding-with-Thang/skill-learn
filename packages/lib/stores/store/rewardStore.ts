@@ -14,7 +14,17 @@ const STORE = {
 // Request deduplication
 const requestDeduplicator = createRequestDeduplicator();
 
-export const useRewardStore = create((set, get) => ({
+interface RewardStore {
+  rewards: unknown[];
+  rewardHistory: unknown[];
+  isLoading: boolean;
+  fetchRewards: (force?: boolean) => Promise<unknown[]>;
+  fetchRewardsComplete: (force?: boolean) => Promise<{ rewards: unknown[]; history: unknown[] }>;
+  addReward: (data: unknown) => Promise<boolean>;
+  redeemReward: (rewardId: string) => Promise<boolean>;
+}
+
+export const useRewardStore = create<RewardStore>((set, get) => ({
   rewards: [],
   rewardHistory: [],
   isLoading: false,
@@ -29,7 +39,8 @@ export const useRewardStore = create((set, get) => ({
           const url = force ? `/user/rewards?_t=${Date.now()}` : "/user/rewards";
           const response = await api.get(url);
           // API returns standardized format: { success: true, data: { rewards: [...] } }
-          const rewards = parseApiResponse(response, "rewards") || [];
+          const raw = parseApiResponse(response, "rewards");
+          const rewards = Array.isArray(raw) ? raw : [];
           set({
             rewards,
             isLoading: false,
@@ -54,9 +65,9 @@ export const useRewardStore = create((set, get) => ({
         try {
           const response = await api.get("/user/rewards/complete");
           // API returns standardized format: { success: true, data: { rewards: [...], history: [...] } }
-          const data = parseApiResponse(response);
-          const rewards = data?.rewards || [];
-          const history = data?.history || [];
+          const data = parseApiResponse(response) as { rewards?: unknown[]; history?: unknown[] } | null;
+          const rewards = data?.rewards ?? [];
+          const history = data?.history ?? [];
           set({
             rewards,
             rewardHistory: history,
@@ -116,7 +127,8 @@ export const useRewardStore = create((set, get) => ({
         try {
           const response = await api.get("/user/rewards/history");
           // API returns standardized format: { success: true, data: { history: [...] } }
-          const history = parseApiResponse(response, "history") || [];
+          const raw = parseApiResponse(response, "history");
+          const history = Array.isArray(raw) ? raw : [];
           set({
             rewardHistory: history,
             isLoading: false,

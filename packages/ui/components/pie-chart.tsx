@@ -24,12 +24,12 @@ export function PieChart({ data }) {
             innerRadius={60}
             outerRadius={100}
             fill="#8884d8"
-            label={(entry) => entry.category}
+            label={(entry: { name?: string; payload?: { category?: string } }) => entry.name ?? entry.payload?.category ?? ""}
           >
             {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
+                fill={COLORS[index % COLORS.length] ?? "#8884d8"}
               />
             ))}
           </Pie>

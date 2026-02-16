@@ -74,21 +74,25 @@ export const usePermissionsStore = create<PermissionsState>((set, get) => ({
               },
             }
           );
-          const data = parseApiResponse(response);
+          const data = parseApiResponse(response) as {
+            allPermissions?: string[];
+            permissionsByCategory?: Record<string, unknown[]>;
+            tenantPermissions?: unknown[];
+          } | null;
 
           set({
-            permissions: data.allPermissions || [],
-            permissionsByCategory: data.permissionsByCategory || {},
-            tenantPermissions: data.tenantPermissions || [],
+            permissions: data?.allPermissions ?? [],
+            permissionsByCategory: data?.permissionsByCategory ?? {},
+            tenantPermissions: data?.tenantPermissions ?? [],
             isLoading: false,
             lastUpdated: Date.now(),
             retryCount: 0,
           });
 
           return {
-            permissions: data.allPermissions || [],
-            permissionsByCategory: data.permissionsByCategory || {},
-            tenantPermissions: data.tenantPermissions || [],
+            permissions: data?.allPermissions ?? [],
+            permissionsByCategory: data?.permissionsByCategory ?? {},
+            tenantPermissions: data?.tenantPermissions ?? [],
           };
         } catch (error) {
           handleErrorWithNotification(error, "Failed to load permissions");

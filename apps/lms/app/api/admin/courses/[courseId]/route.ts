@@ -48,7 +48,7 @@ export async function GET(
     }
 
     // If the course has a fileKey (uploaded image), generate a signed URL for client preview
-    let imageUrl = null;
+    let imageUrl: string | null = null;
     try {
       if (course?.fileKey) {
         imageUrl = await getSignedUrl(course.fileKey, 7);

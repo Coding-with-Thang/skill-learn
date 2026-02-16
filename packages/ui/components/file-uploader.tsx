@@ -100,6 +100,12 @@ export function RenderUploadingState({ progress, file }) {
 
 const IMAGE_URL_PATTERN = /^https?:\/\/.+/i;
 
+export interface MediaItem {
+  url: string;
+  path?: string;
+  name?: string;
+}
+
 export interface UploaderProps {
   value?: string | null;
   onChange?: (url: string) => void;
@@ -136,7 +142,7 @@ export function Uploader({
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
   const [browseOpen, setBrowseOpen] = useState(false);
-  const [mediaItems, setMediaItems] = useState([]);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [mediaLoading, setMediaLoading] = useState(false);
 
   const applyUrlFromInput = useCallback(() => {
@@ -207,7 +213,7 @@ export function Uploader({
       const res = await (api ? client.get(mediaPath) : client.get(mediaListEndpoint, { withCredentials: true }));
       const data = res?.data;
       const raw = data?.data ?? data;
-      const list = Array.isArray(raw?.items) ? raw.items : [];
+      const list = Array.isArray(raw?.items) ? (raw.items as MediaItem[]) : [];
       setMediaItems(list);
     } catch (err) {
       console.error("[Uploader] media list error", err);
@@ -224,11 +230,11 @@ export function Uploader({
   }, [fetchMediaList]);
 
   const selectMediaItem = useCallback(
-    (item) => {
+    (item: MediaItem) => {
       if (!item?.url) return;
       setUrl(item.url);
       onChange?.(item.url);
-      onUploadComplete?.({ url: item.url, path: item.path });
+      onUploadComplete?.({ url: item.url, ...(item.path != null && { path: item.path }) });
       setBrowseOpen(false);
       toast.success("Image selected");
     },
