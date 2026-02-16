@@ -128,7 +128,7 @@ function SidebarProvider({
             }
           }
           className={cn(
-            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full",
+            "group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex flex-row min-h-svh w-full overflow-hidden",
             className
           )}
           {...props}>
@@ -189,7 +189,7 @@ function Sidebar({
 
   return (
     (<div
-      className="group peer text-sidebar-foreground hidden md:block"
+      className="group peer text-sidebar-foreground hidden md:block shrink-0"
       data-state={state}
       data-collapsible={state === "collapsed" ? collapsible : ""}
       data-variant={variant}
@@ -199,17 +199,18 @@ function Sidebar({
       <div
         data-slot="sidebar-gap"
         className={cn(
-          "relative w-(--sidebar-width) bg-background transition-[width] duration-200 ease-linear",
-          "group-data-[collapsible=offcanvas]:w-0",
+          "relative bg-background transition-[width] duration-200 ease-linear shrink-0",
+          "w-64 min-w-64",
+          "group-data-[collapsible=offcanvas]:!w-0 group-data-[collapsible=offcanvas]:!min-w-0",
           "group-data-[side=right]:rotate-180",
           variant === "floating" || variant === "inset"
-            ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon)"
+            ? "group-data-[collapsible=icon]:w-16 group-data-[collapsible=icon]:min-w-16"
+            : "group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:min-w-12"
         )} />
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
+          "fixed inset-y-0 z-50 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -223,7 +224,7 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          style={{ borderRightColor: "var(--sidebar-border)" }}
+          style={{ borderRightColor: "var(--sidebar-border)", backgroundColor: "var(--sidebar)" }}
           className="bg-sidebar relative flex h-full min-h-svh w-full flex-col border-r group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm">
           {children}
         </div>

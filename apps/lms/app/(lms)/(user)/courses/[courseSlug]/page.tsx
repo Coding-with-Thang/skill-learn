@@ -283,7 +283,7 @@ export default function CoursePage() {
                             href={startOrContinueHref}
                             className={cn(
                               "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-white transition-opacity hover:opacity-95",
-                              "bg-linear-to-r from-secondary to-info"
+                              "bg-linear-to-r from-primary to-primary/80"
                             )}
                           >
                             {isCourseCompleted

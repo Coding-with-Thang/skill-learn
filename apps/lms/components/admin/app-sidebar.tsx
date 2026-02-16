@@ -7,7 +7,6 @@ import {
   FileQuestion,
   FileText,
   Gift,
-  Key,
   Layout,
   LayoutGrid,
   Layers,
@@ -33,6 +32,7 @@ import {
   SidebarSeparator,
 } from "@skill-learn/ui/components/sidebar";
 import Link from "next/link";
+import { Logo } from "@/components/shared/Logo";
 
 // Define navigation data with feature requirements
 const getNavData = () => ({
@@ -209,52 +209,64 @@ export function AppSidebar({ ...props }) {
       return getNavData().navGroups;
     }
 
-    return getNavData().navGroups.map(group => ({
-      ...group,
-      items: group.items
-        .filter(item => !item.feature || isEnabled(item.feature))
-        .map(item => ({
-          ...item,
-          // Also filter sub-items if they have feature requirements
-          items: item.items?.filter((subItem: { title: string; url: string; feature?: string }) => !subItem.feature || isEnabled(subItem.feature)),
-        })),
-    })).filter(group => group.items.length > 0);
+    return getNavData()
+      .navGroups.map((group) => ({
+        ...group,
+        items: group.items
+          .filter((item) => !item.feature || isEnabled(item.feature))
+          .map((item) => ({
+            ...item,
+            // Also filter sub-items if they have feature requirements
+            items: item.items?.filter(
+              (subItem: { title: string; url: string; feature?: string }) =>
+                !subItem.feature || isEnabled(subItem.feature),
+            ),
+          })),
+      }))
+      .filter((group) => group.items.length > 0);
   }, [isEnabled, isLoading]);
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <div className="flex min-h-0 flex-1 flex-col pb-24">
-        <SidebarHeader className="shrink-0 border-b border-border/10 bg-muted/5">
-          <div className="flex items-center justify-center p-3">
-            <SidebarTrigger className="h-10 w-10 hover:bg-primary/10 hover:text-primary transition-all rounded-xl" />
-          </div>
-        </SidebarHeader>
-        <SidebarContent className="min-h-0 flex-1 pt-6">
-          {filteredNavGroups.map((group) => (
-            <NavMain key={group.label} label={group.label} items={group.items} />
-          ))}
-        </SidebarContent>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 border-t border-border/10 bg-sidebar">
-        <SidebarSeparator />
-        <SidebarFooter className="py-4">
-          <SidebarMenu>
-            <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild className="group-data-[collapsible=icon]:p-0">
+    <Sidebar
+      collapsible="icon"
+      className="h-svh flex flex-col bg-sidebar shrink-0"
+      {...props}
+    >
+      <SidebarHeader className="h-16 border-b border-border/10 flex items-center px-4"></SidebarHeader>
+      <SidebarContent className="flex-1 pt-6 mt-6 overflow-y-auto min-h-0">
+        {filteredNavGroups.map((group) => (
+          <NavMain key={group.label} label={group.label} items={group.items} />
+        ))}
+      </SidebarContent>
+      <SidebarSeparator />
+      <SidebarFooter className="p-0 mt-auto">
+        <SidebarMenu className="gap-0">
+          <SidebarMenuItem>
+            <SidebarTrigger className="h-12 w-full justify-start px-[18px] hover:bg-primary/10 hover:text-primary transition-all rounded-none group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0" />
+          </SidebarMenuItem>
+          <SidebarMenuItem className="p-2">
+            <SidebarMenuButton
+              size="lg"
+              asChild
+              className="group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-0"
+            >
               <Link href="/home">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <LayoutGrid className="size-4" />
                 </div>
                 <div className="grid flex-1 self-end text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate font-semibold uppercase tracking-tight text-[11px]">Back to Home</span>
-                  <span className="truncate text-[10px] text-muted-foreground uppercase font-black">Main Dashboard</span>
+                  <span className="truncate font-semibold uppercase tracking-tight text-[11px]">
+                    Back to Home
+                  </span>
+                  <span className="truncate text-[10px] text-muted-foreground uppercase font-black">
+                    Main Dashboard
+                  </span>
                 </div>
               </Link>
             </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

@@ -9,7 +9,6 @@ import { useUserRole } from "@skill-learn/lib/hooks/useUserRole";
 import { SearchCommand } from "./SearchCommand";
 import { useState } from "react";
 import { Logo } from "@/components/shared/Logo";
-
 export default function TopBar({ adminMode = false }: { adminMode?: boolean } = {}) {
   const { user } = useUser();
   const { role } = useUserRole();
@@ -19,7 +18,7 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-2000 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all">
+    <header className="fixed top-0 left-0 right-0 z-2000 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all gap-4">
       <div className="flex items-center gap-4">
         {adminMode ? (
           <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
@@ -33,6 +32,8 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
         <button
           onClick={() => setIsSearchOpen(true)}
           className="hidden md:flex items-center bg-muted/50 rounded-4xl px-5 py-3 border border-border/50 hover:border-primary/50 hover:bg-muted transition-all w-full max-w-lg group cursor-pointer"
+          aria-label="Search knowledge base"
+          title="Search (⌘K)"
         >
           <Search className="w-4 h-4 text-muted-foreground mr-4 group-hover:text-primary transition-colors" />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors flex-1 text-left">
@@ -51,13 +52,20 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
           <button
             onClick={() => setIsSearchOpen(true)}
             className="flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer md:hidden"
+            aria-label="Search"
+            title="Search"
           >
             <Search className="w-5 h-5 text-muted-foreground" />
           </button>
 
           <ThemeToggle />
 
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer">
+          <div 
+            className="relative flex items-center justify-center w-11 h-11 rounded-full hover:bg-muted transition-colors cursor-pointer"
+            role="button"
+            aria-label="Notifications"
+            title="Notifications"
+          >
             <Bell className="w-5 h-5 text-muted-foreground" />
             <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-card"></span>
           </div>

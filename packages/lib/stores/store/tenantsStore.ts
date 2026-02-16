@@ -76,7 +76,8 @@ export const useTenantsStore = create<TenantsStore>((set, get) => ({
               },
             }
           );
-          const tenants = parseApiResponse(response, "tenants") || [];
+          const raw = parseApiResponse(response, "tenants");
+          const tenants: unknown[] = Array.isArray(raw) ? raw : [];
 
           set({
             tenants,
@@ -141,7 +142,8 @@ export const useTenantsStore = create<TenantsStore>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get(`/tenants/${tenantId}/users`);
-          const users = parseApiResponse(response, "users") || [];
+          const rawUsers = parseApiResponse(response, "users");
+          const users: unknown[] = Array.isArray(rawUsers) ? rawUsers : [];
 
           set({
             users,
@@ -172,7 +174,8 @@ export const useTenantsStore = create<TenantsStore>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get(`/tenants/${tenantId}/roles`);
-          const roles = parseApiResponse(response, "roles") || [];
+          const rawRoles = parseApiResponse(response, "roles");
+          const roles: unknown[] = Array.isArray(rawRoles) ? rawRoles : [];
 
           set({
             roles,
@@ -203,7 +206,8 @@ export const useTenantsStore = create<TenantsStore>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get(`/tenants/${tenantId}/user-roles`);
-          const userRoles = parseApiResponse(response, "userRoles") || [];
+          const rawUserRoles = parseApiResponse(response, "userRoles");
+          const userRoles: unknown[] = Array.isArray(rawUserRoles) ? rawUserRoles : [];
 
           set({
             userRoles,
@@ -234,9 +238,9 @@ export const useTenantsStore = create<TenantsStore>((set, get) => ({
         set({ isLoading: true, error: null });
         try {
           const response = await api.get(`/tenants/${tenantId}/features`);
-          const data = parseApiResponse(response);
-          const features = data.features || [];
-          const featuresByCategory = data.groupedByCategory || {};
+          const data = parseApiResponse(response) as { features?: unknown[]; groupedByCategory?: Record<string, unknown> };
+          const features: unknown[] = Array.isArray(data?.features) ? data.features : [];
+          const featuresByCategory: Record<string, unknown> = data?.groupedByCategory && typeof data.groupedByCategory === "object" ? data.groupedByCategory : {};
 
           set({
             features,

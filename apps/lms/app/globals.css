@@ -349,6 +349,11 @@ body {
   .perspective-1000 {
     perspective: 1000px;
   }
+
+  /* Weekly Goal Progress Bar */
+  .weekly-goal-progress-fill {
+    width: 65%;
+  }
 }
 
 @keyframes pulseSubtle {
