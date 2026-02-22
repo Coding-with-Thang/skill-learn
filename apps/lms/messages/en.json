@@ -14,6 +14,72 @@
     "marketingHeader": "Marketing header",
     "marketingFooter": "Marketing footer"
   },
+  "home": {
+    "welcomeBack": "Welcome back",
+    "continueLearning": "Continue your learning journey",
+    "welcomeBanner": {
+      "dayStreak": "day streak",
+      "points": "points",
+      "rank": "Rank #{position}"
+    },
+    "dailyActivities": {
+      "title": "Today's Activities",
+      "dailyQuestions": {
+        "title": "Daily Questions",
+        "description": "Earn points by answering daily questions.",
+        "startTraining": "Start Training",
+        "playGame": "Play a Game"
+      },
+      "moreTraining": {
+        "title": "More Training",
+        "recommendation": "Recommendation",
+        "progress": "{current} of {total}",
+        "continue": "Continue"
+      }
+    },
+    "topicProgress": {
+      "title": "Topic Progress",
+      "completed": "Completed",
+      "remaining": "Remaining",
+      "notStarted": "Not Started",
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "viewAllTopics": "View All Topics"
+    },
+    "achievements": {
+      "title": "Achievements",
+      "labels": {
+        "perfectStart": "Perfect Start",
+        "fiveDayStreak": "5 Day Streak",
+        "tenLessons": "10 Lessons",
+        "topEarner": "Top Earner",
+        "quickLearner": "Quick Learner",
+        "quizMaster": "Quiz Master"
+      }
+    },
+    "pointsRewards": {
+      "title": "Points & Rewards",
+      "currentPoints": "Current Points",
+      "availableToSpend": "Available to spend",
+      "todaysProgress": "Today's Progress",
+      "earnablePoints": "{count} earnable points",
+      "remainingToday": "remaining today",
+      "limitReached": "Daily limit reached!",
+      "resetsAtMidnight": "Resets at midnight",
+      "lifetime": "Lifetime",
+      "topics": "Topics",
+      "browseRewards": "Browse Rewards",
+      "redeemYourPoints": "Redeem your points",
+      "keepEarning": "Keep earning points!"
+    },
+    "leaderboard": {
+      "title": "Leaderboard",
+      "points": "Points",
+      "lessons": "Lessons",
+      "viewAll": "View All",
+      "noData": "No data available"
+    }
+  },
   "nav": {
     "dashboard": "Dashboard",
     "training": "Training",
@@ -131,7 +197,17 @@
     "manageCookiePrefs": "Manage your cookie preferences",
     "contactUsP1": "If you have any questions about this privacy policy or our privacy practices, please contact our data privacy manager in the following ways:",
     "emailAddressLabel": "Email Address",
-    "phoneNumberLabel": "Phone Number"
+    "phoneNumberLabel": "Phone Number",
+    "legalHub": "Legal Hub",
+    "legalHubSubtitle": "Find all the legal documentation, policies, and compliance statements for the Skill-Learn platform in one place.",
+    "privacyPolicyDesc": "Learn how we handle and protect your personal data.",
+    "termsConditions": "Terms & Conditions",
+    "termsConditionsDesc": "The rules and regulations for using our platform.",
+    "accessibility": "Accessibility",
+    "accessibilityDesc": "Our commitment to making learning accessible to everyone.",
+    "securityCompliance": "Security & Compliance",
+    "securityComplianceDesc": "Enterprise-grade data protection and certifications.",
+    "readDocumentation": "Read Documentation"
   },
   "admin": {
     "overview": "Overview",
@@ -848,72 +924,7 @@
     "submitApplication": "Submit Application",
     "secureApplication": "Secure application processing"
   },
-  "home": {
-    "welcomeBack": "Welcome back",
-    "continueLearning": "Continue your learning journey",
-    "welcomeBanner": {
-      "dayStreak": "day streak",
-      "points": "points",
-      "rank": "Rank #{position}"
-    },
-    "dailyActivities": {
-      "title": "Today's Activities",
-      "dailyQuestions": {
-        "title": "Daily Questions",
-        "description": "Earn points by answering daily questions.",
-        "startTraining": "Start Training",
-        "playGame": "Play a Game"
-      },
-      "moreTraining": {
-        "title": "More Training",
-        "recommendation": "Recommendation",
-        "progress": "{current} of {total}",
-        "continue": "Continue"
-      }
-    },
-    "topicProgress": {
-      "title": "Topic Progress",
-      "completed": "Completed",
-      "remaining": "Remaining",
-      "notStarted": "Not Started",
-      "beginner": "Beginner",
-      "intermediate": "Intermediate",
-      "viewAllTopics": "View All Topics"
-    },
-    "achievements": {
-      "title": "Achievements",
-      "labels": {
-        "perfectStart": "Perfect Start",
-        "fiveDayStreak": "5 Day Streak",
-        "tenLessons": "10 Lessons",
-        "topEarner": "Top Earner",
-        "quickLearner": "Quick Learner",
-        "quizMaster": "Quiz Master"
-      }
-    },
-    "pointsRewards": {
-      "title": "Points & Rewards",
-      "currentPoints": "Current Points",
-      "availableToSpend": "Available to spend",
-      "todaysProgress": "Today's Progress",
-      "earnablePoints": "{count} earnable points",
-      "remainingToday": "remaining today",
-      "limitReached": "Daily limit reached!",
-      "resetsAtMidnight": "Resets at midnight",
-      "lifetime": "Lifetime",
-      "topics": "Topics",
-      "browseRewards": "Browse Rewards",
-      "redeemYourPoints": "Redeem your points",
-      "keepEarning": "Keep earning points!"
-    },
-    "leaderboard": {
-      "title": "Leaderboard",
-      "points": "Points",
-      "lessons": "Lessons",
-      "viewAll": "View All",
-      "noData": "No data available"
-    }
-  },
+
   "quiz": {
     "timeRemaining": "Time Remaining",
     "question": "Question",
@@ -1430,19 +1441,6 @@
     "enter6DigitCode": "Enter 6-digit code",
     "usernameSignUpPlaceholder": "johndoe",
     "backToSignInButton": "Back to sign in"
-  },
-  "legal": {
-    "legalHub": "Legal Hub",
-    "legalHubSubtitle": "Find all the legal documentation, policies, and compliance statements for the Skill-Learn platform in one place.",
-    "privacyPolicy": "Privacy Policy",
-    "privacyPolicyDesc": "Learn how we handle and protect your personal data.",
-    "termsConditions": "Terms & Conditions",
-    "termsConditionsDesc": "The rules and regulations for using our platform.",
-    "accessibility": "Accessibility",
-    "accessibilityDesc": "Our commitment to making learning accessible to everyone.",
-    "securityCompliance": "Security & Compliance",
-    "securityComplianceDesc": "Enterprise-grade data protection and certifications.",
-    "readDocumentation": "Read Documentation"
   },
   "changelog": {
     "whatsNew": "What's New",
