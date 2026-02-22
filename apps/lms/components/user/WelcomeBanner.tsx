@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useWelcomeContext } from "@skill-learn/lib";
 import { generateGreeting } from "@skill-learn/lib/utils/greetingGenerator";
 import { Sparkles, TrendingUp, Award, Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function WelcomeBanner() {
   const context = useWelcomeContext();
@@ -69,6 +70,7 @@ export default function WelcomeBanner() {
   };
 
   const theme = getTheme();
+  const t = useTranslations("home.welcomeBanner");
 
   // Loading state
   if (context.isLoading) {
@@ -121,7 +123,7 @@ export default function WelcomeBanner() {
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
               <Flame className="w-5 h-5 text-orange-300" />
               <span className="font-semibold text-sm md:text-base">
-                {context.streak} day streak
+                {context.streak} {t("dayStreak")}
               </span>
             </div>
           )}
@@ -131,7 +133,7 @@ export default function WelcomeBanner() {
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
               <TrendingUp className="w-5 h-5 text-emerald-300" />
               <span className="font-semibold text-sm md:text-base">
-                {context.points.toLocaleString()} points
+                {context.points.toLocaleString()} {t("points")}
               </span>
             </div>
           )}
@@ -141,7 +143,7 @@ export default function WelcomeBanner() {
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
               <Award className="w-5 h-5 text-yellow-300" />
               <span className="font-semibold text-sm md:text-base">
-                Rank #{context.leaderboardPosition}
+                {t("rank", { position: context.leaderboardPosition })}
               </span>
             </div>
           )}

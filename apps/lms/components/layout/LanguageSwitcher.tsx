@@ -3,8 +3,14 @@
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { useTransition, useRef } from "react";
-import { Toggle } from "@skill-learn/ui/components/toggle";
 import { cn } from "@skill-learn/lib/utils";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@skill-learn/ui/components/dropdown-menu";
+import { Globe, ChevronDown, Check } from "lucide-react";
 
 const LOCALES = [
   { value: "en", label: "EN" },
@@ -47,33 +53,43 @@ export function LanguageSwitcher({ className }: Props) {
     }, 400);
   }
 
+  const currentLocale = LOCALES.find((l) => l.value === locale) || LOCALES[0];
+
   return (
-    <div
-      className={cn("inline-flex rounded-md border border-input bg-input p-0.5 shadow-xs", className)}
-      role="group"
-      aria-label="Switch language"
-    >
-      {LOCALES.map(({ value, label }, index) => (
-        <Toggle
-          key={value}
-          size="sm"
-          variant="outline"
-          pressed={locale === value}
-          onPressedChange={(pressed) => {
-            if (pressed) onSelect(value);
-          }}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
           disabled={isPending}
           className={cn(
-            "h-7 min-w-9 rounded border-0 bg-transparent px-2.5 text-xs font-medium shadow-none transition-colors",
-            "hover:bg-muted hover:text-foreground",
-            "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm",
-            index === 0 && "rounded-r-none rounded-l-md",
-            index === LOCALES.length - 1 && "rounded-l-none rounded-r-md"
+            "group flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/40 hover:bg-muted transition-all px-4 py-2 cursor-pointer focus:outline-hidden",
+            isPending && "opacity-70 cursor-not-allowed",
+            className
           )}
         >
-          {label}
-        </Toggle>
-      ))}
-    </div>
+          <Globe className="h-4 w-4 text-brand-teal" />
+          <span className="text-sm font-bold text-foreground">
+            {currentLocale.label}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[5.5rem] p-1.5 z-3000">
+        {LOCALES.map(({ value, label }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => onSelect(value as "en" | "fr")}
+            className={cn(
+              "flex items-center justify-between font-bold text-sm h-10 px-3 cursor-pointer rounded-lg transition-colors",
+              locale === value 
+                ? "bg-primary/10 text-primary" 
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            {label}
+            {locale === value && <Check className="h-3.5 w-3.5" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

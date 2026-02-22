@@ -13,6 +13,7 @@ import DailyActivitiesWidget from "@/components/user/DailyActivitiesWidget";
 import TopicProgressWidget from "@/components/user/TopicProgressWidget";
 import PointsRewardsWidget from "@/components/user/PointsRewardsWidget";
 
+export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
   const { isLoaded, user } = useUser();

@@ -1,9 +1,5 @@
+import type { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
-import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
-import { Toaster } from "@skill-learn/ui/components/sonner";
-import { ErrorBoundaryProvider } from "@/components/providers/ErrorBoundaryProvider";
-import LayoutWrapper from "@/components/layout/LayoutWrapper";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -26,8 +22,6 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export const dynamic = "force-dynamic";
-
 export const metadata = {
   title: "Skill-Learn",
   description: "Gamify your knowledge - have a blast learning",
@@ -42,22 +36,14 @@ export const metadata = {
   },
 };
 
-import { CookieConsent } from "@/components/shared/CookieConsent";
-import type { ReactNode } from "react";
-
 interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default async function RootLayout({
-  children,
-}: RootLayoutProps): Promise<ReactNode> {
-  const locale = await getLocale();
-  const messages = await getMessages();
-
+export default function RootLayout({ children }: RootLayoutProps): ReactNode {
   return (
     <ClerkProvider>
-      <html lang={locale} suppressHydrationWarning>
+      <html suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
           <script
@@ -80,13 +66,7 @@ export default async function RootLayout({
         <body
           className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}
         >
-          <NextIntlClientProvider messages={messages} locale={locale}>
-            <ErrorBoundaryProvider>
-              <LayoutWrapper>{children}</LayoutWrapper>
-              <Toaster />
-              <CookieConsent />
-            </ErrorBoundaryProvider>
-          </NextIntlClientProvider>
+          {children}
         </body>
       </html>
     </ClerkProvider>

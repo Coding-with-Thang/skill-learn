@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { usePointsStore } from "@skill-learn/lib/stores/pointsStore";
@@ -13,6 +14,7 @@ import { handleErrorWithNotification } from "@skill-learn/lib/utils/notification
 import formatNumber from "@/lib/utils/formatNumbers";
 
 export default function PointsRewardsWidget() {
+  const t = useTranslations("home.pointsRewards");
   const { points, lifetimePoints, dailyStatus, fetchUserData, isLoading } = usePointsStore();
   const [completedTopics, setCompletedTopics] = useState(0);
   const [statsLoading, setStatsLoading] = useState(true);
@@ -87,7 +89,7 @@ export default function PointsRewardsWidget() {
           <div className="p-2 bg-linear-to-br from-purple-500 to-blue-500 rounded-lg">
             <Trophy className="w-5 h-5 text-white" />
           </div>
-          Points & Rewards
+          {t("title")}
         </CardTitle>
       </CardHeader>
 
@@ -100,7 +102,7 @@ export default function PointsRewardsWidget() {
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
-              <span className="text-sm font-medium text-white/90">Current Points</span>
+              <span className="text-sm font-medium text-white/90">{t("currentPoints")}</span>
             </div>
             <div className="text-4xl font-extrabold text-white mb-1 tracking-tight">
               {isLoading || statsLoading ? (
@@ -111,7 +113,7 @@ export default function PointsRewardsWidget() {
             </div>
             <div className="flex items-center gap-1 text-white/80 text-xs">
               <TrendingUp className="w-3 h-3" />
-              <span>Available to spend</span>
+              <span>{t("availableToSpend")}</span>
             </div>
           </div>
         </div>
@@ -124,7 +126,7 @@ export default function PointsRewardsWidget() {
                 "w-2 h-2 rounded-full",
                 isLimitReached ? "bg-red-500" : "bg-green-500 animate-pulse"
               )} />
-              <span className="text-sm font-semibold text-gray-700">Today&apos;s Progress</span>
+              <span className="text-sm font-semibold text-gray-700">{t("todaysProgress")}</span>
             </div>
             <span className="text-xs text-gray-500">
               {formatNumber(todaysPoints)} / {formatNumber(dailyLimit)}
@@ -148,13 +150,13 @@ export default function PointsRewardsWidget() {
           <div className="text-xs">
             {isLimitReached ? (
               <div className="flex items-center gap-1.5 text-red-600">
-                <span className="font-medium">Daily limit reached!</span>
-                <span className="text-gray-500">• Resets at midnight</span>
+                <span className="font-medium">{t("limitReached")}</span>
+                <span className="text-gray-500">• {t("resetsAtMidnight")}</span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-gray-600">
-                <span className="font-medium text-green-600">{formatNumber(remainingPoints)} earnable points</span>
-                <span>remaining today</span>
+                <span className="font-medium text-green-600">{t("earnablePoints", { count: formatNumber(remainingPoints) })}</span>
+                <span>{t("remainingToday")}</span>
               </div>
             )}
           </div>
@@ -168,7 +170,7 @@ export default function PointsRewardsWidget() {
               <div className="p-1.5 bg-linear-to-br from-yellow-400 to-orange-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
                 <Star className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="text-xs font-medium text-gray-600">Lifetime</span>
+              <span className="text-xs font-medium text-gray-600">{t("lifetime")}</span>
             </div>
             {isLoading || statsLoading ? (
               <div className="h-7 w-20 bg-gray-100 rounded animate-pulse" />
@@ -185,7 +187,7 @@ export default function PointsRewardsWidget() {
               <div className="p-1.5 bg-linear-to-br from-green-400 to-emerald-500 rounded-lg group-hover/stat:scale-110 transition-transform duration-300">
                 <Trophy className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="text-xs font-medium text-gray-600">Topics</span>
+              <span className="text-xs font-medium text-gray-600">{t("topics")}</span>
             </div>
             {isLoading || statsLoading ? (
               <div className="h-7 w-16 bg-gray-100 rounded animate-pulse" />
@@ -211,8 +213,8 @@ export default function PointsRewardsWidget() {
                   <Gift className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="text-white font-bold text-sm">Browse Rewards</div>
-                  <div className="text-white/80 text-xs">Redeem your points</div>
+                  <div className="text-white font-bold text-sm">{t("browseRewards")}</div>
+                  <div className="text-white/80 text-xs">{t("redeemYourPoints")}</div>
                 </div>
               </div>
               <div className="text-white group-hover/cta:translate-x-1 transition-transform duration-300">
@@ -225,7 +227,7 @@ export default function PointsRewardsWidget() {
         {/* Quick Stats Footer */}
         <div className="pt-3 border-t border-gray-100">
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>Keep earning points!</span>
+            <span>{t("keepEarning")}</span>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
               <span>Active</span>
