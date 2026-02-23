@@ -14,6 +14,72 @@
     "marketingHeader": "En-tête marketing",
     "marketingFooter": "Pied de page marketing"
   },
+  "home": {
+    "welcomeBack": "Bon retour",
+    "continueLearning": "Continuez votre parcours d'apprentissage",
+    "welcomeBanner": {
+      "dayStreak": "jours de suite",
+      "points": "points",
+      "rank": "Rang #{position}"
+    },
+    "dailyActivities": {
+      "title": "Activités du jour",
+      "dailyQuestions": {
+        "title": "Questions quotidiennes",
+        "description": "Gagnez des points en répondant aux questions du jour.",
+        "startTraining": "Commencer la formation",
+        "playGame": "Jouer à un jeu"
+      },
+      "moreTraining": {
+        "title": "Plus de formations",
+        "recommendation": "Recommandation",
+        "progress": "{current} sur {total}",
+        "continue": "Continuer"
+      }
+    },
+    "topicProgress": {
+      "title": "Progression par sujet",
+      "completed": "Terminé",
+      "remaining": "Restant",
+      "notStarted": "Pas commencé",
+      "beginner": "Débutant",
+      "intermediate": "Intermédiaire",
+      "viewAllTopics": "Voir tous les sujets"
+    },
+    "achievements": {
+      "title": "Succès",
+      "labels": {
+        "perfectStart": "Départ parfait",
+        "fiveDayStreak": "Série de 5 jours",
+        "tenLessons": "10 Leçons",
+        "topEarner": "Meilleur score",
+        "quickLearner": "Apprenant rapide",
+        "quizMaster": "Maître des quiz"
+      }
+    },
+    "pointsRewards": {
+      "title": "Points et Récompenses",
+      "currentPoints": "Points actuels",
+      "availableToSpend": "Disponibles à dépenser",
+      "todaysProgress": "Progression du jour",
+      "earnablePoints": "{count} points à gagner",
+      "remainingToday": "restants aujourd'hui",
+      "limitReached": "Limite quotidienne atteinte !",
+      "resetsAtMidnight": "Réinitialisation à minuit",
+      "lifetime": "Total cumulé",
+      "topics": "Sujets",
+      "browseRewards": "Parcourir les récompenses",
+      "redeemYourPoints": "Échanger vos points",
+      "keepEarning": "Continuez à gagner des points !"
+    },
+    "leaderboard": {
+      "title": "Classement",
+      "points": "Points",
+      "lessons": "Leçons",
+      "viewAll": "Tout voir",
+      "noData": "Aucune donnée disponible"
+    }
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "training": "Formation",
@@ -759,72 +825,7 @@
     "submitApplication": "Envoyer la candidature",
     "secureApplication": "Traitement sécurisé des candidatures"
   },
-  "home": {
-    "welcomeBack": "Bon retour",
-    "continueLearning": "Continuez votre parcours d'apprentissage",
-    "welcomeBanner": {
-      "dayStreak": "jours de suite",
-      "points": "points",
-      "rank": "Rang #{position}"
-    },
-    "dailyActivities": {
-      "title": "Activités du jour",
-      "dailyQuestions": {
-        "title": "Questions quotidiennes",
-        "description": "Gagnez des points en répondant aux questions du jour.",
-        "startTraining": "Commencer la formation",
-        "playGame": "Jouer à un jeu"
-      },
-      "moreTraining": {
-        "title": "Plus de formations",
-        "recommendation": "Recommandation",
-        "progress": "{current} sur {total}",
-        "continue": "Continuer"
-      }
-    },
-    "topicProgress": {
-      "title": "Progression par sujet",
-      "completed": "Terminé",
-      "remaining": "Restant",
-      "notStarted": "Pas commencé",
-      "beginner": "Débutant",
-      "intermediate": "Intermédiaire",
-      "viewAllTopics": "Voir tous les sujets"
-    },
-    "achievements": {
-      "title": "Succès",
-      "labels": {
-        "perfectStart": "Départ parfait",
-        "fiveDayStreak": "Série de 5 jours",
-        "tenLessons": "10 Leçons",
-        "topEarner": "Meilleur score",
-        "quickLearner": "Apprenant rapide",
-        "quizMaster": "Maître des quiz"
-      }
-    },
-    "pointsRewards": {
-      "title": "Points et Récompenses",
-      "currentPoints": "Points actuels",
-      "availableToSpend": "Disponibles à dépenser",
-      "todaysProgress": "Progression du jour",
-      "earnablePoints": "{count} points à gagner",
-      "remainingToday": "restants aujourd'hui",
-      "limitReached": "Limite quotidienne atteinte !",
-      "resetsAtMidnight": "Réinitialisation à minuit",
-      "lifetime": "Total cumulé",
-      "topics": "Sujets",
-      "browseRewards": "Parcourir les récompenses",
-      "redeemYourPoints": "Échanger vos points",
-      "keepEarning": "Continuez à gagner des points !"
-    },
-    "leaderboard": {
-      "title": "Classement",
-      "points": "Points",
-      "lessons": "Leçons",
-      "viewAll": "Tout voir",
-      "noData": "Aucune donnée disponible"
-    }
-  },
+
   "quiz": {
     "timeRemaining": "Temps restant",
     "question": "Question",
