@@ -239,9 +239,24 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{activity.role}</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{activity.action}</p>
-                    <div className="pt-1">
-                      <span className="bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">COMPLETE</span>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {activity.details || `${activity.action} ${activity.resource || ""}`.trim()}
+                    </p>
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      <span className={`
+                        px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase
+                        ${activity.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
+                          activity.action === 'update' ? 'bg-amber-500/10 text-amber-600' :
+                            activity.action === 'delete' ? 'bg-rose-500/10 text-rose-600' :
+                              'bg-muted text-muted-foreground'}
+                      `}>
+                        {(activity.action || "event").toUpperCase()}
+                      </span>
+                      {activity.resource ? (
+                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">
+                          {String(activity.resource).replaceAll("_", " ")}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>

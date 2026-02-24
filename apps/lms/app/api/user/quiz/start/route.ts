@@ -4,6 +4,7 @@ import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
       },
       select: {
         id: true,
+        title: true,
         categoryId: true,
         tenantId: true,
         questions: {
@@ -64,9 +66,9 @@ export async function POST(req: NextRequest) {
 
     const now = new Date();
 
-    const attempt = await prisma.$transaction(async (tx) => {
+    const { attempt, abandonedCount } = await prisma.$transaction(async (tx) => {
       // Keep only one active attempt per user/quiz.
-      await tx.quizAttempt.updateMany({
+      const abandoned = await tx.quizAttempt.updateMany({
         where: {
           userId: user.id,
           quizId: quiz.id,
@@ -112,8 +114,19 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return created;
+      return {
+        attempt: created,
+        abandonedCount: abandoned.count,
+      };
     });
+
+    await logAuditEvent(
+      user.id,
+      "create",
+      "quiz_attempt",
+      attempt.id,
+      `Started attempt for quiz "${quiz.title}" (${quiz.id})${abandonedCount > 0 ? ` and auto-abandoned ${abandonedCount} previous in-progress attempt(s)` : ""}`
+    );
 
     return successResponse({
       attemptId: attempt.id,

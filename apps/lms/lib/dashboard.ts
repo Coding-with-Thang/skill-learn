@@ -382,6 +382,8 @@ export async function getDashboardStats() {
         userImage: item.user?.imageUrl || null,
         role: item.user?.role || "UNKNOWN",
         action: item.action || "",
+        resource: item.resource || "",
+        details: item.details || "",
         timestamp: item.timestamp,
       })) : [],
     };

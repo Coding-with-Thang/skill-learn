@@ -8,6 +8,7 @@ import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { quizFinishSchema } from "@/lib/zodSchemas";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
 
 type QuizResponseInput = {
   questionId: string;
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       },
       select: {
         id: true,
+        title: true,
         passingScore: true,
         categoryId: true,
         tenantId: true,
@@ -128,7 +130,7 @@ export async function POST(req: NextRequest) {
     const isPerfectScore = totalQuestions > 0 && correctAnswers === totalQuestions;
     const now = new Date();
 
-    const quizProgress = await prisma.$transaction(async (tx) => {
+    const quizProgressResult = await prisma.$transaction(async (tx) => {
       const existingAttempt = attemptId
         ? await tx.quizAttempt.findFirst({
             where: {
@@ -160,8 +162,8 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      if (existingAttempt) {
-        await tx.quizAttempt.update({
+      const finalizedAttempt = existingAttempt
+        ? await tx.quizAttempt.update({
           where: { id: existingAttempt.id },
           data: {
             status: "COMPLETED",
@@ -173,9 +175,8 @@ export async function POST(req: NextRequest) {
             timeSpent: timeSpent ?? null,
             responses: detailedResponses,
           },
-        });
-      } else {
-        await tx.quizAttempt.create({
+        })
+        : await tx.quizAttempt.create({
           data: {
             userId: user.id,
             quizId: quizWithQuestions.id,
@@ -192,7 +193,6 @@ export async function POST(req: NextRequest) {
             responses: detailedResponses,
           },
         });
-      }
 
       const existingProgress = await tx.quizProgress.findUnique({
         where: {
@@ -214,7 +214,7 @@ export async function POST(req: NextRequest) {
           : score;
 
       if (!existingProgress) {
-        return tx.quizProgress.create({
+        const createdProgress = await tx.quizProgress.create({
           data: {
             userId: user.id,
             quizId: quizWithQuestions.id,
@@ -229,6 +229,10 @@ export async function POST(req: NextRequest) {
             lastPassedAt: passed ? now : null,
           },
         });
+        return {
+          quizProgress: createdProgress,
+          attemptId: finalizedAttempt.id,
+        };
       }
 
       const updated = await tx.quizProgress.update({
@@ -259,15 +263,22 @@ export async function POST(req: NextRequest) {
 
       // Keep counters consistent even if data drifted before this migration.
       if (updated.attempts < updated.completedAttempts) {
-        return tx.quizProgress.update({
+        const correctedProgress = await tx.quizProgress.update({
           where: { id: updated.id },
           data: {
             attempts: updated.completedAttempts,
           },
         });
+        return {
+          quizProgress: correctedProgress,
+          attemptId: finalizedAttempt.id,
+        };
       }
 
-      return updated;
+      return {
+        quizProgress: updated,
+        attemptId: finalizedAttempt.id,
+      };
     });
 
     await prisma.quiz.update({
@@ -276,6 +287,14 @@ export async function POST(req: NextRequest) {
         lastAttempt: now,
       },
     });
+
+    await logAuditEvent(
+      user.id,
+      "update",
+      "quiz_attempt",
+      quizProgressResult.attemptId,
+      `Completed attempt for quiz "${quizWithQuestions.title}" (${quizWithQuestions.id}) with score ${score}% (${correctAnswers}/${totalQuestions}, ${passed ? "passed" : "failed"})`
+    );
 
     // Award points if quiz was passed
     let pointsAwarded = 0;
@@ -341,17 +360,17 @@ export async function POST(req: NextRequest) {
       passingScore: quizWithQuestions.passingScore || 0,
       detailedResponses,
       quizProgress: {
-        attempts: quizProgress.attempts,
-        completedAttempts: quizProgress.completedAttempts,
-        passedAttempts: quizProgress.passedAttempts,
-        averageScore: quizProgress.averageScore,
-        bestScore: quizProgress.bestScore,
-        lastAttemptAt: quizProgress.lastAttemptAt,
-        lastPassedAt: quizProgress.lastPassedAt,
+        attempts: quizProgressResult.quizProgress.attempts,
+        completedAttempts: quizProgressResult.quizProgress.completedAttempts,
+        passedAttempts: quizProgressResult.quizProgress.passedAttempts,
+        averageScore: quizProgressResult.quizProgress.averageScore,
+        bestScore: quizProgressResult.quizProgress.bestScore,
+        lastAttemptAt: quizProgressResult.quizProgress.lastAttemptAt,
+        lastPassedAt: quizProgressResult.quizProgress.lastPassedAt,
         status:
-          quizProgress.passedAttempts > 0
+          quizProgressResult.quizProgress.passedAttempts > 0
             ? "completed"
-            : quizProgress.attempts > 0
+            : quizProgressResult.quizProgress.attempts > 0
               ? "in-progress"
               : "not-started",
       },
