@@ -292,27 +292,43 @@ export async function getDashboardStats() {
       },
     });
 
-    // Get recent activity with more context (filtered by tenant)
-    const recentActivity = await prisma.auditLog.findMany({
+    // Get recent security activity (tenant scoped)
+    const recentEvents = await prisma.securityAuditEvent.findMany({
       take: 5,
       orderBy: {
-        timestamp: "desc",
+        occurredAt: "desc",
       },
       where: {
-        user: {
-          tenantId: tenantId, // Filter by tenant
-        },
+        tenantId,
       },
-      include: {
-        user: {
+      select: {
+        id: true,
+        actorUserId: true,
+        actorDisplayName: true,
+        actorType: true,
+        action: true,
+        eventType: true,
+        occurredAt: true,
+      },
+    });
+
+    const recentActorIds = [...new Set(
+      recentEvents
+        .map((event) => event.actorUserId)
+        .filter((id): id is string => typeof id === "string")
+    )];
+    const recentUsers = recentActorIds.length
+      ? await prisma.user.findMany({
+          where: { id: { in: recentActorIds } },
           select: {
+            id: true,
             username: true,
             role: true,
             imageUrl: true,
           },
-        },
-      },
-    });
+        })
+      : [];
+    const recentUserMap = new Map(recentUsers.map((user) => [user.id, user]));
 
     // CRITICAL: Filter categories by tenant or global content using standardized utility
     const categoryWhereClause = buildTenantContentFilter(tenantId);
@@ -374,14 +390,17 @@ export async function getDashboardStats() {
         ...(Array.isArray(nonQuizReasons) ? nonQuizReasons : []),
       ],
       categoryPerformance: Array.isArray(categoryCompletionRates) ? categoryCompletionRates : [],
-      recentActivity: Array.isArray(recentActivity) ? recentActivity.map((item) => ({
-        id: item.id,
-        user: item.user?.username || "Unknown",
-        userImage: item.user?.imageUrl || null,
-        role: item.user?.role || "UNKNOWN",
-        action: item.action || "",
-        timestamp: item.timestamp,
-      })) : [],
+      recentActivity: Array.isArray(recentEvents) ? recentEvents.map((item) => {
+        const actor = item.actorUserId ? recentUserMap.get(item.actorUserId) : undefined;
+        return {
+          id: item.id,
+          user: actor?.username || item.actorDisplayName || "Unknown",
+          userImage: actor?.imageUrl || null,
+          role: actor?.role || item.actorType?.toUpperCase() || "UNKNOWN",
+          action: item.action || item.eventType || "",
+          timestamp: item.occurredAt,
+        };
+      }) : [],
     };
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);

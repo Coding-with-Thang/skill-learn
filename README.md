@@ -546,6 +546,7 @@ Additional documentation is available in the `/docs` directory:
 | [THEME_GUIDE.md](docs/THEME_GUIDE.md) | Theming and styling guide |
 | [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) | Deployment instructions |
 | [TYPESCRIPT_PRODUCTION_PUSH_PLAN.md](docs/TYPESCRIPT_PRODUCTION_PUSH_PLAN.md) | Failsafe plan to push TypeScript migration to production |
+| [SECURITY_AUDIT_LOGGING_EVOLUTION_PLAN.md](docs/SECURITY_AUDIT_LOGGING_EVOLUTION_PLAN.md) | Roadmap for monitoring, detecting, preventing, and responding to abuse |
 | [ESLINT.md](docs/ESLINT.md) | ESLint configuration and production rules |
 
 ## 🔒 Security

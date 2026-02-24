@@ -21,7 +21,14 @@ export async function POST(request: NextRequest) {
     // Use awardPoints function which enforces daily limit
     const result = await awardPoints(amount, reason, request);
 
-    await pointsAwarded(userId, result.awarded, reason);
+    await pointsAwarded(userId, result.awarded, reason, {
+      request,
+      eventDetails: {
+        requestedAmount: amount,
+        awardedAmount: result.awarded,
+        reason,
+      },
+    });
 
     return successResponse({
       points: result.points,

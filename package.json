@@ -12,15 +12,19 @@
     "start": "turbo run start",
     "lint": "turbo run lint",
     "prisma:generate": "turbo run prisma:generate",
-    "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma"
+    "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma",
+    "test:security": "tsx --test tests/security/event-guardrails.test.ts tests/security/required-route-events.test.ts",
+    "test:security:integration": "vitest run --environment node tests/security/integration"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.0.0",
     "eslint-config-prettier": "^10.1.8",
     "rimraf": "^6.1.2",
+    "tsx": "^4.20.6",
     "turbo": "^2.8.9",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "fast-xml-parser": "^5.3.5",
