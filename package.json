@@ -13,7 +13,7 @@
     "lint": "turbo run lint",
     "prisma:generate": "turbo run prisma:generate",
     "prisma:push": "node node_modules/prisma/build/index.js db push --schema=packages/database/prisma/schema.prisma",
-    "test:security": "tsx --test tests/security/**/*.test.ts",
+    "test:security": "tsx --test tests/security/event-guardrails.test.ts tests/security/required-route-events.test.ts",
     "test:security:integration": "vitest run --environment node tests/security/integration"
   },
   "devDependencies": {
