@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     }
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
