@@ -25,9 +25,11 @@ function getPathWithoutLocale(pathname: string): string {
 
 type Props = {
   className?: string;
+  variant?: "default" | "dark";
 };
 
-export function LanguageSwitcher({ className }: Props) {
+export function LanguageSwitcher({ className, variant = "default" }: Props) {
+  const isDark = variant === "dark";
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -61,16 +63,19 @@ export function LanguageSwitcher({ className }: Props) {
         <button
           disabled={isPending}
           className={cn(
-            "group flex items-center gap-2.5 rounded-full border border-border/50 bg-muted/40 hover:bg-muted transition-all px-4 py-2 cursor-pointer focus:outline-hidden",
+            "group flex items-center gap-2.5 rounded-full border transition-all px-4 py-2 cursor-pointer focus:outline-hidden",
+            isDark
+              ? "border-white/20 bg-white/10 hover:bg-white/20"
+              : "border-border/50 bg-muted/40 hover:bg-muted",
             isPending && "opacity-70 cursor-not-allowed",
             className
           )}
         >
-          <Globe className="h-4 w-4 text-brand-teal" />
-          <span className="text-sm font-bold text-foreground">
+          <Globe className={cn("h-4 w-4", isDark ? "text-white/70" : "text-brand-teal")} />
+          <span className={cn("text-sm font-bold", isDark ? "text-white" : "text-foreground")}>
             {currentLocale.label}
           </span>
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200 group-data-[state=open]:rotate-180", isDark ? "text-white/60" : "text-muted-foreground")} />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[5.5rem] p-1.5 z-3000">

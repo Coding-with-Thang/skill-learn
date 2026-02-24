@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/shared/Logo";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function LandingFooter() {
   const t = useTranslations("footerLanding");
@@ -78,13 +79,16 @@ export default function LandingFooter() {
               {t("copyright", { year: new Date().getFullYear() })}
             </p>
           </div>
-          <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
-            <Link href="/legal" className="text-white/60 hover:text-white transition-colors">
-              {tFooter("legalHub")}
-            </Link>
-            <Link href="/sitemap" className="text-white/60 hover:text-white transition-colors">
-              {tFooter("sitemap")}
-            </Link>
+          <div className="flex items-center gap-8">
+            <div className="flex gap-8 text-xs font-bold uppercase tracking-widest">
+              <Link href="/legal" className="text-white/60 hover:text-white transition-colors">
+                {tFooter("legalHub")}
+              </Link>
+              <Link href="/sitemap" className="text-white/60 hover:text-white transition-colors">
+                {tFooter("sitemap")}
+              </Link>
+            </div>
+            <LanguageSwitcher variant="dark" />
           </div>
         </div>
       </div>

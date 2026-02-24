@@ -7,9 +7,17 @@ import { routing } from "./i18n/routing";
 
 // Match pathnames with locale prefix (e.g. /en/sign-in)
 const localePrefix = `/(${routing.locales.join("|")})`;
+
+// Build public route matchers:
+// - Page routes get locale prefix (e.g. /sign-in -> /(en|fr)/sign-in)
+// - API routes and non-locale paths stay as-is (e.g. /api/webhooks stays /api/webhooks)
 const publicRoutesWithLocale = [
   localePrefix, // /en or /fr (landing)
-  ...publicRoutes.filter((r) => r !== "/").map((r) => `${localePrefix}${r}`),
+  ...publicRoutes
+    .filter((r) => r !== "/" && !r.startsWith("/api/") && r !== "/cms(.*)")
+    .map((r) => `${localePrefix}${r}`),
+  ...publicRoutes.filter((r) => r.startsWith("/api/")),
+  "/cms(.*)",
 ];
 const isPublicRoute = createRouteMatcher(publicRoutesWithLocale);
 const intlMiddleware = createIntlMiddleware(routing);
@@ -139,10 +147,11 @@ const proxy = clerkMiddleware(async (auth, req) => {
       stack: e.stack,
       type: e.constructor.name,
     });
-    return new NextResponse(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    // Fall through on transient errors (e.g. Clerk JWKS timeout) so the page
+    // can still render. Route handlers and client-side Clerk handle auth
+    // independently, so returning a 500 body here is never needed — it would
+    // cause Next.js to show the not-found page instead of the real page.
+    return NextResponse.next();
   }
 });
 
