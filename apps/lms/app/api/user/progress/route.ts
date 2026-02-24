@@ -25,32 +25,40 @@ export async function GET(_request: NextRequest) {
       throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
     }
 
-    // Progress is tracked via CategoryStat (per user per category), not QuizAttempt
-    const categoryStats = await prisma.categoryStat.findMany({
+    const quizProgress = await prisma.quizProgress.findMany({
       where: { userId: user.id },
       include: {
-        category: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        quiz: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
       },
       orderBy: {
-        lastAttempt: "desc",
+        lastAttemptAt: "desc",
       },
     });
 
-    // Completed = sum of category completions (passed quizzes per category)
-    const completed = categoryStats.reduce(
-      (sum, stat) => sum + (stat.completed || 0),
-      0
-    );
+    // Completed = quizzes with at least one passing attempt
+    const completed = quizProgress.filter((row) => row.passedAttempts > 0).length;
 
-    // In-progress = categories with attempts but not all completed
-    const inProgress = categoryStats.filter(
-      (stat) => (stat.attempts || 0) > (stat.completed || 0)
+    // In-progress = started quizzes without a passing attempt yet
+    const inProgress = quizProgress.filter(
+      (row) => (row.attempts || 0) > 0 && (row.passedAttempts || 0) === 0
     ).length;
 
-    // Most recent in-progress category for "Continue Where You Left Off"
-    const lastInProgress = categoryStats.find(
-      (stat) => (stat.attempts || 0) > (stat.completed || 0)
-    );
+    // Most recent in-progress quiz for "Continue Where You Left Off"
+    const lastInProgress =
+      quizProgress.find(
+        (row) => (row.attempts || 0) > 0 && (row.passedAttempts || 0) === 0
+      ) ?? null;
 
     let currentModule: {
       id: string;
@@ -61,15 +69,15 @@ export async function GET(_request: NextRequest) {
       timeRemaining: string;
       type: string;
     } | null = null;
-    if (lastInProgress?.category) {
+    if (lastInProgress?.quiz) {
       const progress = Math.round(lastInProgress.bestScore ?? 0);
       const estimatedMinutes = Math.max(5, Math.round((100 - progress) / 10));
 
       currentModule = {
-        id: lastInProgress.categoryId,
-        title: lastInProgress.category.name,
+        id: lastInProgress.quiz.id,
+        title: lastInProgress.quiz.title,
         category: lastInProgress.category.name,
-        categoryId: lastInProgress.categoryId,
+        categoryId: lastInProgress.category.id,
         progress,
         timeRemaining: `${estimatedMinutes} mins`,
         type: "quiz",

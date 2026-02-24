@@ -15,11 +15,14 @@ const config = [
       // Relax for LMS UI (can tighten later)
       "react/no-unescaped-entities": "off",
       "@next/next/no-img-element": "off",
-      // Warn only until refactor: setState-in-effect and related React patterns
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/error-boundaries": "warn",
-      "react-hooks/purity": "warn",
-      "react-hooks/incompatible-library": "warn",
+      // Allow operational logging in API routes/components.
+      "no-console": "off",
+      // React Compiler lint rules are noisy in current codebase.
+      // Keep disabled until components are refactored for compiler-safe patterns.
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/error-boundaries": "off",
+      "react-hooks/purity": "off",
+      "react-hooks/incompatible-library": "off",
     },
   },
 ];

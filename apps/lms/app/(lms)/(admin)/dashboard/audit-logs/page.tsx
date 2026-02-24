@@ -29,6 +29,28 @@ import {
 import { DatePickerWithRange } from "@skill-learn/ui/components/date-range-picker"
 import { Avatar, AvatarFallback } from "@skill-learn/ui/components/avatar"
 
+function formatActionLabel(action?: string) {
+  if (!action) return "Unknown";
+  return action.replaceAll("_", " ");
+}
+
+function getActionBadgeClass(action?: string) {
+  switch (action) {
+    case "create":
+      return "bg-emerald-500/10 text-emerald-600";
+    case "update":
+      return "bg-amber-500/10 text-amber-600";
+    case "delete":
+      return "bg-rose-500/10 text-rose-600";
+    case "attempt_started":
+      return "bg-sky-500/10 text-sky-600";
+    case "attempt_completed":
+      return "bg-indigo-500/10 text-indigo-600";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
 export default function AuditLogsPage() {
   const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null })
@@ -124,6 +146,8 @@ export default function AuditLogsPage() {
                   <SelectItem value="reward">Rewards</SelectItem>
                   <SelectItem value="user">Users</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
+                  <SelectItem value="quiz">Quizzes</SelectItem>
+                  <SelectItem value="quiz_attempt">Quiz Attempts</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -142,6 +166,8 @@ export default function AuditLogsPage() {
                   <SelectItem value="create">Create</SelectItem>
                   <SelectItem value="update">Update</SelectItem>
                   <SelectItem value="delete">Delete</SelectItem>
+                  <SelectItem value="attempt_started">Attempt Started</SelectItem>
+                  <SelectItem value="attempt_completed">Attempt Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -194,7 +220,7 @@ export default function AuditLogsPage() {
                     </TableRow>
                   ))
                 ) : logs && logs.length > 0 ? (
-                  logs.map((log: { id: string; timestamp: string; user?: { firstName?: string; lastName?: string; id?: string }; action: string; resource: string; details?: string }) => (
+                  logs.map((log: { id: string; timestamp: string; resourceId?: string; user?: { firstName?: string; lastName?: string; username?: string; id?: string }; action: string; resource: string; details?: string }) => (
                     <TableRow key={log.id} className="hover:bg-primary/5 transition-colors border-border/30 group">
                       <TableCell className="py-4">
                         <div className="flex flex-col">
@@ -211,20 +237,20 @@ export default function AuditLogsPage() {
                           </Avatar>
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-sm truncate">
-                              {log.user?.firstName} {log.user?.lastName}
+                              {`${log.user?.firstName || ""} ${log.user?.lastName || ""}`.trim() || log.user?.username || "Unknown User"}
                             </span>
-                            <span className="text-[10px] text-muted-foreground truncate uppercase font-medium tracking-tighter">ID: {log.user?.id?.substring(0, 8)}...</span>
+                            <span className="text-[10px] text-muted-foreground truncate uppercase font-medium tracking-tighter">
+                              ID: {log.user?.id ? `${log.user.id.substring(0, 8)}...` : "N/A"}
+                            </span>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <span className={`
                           inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase
-                          ${log.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
-                            log.action === 'update' ? 'bg-amber-500/10 text-amber-600' :
-                              'bg-rose-500/10 text-rose-600'}
+                          ${getActionBadgeClass(log.action)}
                         `}>
-                          {log.action}
+                          {formatActionLabel(log.action)}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -237,7 +263,7 @@ export default function AuditLogsPage() {
                       </TableCell>
                       <TableCell>
                         <p className="text-sm text-foreground/80 max-w-md truncate font-medium group-hover:text-foreground transition-colors">
-                          {log.details}
+                          {log.details || (log.resourceId ? `Resource ID: ${log.resourceId}` : "—")}
                         </p>
                       </TableCell>
                     </TableRow>

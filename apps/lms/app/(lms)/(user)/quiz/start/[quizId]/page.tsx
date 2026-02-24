@@ -20,12 +20,12 @@ import BreadCrumbCom from "@/components/shared/BreadCrumb";
 
 export default function SelectedQuizPage() {
   const router = useRouter();
-  const { selectedQuiz } = useQuizStartStore();
+  const { selectedQuiz, setActiveAttemptId } = useQuizStartStore();
   const [stats, setStats] = useState<{ attempts?: number; completed?: number; bestScore?: number; averageScore?: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const startQuiz = async () => {
-    if (!selectedQuiz?.id || !selectedQuiz?.categoryId) {
+    if (!selectedQuiz?.id) {
       console.error("Invalid quiz data:", selectedQuiz);
       alert("Invalid quiz data. Please try selecting the quiz again.");
       router.push("/training");
@@ -43,11 +43,21 @@ export default function SelectedQuizPage() {
     }
 
     try {
-      await api.post("/user/quiz/start", {
-        categoryId: selectedQuiz.categoryId,
+      const startResponse = await api.post("/user/quiz/start", {
         quizId: selectedQuiz.id,
       });
-      sessionStorage.removeItem("quizProgress");
+      const startData = startResponse.data?.data || startResponse.data;
+      const attemptId = startData?.attemptId || null;
+      setActiveAttemptId(attemptId);
+      sessionStorage.setItem(
+        "quizProgress",
+        JSON.stringify({
+          quizId: selectedQuiz.id,
+          currentIndex: 0,
+          responses: [],
+          attemptId,
+        })
+      );
       router.push("/quiz");
     } catch (error) {
       console.error("Error starting quiz: ", error);
@@ -66,12 +76,12 @@ export default function SelectedQuizPage() {
 
   useEffect(() => {
     const fetchQuizStats = async () => {
-      if (!selectedQuiz?.categoryId) {
+      if (!selectedQuiz?.id) {
         setIsLoading(false);
         return;
       }
       try {
-        const response = await api.get(`/user/quiz/stats/${selectedQuiz.categoryId}`);
+        const response = await api.get(`/user/quiz/stats/${selectedQuiz.id}`);
         const statsData = response.data?.data || response.data;
         setStats(statsData);
       } catch (error) {
@@ -82,10 +92,6 @@ export default function SelectedQuizPage() {
     };
 
     if (!selectedQuiz) {
-      router.push("/training");
-      return;
-    }
-    if (!selectedQuiz.categoryId) {
       router.push("/training");
       return;
     }

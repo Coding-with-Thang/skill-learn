@@ -38,6 +38,8 @@ const SEGMENT_LABELS = {
   "flashcards-import": "Flashcards Import",
   "flashcards-learning-analytics": "Flashcards Learning Analytics",
   "flashcards-priorities": "Flashcards Priorities",
+  "course-status": "Course Status",
+  "quiz-status": "Quiz Status",
 };
 
 function formatSegmentLabel(segment) {

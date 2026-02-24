@@ -4,6 +4,7 @@ import {
   Star,
   CheckCircle,
   BookOpen,
+  GraduationCap,
   TrendingUp,
   ChevronDown
 } from "lucide-react";
@@ -33,6 +34,8 @@ export default async function DashboardPage() {
     activeRewards = { value: 0, trend: 0 },
     totalPointsAwarded = { value: 0, trend: 0 },
     rewardsClaimed = { value: 0, trend: 0 },
+    courseUncompleted = { uncompletedPercentage: 0, uncompletedCount: 0, totalAssignments: 0 },
+    quizUncompleted = { uncompletedPercentage: 0, uncompletedCount: 0, totalAssignments: 0 },
     userActivity = [],
     pointsDistribution = [],
     categoryPerformance = [],
@@ -42,7 +45,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Top Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         {/* Total Users */}
         <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all group">
           <CardContent className="p-6">
@@ -119,6 +122,70 @@ export default async function DashboardPage() {
             </div>
             <div className="flex items-center mt-6">
               <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-pulse">Live: 2m ago</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Uncompleted Course Assignments */}
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-blue-500/30 transition-all group">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Uncompleted Courses</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{courseUncompleted.uncompletedCount.toLocaleString()}</h3>
+              </div>
+              <div className="p-3 bg-blue-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
+                <BookOpen className="w-6 h-6 text-blue-500" />
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span>Uncompleted %</span>
+                <span className="text-blue-600">{courseUncompleted.uncompletedPercentage}%</span>
+              </div>
+              <Progress
+                value={courseUncompleted.uncompletedPercentage}
+                className="h-2 rounded-full bg-muted/40"
+                indicatorClassName="bg-blue-500"
+              />
+              <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                <span>{courseUncompleted.totalAssignments.toLocaleString()} assignments</span>
+                <Link href="/dashboard/course-status" className="text-blue-600 hover:underline font-bold">
+                  view more
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Uncompleted Quiz Assignments */}
+        <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm hover:border-indigo-500/30 transition-all group">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Uncompleted Quizzes</p>
+                <h3 className="text-3xl font-extrabold tracking-tight">{quizUncompleted.uncompletedCount.toLocaleString()}</h3>
+              </div>
+              <div className="p-3 bg-indigo-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
+                <GraduationCap className="w-6 h-6 text-indigo-500" />
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span>Uncompleted %</span>
+                <span className="text-indigo-600">{quizUncompleted.uncompletedPercentage}%</span>
+              </div>
+              <Progress
+                value={quizUncompleted.uncompletedPercentage}
+                className="h-2 rounded-full bg-muted/40"
+                indicatorClassName="bg-indigo-500"
+              />
+              <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+                <span>{quizUncompleted.totalAssignments.toLocaleString()} assignments</span>
+                <Link href="/dashboard/quiz-status" className="text-indigo-600 hover:underline font-bold">
+                  view more
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -239,9 +306,26 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     <p className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-widest">{activity.role}</p>
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{activity.action}</p>
-                    <div className="pt-1">
-                      <span className="bg-emerald-500/10 text-emerald-600 px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">COMPLETE</span>
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                      {activity.details || `${activity.action} ${activity.resource || ""}`.trim()}
+                    </p>
+                    <div className="pt-1 flex items-center gap-2 flex-wrap">
+                      <span className={`
+                        px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase
+                        ${activity.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
+                          activity.action === 'update' ? 'bg-amber-500/10 text-amber-600' :
+                            activity.action === 'delete' ? 'bg-rose-500/10 text-rose-600' :
+                              activity.action === 'attempt_started' ? 'bg-sky-500/10 text-sky-600' :
+                                activity.action === 'attempt_completed' ? 'bg-indigo-500/10 text-indigo-600' :
+                              'bg-muted text-muted-foreground'}
+                      `}>
+                        {String(activity.action || "event").replaceAll("_", " ").toUpperCase()}
+                      </span>
+                      {activity.resource ? (
+                        <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">
+                          {String(activity.resource).replaceAll("_", " ")}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>

@@ -38,7 +38,8 @@ model User {
   lifetimePoints  Int             @default(0)
   pointLogs       PointLog[]
   rewardsRedeemed RewardLog[]
-  categoryStats   CategoryStat[]
+  quizProgress    QuizProgress[]
+  quizAttempts    QuizAttempt[]
   AuditLog        AuditLog[]
   currentStreak   Int             @default(0)
   longestStreak   Int             @default(0)
@@ -82,7 +83,8 @@ model Category {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   quizzes       Quiz[]
-  categoryStats CategoryStat[]
+  quizProgress  QuizProgress[]
+  quizAttempts  QuizAttempt[]
   courses       Course[]
 
   // Name unique per tenant (and per global when tenantId is null)
@@ -102,6 +104,8 @@ model Quiz {
   categoryId         String     @db.ObjectId
   category           Category   @relation(fields: [categoryId], references: [id])
   questions          Question[]
+  quizProgress       QuizProgress[]
+  quizAttempts       QuizAttempt[]
   isActive           Boolean    @default(true)
   tenantId           String?    @db.ObjectId // Multi-tenant: quiz belongs to ONE tenant (null = global)
   tenant             Tenant?    @relation(fields: [tenantId], references: [id])
@@ -158,31 +162,72 @@ model Option {
   @@map("options")
 }
 
-model CategoryStat {
-  id             String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId         String    @db.ObjectId
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categoryId     String    @db.ObjectId
-  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  attempts       Int       @default(0)
-  completed      Int       @default(0)
-  averageScore   Float?
-  bestScore      Float?
-  totalTimeSpent Int       @default(0)
-  lastAttempt    DateTime? // Last attempt in this category
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+enum QuizAttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
 
-  @@unique([userId, categoryId]) // Already exists - prevents duplicates
-  // PERFORMANCE INDEXES FOR ANALYTICS
-  @@index([userId]) // User's stats across categories
-  @@index([categoryId]) // All users' stats for a category
-  @@index([userId, lastAttempt(sort: Desc)]) // Recent activity per user
-  @@index([categoryId, averageScore(sort: Desc)]) // Category leaderboards
-  @@index([categoryId, bestScore(sort: Desc)]) // Best scores per category
-  @@index([lastAttempt(sort: Desc)]) // Global recent activity
-  @@index([averageScore(sort: Desc)]) // Global leaderboards
-  @@map("category_stats")
+model QuizProgress {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String    @db.ObjectId
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId            String    @db.ObjectId
+  quiz              Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  categoryId        String    @db.ObjectId
+  category          Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tenantId          String?   @db.ObjectId
+  tenant            Tenant?   @relation(fields: [tenantId], references: [id])
+  attempts          Int       @default(0) // Started attempts
+  completedAttempts Int       @default(0) // Finished attempts
+  passedAttempts    Int       @default(0)
+  averageScore      Float?
+  bestScore         Float?
+  lastAttemptAt     DateTime?
+  lastPassedAt      DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([userId, quizId])
+  @@index([userId])
+  @@index([quizId])
+  @@index([categoryId])
+  @@index([tenantId])
+  @@index([userId, categoryId])
+  @@index([userId, lastAttemptAt(sort: Desc)])
+  @@map("quiz_progress")
+}
+
+model QuizAttempt {
+  id            String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String            @db.ObjectId
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quizId        String            @db.ObjectId
+  quiz          Quiz              @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  categoryId    String            @db.ObjectId
+  category      Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  tenantId      String?           @db.ObjectId
+  tenant        Tenant?           @relation(fields: [tenantId], references: [id])
+  status        QuizAttemptStatus @default(IN_PROGRESS)
+  startedAt     DateTime          @default(now())
+  finishedAt    DateTime?
+  score         Float?
+  passed        Boolean?
+  totalQuestions Int?
+  correctAnswers Int?
+  timeSpent     Int? // seconds
+  responses     Json?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([categoryId])
+  @@index([tenantId])
+  @@index([userId, quizId, startedAt(sort: Desc)])
+  @@index([userId, status, startedAt(sort: Desc)])
+  @@index([quizId, startedAt(sort: Desc)])
+  @@map("quiz_attempts")
 }
 
 model PointLog {
@@ -481,6 +526,8 @@ model Tenant {
   courses           Course[]
   categories        Category[]
   quizzes           Quiz[]
+  quizProgress      QuizProgress[]
+  quizAttempts      QuizAttempt[]
   rewards           Reward[]
   games             Game[]
 

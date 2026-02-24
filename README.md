@@ -383,7 +383,7 @@ const users = await prisma.user.findMany();
 - `Quiz` / `Question` / `Option` - Quiz system
 - `Course` - Training courses
 - `Reward` / `RewardLog` - Rewards system
-- `PointLog` / `CategoryStat` - Gamification
+- `PointLog` / `QuizProgress` / `QuizAttempt` - Gamification & quiz tracking
 - `Tenant` / `TenantRole` / `UserRole` - Multi-tenancy
 - `Permission` / `RoleTemplate` - RBAC
 - `AuditLog` - Activity tracking
