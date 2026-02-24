@@ -90,7 +90,7 @@ export const CRITICAL_EVENT_GUARDRAILS: Record<string, GuardrailRule> = {
     requireActor: true,
     requireTenant: false,
     requiredTopLevelFields: ["resource"],
-    requiredDetailAnyOfPaths: [["points"], ["awardedAmount"]],
+    requiredDetailAnyOfPaths: [["points", "awardedAmount"]],
   },
   [SECURITY_EVENT_TYPES.POINTS_SPENT]: {
     requireActor: true,
