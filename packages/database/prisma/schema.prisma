@@ -295,6 +295,62 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model SecurityAuditEvent {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId       String   @unique // Stable event identifier for cross-system correlation
+  schemaVersion String   @default("securityEvent.v1")
+  actorUserId   String?  @db.ObjectId
+  actorClerkId  String?
+  actorType     String   @default("user") // user | system | service | anonymous
+  actorDisplayName String?
+  tenantId      String?  @db.ObjectId
+
+  // Event taxonomy and classification
+  eventType     String // e.g. rbac.role.assigned, auth.session.created
+  category      String // e.g. auth, rbac, user_management, reward
+  action        String // e.g. create, update, delete, assign, authenticate
+  resource      String?
+  resourceId    String?
+  outcome       String   @default("success") // success | failure | blocked | challenged
+  severity      String   @default("low") // low | medium | high | critical
+  riskScore     Int?
+  reasonCodes   String[] @default([])
+
+  // Message + structured details
+  message       String?
+  details       Json?
+
+  // Request and trace context
+  ipAddress     String?
+  userAgent     String?
+  requestId     String?
+  route         String?
+  httpMethod    String?
+  correlationId String?
+  sessionId     String?
+
+  // Integrity and lifecycle
+  retentionClass String  @default("standard") // standard | security_critical | legal_hold
+  recordHash     String?
+  prevHash       String?
+  occurredAt     DateTime @default(now())
+  ingestedAt     DateTime @default(now())
+
+  @@index([tenantId, occurredAt(sort: Desc)])
+  @@index([eventType, occurredAt(sort: Desc)])
+  @@index([category, occurredAt(sort: Desc)])
+  @@index([action, occurredAt(sort: Desc)])
+  @@index([resource, occurredAt(sort: Desc)])
+  @@index([severity, occurredAt(sort: Desc)])
+  @@index([outcome, occurredAt(sort: Desc)])
+  @@index([actorUserId, occurredAt(sort: Desc)])
+  @@index([actorClerkId, occurredAt(sort: Desc)])
+  @@index([requestId])
+  @@index([correlationId])
+  @@index([riskScore(sort: Desc)])
+  @@map("security_audit_events")
+}
+
 model SystemSetting {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   key         String   @unique

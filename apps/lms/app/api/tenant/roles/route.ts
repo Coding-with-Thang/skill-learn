@@ -7,6 +7,8 @@ import {
   requireAnyPermission,
   PERMISSIONS,
 } from "@skill-learn/lib/utils/permissions";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync";
 import { GUEST_ROLE_ALIAS } from "@skill-learn/lib/utils/tenantDefaultRole";
 
@@ -23,7 +25,7 @@ export async function GET(_request: NextRequest) {
     }
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
@@ -224,6 +226,26 @@ export async function POST(request: NextRequest) {
       throw new AppError("Failed to create role", ErrorType.INTERNAL, { status: 500 });
     }
 
+    await logSecurityEvent({
+      actorUserId: user.id,
+      actorClerkId: userId,
+      tenantId: user.tenantId,
+      eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_CREATED,
+      category: SECURITY_EVENT_CATEGORIES.RBAC,
+      action: "create",
+      resource: "tenant_role",
+      resourceId: role.id,
+      severity: "high",
+      message: `Created role: ${role.roleAlias}`,
+      details: {
+        roleAlias: role.roleAlias,
+        slotPosition: role.slotPosition,
+        permissionCount: role.tenantRolePermissions.length,
+        createdFromTemplateId: templateId || null,
+      },
+      request,
+    });
+
     return NextResponse.json(
       {
         role: {
@@ -257,7 +279,7 @@ export async function PUT(request: NextRequest) {
     }
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
@@ -337,6 +359,24 @@ export async function PUT(request: NextRequest) {
       }
 
       return roles;
+    });
+
+    await logSecurityEvent({
+      actorUserId: user.id,
+      actorClerkId: userId,
+      tenantId: user.tenantId,
+      eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_TEMPLATE_INITIALIZED,
+      category: SECURITY_EVENT_CATEGORIES.RBAC,
+      action: "create",
+      resource: "tenant_role_template_set",
+      severity: "high",
+      message: `Initialized roles from template set: ${templateSetName}`,
+      details: {
+        templateSetName,
+        createdRoleCount: createdRoles.length,
+        createdRoles,
+      },
+      request,
     });
 
     return NextResponse.json({

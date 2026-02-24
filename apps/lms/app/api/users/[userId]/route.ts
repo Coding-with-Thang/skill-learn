@@ -5,6 +5,8 @@ import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/utils/validateRequest";
 import { userUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
@@ -218,19 +220,28 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
             });
         }
 
-        // Audit log when reports-to changed (Option 3)
-        if (newReportsTo !== undefined && String(userToUpdate.reportsToUserId || "") !== String(newReportsTo || "")) {
-            await prisma.auditLog.create({
-                data: {
-                    userId: adminResult.user.id,
-                    action: "user.reports_to_changed",
-                    resource: "user",
-                    resourceId: userId,
-                    details: JSON.stringify({
-                        previousReportsToUserId: userToUpdate.reportsToUserId ?? null,
-                        newReportsToUserId: newReportsTo ?? null,
-                    }),
+        const reportsToChanged =
+            newReportsTo !== undefined &&
+            String(userToUpdate.reportsToUserId || "") !== String(newReportsTo || "");
+
+        if (reportsToChanged) {
+            await logSecurityEvent({
+                actorUserId: currentUser.id,
+                actorClerkId: currentUserId,
+                tenantId,
+                eventType: SECURITY_EVENT_TYPES.USER_REPORTS_TO_CHANGED,
+                category: SECURITY_EVENT_CATEGORIES.USER_MANAGEMENT,
+                action: "update",
+                resource: "user",
+                resourceId: userId,
+                severity: "medium",
+                message: "Updated user reporting chain",
+                details: {
+                    userId,
+                    previousReportsToUserId: userToUpdate.reportsToUserId ?? null,
+                    newReportsToUserId: newReportsTo ?? null,
                 },
+                request,
             });
         }
 
@@ -248,6 +259,31 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
                 },
             });
         }
+
+        await logSecurityEvent({
+            actorUserId: currentUser.id,
+            actorClerkId: currentUserId,
+            tenantId,
+            eventType: SECURITY_EVENT_TYPES.USER_UPDATED,
+            category: SECURITY_EVENT_CATEGORIES.USER_MANAGEMENT,
+            action: "update",
+            resource: "user",
+            resourceId: userId,
+            severity: "medium",
+            message: "Updated tenant user",
+            details: {
+                updatedFields: {
+                    username: username !== undefined,
+                    firstName: firstName !== undefined,
+                    lastName: lastName !== undefined,
+                    reportsToUserId: newReportsTo !== undefined,
+                    tenantRoleId: tenantRoleId !== undefined,
+                },
+                tenantRoleId: tenantRoleId ?? null,
+                reportsToUserId: newReportsTo ?? null,
+            },
+            request,
+        });
 
         // Fetch updated user for response
         const updatedUser = await prisma.user.findUnique({
@@ -356,6 +392,24 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext<Use
             }),
             deleteClerkUser(user.clerkId)
         ]);
+
+        await logSecurityEvent({
+            actorUserId: adminResult.user.id,
+            actorClerkId: currentUserId,
+            tenantId,
+            eventType: SECURITY_EVENT_TYPES.USER_DELETED,
+            category: SECURITY_EVENT_CATEGORIES.USER_MANAGEMENT,
+            action: "delete",
+            resource: "user",
+            resourceId: userId,
+            severity: "high",
+            message: "Deleted tenant user",
+            details: {
+                deletedUserId: userId,
+                deletedUserClerkId: user.clerkId,
+            },
+            request: _request,
+        });
 
         return successResponse({ success: true });
     } catch (error) {

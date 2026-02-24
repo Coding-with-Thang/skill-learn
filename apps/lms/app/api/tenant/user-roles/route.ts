@@ -5,6 +5,8 @@ import {
   requireAnyPermission,
   PERMISSIONS,
 } from "@skill-learn/lib/utils/permissions";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync";
 import { requireTenantContext } from "@skill-learn/lib/utils/tenant";
 
@@ -211,6 +213,25 @@ export async function POST(request: NextRequest) {
       console.error("Failed to sync to Clerk:", err);
     }
 
+    await logSecurityEvent({
+      actorClerkId: currentUserId,
+      tenantId,
+      eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_ASSIGNED,
+      category: SECURITY_EVENT_CATEGORIES.RBAC,
+      action: "assign",
+      resource: "user_role",
+      resourceId: userRole.id,
+      severity: "high",
+      message: `Assigned role ${userRole.tenantRole.roleAlias} to user`,
+      details: {
+        assignmentId: userRole.id,
+        targetUserId: userId,
+        tenantRoleId,
+        roleAlias: userRole.tenantRole.roleAlias,
+      },
+      request,
+    });
+
     return NextResponse.json(
       {
         userRole: {
@@ -313,6 +334,24 @@ export async function DELETE(request: NextRequest) {
       } catch (err) {
         console.error("Failed to sync to Clerk:", err);
       }
+
+      await logSecurityEvent({
+        actorClerkId: tenantContext.userId,
+        tenantId,
+        eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_UNASSIGNED,
+        category: SECURITY_EVENT_CATEGORIES.RBAC,
+        action: "unassign",
+        resource: "user_role",
+        resourceId: deletedUserRole.id,
+        severity: "high",
+        message: "Removed role assignment from user",
+        details: {
+          assignmentId: deletedUserRole.id,
+          targetUserId: deletedUserRole.userId,
+          tenantRoleId: deletedUserRole.tenantRoleId,
+        },
+        request,
+      });
     }
 
     return NextResponse.json({

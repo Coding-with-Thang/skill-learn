@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
@@ -100,7 +101,19 @@ export async function PUT(request: NextRequest) {
         "update",
         "reward",
         id,
-        `Updated reward: ${updateData.prize} (set as featured)`
+        `Updated reward: ${updateData.prize} (set as featured)`,
+        {
+          eventType: SECURITY_EVENT_TYPES.REWARD_UPDATED,
+          category: SECURITY_EVENT_CATEGORIES.REWARD,
+          severity: "medium",
+          tenantId,
+          request,
+          eventDetails: {
+            rewardId: id,
+            featured: true,
+            changes: updateData,
+          },
+        }
       );
 
       return successResponse({ reward: result });
@@ -121,7 +134,19 @@ export async function PUT(request: NextRequest) {
         "update",
         "reward",
         id,
-        `Updated reward: ${updateData.prize}`
+        `Updated reward: ${updateData.prize}`,
+        {
+          eventType: SECURITY_EVENT_TYPES.REWARD_UPDATED,
+          category: SECURITY_EVENT_CATEGORIES.REWARD,
+          severity: "medium",
+          tenantId,
+          request,
+          eventDetails: {
+            rewardId: id,
+            featured: false,
+            changes: updateData,
+          },
+        }
       );
 
       return successResponse({ reward: updatedReward });
