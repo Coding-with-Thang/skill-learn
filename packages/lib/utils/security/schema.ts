@@ -56,6 +56,7 @@ export const securityAuditEventInputSchema = z.object({
   requestContext: securityRequestContextSchema,
   retentionClass: securityRetentionClassSchema.optional(),
   occurredAt: z.date().optional(),
+  enforceGuardrails: z.boolean().optional(),
   throwOnError: z.boolean().optional(),
 });
 

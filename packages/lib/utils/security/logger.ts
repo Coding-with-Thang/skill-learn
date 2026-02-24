@@ -2,6 +2,7 @@ import { createHmac, randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { redactSensitiveData } from "./redaction";
+import { validateSecurityEventGuardrails } from "./guardrails";
 import {
   securityAuditEventInputSchema,
   type SecurityAuditEventInput,
@@ -233,14 +234,42 @@ export async function logSecurityEvent(input: LogSecurityEventInput): Promise<vo
     const ingestedAt = new Date();
     const sanitizedDetails = toJsonSafe(redactSensitiveData(event.details));
     const prevHash = await getPreviousRecordHash(tenantId);
+    const actorUserId = resolvedActor.actorUserId ?? null;
+    const actorClerkId = (event.actorClerkId || resolvedActor.actorClerkId) ?? null;
+    const actorDisplayName = (event.actorDisplayName || resolvedActor.actorDisplayName) ?? null;
+
+    const guardrailCheck = validateSecurityEventGuardrails({
+      eventType: event.eventType,
+      actorUserId,
+      actorClerkId,
+      tenantId: tenantId ?? null,
+      resource: event.resource ?? null,
+      resourceId: event.resourceId ?? null,
+      message: event.message ?? null,
+      details: sanitizedDetails,
+    });
+
+    if (!guardrailCheck.valid) {
+      const guardrailError = `Security event guardrail validation failed for "${event.eventType}": ${guardrailCheck.errors.join(
+        ", "
+      )}`;
+      const shouldEnforce = event.enforceGuardrails !== false || guardrailCheck.isCriticalEvent;
+
+      if (throwOnError || shouldEnforce) {
+        throw new Error(guardrailError);
+      }
+
+      console.warn(guardrailError);
+      return;
+    }
 
     const hashPayload = {
       eventId,
       schemaVersion: "securityEvent.v1",
-      actorUserId: resolvedActor.actorUserId,
-      actorClerkId: event.actorClerkId || resolvedActor.actorClerkId,
+      actorUserId,
+      actorClerkId,
       actorType: event.actorType || (resolvedActor.actorUserId || resolvedActor.actorClerkId ? "user" : "system"),
-      actorDisplayName: event.actorDisplayName || resolvedActor.actorDisplayName,
+      actorDisplayName,
       tenantId,
       eventType: event.eventType,
       category: event.category,
@@ -266,12 +295,12 @@ export async function logSecurityEvent(input: LogSecurityEventInput): Promise<vo
       data: {
         eventId,
         schemaVersion: "securityEvent.v1",
-        actorUserId: resolvedActor.actorUserId ?? null,
-        actorClerkId: (event.actorClerkId || resolvedActor.actorClerkId) ?? null,
+        actorUserId,
+        actorClerkId,
         actorType:
           event.actorType ||
           (resolvedActor.actorUserId || resolvedActor.actorClerkId ? "user" : "system"),
-        actorDisplayName: (event.actorDisplayName || resolvedActor.actorDisplayName) ?? null,
+        actorDisplayName,
         tenantId: tenantId ?? null,
         eventType: event.eventType,
         category: event.category,

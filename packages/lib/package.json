@@ -115,6 +115,8 @@
     "./utils/security/schema.ts": "./utils/security/schema.ts",
     "./utils/security/redaction": "./utils/security/redaction.ts",
     "./utils/security/redaction.ts": "./utils/security/redaction.ts",
+    "./utils/security/guardrails": "./utils/security/guardrails.ts",
+    "./utils/security/guardrails.ts": "./utils/security/guardrails.ts",
     "./utils/security/logger": "./utils/security/logger.ts",
     "./utils/security/logger.ts": "./utils/security/logger.ts",
     "./constants/defaultFeatures": "./constants/defaultFeatures.ts",
