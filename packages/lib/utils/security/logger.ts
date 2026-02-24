@@ -12,7 +12,7 @@ const OBJECT_ID_PATTERN = /^[a-fA-F0-9]{24}$/;
 const AUDIT_HASH_SECRET = process.env.AUDIT_LOG_HASH_SECRET || "skill-learn-audit-dev-secret";
 
 type LogSecurityEventInput = SecurityAuditEventInput & {
-  request?: NextRequest | null;
+  request?: NextRequest | null | undefined;
 };
 
 function isObjectId(value: unknown): value is string {
