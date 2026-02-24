@@ -77,7 +77,14 @@ const QuestionMedia = ({ question }: { question: { imageUrl?: string; videoUrl?:
 
 export default function QuizScreenPage() {
     const router = useRouter();
-    const { selectedQuiz, setSelectedQuiz, setQuizResponses } = useQuizStartStore();
+    const {
+        selectedQuiz,
+        setSelectedQuiz,
+        setQuizResponses,
+        activeAttemptId,
+        setActiveAttemptId,
+        clearActiveAttemptId,
+    } = useQuizStartStore();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // Array of selected option IDs
     const [responses, setResponses] = useState<QuizQuestionResponse[]>([]);
@@ -243,16 +250,26 @@ export default function QuizScreenPage() {
             const savedProgress = sessionStorage.getItem('quizProgress');
             if (savedProgress) {
                 try {
-                    const { currentIndex: savedIndex, responses: savedResponses, quizId: savedQuizId } = JSON.parse(savedProgress);
+                    const {
+                        currentIndex: savedIndex,
+                        responses: savedResponses,
+                        quizId: savedQuizId,
+                        attemptId: savedAttemptId,
+                    } = JSON.parse(savedProgress);
                     // Validate quiz ID matches
                     if (savedQuizId === quiz.id) {
-                        console.log("[Quiz Debug] Restoring saved progress, index:", savedIndex);
-                        setCurrentIndex(savedIndex);
-                        setResponses(savedResponses);
+                        const safeIndex = Number.isInteger(savedIndex) ? savedIndex : 0;
+                        console.log("[Quiz Debug] Restoring saved progress, index:", safeIndex);
+                        setCurrentIndex(safeIndex);
+                        const safeResponses = Array.isArray(savedResponses) ? savedResponses : [];
+                        setResponses(safeResponses);
+                        if (savedAttemptId) {
+                            setActiveAttemptId(savedAttemptId);
+                        }
 
                         // Restore selection for current question if it exists in responses
-                        const currentQuestionId = quiz.questions[savedIndex]?.id;
-                        const existingResponse = savedResponses.find(r => r.questionId === currentQuestionId);
+                        const currentQuestionId = quiz.questions[safeIndex]?.id;
+                        const existingResponse = safeResponses.find(r => r.questionId === currentQuestionId);
                         if (existingResponse) {
                             setSelectedOptions(existingResponse.selectedOptionIds || []);
                         }
@@ -399,25 +416,46 @@ export default function QuizScreenPage() {
             // Save to store
             await setQuizResponses(resultsData);
             sessionStorage.setItem('lastQuizResults', JSON.stringify(resultsData));
+            const persistedProgress = sessionStorage.getItem('quizProgress');
+            let persistedAttemptId = null;
+            if (persistedProgress) {
+                try {
+                    persistedAttemptId = JSON.parse(persistedProgress)?.attemptId || null;
+                } catch (_error) {
+                    persistedAttemptId = null;
+                }
+            }
+            const attemptId = activeAttemptId || persistedAttemptId || null;
             // Clear progress as the quiz is finished
             sessionStorage.removeItem('quizProgress');
+            clearActiveAttemptId();
 
             // API Call
             try {
                 const response = await api.post("/user/quiz/finish", {
-                    categoryId: selectedQuiz.categoryId,
                     quizId: selectedQuiz.id,
-                    score: scorePercentage,
-                    responses: finalResponses,
+                    attemptId,
+                    responses: finalResponses.map((response) => ({
+                        questionId: response.questionId,
+                        selectedOptionIds: response.selectedOptionIds || [],
+                    })),
                     timeSpent: resultsData.timeSpent,
-                    hasPassed: resultsData.hasPassed,
-                    isPerfectScore: resultsData.isPerfectScore,
-                    pointsBreakdown: {}
                 });
 
                 // Update results with actual points awarded from API
                 // API returns { success: true, data: { pointsAwarded, bonusAwarded, ... } }
                 const finishData = response.data?.data || response.data;
+                if (typeof finishData?.score === "number") {
+                    resultsData.score = finishData.score;
+                    resultsData.totalQuestions = finishData.totalQuestions ?? resultsData.totalQuestions;
+                    resultsData.correctAnswers = finishData.correctAnswers ?? resultsData.correctAnswers;
+                    resultsData.hasPassed = Boolean(finishData.hasPassed);
+                    resultsData.isPerfectScore = Boolean(finishData.isPerfectScore);
+                    resultsData.passingScore = finishData.passingScore ?? resultsData.passingScore;
+                    if (Array.isArray(finishData.detailedResponses)) {
+                        resultsData.detailedResponses = finishData.detailedResponses;
+                    }
+                }
                 if (finishData?.pointsAwarded !== undefined) {
                     resultsData.pointsEarned = finishData.pointsAwarded + (finishData.bonusAwarded || 0);
                     resultsData.pointsAwarded = finishData.pointsAwarded;
@@ -445,7 +483,7 @@ export default function QuizScreenPage() {
             handleErrorWithNotification(error, "Error completing quiz");
             setIsLoading(false);
         }
-    }, [shuffledQuestionsMemo, selectedQuiz, timeRemaining, router, setQuizResponses]);
+    }, [shuffledQuestionsMemo, selectedQuiz, timeRemaining, router, setQuizResponses, activeAttemptId, clearActiveAttemptId]);
 
 
     // Timer Logic
@@ -568,10 +606,11 @@ export default function QuizScreenPage() {
             sessionStorage.setItem('quizProgress', JSON.stringify({
                 quizId: selectedQuiz.id,
                 currentIndex,
-                responses
+                responses,
+                attemptId: activeAttemptId || null,
             }));
         }
-    }, [currentIndex, responses, isLoading, selectedQuiz]);
+    }, [currentIndex, responses, isLoading, selectedQuiz, activeAttemptId]);
 
 
     if (isLoading) return <Loader />;

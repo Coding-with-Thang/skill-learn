@@ -276,18 +276,19 @@ export async function getDashboardStats() {
     }
 
     // Get category engagement trends (filtered by tenant)
-    const categoryStats = await prisma.categoryStat.groupBy({
+    const categoryStats = await prisma.quizProgress.groupBy({
       by: ["categoryId"],
       _avg: {
         averageScore: true,
       },
       _sum: {
         attempts: true,
-        completed: true,
+        completedAttempts: true,
+        passedAttempts: true,
       },
       where: {
         user: {
-          tenantId: tenantId, // Filter by tenant
+          tenantId: tenantId,
         },
       },
     });
@@ -333,7 +334,8 @@ export async function getDashboardStats() {
               categoryId: stat.categoryId,
               category: category?.name || "Unknown",
               completionRate:
-                ((stat._sum.completed ?? 0) / (stat._sum.attempts || 1)) * 100,
+                ((stat._sum.completedAttempts ?? 0) / (stat._sum.attempts || 1)) *
+                100,
               averageScore: stat._avg.averageScore || 0,
             };
           })

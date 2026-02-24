@@ -25,38 +25,33 @@ import {
 } from "@skill-learn/ui/components/select"
 import { Checkbox } from "@skill-learn/ui/components/checkbox"
 
-/**
- * Helper function to calculate course progress and status
- * Note: Course progress tracking is not yet implemented in the database.
- * This function currently returns defaults. Once CourseProgress model is added,
- * this should be updated to fetch actual progress data.
- */
-const getCourseProgressData = (course, userProgressData = null) => {
-  // Module count: Modules are not yet implemented in the schema
-  // TODO: Once Module model is added, count modules: course.modules?.length || 0
-  const moduleCount = 0
+type CourseProgressSummary = {
+  completedLessonIds?: string[];
+  completedCount?: number;
+  totalLessons?: number;
+  progressPercent?: number;
+  courseCompleted?: boolean;
+  completedAt?: string | null;
+  status?: "not-started" | "in-progress" | "completed";
+};
 
-  // Progress: Course progress tracking is not yet implemented
-  // TODO: Once CourseProgress model is added, fetch actual progress:
-  // const progress = userProgressData?.courseProgress?.[course.id] || 0
-  const progress = 0
-
-  // Status: Course completion tracking is not yet implemented
-  // TODO: Once CourseProgress model is added, calculate status:
-  // - "not-started": progress === 0
-  // - "in-progress": progress > 0 && progress < 100
-  // - "completed": progress === 100
-  const status = "not-started"
-
-  return { moduleCount, progress, status }
-}
+type QuizProgressSummary = {
+  attempts?: number;
+  completedAttempts?: number;
+  passedAttempts?: number;
+  averageScore?: number | null;
+  bestScore?: number | null;
+  lastAttemptAt?: string | null;
+  status?: "not-started" | "in-progress" | "completed";
+};
 
 export default function TrainingPage() {
 
   const router = useRouter()
   const { isLoaded: clerkLoaded } = useUser()
-  const { categories, isLoading: categoriesLoading, fetchCategories } = useCategoryStore()
+  const { fetchCategories } = useCategoryStore()
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
+  const clearActiveAttemptId = useQuizStartStore(state => state.clearActiveAttemptId)
 
   // State
   const [searchQuery, setSearchQuery] = useState("")
@@ -73,32 +68,13 @@ export default function TrainingPage() {
   const [rawCourses, setRawCourses] = useState<unknown[]>([]) // Store raw course data from API
   const [allCourses, setAllCourses] = useState<TransformedCourse[]>([]) // Transformed courses with progress data
   const [coursesLoading, setCoursesLoading] = useState(true)
-  const [userProgress, setUserProgress] = useState(null)
-  const [progressLoading, setProgressLoading] = useState(false)
+  const [courseProgressById, setCourseProgressById] = useState<Record<string, CourseProgressSummary>>({})
+  const [quizProgressById, setQuizProgressById] = useState<Record<string, QuizProgressSummary>>({})
   const [contentMessage, setContentMessage] = useState<string | null>(null) // e.g. "Complete onboarding" when 400
 
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
-
-  // Fetch user progress data
-  useEffect(() => {
-    const fetchUserProgress = async () => {
-      setProgressLoading(true)
-      try {
-        const response = await api.get("/user/progress")
-        if (response.data?.success) {
-          setUserProgress(response.data)
-        }
-      } catch (error) {
-        console.error("Error fetching user progress:", error)
-      } finally {
-        setProgressLoading(false)
-      }
-    }
-
-    fetchUserProgress()
-  }, [])
 
   // Fetch all courses from the database (wait for Clerk so auth token is sent)
   useEffect(() => {
@@ -170,7 +146,34 @@ export default function TrainingPage() {
     fetchCourses()
   }, [clerkLoaded])
 
-  // Transform courses when raw courses or user progress updates
+  // Fetch course progress in bulk once courses are loaded.
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const ids = rawCourses
+      .map((course) => (course as { id?: string })?.id)
+      .filter((id): id is string => Boolean(id))
+
+    if (ids.length === 0) {
+      setCourseProgressById({})
+      return
+    }
+
+    const fetchCourseProgress = async () => {
+      try {
+        const response = await api.get(`/user/courses/progress?courseIds=${ids.join(",")}`)
+        const progressData = response.data?.data || response.data
+        setCourseProgressById(progressData?.progressByCourseId || {})
+      } catch (error) {
+        console.error("Error fetching course progress:", error)
+        setCourseProgressById({})
+      }
+    }
+
+    fetchCourseProgress()
+  }, [clerkLoaded, rawCourses])
+
+  // Transform courses when raw courses or progress updates.
   useEffect(() => {
     if (rawCourses.length === 0) {
       setAllCourses([])
@@ -178,7 +181,7 @@ export default function TrainingPage() {
     }
 
     // Transform course data to match CourseCard format
-    type RawCourse = { duration?: number; id?: string; title?: string; description?: unknown; excerptDescription?: string; imageUrl?: string; category?: { name?: string } };
+    type RawCourse = { duration?: number; id?: string; slug?: string; title?: string; description?: unknown; excerptDescription?: string; imageUrl?: string; category?: { name?: string } };
     const transformedCourses = rawCourses.map((course: unknown) => {
       const c = course as RawCourse;
       // Format duration from minutes to "Xh Ym" format
@@ -188,11 +191,16 @@ export default function TrainingPage() {
         ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
         : `${minutes}m`
 
-      // Get course progress data (currently returns defaults until progress tracking is implemented)
-      const { moduleCount, progress, status } = getCourseProgressData(course, userProgress)
+      const progressData = c.id ? courseProgressById[c.id] : null
+      const moduleCount = progressData?.totalLessons ?? 0
+      const progress = progressData?.progressPercent ?? 0
+      const status =
+        progressData?.status ??
+        (progress >= 100 ? "completed" : progress > 0 ? "in-progress" : "not-started")
 
       return {
         id: c.id,
+        slug: c.slug,
         title: c.title,
         description: extractTextFromProseMirror(c.description) || c.excerptDescription || "",
         imageUrl: c.imageUrl || "/placeholder-course.jpg",
@@ -205,7 +213,7 @@ export default function TrainingPage() {
     })
 
     setAllCourses(transformedCourses as TransformedCourse[])
-  }, [rawCourses, userProgress]) // Re-transform when raw courses or user progress changes
+  }, [rawCourses, courseProgressById])
 
   // Fetch all quizzes from /api/quizzes (wait for Clerk so auth token is sent)
   useEffect(() => {
@@ -263,6 +271,33 @@ export default function TrainingPage() {
     fetchAllQuizzes()
   }, [clerkLoaded])
 
+  // Fetch quiz progress in bulk once quizzes are loaded.
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const ids = allQuizzes
+      .map((quiz) => quiz.id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0)
+
+    if (ids.length === 0) {
+      setQuizProgressById({})
+      return
+    }
+
+    const fetchQuizProgress = async () => {
+      try {
+        const response = await api.get(`/user/quizzes/progress?quizIds=${ids.join(",")}`)
+        const progressData = response.data?.data || response.data
+        setQuizProgressById(progressData?.progressByQuizId || {})
+      } catch (error) {
+        console.error("Error fetching quiz progress:", error)
+        setQuizProgressById({})
+      }
+    }
+
+    fetchQuizProgress()
+  }, [clerkLoaded, allQuizzes])
+
   // Filter and search logic
   const filteredCourses = useMemo(() => {
     let filtered = allCourses
@@ -315,6 +350,7 @@ export default function TrainingPage() {
 
   // Handle quiz click - integrate with existing quiz system
   const handleQuizClick = (quiz) => {
+    clearActiveAttemptId()
     setSelectedQuiz(quiz)
     router.push(`/quiz/start/${quiz.id}`)
   }
@@ -341,7 +377,10 @@ export default function TrainingPage() {
     totalCourses: allCourses.length,
     activeCourses: allCourses.filter(c => c.status === "in-progress").length,
     totalQuizzes: allQuizzes.length,
-    completedQuizzes: 0, // Will be calculated from user attempts
+    completedQuizzes: allQuizzes.filter((quiz) => {
+      if (typeof quiz.id !== "string") return false
+      return quizProgressById[quiz.id]?.status === "completed"
+    }).length,
   }
 
   const isLoading = quizzesLoading || coursesLoading
@@ -668,21 +707,25 @@ export default function TrainingPage() {
                       : "space-y-4"
                   )}>
                     {filteredQuizzes.map((quiz) => (
-                      <QuizCard
-                        key={quiz.id}
-                        quiz={{
-                          ...quiz,
-                          questionCount: (Array.isArray(quiz.questions) ? quiz.questions.length : 0) || 0,
-                          // Status: Quiz status tracking not yet implemented
-                          // TODO: Once QuizAttempt data is integrated, determine status:
-                          // - "not-started": no attempts
-                          // - "in-progress": has attempts but none passed
-                          // - "completed": has at least one passed attempt
-                          status: "not-started",
-                        }}
-                        variant={viewMode}
-                        onClick={() => handleQuizClick(quiz)}
-                      />
+                      (() => {
+                        const quizId = typeof quiz.id === "string" ? quiz.id : ""
+                        const progress = quizId ? quizProgressById[quizId] : undefined
+                        return (
+                          <QuizCard
+                            key={quiz.id}
+                            quiz={{
+                              ...quiz,
+                              questionCount: (Array.isArray(quiz.questions) ? quiz.questions.length : 0) || 0,
+                              status: progress?.status || "not-started",
+                              score: progress?.bestScore ?? undefined,
+                              attempts: progress?.attempts ?? 0,
+                              averageScore: progress?.averageScore ?? undefined,
+                            }}
+                            variant={viewMode}
+                            onClick={() => handleQuizClick(quiz)}
+                          />
+                        )
+                      })()
                     ))}
                   </div>
                 ) : (

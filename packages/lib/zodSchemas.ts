@@ -172,26 +172,15 @@ export const quizUpdateSchema = quizCreateSchema.partial().extend({
 });
 
 export const quizFinishSchema = z.object({
-  categoryId: objectIdSchema,
   quizId: objectIdSchema,
-  score: z
-    .number()
-    .min(0, "Score must be at least 0")
-    .max(100, "Score cannot exceed 100"),
+  attemptId: objectIdSchema.optional(),
   responses: z.array(
     z.object({
       questionId: objectIdSchema,
       selectedOptionIds: z.array(objectIdSchema),
-      isCorrect: z.boolean(),
-      question: z.string().optional(),
-      selectedAnswer: z.string().optional(),
-      correctAnswer: z.string().optional(),
     })
   ),
-  hasPassed: z.boolean(),
-  isPerfectScore: z.boolean(),
   timeSpent: z.number().int().nonnegative().optional(),
-  pointsBreakdown: z.record(z.string(), z.any()).optional(),
 });
 
 // User schemas - tenant-only; roles are TenantRole via UserRole

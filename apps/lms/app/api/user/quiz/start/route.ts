@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
+import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,9 +13,9 @@ export async function POST(req: NextRequest) {
     }
     const userId = authResult;
 
-    const { categoryId } = await req.json();
-    if (!categoryId) {
-      throw new AppError("Category ID is required", ErrorType.VALIDATION, {
+    const { quizId } = await req.json();
+    if (!quizId) {
+      throw new AppError("Quiz ID is required", ErrorType.VALIDATION, {
         status: 400,
       });
     }
@@ -29,40 +30,95 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    let stat = await prisma.categoryStat.findUnique({
+    const tenantId = await getTenantId();
+    const whereClause = buildTenantContentFilter(tenantId, {
+      isActive: true,
+    });
+
+    const quiz = await prisma.quiz.findFirst({
       where: {
-        userId_categoryId: {
-          categoryId,
-          userId: user.id,
+        id: quizId,
+        ...whereClause,
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        tenantId: true,
+        questions: {
+          select: { id: true },
+          take: 1,
         },
       },
     });
 
-    if (!stat) {
-      stat = await prisma.categoryStat.create({
-        data: {
-          userId: user.id,
-          categoryId,
-          attempts: 1,
-          lastAttempt: new Date(),
-        },
+    if (!quiz) {
+      throw new AppError("Quiz not found", ErrorType.NOT_FOUND, {
+        status: 404,
       });
-    } else {
-      stat = await prisma.categoryStat.update({
-        where: {
-          userId_categoryId: {
-            userId: user.id,
-            categoryId,
-          },
-        },
-        data: {
-          attempts: { increment: 1 },
-          lastAttempt: new Date(),
-        },
+    }
+    if (quiz.questions.length === 0) {
+      throw new AppError("Quiz has no questions", ErrorType.VALIDATION, {
+        status: 400,
       });
     }
 
-    return successResponse({ stat });
+    const now = new Date();
+
+    const attempt = await prisma.$transaction(async (tx) => {
+      // Keep only one active attempt per user/quiz.
+      await tx.quizAttempt.updateMany({
+        where: {
+          userId: user.id,
+          quizId: quiz.id,
+          status: "IN_PROGRESS",
+        },
+        data: {
+          status: "ABANDONED",
+          finishedAt: now,
+        },
+      });
+
+      const created = await tx.quizAttempt.create({
+        data: {
+          userId: user.id,
+          quizId: quiz.id,
+          categoryId: quiz.categoryId,
+          tenantId: quiz.tenantId ?? null,
+          startedAt: now,
+          status: "IN_PROGRESS",
+        },
+      });
+
+      await tx.quizProgress.upsert({
+        where: {
+          userId_quizId: {
+            userId: user.id,
+            quizId: quiz.id,
+          },
+        },
+        create: {
+          userId: user.id,
+          quizId: quiz.id,
+          categoryId: quiz.categoryId,
+          tenantId: quiz.tenantId ?? null,
+          attempts: 1,
+          lastAttemptAt: now,
+        },
+        update: {
+          attempts: { increment: 1 },
+          categoryId: quiz.categoryId,
+          tenantId: quiz.tenantId ?? null,
+          lastAttemptAt: now,
+        },
+      });
+
+      return created;
+    });
+
+    return successResponse({
+      attemptId: attempt.id,
+      startedAt: attempt.startedAt,
+    });
   } catch (error) {
     return handleApiError(error);
   }

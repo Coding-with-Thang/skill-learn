@@ -20,15 +20,13 @@ export async function GET(_request: NextRequest) {
         firstName: true,
         lastName: true,
         imageUrl: true,
-        categoryStats: {
+        quizProgress: {
           where: {
-            category: tenantId
-              ? { tenantId }
-              : { tenantId: null },
+            ...(tenantId ? { tenantId } : { tenantId: null }),
           },
           select: {
             attempts: true,
-            completed: true,
+            completedAttempts: true,
             averageScore: true,
           },
         },
@@ -37,7 +35,7 @@ export async function GET(_request: NextRequest) {
 
     const leaderboard = users
       .map((user) => {
-        const totalAttempts = user.categoryStats.reduce(
+        const totalAttempts = user.quizProgress.reduce(
           (sum, stat) => sum + stat.attempts,
           0
         );
@@ -45,15 +43,20 @@ export async function GET(_request: NextRequest) {
         if (totalAttempts === 0) return null;
 
         // Calculate weighted average score across all categories
-        const weightedScore = user.categoryStats.reduce(
-          (sum, stat) => sum + (stat.averageScore || 0) * stat.attempts,
+        const weightedScore = user.quizProgress.reduce(
+          (sum, stat) => sum + (stat.averageScore || 0) * stat.completedAttempts,
           0
         );
-        const averageScore = weightedScore / totalAttempts;
+        const totalCompletedAttempts = user.quizProgress.reduce(
+          (sum, stat) => sum + stat.completedAttempts,
+          0
+        );
+        const averageScore =
+          totalCompletedAttempts > 0 ? weightedScore / totalCompletedAttempts : 0;
 
         // Calculate completion rate
-        const totalCompleted = user.categoryStats.reduce(
-          (sum, stat) => sum + stat.completed,
+        const totalCompleted = user.quizProgress.reduce(
+          (sum, stat) => sum + stat.completedAttempts,
           0
         );
         const completionRate = (totalCompleted / totalAttempts) * 100;
@@ -71,6 +74,7 @@ export async function GET(_request: NextRequest) {
           imageUrl: user.imageUrl,
           averageScore: Number(averageScore.toFixed(2)),
           quizzesTaken: totalAttempts,
+          quizCount: totalAttempts,
           quizzesCompleted: totalCompleted,
           completionRate: Number(completionRate.toFixed(2)),
         };
