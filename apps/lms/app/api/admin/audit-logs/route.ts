@@ -4,6 +4,7 @@ import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
+import type { Prisma } from "@prisma/client";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -27,9 +28,25 @@ export async function GET(_request: NextRequest) {
     const endDate = searchParams.get("endDate");
 
     // Build where clause - only logs for users in this tenant
-    const where: { user: { tenantId: string }; resource?: string; action?: string; timestamp?: { gte?: Date; lte?: Date } } = { user: { tenantId } };
+    const where: Prisma.AuditLogWhereInput = { user: { tenantId } };
     if (resource) where.resource = resource;
-    if (action) where.action = action;
+    if (action) {
+      if (action === "attempt_started") {
+        // Backward compatibility: old records were logged as create + quiz_attempt.
+        where.OR = [
+          { action: "attempt_started" },
+          { action: "create", resource: "quiz_attempt" },
+        ];
+      } else if (action === "attempt_completed") {
+        // Backward compatibility: old records were logged as update + quiz_attempt.
+        where.OR = [
+          { action: "attempt_completed" },
+          { action: "update", resource: "quiz_attempt" },
+        ];
+      } else {
+        where.action = action;
+      }
+    }
     if (startDate || endDate) {
       where.timestamp = {};
       if (startDate) where.timestamp.gte = new Date(startDate);

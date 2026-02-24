@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     await logAuditEvent(
       user.id,
-      "create",
+      "attempt_started",
       "quiz_attempt",
       attempt.id,
       `Started attempt for quiz "${quiz.title}" (${quiz.id})${abandonedCount > 0 ? ` and auto-abandoned ${abandonedCount} previous in-progress attempt(s)` : ""}`

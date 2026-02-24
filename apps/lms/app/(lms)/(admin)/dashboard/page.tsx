@@ -248,9 +248,11 @@ export default async function DashboardPage() {
                         ${activity.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
                           activity.action === 'update' ? 'bg-amber-500/10 text-amber-600' :
                             activity.action === 'delete' ? 'bg-rose-500/10 text-rose-600' :
+                              activity.action === 'attempt_started' ? 'bg-sky-500/10 text-sky-600' :
+                                activity.action === 'attempt_completed' ? 'bg-indigo-500/10 text-indigo-600' :
                               'bg-muted text-muted-foreground'}
                       `}>
-                        {(activity.action || "event").toUpperCase()}
+                        {String(activity.action || "event").replaceAll("_", " ").toUpperCase()}
                       </span>
                       {activity.resource ? (
                         <span className="bg-primary/10 text-primary px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase">

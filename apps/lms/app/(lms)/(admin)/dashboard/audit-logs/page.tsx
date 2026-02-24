@@ -29,6 +29,28 @@ import {
 import { DatePickerWithRange } from "@skill-learn/ui/components/date-range-picker"
 import { Avatar, AvatarFallback } from "@skill-learn/ui/components/avatar"
 
+function formatActionLabel(action?: string) {
+  if (!action) return "Unknown";
+  return action.replaceAll("_", " ");
+}
+
+function getActionBadgeClass(action?: string) {
+  switch (action) {
+    case "create":
+      return "bg-emerald-500/10 text-emerald-600";
+    case "update":
+      return "bg-amber-500/10 text-amber-600";
+    case "delete":
+      return "bg-rose-500/10 text-rose-600";
+    case "attempt_started":
+      return "bg-sky-500/10 text-sky-600";
+    case "attempt_completed":
+      return "bg-indigo-500/10 text-indigo-600";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
 export default function AuditLogsPage() {
   const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null })
@@ -144,6 +166,8 @@ export default function AuditLogsPage() {
                   <SelectItem value="create">Create</SelectItem>
                   <SelectItem value="update">Update</SelectItem>
                   <SelectItem value="delete">Delete</SelectItem>
+                  <SelectItem value="attempt_started">Attempt Started</SelectItem>
+                  <SelectItem value="attempt_completed">Attempt Completed</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -224,11 +248,9 @@ export default function AuditLogsPage() {
                       <TableCell>
                         <span className={`
                           inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase
-                          ${log.action === 'create' ? 'bg-emerald-500/10 text-emerald-600' :
-                            log.action === 'update' ? 'bg-amber-500/10 text-amber-600' :
-                              'bg-rose-500/10 text-rose-600'}
+                          ${getActionBadgeClass(log.action)}
                         `}>
-                          {log.action}
+                          {formatActionLabel(log.action)}
                         </span>
                       </TableCell>
                       <TableCell>

@@ -290,7 +290,7 @@ export async function POST(req: NextRequest) {
 
     await logAuditEvent(
       user.id,
-      "update",
+      "attempt_completed",
       "quiz_attempt",
       quizProgressResult.attemptId,
       `Completed attempt for quiz "${quizWithQuestions.title}" (${quizWithQuestions.id}) with score ${score}% (${correctAnswers}/${totalQuestions}, ${passed ? "passed" : "failed"})`
