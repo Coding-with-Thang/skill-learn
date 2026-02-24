@@ -1,5 +1,3 @@
-"use server";
-
 import { createHmac, randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { prisma } from "@skill-learn/database";
