@@ -241,13 +241,19 @@ export async function POST(req: NextRequest) {
         data: {
           categoryId: quizWithQuestions.categoryId,
           tenantId: quizWithQuestions.tenantId ?? null,
-          attempts: addImplicitAttempt ? { increment: 1 } : undefined,
           completedAttempts: { increment: 1 },
-          passedAttempts: passed ? { increment: 1 } : undefined,
           averageScore: nextAverage,
           bestScore: nextBest,
           lastAttemptAt: now,
-          lastPassedAt: passed ? now : existingProgress.lastPassedAt,
+          ...(addImplicitAttempt ? { attempts: { increment: 1 } } : {}),
+          ...(passed
+            ? {
+                passedAttempts: { increment: 1 },
+                lastPassedAt: now,
+              }
+            : {
+                lastPassedAt: existingProgress.lastPassedAt,
+              }),
         },
       });
 
