@@ -135,10 +135,10 @@ async function resolveActor(
       }
     }
 
-    if (actorClerkId || actorUserId) {
-      const clerkId = actorClerkId || actorUserId;
+    const clerkIdCandidate = actorClerkId || actorUserId;
+    if (typeof clerkIdCandidate === "string" && clerkIdCandidate.length > 0) {
       const user = await prisma.user.findUnique({
-        where: { clerkId },
+        where: { clerkId: clerkIdCandidate },
         select: {
           id: true,
           clerkId: true,
