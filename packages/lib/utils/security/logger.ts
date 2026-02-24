@@ -174,11 +174,19 @@ async function resolveActor(
 
 async function getPreviousRecordHash(tenantId?: string): Promise<string | undefined> {
   try {
-    const latestEvent = await prisma.securityAuditEvent.findFirst({
-      where: tenantId ? { tenantId } : undefined,
+    const query: {
+      where?: { tenantId: string };
+      select: { recordHash: true };
+      orderBy: [{ ingestedAt: "desc" }, { occurredAt: "desc" }];
+    } = {
       select: { recordHash: true },
       orderBy: [{ ingestedAt: "desc" }, { occurredAt: "desc" }],
-    });
+    };
+    if (tenantId) {
+      query.where = { tenantId };
+    }
+
+    const latestEvent = await prisma.securityAuditEvent.findFirst(query);
 
     return latestEvent?.recordHash || undefined;
   } catch (error) {
