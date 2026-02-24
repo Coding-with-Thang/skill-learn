@@ -15,7 +15,8 @@ This document defines how Skill-Learn should evolve audit logging and event reco
 
 ### In-scope systems
 
-- LMS and CMS applications
+- LMS application (Phase 1 and Phase 2)
+- CMS application (post-LMS hardening phase)
 - API routes and webhook handlers
 - Multi-tenant RBAC changes
 - Authentication/session events
@@ -28,6 +29,13 @@ This document defines how Skill-Learn should evolve audit logging and event reco
 - Mean Time To Respond (MTTR) for critical abuse patterns under 15 minutes.
 - 0 secrets logged in audit payloads (validated by automated tests and redaction checks).
 - Tamper-evident audit records for critical security events.
+
+### Execution mode (updated)
+
+- No slow rollout is required because there are currently no active users.
+- Delivery remains phased for engineering control and risk management.
+- Each phase uses a direct cutover approach after validation (no canary/percentage rollout).
+- Phase 1 is strictly LMS tenant-level scope.
 
 ---
 
@@ -204,34 +212,36 @@ Apply tenant-aware retention where contractual/regulatory obligations differ.
 
 ---
 
-## 9) 90-day phased roadmap
+## 9) Fast phased roadmap (LMS tenant-first)
 
-### Phase 1 (Days 0-30): Foundation
+### Phase 1 (Week 1): LMS tenant-level foundation and cutover
 
 - Define `securityEvent.v1` schema and taxonomy.
 - Introduce centralized logging SDK in shared package.
 - Add redaction utilities and field allowlists.
-- Add dual-write: keep current `AuditLog` while writing new structured events.
-- Add core events:
+- Implement LMS-only instrumentation (tenant-scoped):
   - auth success/failure
   - admin CRUD and RBAC changes
   - rewards/points sensitive actions
   - webhook verification failures
+- Replace legacy LMS audit writes with direct structured event writes after validation.
+- Cut over directly in LMS (no gradual rollout).
 
-### Phase 2 (Days 31-60): Detection and visibility
+### Phase 2 (Week 2): LMS detection, visibility, and controls
 
 - Add rule engine and alert routing for high-priority abuse cases.
-- Expand audit log API filters for severity/outcome/eventType/riskScore.
-- Update admin dashboard to show severity, outcome, and risk indicators.
+- Expand LMS audit log API filters for severity/outcome/eventType/riskScore.
+- Update LMS admin dashboard to show severity, outcome, and risk indicators.
 - Add CSV/JSON export with redaction and access controls.
 - Add runbooks for triage and response.
+- Enable automated prevention actions for high-confidence detections.
 
-### Phase 3 (Days 61-90): Automated prevention
+### Phase 3 (Week 3+): Hardening and expansion
 
-- Wire detections to automated controls (throttle/challenge/block/revoke).
 - Add incident timeline view with event correlation.
 - Add integrity verification tooling and scheduled audits.
 - Finalize retention and archive automation.
+- Expand the same architecture to CMS after LMS is stable.
 
 ---
 
@@ -254,7 +264,7 @@ Apply tenant-aware retention where contractual/regulatory obligations differ.
 
 ### 10.3 API instrumentation
 
-- Instrument high-risk routes first:
+- Phase 1 boundary: instrument LMS high-risk routes first (tenant scope only):
   - auth-related handlers
   - admin management routes
   - points/rewards routes
@@ -262,6 +272,7 @@ Apply tenant-aware retention where contractual/regulatory obligations differ.
 - `apps/lms/app/api/admin/audit-logs/route.ts`
   - Add advanced filters (`eventType`, `severity`, `outcome`, `riskScore`).
   - Enforce strict validation for event ingestion payloads.
+- Defer `apps/cms/**` instrumentation until Phase 3 expansion.
 
 ### 10.4 UI and operational visibility
 
@@ -307,10 +318,10 @@ Apply tenant-aware retention where contractual/regulatory obligations differ.
 
 1. Approve event taxonomy and `securityEvent.v1` contract.
 2. Implement structured logger with redaction utilities.
-3. Add dual-write model and basic migration path.
-4. Instrument top 10 high-risk routes.
+3. Instrument top LMS tenant-level high-risk routes.
+4. Cut over LMS audit writes directly to structured events.
 5. Ship first 6 abuse detection rules with alert routing.
-6. Update admin audit log page for severity and outcome fields.
+6. Update LMS admin audit log page for severity and outcome fields.
 
 ---
 
@@ -325,4 +336,4 @@ Apply tenant-aware retention where contractual/regulatory obligations differ.
 
 ---
 
-This plan is designed to be delivered incrementally while preserving compatibility with existing audit logging and admin workflows.
+This plan is designed for fast phased delivery, starting with LMS tenant-level implementation and direct cutover.
