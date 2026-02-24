@@ -102,10 +102,10 @@ function stableStringify(value: unknown): string {
 }
 
 type ResolvedActor = {
-  actorUserId?: string;
-  actorClerkId?: string;
-  tenantId?: string;
-  actorDisplayName?: string;
+  actorUserId?: string | undefined;
+  actorClerkId?: string | undefined;
+  tenantId?: string | undefined;
+  actorDisplayName?: string | undefined;
 };
 
 async function resolveActor(
