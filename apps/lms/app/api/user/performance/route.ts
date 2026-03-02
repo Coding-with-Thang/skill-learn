@@ -23,8 +23,8 @@ export async function GET(_request: NextRequest) {
       });
     }
 
-    // Get user's quiz attempts and stats
-    const categoryStats = await prisma.categoryStat.findMany({
+    // Get user quiz progress rows and aggregate by category.
+    const quizProgressRows = await prisma.quizProgress.findMany({
       where: { userId: user.id },
       include: {
         category: {
@@ -34,6 +34,43 @@ export async function GET(_request: NextRequest) {
         },
       },
     });
+
+    const categoryMap = new Map<
+      string,
+      {
+        name: string;
+        attempts: number;
+        completed: number;
+        weightedScoreTotal: number;
+        weightedScoreCount: number;
+      }
+    >();
+
+    for (const row of quizProgressRows) {
+      const existing = categoryMap.get(row.categoryId) ?? {
+        name: row.category.name,
+        attempts: 0,
+        completed: 0,
+        weightedScoreTotal: 0,
+        weightedScoreCount: 0,
+      };
+      const completedAttempts = row.completedAttempts || 0;
+      existing.attempts += row.attempts || 0;
+      existing.completed += completedAttempts;
+      existing.weightedScoreTotal += (row.averageScore || 0) * completedAttempts;
+      existing.weightedScoreCount += completedAttempts;
+      categoryMap.set(row.categoryId, existing);
+    }
+
+    const categoryStats = Array.from(categoryMap.values()).map((value) => ({
+      name: value.name,
+      attempts: value.attempts,
+      completed: value.completed,
+      averageScore:
+        value.weightedScoreCount > 0
+          ? value.weightedScoreTotal / value.weightedScoreCount
+          : null,
+    }));
 
     // Calculate average score
     const scores = categoryStats
@@ -48,7 +85,7 @@ export async function GET(_request: NextRequest) {
     const categoriesWithScores = categoryStats
       .filter((stat) => stat.averageScore !== null)
       .map((stat) => ({
-        name: stat.category.name,
+        name: stat.name,
         score: Math.round(stat.averageScore ?? 0),
       }));
 
@@ -64,7 +101,7 @@ export async function GET(_request: NextRequest) {
 
     // Calculate category progress
     const categoryProgress = categoryStats.map((stat) => ({
-      name: stat.category.name,
+      name: stat.name,
       progress: Math.round((stat.completed / (stat.attempts || 1)) * 100),
     }));
 
