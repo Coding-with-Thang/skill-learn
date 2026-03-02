@@ -2,21 +2,25 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useWelcomeContext } from "@skill-learn/lib";
-import { generateGreeting } from "@skill-learn/lib/utils/greetingGenerator";
+import { useGenerateGreeting } from "@skill-learn/lib/utils/greetingGenerator";
 import { Sparkles, TrendingUp, Award, Flame } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 export default function WelcomeBanner() {
   const context = useWelcomeContext();
+  const generateGreeting = useGenerateGreeting();
+  const t = useTranslations("home.welcomeBanner");
+
   const [showContent, setShowContent] = useState(false);
 
-  // Generate greeting when context changes (memoized to prevent infinite loops)
+  // Generate greeting when context changes
   const greeting = useMemo(() => {
     if (context.isLoading) {
       return { text: "", subtext: "" };
     }
+
     return generateGreeting(context);
-  }, [context]);
+  }, [context, generateGreeting]);
 
   // Trigger animation when greeting changes
   useEffect(() => {
@@ -61,7 +65,6 @@ export default function WelcomeBanner() {
       };
     }
 
-    // Default theme
     return {
       gradient: "from-blue-600 to-blue-400",
       icon: <Sparkles className="w-8 h-8 md:w-10 md:h-10" />,
@@ -70,7 +73,6 @@ export default function WelcomeBanner() {
   };
 
   const theme = getTheme();
-  const t = useTranslations("home.welcomeBanner");
 
   // Loading state
   if (context.isLoading) {
@@ -85,10 +87,14 @@ export default function WelcomeBanner() {
   }
 
   return (
-    <div className={`w-full relative overflow-hidden rounded-3xl bg-linear-to-r ${theme.gradient} p-8 md:p-12 text-white shadow-lg mb-8 transition-all duration-500`}>
+    <div
+      className={`w-full relative overflow-hidden rounded-3xl bg-linear-to-r ${theme.gradient} p-8 md:p-12 text-white shadow-lg mb-8 transition-all duration-500`}
+    >
       {/* Background Decorative Shapes */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
-      <div className={`absolute bottom-0 right-20 w-48 h-48 ${theme.accentColor} rounded-full blur-xl`}></div>
+      <div
+        className={`absolute bottom-0 right-20 w-48 h-48 ${theme.accentColor} rounded-full blur-xl`}
+      ></div>
       <div className="absolute top-1/2 left-0 w-32 h-32 bg-white/5 rounded-full -ml-16 blur-xl"></div>
 
       {/* Floating Icon */}
@@ -99,26 +105,34 @@ export default function WelcomeBanner() {
       <div className="relative z-10 max-w-3xl">
         {/* Main Greeting */}
         <h1
-          className={`text-3xl md:text-4xl font-bold mb-4 transition-all duration-700 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
+          className={`text-3xl md:text-4xl font-bold mb-4 transition-all duration-700 ${
+            showContent
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
         >
           {greeting.text}
         </h1>
 
         {/* Subtext */}
         <p
-          className={`text-white/90 text-lg mb-6 transition-all duration-700 delay-100 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
+          className={`text-white/90 text-lg mb-6 transition-all duration-700 delay-100 ${
+            showContent
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
         >
           {greeting.subtext}
         </p>
 
         {/* Stats Row */}
         <div
-          className={`flex flex-wrap gap-4 md:gap-6 transition-all duration-700 delay-200 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
+          className={`flex flex-wrap gap-4 md:gap-6 transition-all duration-700 delay-200 ${
+            showContent
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
         >
-          {/* Streak Badge */}
           {context.streak > 0 && (
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
               <Flame className="w-5 h-5 text-orange-300" />
@@ -128,7 +142,6 @@ export default function WelcomeBanner() {
             </div>
           )}
 
-          {/* Points Badge */}
           {context.points > 0 && (
             <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
               <TrendingUp className="w-5 h-5 text-emerald-300" />
@@ -138,15 +151,15 @@ export default function WelcomeBanner() {
             </div>
           )}
 
-          {/* Leaderboard Badge */}
-          {context.leaderboardPosition && context.leaderboardPosition <= 100 && (
-            <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
-              <Award className="w-5 h-5 text-yellow-300" />
-              <span className="font-semibold text-sm md:text-base">
-                {t("rank", { position: context.leaderboardPosition })}
-              </span>
-            </div>
-          )}
+          {context.leaderboardPosition &&
+            context.leaderboardPosition <= 100 && (
+              <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 border border-white/30">
+                <Award className="w-5 h-5 text-yellow-300" />
+                <span className="font-semibold text-sm md:text-base">
+                  {t("rank", { position: context.leaderboardPosition })}
+                </span>
+              </div>
+            )}
         </div>
       </div>
     </div>
