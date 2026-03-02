@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Lightbulb, Trophy, TrendingUp, Sparkles, X } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";

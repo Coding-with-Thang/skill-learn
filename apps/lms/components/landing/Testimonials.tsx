@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Quote, Box, Layers, BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
 

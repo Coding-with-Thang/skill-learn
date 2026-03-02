@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useTranslations } from "next-intl"
 import { useUser } from '@clerk/nextjs';
 import {
   Breadcrumb,
@@ -12,6 +13,7 @@ import {
 } from "@skill-learn/ui/components/breadcrumb";
 
 export default function BreadCrumbCom({ crumbs, endtrail }) {
+  const t = useTranslations("breadcrumbs")
   const { isSignedIn } = useUser();
 
   // Use /home for authenticated users, / for unauthenticated
@@ -21,7 +23,7 @@ export default function BreadCrumbCom({ crumbs, endtrail }) {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href={homeUrl}>Home</BreadcrumbLink>
+          <BreadcrumbLink href={homeUrl}>{t("home")}</BreadcrumbLink>
         </BreadcrumbItem>
         {crumbs?.map((crumb) => (
           <React.Fragment key={crumb.name}>

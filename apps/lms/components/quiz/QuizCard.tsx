@@ -9,7 +9,7 @@ import {
 } from "@skill-learn/ui/components/card";
 import { MessageCircleQuestion } from 'lucide-react';
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 export default function QuizCard({ quiz }) {
   const router = useRouter();
   const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)

@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@skill-learn/ui/components/button";
 import { UserButtonWrapper } from "@/components/auth/UserButtonWrapper";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function LandingHeader() {
+  const t = useTranslations("landing");
   const { isLoaded } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
@@ -57,6 +60,7 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 overflow-visible">
+            <LanguageSwitcher className="hidden md:flex" />
             <Link
               href="/features"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
@@ -75,7 +79,7 @@ export default function LandingHeader() {
                 ref={resourcesRef}
                 onClick={() => setResourcesOpen(!resourcesOpen)}
                 className="text-gray-700 hover:text-brand-teal p-1 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200 ml-1"
-                aria-label="Toggle resources menu"
+                aria-label={t("toggleResources")}
               >
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${resourcesOpen ? 'rotate-180' : ''}`} />
               </button>

@@ -24,7 +24,7 @@ import {
 import { Button } from "@skill-learn/ui/components/button";
 import { Input } from "@skill-learn/ui/components/input";
 import { useState, useMemo, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { GripVertical, ChevronDown, ChevronRight, Trash2, Plus, Pencil, Check } from "lucide-react";
 
 function arrayMove(items, fromIndex, toIndex) {

@@ -5,16 +5,17 @@ import Image from "next/image";
 import api from "@skill-learn/lib/utils/axios";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@skill-learn/ui/components/card";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 import { Trophy } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Skeleton } from "@skill-learn/ui/components/skeleton";
 
 const PodiumPosition = ({ user, position, metric }) => {
   const isFirst = position === 1;
   const isSecond = position === 2;
   const isThird = position === 3;
 
-  const height = isFirst ? "h-32" : isSecond ? "h-24" : "h-20"; // box height
   const avatarSize = isFirst ? 80 : isSecond ? 64 : 56;
 
   // Colors for rings/badges
@@ -71,6 +72,7 @@ export default function LeaderboardWidget() {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isSignedIn, isLoaded } = useUser();
+  const t = useTranslations("home.leaderboard");
 
   useEffect(() => {
     if (!isSignedIn || !isLoaded) return;
@@ -82,13 +84,11 @@ export default function LeaderboardWidget() {
         const endpoint = activeTab === "points" ? "/leaderboard/points" : "/leaderboard/quiz-score";
         const response = await api.get(endpoint);
         // Use standardized response format: { success: true, data: { leaderboard: [...] } }
-        // API returns { success: true, data: { leaderboard: [...] } }
         const responseData = response.data?.data || response.data;
         const leaderboard = responseData?.leaderboard || responseData;
         setLeaderboardData((leaderboard || []).slice(0, 3));
       } catch (error) {
         // Leaderboard fetch failure is not critical - just show empty state
-        // Only log for debugging
         if (process.env.NODE_ENV === "development") {
           console.error("Failed to fetch leaderboard", error);
         }
@@ -104,25 +104,31 @@ export default function LeaderboardWidget() {
   return (
     <Card className="w-full h-full bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-bold">Leaderboard</CardTitle>
+        <CardTitle className="text-lg font-bold">{t("title")}</CardTitle>
         <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab("points")}
             className={cn("px-3 py-1 rounded-4xld text-xs font-medium transition-all", activeTab === "points" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
           >
-            Points
+            {t("points")}
           </button>
           <button
             onClick={() => setActiveTab("lessons")}
             className={cn("px-3 py-1 rounded-4xld text-xs font-medium transition-all", activeTab === "lessons" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700")}
           >
-            Lessons
+            {t("lessons")}
           </button>
         </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="h-48 flex items-center justify-center text-gray-400">Loading...</div>
+          <div className="h-48 flex items-center justify-center">
+            <div className="flex items-end gap-4">
+              <Skeleton className="h-24 w-20 rounded-xl" />
+              <Skeleton className="h-32 w-20 rounded-xl" />
+              <Skeleton className="h-20 w-20 rounded-xl" />
+            </div>
+          </div>
         ) : leaderboardData.length > 0 ? (
           <div className="flex justify-center items-end gap-2 md:gap-6 mt-10 md:mt-8 pb-4">
             {leaderboardData[1] && <PodiumPosition user={leaderboardData[1]} position={2} metric={activeTab} />}
@@ -130,12 +136,12 @@ export default function LeaderboardWidget() {
             {leaderboardData[2] && <PodiumPosition user={leaderboardData[2]} position={3} metric={activeTab} />}
           </div>
         ) : (
-          <div className="h-48 flex items-center justify-center text-gray-400">No data available</div>
+          <div className="h-48 flex items-center justify-center text-gray-400">{t("noData")}</div>
         )}
       </CardContent>
       <CardFooter className="flex justify-end pt-4 pb-4 border-t border-gray-100">
         <Link href="/leaderboard" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-          View All →
+          {t("viewAll")} →
         </Link>
       </CardFooter>
     </Card>

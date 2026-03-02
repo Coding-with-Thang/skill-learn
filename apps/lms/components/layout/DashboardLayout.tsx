@@ -6,7 +6,7 @@ import TopBar from "./TopBar";
 import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore";
 import { LoadingPage } from "@skill-learn/ui/components/loading";
 import { SidebarProvider, useSidebar } from "@skill-learn/ui/components/sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 
 function DashboardContent({ children, isOperations }) {

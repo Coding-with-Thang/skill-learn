@@ -1,0 +1,79 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import HeroSection from "@/components/landing/HeroSection";
+import BuiltForEveryone from "@/components/landing/BuiltForEveryone";
+import VersatilePlatform from "@/components/landing/VersatilePlatform";
+import SkillLearnHere from "@/components/landing/SkillLearnHere";
+import FAQ from "@/components/landing/FAQ";
+import Testimonials from "@/components/landing/Testimonials";
+import { LoadingPage } from "@skill-learn/ui/components/loading";
+import { ErrorCard, ErrorBoundary } from "@skill-learn/ui/components/error-boundary";
+
+/**
+ * Landing Page - Public facing marketing page for non-authenticated users
+ * Authenticated users are automatically redirected to /home via middleware
+ */
+export default function LandingPage() {
+  const t = useTranslations("landing");
+  const { isLoaded, user } = useUser();
+  const router = useRouter();
+  const [error, setError] = useState(null);
+  const pathname = usePathname();
+
+  // Client-side redirect fallback (middleware handles server-side)
+  useEffect(() => {
+    if (isLoaded && user) {
+      router.push("/home");
+    }
+  }, [isLoaded, user, router]);
+
+  // Don't show the global loading spinner when the client is still resolving
+  // on the landing page root ("/") — avoid blocker UI flicker for public root.
+  if (!isLoaded && pathname !== "/" && pathname !== "") {
+    return <LoadingPage />;
+  }
+
+  // Show loading while redirecting authenticated users
+  if (user) {
+    return <LoadingPage />;
+  }
+
+  if (error) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <ErrorCard
+          error={error}
+          message={t("failedToLoad")}
+          reset={() => setError(null)}
+        />
+      </main>
+    );
+  }
+
+  return (
+    <main className="w-full">
+      <ErrorBoundary message={t("failedHero")}>
+        <HeroSection />
+      </ErrorBoundary>
+      <ErrorBoundary message={t("failedFeatures")}>
+        <BuiltForEveryone />
+      </ErrorBoundary>
+      <ErrorBoundary message={t("failedPlatform")}>
+        <VersatilePlatform />
+      </ErrorBoundary>
+      <ErrorBoundary message={t("failedLearning")}>
+        <SkillLearnHere />
+      </ErrorBoundary>
+      <ErrorBoundary message={t("failedFaq")}>
+        <FAQ />
+      </ErrorBoundary>
+      <ErrorBoundary message={t("failedTestimonials")}>
+        <Testimonials />
+      </ErrorBoundary>
+    </main>
+  );
+}

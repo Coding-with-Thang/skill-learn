@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@skill-learn/lib/utils/axios";
 import {
   Dialog,
@@ -30,6 +31,7 @@ export default function ShareDecksDialog({
   decks: DeckItem[];
   onSuccess?: () => void;
 }) {
+  const t = useTranslations("flashcards");
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [selectedDeckIds, setSelectedDeckIds] = useState<Set<string>>(new Set());
   const [recipientMode, setRecipientMode] = useState<"all" | "specific">("specific");
@@ -52,7 +54,7 @@ export default function ShareDecksDialog({
         setRecipients(d?.recipients ?? []);
       })
       .catch(() => {
-        toast.error("Failed to load recipients");
+        toast.error(t("failedToLoadRecipients"));
         setRecipients([]);
       })
       .finally(() => setLoading(false));
@@ -96,14 +98,14 @@ export default function ShareDecksDialog({
   const handleSubmit = async () => {
     const deckIds = Array.from(selectedDeckIds);
     if (deckIds.length === 0) {
-      toast.error("Select at least one deck");
+      toast.error(t("selectAtLeastOneDeck"));
       return;
     }
 
     const recipientUserIds =
       recipientMode === "all" ? "all" : Array.from(selectedUserIds);
     if (recipientMode === "specific" && recipientUserIds.length === 0) {
-      toast.error("Select at least one recipient");
+      toast.error(t("selectAtLeastOneRecipient"));
       return;
     }
 
@@ -115,13 +117,13 @@ export default function ShareDecksDialog({
       });
       const msg =
         recipientMode === "all"
-          ? `Shared ${deckIds.length} deck(s) with everyone`
-          : `Shared ${deckIds.length} deck(s) with ${recipientUserIds.length} user(s)`;
+          ? t("sharedDecksWithEveryone", { count: deckIds.length })
+          : t("sharedDecksWithUsers", { count: deckIds.length, users: recipientUserIds.length });
       toast.success(msg);
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
-      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || "Failed to share decks";
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || t("failedToShareDecks");
       toast.error(msg);
     } finally {
       setSharing(false);
@@ -134,7 +136,7 @@ export default function ShareDecksDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Share2 className="h-5 w-5" />
-            Share Decks
+            {t("shareDecks")}
           </DialogTitle>
         </DialogHeader>
 
@@ -142,7 +144,7 @@ export default function ShareDecksDialog({
           {/* Decks */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label>Decks to share</Label>
+              <Label>{t("decksToShare")}</Label>
               {decks.length > 0 && (
                 <Button
                   type="button"
@@ -151,12 +153,12 @@ export default function ShareDecksDialog({
                   onClick={selectAllDecks}
                   className="h-8 text-xs"
                 >
-                  {selectedDeckIds.size === decks.length ? "Deselect all" : "Select all"}
+                  {selectedDeckIds.size === decks.length ? t("deselectAll") : t("selectAll")}
                 </Button>
               )}
             </div>
             {decks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">You have no decks to share.</p>
+              <p className="text-sm text-muted-foreground">{t("noDecksToShare")}</p>
             ) : (
               <div className="max-h-40 overflow-y-auto space-y-2 rounded-lg border p-3">
                 {decks.map((deck) => (
@@ -175,7 +177,7 @@ export default function ShareDecksDialog({
                     >
                       {deck.name}
                       <span className="text-muted-foreground ml-1">
-                        ({(deck.cardIds?.length ?? 0) - (deck.hiddenCardIds?.length ?? 0)} cards)
+                        ({t("cardsLabel", { count: (deck.cardIds?.length ?? 0) - (deck.hiddenCardIds?.length ?? 0) })})
                       </span>
                     </Label>
                   </div>
@@ -186,7 +188,7 @@ export default function ShareDecksDialog({
 
           {/* Recipients */}
           <div className="space-y-3">
-            <Label>Share with</Label>
+            <Label>{t("shareWith")}</Label>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -197,7 +199,7 @@ export default function ShareDecksDialog({
                   }
                 />
                 <Label htmlFor="recipient-specific" className="cursor-pointer text-sm">
-                  Specific users
+                  {t("specificUsers")}
                 </Label>
               </div>
               <div className="flex items-center gap-2">
@@ -209,7 +211,7 @@ export default function ShareDecksDialog({
                   }
                 />
                 <Label htmlFor="recipient-all" className="cursor-pointer text-sm">
-                  All in workspace
+                  {t("allInWorkspace")}
                 </Label>
               </div>
             </div>
@@ -220,7 +222,7 @@ export default function ShareDecksDialog({
                   <Loader className="h-8" variant="spinner" />
                 ) : recipients.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
-                    No other users in your workspace.
+                    {t("noOtherUsers")}
                   </p>
                 ) : (
                   <>
@@ -232,8 +234,8 @@ export default function ShareDecksDialog({
                       className="h-8 text-xs"
                     >
                       {selectedUserIds.size === recipients.length
-                        ? "Deselect all"
-                        : "Select all"}
+                        ? t("deselectAll")
+                        : t("selectAll")}
                     </Button>
                     <div className="max-h-40 overflow-y-auto space-y-2 rounded-lg border p-3">
                       {recipients.map((r) => (
@@ -264,7 +266,7 @@ export default function ShareDecksDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
@@ -280,7 +282,7 @@ export default function ShareDecksDialog({
             ) : (
               <Share2 className="h-4 w-4 mr-2" />
             )}
-            Share
+            {t("share")}
           </Button>
         </DialogFooter>
       </DialogContent>

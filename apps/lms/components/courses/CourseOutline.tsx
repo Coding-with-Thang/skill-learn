@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { ChevronDown, ChevronUp, BookOpen, FileText, Play, CheckCircle2 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils";
 
