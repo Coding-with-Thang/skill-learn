@@ -1,13 +1,17 @@
+"use client";
+
 import Image from "next/image"
 import { Card, CardContent } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
-import { ArrowRight, Users, TrendingUp, BarChart3, CheckCircle, Target, Zap, Image as ImageIcon } from "lucide-react";
+import { ArrowRight, Users, TrendingUp, BarChart3, CheckCircle, Target, Zap } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function BuiltForEveryone() {
+  const t = useTranslations("builtForEveryone");
   const stats = [
-    { number: "1.2K+", label: "Waitlist Members" },
-    { number: "250+", label: "Beta Testers" },
-    { number: "2.5x", label: "Faster Development" },
+    { number: "1.2K+", label: t("stats.waitlistMembers") },
+    { number: "250+", label: t("stats.betaTesters") },
+    { number: "2.5x", label: t("stats.fasterDevelopment") },
   ];
 
   return (
@@ -20,14 +24,13 @@ export default function BuiltForEveryone() {
         {/* Header */}
         <div className="text-center mb-16">
           <div className="text-brand-teal text-sm font-medium mb-6">
-            WHY SKILL-LEARN
+            {t("whySkillLearn")}
           </div>
           <h2 className="text-4xl md:text-brand-teal font-bold text-gray-900 mb-6 bg-linear-to-r from-brand-teal to-brand-teal/70 bg-clip-text animate-gradient-slow">
-            Built for everyone
+            {t("title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            From startups to Fortune 500 companies, businesses trust Skill-Learn
-            to transform their employee development strategy
+            {t("subtitle")}
           </p>
         </div>
 
@@ -56,15 +59,15 @@ export default function BuiltForEveryone() {
                   </div>
 
                   <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                    For Professionals
+                    {t("forProfessionals.title")}
                   </h3>
 
                   <p className="text-base text-gray-600 leading-relaxed mb-5">
-                    Make confident hiring decisions with comprehensive candidate insights and project evaluations.
+                    {t("forProfessionals.desc")}
                   </p>
 
                   <ul className="space-y-2.5 mb-6">
-                    {["AI-powered screening", "Skill gap analysis", "Background verification"].map((benefit, idx) => (
+                    {(t.raw("forProfessionals.benefits") as string[]).map((benefit, idx) => (
                       <li key={idx} className="flex items-center gap-2 text-gray-700">
                         <CheckCircle className="w-4 h-4 text-brand-teal shrink-0" />
                         <span className="text-sm">{benefit}</span>
@@ -73,7 +76,7 @@ export default function BuiltForEveryone() {
                   </ul>
 
                   <Button className="bg-linear-to-r from-brand-dark-blue to-brand-dark-blue hover:from-brand-dark-blue hover:to-brand-dark-blue text-white font-semibold shadow-lg shadow-brand-dark-blue/25">
-                    Start Researching
+                    {t("forProfessionals.cta")}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
@@ -82,7 +85,7 @@ export default function BuiltForEveryone() {
                 <div className="order-1 md:order-2 relative w-full h-56 md:h-72 bg-linear-to-br from-brand-dark-blue/5 to-brand-dark-blue/10 rounded-xl overflow-hidden border-2 border-dashed border-brand-dark-blue/20 group-hover:border-brand-dark-blue/40 transition-colors backdrop-blur-sm">
                   <Image
                     src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fcowork.jpg?alt=media&token=32e81a50-de82-40a8-be39-5fdf44c4c89f"
-                    alt="candidate dashboard"
+                    alt={t("imageAlt")}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -103,18 +106,18 @@ export default function BuiltForEveryone() {
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                  For Managers & Leaders
+                  {t("forManagers.title")}
                 </h3>
 
                 <p className="text-sm text-gray-600 leading-relaxed mb-4 grow">
-                  Real-time dashboards showing team performance and growth trends at a glance.
+                  {t("forManagers.desc")}
                 </p>
 
                 {/* Image Placeholder */}
                 <div className="relative w-full h-44 bg-linear-to-br from-brand-teal/5 to-brand-teal/10 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-brand-teal/20 group-hover:border-brand-teal/40 transition-colors overflow-hidden">
                   <Image
                     src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fdashboard.jpg?alt=media&token=010d46e3-7582-43f4-a2b2-d93a37a89d62"
-                    alt="candidate dashboard"
+                    alt={t("imageAlt")}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -122,7 +125,7 @@ export default function BuiltForEveryone() {
                 </div>
 
                 <ul className="space-y-2">
-                  {["Performance tracking", "Custom reports", "Growth analysis"].map((benefit, idx) => (
+                  {(t.raw("forManagers.benefits") as string[]).map((benefit, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-xs text-gray-700">
                       <CheckCircle className="w-3.5 h-3.5 text-brand-teal shrink-0" />
                       <span>{benefit}</span>
@@ -140,18 +143,18 @@ export default function BuiltForEveryone() {
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                  For HR & People Ops
+                  {t("forHR.title")}
                 </h3>
 
                 <p className="text-sm text-gray-600 leading-relaxed mb-4 grow">
-                  Track development journeys and measure learning impact across your organization.
+                  {t("forHR.desc")}
                 </p>
 
                 {/* Image Placeholder */}
                 <div className="relative w-full h-44 bg-linear-to-br from-brand-dark-blue/5 to-brand-dark-blue/10 rounded-xl mb-4 flex items-center justify-center border-2 border-dashed border-brand-dark-blue/20 group-hover:border-brand-dark-blue/40 transition-colors overflow-hidden">
                   <Image
                     src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Flearning.jpg?alt=media&token=8de190f9-c32e-424a-be79-f8e7b326bb91"
-                    alt="candidate dashboard"
+                    alt={t("imageAlt")}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -159,7 +162,7 @@ export default function BuiltForEveryone() {
                 </div>
 
                 <ul className="space-y-2">
-                  {["Adaptive learning", "ROI measurement", "Certification tracking"].map((benefit, idx) => (
+                  {(t.raw("forHR.benefits") as string[]).map((benefit, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-xs text-gray-700">
                       <CheckCircle className="w-3.5 h-3.5 text-brand-teal shrink-0" />
                       <span>{benefit}</span>
@@ -179,13 +182,13 @@ export default function BuiltForEveryone() {
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                    Unified Employee Intelligence
+                    {t("unifiedIntelligence.title")}
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                    Centralize all employee data, skills, certifications, and progress in one powerful platform.
+                    {t("unifiedIntelligence.desc")}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {["360° profiles", "Real-time sync", "Custom fields", "Advanced filtering"].map((highlight, idx) => (
+                    {(t.raw("unifiedIntelligence.highlights") as string[]).map((highlight, idx) => (
                       <span
                         key={idx}
                         className="inline-flex items-center gap-1 bg-brand-dark-blue/10 text-brand-dark-blue px-3 py-1 rounded-full text-xs font-medium border border-brand-dark-blue/20"
@@ -201,7 +204,7 @@ export default function BuiltForEveryone() {
                 <div className="md:col-span-2 relative w-full h-52 md:h-64 bg-linear-to-br from-brand-dark-blue/5 to-brand-teal/10 rounded-xl overflow-hidden border-2 border-dashed border-brand-dark-blue/20 group-hover:border-brand-dark-blue/40 transition-colors">
                   <Image
                     src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fleadership.jpg?alt=media&token=a81bb1e4-eae5-4c96-915c-33b9e8ecd567"
-                    alt="candidate dashboard"
+                    alt={t("imageAlt")}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -219,7 +222,7 @@ export default function BuiltForEveryone() {
                 <div className="relative md:col-span-2 order-2 md:order-1 w-full h-52 md:h-64 bg-linear-to-br from-brand-teal/5 to-brand-teal/10 rounded-xl overflow-hidden border-2 border-dashed border-brand-teal/20 group-hover:border-brand-teal/40 transition-colors">
                   <Image
                     src="https://firebasestorage.googleapis.com/v0/b/skill-learn-6b01f.firebasestorage.app/o/courses%2Ffeatures%2Fnavi%20-%20ai%20companion.png?alt=media&token=b3c01c8e-5ba5-4a6e-b735-6a0deae317a8"
-                    alt="AI companion"
+                    alt={t("aiCompanionAlt")}
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 100vw, 50vw"
@@ -231,13 +234,13 @@ export default function BuiltForEveryone() {
                     <Zap className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">
-                    AI-Powered Coaching at Scale
+                    {t("aiCoaching.title")}
                   </h3>
                   <p className="text-sm text-gray-600 leading-relaxed mb-4">
-                    Deliver personalized coaching to every employee automatically with smart, adaptive learning paths.
+                    {t("aiCoaching.desc")}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {["Personalized feedback", "Smart recommendations", "24/7 availability", "Progress insights"].map((highlight, idx) => (
+                    {(t.raw("aiCoaching.highlights") as string[]).map((highlight, idx) => (
                       <span
                         key={idx}
                         className="inline-flex items-center gap-1 bg-brand-teal/10 text-brand-teal px-3 py-1 rounded-full text-xs font-medium border border-brand-teal/20"
@@ -256,18 +259,18 @@ export default function BuiltForEveryone() {
         {/* CTA Section */}
         <div className="text-center bg-linear-to-r from-brand-dark-blue via-brand-dark-blue to-brand-teal rounded-4xl p-8 md:p-10 shadow-2xl shadow-brand-dark-blue/20" >
           <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to transform your team?
+            {t("cta.title")}
           </h3>
           <p className="text-gray-200 text-base md:text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of companies using Skill-Learn to develop their workforce
+            {t("cta.subtitle")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-white text-brand-dark-blue hover:bg-gray-50 font-semibold text-lg px-8 shadow-lg">
-              Start Free Trial
+              {t("cta.startTrial")}
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
             <Button size="lg" variant="outline" className="border-2 border-white text-black hover:text-gray-400 hover:bg-white/10 font-semibold text-lg px-8 backdrop-blur-sm">
-              Schedule Demo
+              {t("cta.scheduleDemo")}
             </Button>
           </div>
         </div>

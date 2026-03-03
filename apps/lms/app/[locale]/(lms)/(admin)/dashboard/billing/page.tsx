@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
@@ -27,6 +28,7 @@ import { Link } from "@/i18n/navigation";
 import { useBillingStore } from "@skill-learn/lib/stores/billingStore";
 
 export default function BillingPage() {
+  const t = useTranslations("adminBilling");
   // Use selectors to only re-render when specific state changes
   const billing = useBillingStore((state: { billing: unknown }) => state.billing);
   const subscription = useBillingStore((state: { subscription: unknown }) => state.subscription);
@@ -50,7 +52,7 @@ export default function BillingPage() {
         await fetchBillingData();
       } catch (err: unknown) {
         const e = err as { response?: { data?: { error?: string } }; message?: string };
-        setError(e.response?.data?.error || e.message || "Failed to fetch billing");
+        setError(e.response?.data?.error || e.message || t("errorFetch"));
       } finally {
         setLoading(false);
       }
@@ -69,7 +71,7 @@ export default function BillingPage() {
       await openPortal();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
-      toast.error(e.response?.data?.error || e.message || "Failed to open billing portal");
+      toast.error(e.response?.data?.error || e.message || t("errorOpenPortal"));
     } finally {
       setActionLoading(null);
     }
@@ -77,17 +79,17 @@ export default function BillingPage() {
 
   // Cancel subscription
   const handleCancelSubscription = async () => {
-    if (!confirm("Are you sure you want to cancel your subscription? You'll retain access until the end of your billing period.")) {
+    if (!confirm(t("cancelConfirm"))) {
       return;
     }
 
     try {
       setActionLoading("cancel");
       const result = await cancelSubscription();
-      toast.success(result.message || "Subscription canceled successfully");
+      toast.success(result.message || t("toastCanceled"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
-      toast.error(e.response?.data?.error || e.message || "Failed to cancel subscription");
+      toast.error(e.response?.data?.error || e.message || t("errorCancel"));
     } finally {
       setActionLoading(null);
     }
@@ -98,10 +100,10 @@ export default function BillingPage() {
     try {
       setActionLoading("resume");
       const result = await resumeSubscription();
-      toast.success(result.message || "Subscription resumed successfully");
+      toast.success(result.message || t("toastResumed"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
-      toast.error(e.response?.data?.error || e.message || "Failed to resume subscription");
+      toast.error(e.response?.data?.error || e.message || t("errorResume"));
     } finally {
       setActionLoading(null);
     }
@@ -167,9 +169,9 @@ export default function BillingPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your subscription, view usage, and access billing history.
+          {t("description")}
         </p>
       </div>
 
@@ -182,7 +184,7 @@ export default function BillingPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Current Plan
+                {t("currentPlan")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -207,7 +209,7 @@ export default function BillingPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Status
+                {t("status")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -221,7 +223,7 @@ export default function BillingPage() {
                   </div>
                   {billingSubscription.cancelAtPeriodEnd && (
                     <Badge variant="destructive" className="mt-1">
-                      Cancels at period end
+                      {t("cancelsAtPeriodEnd")}
                     </Badge>
                   )}
                 </div>
@@ -239,7 +241,7 @@ export default function BillingPage() {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Next Billing
+                {t("nextBilling")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -249,7 +251,7 @@ export default function BillingPage() {
                     {new Date(billingSubscription.currentPeriodEnd).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {billingSubscription.daysRemaining} days remaining
+                    {t("daysRemaining", { count: billingSubscription.daysRemaining })}
                   </p>
                 </div>
                 <Calendar className="h-8 w-8 text-muted-foreground" />
@@ -270,10 +272,10 @@ export default function BillingPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Users
+                {t("users")}
               </CardTitle>
               <CardDescription>
-                Active users in your organization
+                {t("usersDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -289,7 +291,7 @@ export default function BillingPage() {
                 )}
                 {usage.users.percentage >= 90 && usage.users.limit !== "Unlimited" && (
                   <p className="text-sm text-yellow-600">
-                    ⚠️ Approaching user limit. Consider upgrading.
+                    {t("approachingLimit")}
                   </p>
                 )}
               </div>
@@ -306,10 +308,10 @@ export default function BillingPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Role Slots
+                {t("roleSlots")}
               </CardTitle>
               <CardDescription>
-                Custom roles for your organization
+                {t("roleSlotsDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -322,8 +324,8 @@ export default function BillingPage() {
                 </div>
                 <Progress value={usage.roleSlots.percentage} />
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Base: {usage.roleSlots.base}</span>
-                  <span>Purchased: {usage.roleSlots.purchased}</span>
+                  <span>{t("base")}: {usage.roleSlots.base}</span>
+                  <span>{t("purchased")}: {usage.roleSlots.purchased}</span>
                 </div>
               </div>
             </CardContent>
@@ -339,9 +341,9 @@ export default function BillingPage() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Plan Features</CardTitle>
+            <CardTitle>{t("planFeatures")}</CardTitle>
             <CardDescription>
-              Features included in your {billingSubscription.tierName} plan
+              {t("planFeaturesDescription", { plan: billingSubscription.tierName })}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -367,16 +369,16 @@ export default function BillingPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5" />
-              Recent Payments
+              {t("recentPayments")}
             </CardTitle>
             <CardDescription>
-              Your billing history and transactions
+              {t("recentPaymentsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {recentPayments.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                No payment history yet.
+                {t("noPaymentHistory")}
               </p>
             ) : (
               <div className="space-y-4">
@@ -421,24 +423,24 @@ export default function BillingPage() {
                   <Clock className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-blue-900">Free Trial Active</h3>
+                  <h3 className="font-semibold text-blue-900">{t("freeTrialActive")}</h3>
                   <p className="text-sm text-blue-700">
-                    Your trial ends on{" "}
+                    {t("trialEndsOn")}{" "}
                     {subscription?.subscription?.trialEnd
                       ? new Date(subscription.subscription.trialEnd).toLocaleDateString("en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
                       })
-                      : "soon"}
-                    . Upgrade now to continue without interruption.
+                      : t("soon")}
+                    {t("trialUpgradeMessage")}
                   </p>
                 </div>
                 <Button onClick={openBillingPortal} disabled={actionLoading === "portal"}>
                   {actionLoading === "portal" ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   ) : null}
-                  Add Payment Method
+                  {t("addPaymentMethod")}
                 </Button>
               </div>
             </CardContent>
@@ -460,17 +462,17 @@ export default function BillingPage() {
                   <AlertCircle className="h-6 w-6 text-yellow-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-yellow-900">Subscription Canceled</h3>
+                  <h3 className="font-semibold text-yellow-900">{t("subscriptionCanceled")}</h3>
                   <p className="text-sm text-yellow-700">
-                    Your subscription will end on{" "}
+                    {t("subscriptionEndsOn")}{" "}
                     {subscription?.subscription?.currentPeriodEnd
                       ? new Date(subscription.subscription.currentPeriodEnd).toLocaleDateString("en-US", {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
                       })
-                      : "the end of your billing period"}
-                    . You&apos;ll be downgraded to the Free plan after that.
+                      : t("endOfBillingPeriod")}
+                    {t("downgradeMessage")}
                   </p>
                 </div>
                 <Button
@@ -483,7 +485,7 @@ export default function BillingPage() {
                   ) : (
                     <RefreshCcw className="h-4 w-4 mr-2" />
                   )}
-                  Resume Subscription
+                  {t("resumeSubscription")}
                 </Button>
               </div>
             </CardContent>
@@ -499,9 +501,9 @@ export default function BillingPage() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Manage Subscription</CardTitle>
+            <CardTitle>{t("manageSubscription")}</CardTitle>
             <CardDescription>
-              Upgrade, downgrade, or manage your subscription through our billing portal
+              {t("manageSubscriptionDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -510,7 +512,7 @@ export default function BillingPage() {
                 <Button asChild>
                   <Link href="/pricing">
                     <Zap className="h-4 w-4 mr-2" />
-                    Upgrade to Pro
+                    {t("upgradeToPro")}
                   </Link>
                 </Button>
               ) : (
@@ -524,7 +526,7 @@ export default function BillingPage() {
                     ) : (
                       <TrendingUp className="h-4 w-4 mr-2" />
                     )}
-                    Manage Plan
+                    {t("managePlan")}
                   </Button>
                   <Button
                     variant="outline"
@@ -536,7 +538,7 @@ export default function BillingPage() {
                     ) : (
                       <CreditCard className="h-4 w-4 mr-2" />
                     )}
-                    Update Payment Method
+                    {t("updatePaymentMethod")}
                   </Button>
                   <Button
                     variant="outline"
@@ -544,7 +546,7 @@ export default function BillingPage() {
                     disabled={actionLoading === "portal"}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    View Invoices
+                    {t("viewInvoices")}
                   </Button>
                   {!subscription?.subscription?.cancelAtPeriodEnd && (
                     <Button
@@ -555,14 +557,14 @@ export default function BillingPage() {
                       {actionLoading === "cancel" ? (
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
                       ) : null}
-                      Cancel Subscription
+                      {t("cancelSubscription")}
                     </Button>
                   )}
                 </>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              You&apos;ll be redirected to our secure billing portal powered by Stripe.
+              {t("billingPortalRedirect")}
             </p>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -32,6 +33,7 @@ import { toast } from "sonner";
 import api from "@skill-learn/lib/utils/axios";
 
 export default function CreateCoursePage() {
+    const t = useTranslations("adminDashboardCoursesCreate");
     const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [pending, startTransition] = useTransition();
@@ -83,7 +85,7 @@ export default function CreateCoursePage() {
                 const isSuccess = data?.success === true || data?.data?.status === 'success';
                 
                 if (isSuccess) {
-                    toast.success('Course created successfully');
+                    toast.success(t("toastSuccess"));
                     form.reset();
                     router.refresh();
                     router.push('/dashboard/courses');
@@ -99,10 +101,10 @@ export default function CreateCoursePage() {
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
-                            toast.error(payload.message || 'An error occurred while creating the course');
+                            toast.error(payload.message || t("toastError"));
                         }
                     } else {
-                        toast.error(payload.message || 'An error occurred while creating the course');
+                        toast.error(payload.message || t("toastError"));
                     }
                 }
             } catch (error: unknown) {
@@ -116,12 +118,12 @@ export default function CreateCoursePage() {
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
-                            toast.error(resp.message || 'An error occurred while creating the course');
+                            toast.error(resp.message || t("toastError"));
                         }
                         return;
                     }
                 }
-                toast.error(e?.message || 'An error occurred while creating the course');
+                toast.error(e?.message || t("toastError"));
                 return;
             }
         });
@@ -137,13 +139,13 @@ export default function CreateCoursePage() {
                     })}>
                     <ArrowLeft className="size-4" />
                 </Link>
-                <h1 className="text-2xl font-bold">Create Course</h1>
+                <h1 className="text-2xl font-bold">{t("title")}</h1>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Course Information</CardTitle>
-                    <CardDescription>Provide basic information about the course</CardDescription>
+                    <CardTitle>{t("courseInfo")}</CardTitle>
+                    <CardDescription>{t("courseInfoDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -155,9 +157,9 @@ export default function CreateCoursePage() {
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Title</FormLabel>
+                                        <FormLabel>{t("titleLabel")}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="Title" {...field} />
+                                            <Input placeholder={t("titlePlaceholder")} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -169,9 +171,9 @@ export default function CreateCoursePage() {
                                     name="slug"
                                     render={({ field }) => (
                                         <FormItem className="full-w">
-                                            <FormLabel>Slug</FormLabel>
+                                            <FormLabel>{t("slugLabel")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Slug" {...field} />
+                                                <Input placeholder={t("slugPlaceholder")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -182,7 +184,7 @@ export default function CreateCoursePage() {
                                     const slug = slugify(titleValue) || "course";
                                     form.setValue("slug", slug, { shouldValidate: true });
                                 }}>
-                                    Generate Slug <Sparkles className="ml-1" size="16" />
+                                    {t("generateSlug")} <Sparkles className="ml-1" size="16" />
                                 </Button>
                             </div>
 
@@ -191,10 +193,10 @@ export default function CreateCoursePage() {
                                 name="excerptDescription"
                                 render={({ field }) => (
                                     <FormItem className="full-w">
-                                        <FormLabel>Excerpt Description</FormLabel>
+                                        <FormLabel>{t("excerptDescriptionLabel")}</FormLabel>
                                         <FormControl>
                                             <Textarea
-                                                placeholder="description"
+                                                placeholder={t("descriptionPlaceholder")}
                                                 className="min-h-[120px]"
                                                 {...field} />
                                         </FormControl>
@@ -206,7 +208,7 @@ export default function CreateCoursePage() {
                                 name="description"
                                 render={({ field }) => (
                                     <FormItem className="full-w">
-                                        <FormLabel>Description</FormLabel>
+                                        <FormLabel>{t("descriptionLabel")}</FormLabel>
                                         <FormControl>
                                             <RichTextEditor field={field} editorClass="text-xs" />
                                         </FormControl>
@@ -218,7 +220,7 @@ export default function CreateCoursePage() {
                                 name="imageUrl"
                                 render={({ field }) => (
                                     <FormItem className="full-w">
-                                        <FormLabel>Thumbnail Image</FormLabel>
+                                        <FormLabel>{t("thumbnailImageLabel")}</FormLabel>
                                         <FormControl>
                                             <Uploader
                                                 onChange={field.onChange}
@@ -242,11 +244,11 @@ export default function CreateCoursePage() {
                                         name="category"
                                         render={({ field }) => (
                                             <FormItem className="full-w">
-                                                <FormLabel>Category</FormLabel>
+                                                <FormLabel>{t("categoryLabel")}</FormLabel>
                                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                     <FormControl>
                                                         <SelectTrigger>
-                                                            <SelectValue placeholder={loading ? "Loading categories..." : "Select a category"} />
+                                                            <SelectValue placeholder={loading ? t("loadingCategories") : t("selectCategory")} />
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
@@ -266,22 +268,22 @@ export default function CreateCoursePage() {
                                         name="duration"
                                         render={({ field }) => (
                                             <FormItem className="full-w">
-                                                <FormLabel>Duration (minutes)</FormLabel>
+                                                <FormLabel>{t("durationLabel")}</FormLabel>
                                                 <FormControl>
                                                     <div className="flex items-center">
                                                         <Input
                                                             type="number"
                                                             min={1}
                                                             step={1}
-                                                            aria-label="Duration in minutes"
+                                                            aria-label={t("durationAriaLabel")}
                                                             value={field.value}
                                                             onChange={(e) => field.onChange(Number(e.target.value))}
-                                                            placeholder="e.g. 30"
+                                                            placeholder={t("durationPlaceholder")}
                                                         />
                                                         <Clock className="ml-2 text-muted-foreground" size={18} />
                                                     </div>
                                                 </FormControl>
-                                                <p className="text-sm text-muted-foreground mt-1">Estimated duration in minutes.</p>
+                                                <p className="text-sm text-muted-foreground mt-1">{t("durationHint")}</p>
                                                 <FormMessage />
                                             </FormItem>
                                         )} />
@@ -294,11 +296,11 @@ export default function CreateCoursePage() {
                                             name="status"
                                             render={({ field }) => (
                                                 <FormItem className="full-w">
-                                                    <FormLabel>Status</FormLabel>
+                                                    <FormLabel>{t("statusLabel")}</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder={loading ? "Loading status..." : "Select status"} />
+                                                                <SelectValue placeholder={loading ? t("loadingStatus") : t("selectStatus")} />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -319,12 +321,12 @@ export default function CreateCoursePage() {
                                             {pending ?
                                                 (
                                                     <>
-                                                        Creating...
+                                                        {t("creating")}
                                                         <Loader2 className="animate-spin ml-1" />
                                                     </>
                                                 ) : (
                                                     <>
-                                                        Create Course <Plus className="ml-1" size={16} />
+                                                        {t("createCourse")} <Plus className="ml-1" size={16} />
                                                     </>
                                                 )}
                                         </Button>

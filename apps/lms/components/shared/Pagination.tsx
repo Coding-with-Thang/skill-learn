@@ -3,11 +3,13 @@
 import React, { useEffect } from 'react'
 import { Link } from "@/i18n/navigation"
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { useTranslations } from "next-intl"
 import { Pagination as UIPagination, PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis } from '@skill-learn/ui/components/pagination'
 import { buttonVariants } from '@skill-learn/ui/components/button'
 import { useCoursesStore } from "@skill-learn/lib/stores/coursesStore"
 
 export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5', currentPage = 1, totalPages = 1 }) {
+    const t = useTranslations("pagination")
     const storeCurrent = useCoursesStore((s) => s.currentPage)
     const setCurrentPage = useCoursesStore((s) => s.setCurrentPage)
 
@@ -47,13 +49,13 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                         <PaginationLink asChild href={`${baseHref}&page=${currentPage - 1}`}>
                             <Link href={`${baseHref}&page=${currentPage - 1}`} onClick={() => setCurrentPage(currentPage - 1)} className={buttonVariants({ variant: 'outline', size: 'default' })}>
                                 <ChevronLeftIcon />
-                                <span className="hidden sm:block">Previous</span>
+                                <span className="hidden sm:block">{t("previous")}</span>
                             </Link>
                         </PaginationLink>
                     </PaginationItem>
                 ) : (
                     <PaginationItem>
-                        <button disabled className={`${buttonVariants({ variant: 'outline', size: 'default' })  } opacity-50 cursor-not-allowed`}>Previous</button>
+                        <button disabled className={`${buttonVariants({ variant: 'outline', size: 'default' })  } opacity-50 cursor-not-allowed`}>{t("previous")}</button>
                     </PaginationItem>
                 )}
 
@@ -77,14 +79,14 @@ export default function Pagination({ baseHref = '/dashboard/courses?pageSize=5',
                     <PaginationItem>
                         <PaginationLink asChild href={`${baseHref}&page=${currentPage + 1}`}>
                             <Link href={`${baseHref}&page=${currentPage + 1}`} onClick={() => setCurrentPage(currentPage + 1)} className={buttonVariants({ size: 'default' })}>
-                                <span className="hidden sm:block">Next</span>
+                                <span className="hidden sm:block">{t("next")}</span>
                                 <ChevronRightIcon />
                             </Link>
                         </PaginationLink>
                     </PaginationItem>
                 ) : (
                     <PaginationItem>
-                        <button disabled className={`${buttonVariants({ size: 'default' })  } opacity-50 cursor-not-allowed`}>Next</button>
+                        <button disabled className={`${buttonVariants({ size: 'default' })  } opacity-50 cursor-not-allowed`}>{t("next")}</button>
                     </PaginationItem>
                 )}
             </PaginationContent>

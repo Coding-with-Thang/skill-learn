@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -25,6 +26,7 @@ type ByCategoryItem = { categoryId?: string; categoryName: string; cardCount?: n
 type LearningAnalyticsData = { byCategory?: ByCategoryItem[]; totalCards?: number; totalUsers?: number; totalExposures?: number; avgMasteryOverall?: number };
 
 export default function FlashCardsLearningAnalyticsPage() {
+  const t = useTranslations("adminFlashcardsLearningAnalytics");
   const [data, setData] = useState<LearningAnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,16 +53,16 @@ export default function FlashCardsLearningAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Learning Analytics</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Aggregate exposure and mastery per category.
+          {t("description")}
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total cards studied</CardDescription>
+            <CardDescription>{t("totalCardsStudied")}</CardDescription>
             <CardTitle className="text-2xl flex items-center gap-2">
               <BookOpen className="h-5 w-5" />
               {data?.totalCards ?? 0}
@@ -69,7 +71,7 @@ export default function FlashCardsLearningAnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Active users</CardDescription>
+            <CardDescription>{t("activeUsers")}</CardDescription>
             <CardTitle className="text-2xl flex items-center gap-2">
               <Users className="h-5 w-5" />
               {data?.totalUsers ?? 0}
@@ -78,13 +80,13 @@ export default function FlashCardsLearningAnalyticsPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Total exposures</CardDescription>
+            <CardDescription>{t("totalExposures")}</CardDescription>
             <CardTitle className="text-2xl">{data?.totalExposures ?? 0}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardDescription>Avg mastery</CardDescription>
+            <CardDescription>{t("avgMastery")}</CardDescription>
             <CardTitle className="text-2xl">
               {((data?.avgMasteryOverall ?? 0) * 100).toFixed(0)}%
             </CardTitle>
@@ -95,25 +97,25 @@ export default function FlashCardsLearningAnalyticsPage() {
       {chartData.length > 0 && (
         <ExposureMasteryBarChart
           chartData={chartData}
-          description="Aggregate across all users in tenant"
+          description={t("chartDescription")}
         />
       )}
 
       {byCategory.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>By Category</CardTitle>
-            <CardDescription>Detailed metrics per category</CardDescription>
+            <CardTitle>{t("byCategory")}</CardTitle>
+            <CardDescription>{t("detailedMetrics")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Cards</TableHead>
-                  <TableHead>Users</TableHead>
-                  <TableHead>Avg Exposure</TableHead>
-                  <TableHead>Avg Mastery</TableHead>
+                  <TableHead>{t("category")}</TableHead>
+                  <TableHead>{t("cards")}</TableHead>
+                  <TableHead>{t("users")}</TableHead>
+                  <TableHead>{t("avgExposure")}</TableHead>
+                  <TableHead>{t("avgMasteryCol")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -135,7 +137,7 @@ export default function FlashCardsLearningAnalyticsPage() {
       {(data?.totalCards ?? 0) === 0 && (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            No study data yet. Users need to study flash cards to see analytics.
+            {t("noStudyData")}
           </CardContent>
         </Card>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 type SuggestionItem = { id: string; suggestedPriority: number; currentPriority?: number; categoryName?: string; reason?: string };
 
 export default function FlashCardsAnalyticsPage() {
+  const t = useTranslations("adminFlashcardsAnalytics");
   const [suggestions, setSuggestions] = useState<SuggestionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -25,7 +27,7 @@ export default function FlashCardsAnalyticsPage() {
       setSuggestions((data.suggestions ?? []) as SuggestionItem[]);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to load suggestions");
+      toast.error(e.response?.data?.error || t("toastLoadFailed"));
       setSuggestions([]);
     } finally {
       setLoading(false);
@@ -37,25 +39,25 @@ export default function FlashCardsAnalyticsPage() {
       setGenerating(true);
       const res = await api.post("/admin/flashcards/suggestions/generate");
       const data = res.data?.data ?? res.data;
-      toast.success(`Generated ${data.generated ?? 0} new suggestion(s)`);
+      toast.success(t("toastGenerated", { count: data.generated ?? 0 }));
       await fetchSuggestions();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to generate suggestions");
+      toast.error(e.response?.data?.error || t("toastGenerateFailed"));
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleAction = async (suggestionId, action) => {
+  const handleAction = async (suggestionId: string, action: "apply" | "dismiss") => {
     try {
       setActingId(suggestionId);
       await api.post(`/admin/flashcards/suggestions/${suggestionId}`, { action });
-      toast.success(action === "apply" ? "Priority updated" : "Suggestion dismissed");
+      toast.success(action === "apply" ? t("toastPriorityUpdated") : t("toastSuggestionDismissed"));
       await fetchSuggestions();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Action failed");
+      toast.error(e.response?.data?.error || t("toastActionFailed"));
     } finally {
       setActingId(null);
     }
@@ -68,9 +70,9 @@ export default function FlashCardsAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Flash Cards Analytics</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Priority suggestions based on learning analytics. Apply or dismiss each suggestion—changes are never auto-applied.
+          {t("description")}
         </p>
       </div>
 
@@ -80,15 +82,15 @@ export default function FlashCardsAnalyticsPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Lightbulb className="h-5 w-5" />
-                Priority Suggestions
+                {t("prioritySuggestions")}
               </CardTitle>
               <CardDescription>
-                High exposure + low mastery → increase priority. High mastery + high exposure → decrease priority.
+                {t("suggestionsDescription")}
               </CardDescription>
             </div>
             <Button onClick={handleGenerate} disabled={generating}>
               <RefreshCw className={`h-4 w-4 mr-2 ${generating ? "animate-spin" : ""}`} />
-              {generating ? "Generating…" : "Generate Suggestions"}
+              {generating ? t("generating") : t("generateSuggestions")}
             </Button>
           </div>
         </CardHeader>
@@ -99,8 +101,8 @@ export default function FlashCardsAnalyticsPage() {
             </div>
           ) : suggestions.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No pending suggestions.</p>
-              <p className="text-sm mt-1">Click &quot;Generate Suggestions&quot; to run the aggregation.</p>
+              <p>{t("noSuggestions")}</p>
+              <p className="text-sm mt-1">{t("generateHint")}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -132,7 +134,7 @@ export default function FlashCardsAnalyticsPage() {
                         disabled={actingId === s.id}
                       >
                         <Check className="h-4 w-4 mr-1" />
-                        Apply
+                        {t("apply")}
                       </Button>
                       <Button
                         size="sm"
@@ -141,7 +143,7 @@ export default function FlashCardsAnalyticsPage() {
                         disabled={actingId === s.id}
                       >
                         <X className="h-4 w-4 mr-1" />
-                        Dismiss
+                        {t("dismiss")}
                       </Button>
                     </div>
                   </div>

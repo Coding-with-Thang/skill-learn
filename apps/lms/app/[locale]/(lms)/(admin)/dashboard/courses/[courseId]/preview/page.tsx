@@ -1,4 +1,5 @@
 import { prisma } from '@skill-learn/database';
+import { getTranslations } from "next-intl/server";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage"
 import { extractTextFromProseMirror } from "@skill-learn/lib/utils"
 import { buttonVariants , Button } from "@skill-learn/ui/components/button";
@@ -38,6 +39,7 @@ async function getCourse(courseIdOrSlug, tenantId) {
 }
 
 export default async function PreviewCoursePage({ params }) {
+    const t = await getTranslations("adminDashboardCourses");
     const { courseId: courseIdOrSlug } = await params;
     const context = await getTenantContext();
     if (context instanceof Response) {
@@ -66,7 +68,7 @@ export default async function PreviewCoursePage({ params }) {
                 >
                     <ArrowLeft className="size-4" />
                 </Link>
-                <h1 className="text-2xl font-bold">Preview Course</h1>
+                <h1 className="text-2xl font-bold">{t("previewCourse")}</h1>
             </div>
 
             <Card className="max-w-4xl mx-auto">
@@ -99,11 +101,11 @@ export default async function PreviewCoursePage({ params }) {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                                 <BookOpen className="size-4" />
-                                <span>{course.category?.name || 'Uncategorized'}</span>
+                                <span>{course.category?.name || t("uncategorized")}</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Clock className="size-4" />
-                                <span>{course.duration} minutes</span>
+                                <span>{course.duration} {t("minutes")}</span>
                             </div>
                         </div>
                     </div>
@@ -119,13 +121,13 @@ export default async function PreviewCoursePage({ params }) {
                             href={`/dashboard/courses/${course.slug ?? course.id}/edit`}
                             className={buttonVariants()}
                         >
-                            Edit Course
+                            {t("editCourse")}
                         </Link>
                         <Link
                             href="/dashboard/courses"
                             className={buttonVariants({ variant: "outline" })}
                         >
-                            Back to Courses
+                            {t("backToCourses")}
                         </Link>
                     </div>
                 </CardContent>

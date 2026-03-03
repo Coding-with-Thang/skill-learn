@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { useDebounce } from "@skill-learn/lib/hooks/useDebounce"
 import Image from "next/image"
 import { Button } from "@skill-learn/ui/components/button"
@@ -40,6 +41,7 @@ import { StatCard } from "@skill-learn/ui/components/stat-card"
 type RewardItem = { id: string; prize: string; description?: string };
 
 export default function RewardsAdminPage() {
+  const t = useTranslations("adminRewards")
   const { fetchRewards, rewards, isLoading, updateReward, deleteReward } = useRewardStore()
   const [showModal, setShowModal] = useState(false)
   const [editingReward, setEditingReward] = useState<RewardItem | null>(null)
@@ -56,23 +58,23 @@ export default function RewardsAdminPage() {
     reward.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleEdit = (reward: RewardItem) => {
-    setEditingReward(reward)
+  const handle{t("edit")} = (reward: RewardItem) => {
+    set{t("edit")}ingReward(reward)
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
-    setEditingReward(null)
+    set{t("edit")}ingReward(null)
   }
 
-  const handleDelete = async (reward: RewardItem) => {
+  const handle{t("delete")} = async (reward: RewardItem) => {
     try {
       await deleteReward(reward.id)
-      toast.success('Reward deleted successfully')
+      toast.success(t('toast{t("delete")}d'))
       setConfirmDelete(null)
     } catch (error) {
-      toast.error('Failed to delete reward')
+      toast.error(t('error{t("delete")}'))
     }
   }
 
@@ -86,7 +88,7 @@ export default function RewardsAdminPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
-          <p className="text-gray-600">Loading rewards...</p>
+          <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
     )
@@ -97,17 +99,17 @@ export default function RewardsAdminPage() {
       {/* Reward Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <StatCard
-          title="Total Redemptions"
+          title={t("totalRedemptions")}
           value={totalRedemptions}
           trend={+15}
         />
         <StatCard
-          title="Pending Claims"
+          title={t("pendingClaims")}
           value={pendingClaims}
           trend={-2}
         />
         <StatCard
-          title="Popular Reward"
+          title={t("popularReward")}
           value={mostPopularReward}
         />
       </div>
@@ -116,11 +118,11 @@ export default function RewardsAdminPage() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Rewards Management</CardTitle>
+            <CardTitle>{t("rewardsManagement")}</CardTitle>
             <Button
               onClick={() => setShowModal(true)}
             >
-              Add New Reward
+              {t("addNewReward")}
             </Button>
           </div>
         </CardHeader>
@@ -128,20 +130,20 @@ export default function RewardsAdminPage() {
           {/* Advanced Filters */}
           <div className="flex gap-4 mb-4">
             <Input
-              placeholder="Search rewards..."
+              placeholder={t("searchPlaceholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
             <Select>
-              <option>Status</option>
-              <option>Active</option>
-              <option>Disabled</option>
+              <option>{t("status")}</option>
+              <option>{t("active")}</option>
+              <option>{t("disabled")}</option>
             </Select>
             <Select>
-              <option>Sort by</option>
-              <option>Most Redeemed</option>
-              <option>Cost</option>
-              <option>Recent</option>
+              <option>{t("sortBy")}</option>
+              <option>{t("mostRedeemed")}</option>
+              <option>{t("cost")}</option>
+              <option>{t("recent")}</option>
             </Select>
           </div>
 
@@ -149,13 +151,13 @@ export default function RewardsAdminPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Reward</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Featured</TableHead>
-                <TableHead className="text-center">Multiple</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                <TableHead>{t("reward")}</TableHead>
+                <TableHead>{t("description")}</TableHead>
+                <TableHead className="text-right">{t("cost")}</TableHead>
+                <TableHead>{t("status")}</TableHead>
+                <TableHead className="text-center">{t("featured")}</TableHead>
+                <TableHead className="text-center">{t("multiple")}</TableHead>
+                <TableHead className="text-center">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -194,7 +196,7 @@ export default function RewardsAdminPage() {
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"}
                     `}>
-                      {reward.enabled ? "Active" : "Disabled"}
+                      {reward.enabled ? t("active") : t("disabled")}
                     </span>
                   </TableCell>
                   <TableCell className="text-center">
@@ -220,9 +222,9 @@ export default function RewardsAdminPage() {
                     `}>
                       {reward.allowMultiple
                         ? reward.maxRedemptions
-                          ? `Max ${reward.maxRedemptions}`
-                          : "Unlimited"
-                        : "Once"}
+                          ? t("maxRedemptions", { count: reward.maxRedemptions })
+                          : t("unlimited")
+                        : t("once")}
                     </span>
                   </TableCell>
                   <TableCell>
@@ -230,16 +232,16 @@ export default function RewardsAdminPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleEdit(reward)}
+                        onClick={() => handle{t("edit")}(reward)}
                       >
-                        Edit
+                        {t("edit")}
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
                         onClick={() => setConfirmDelete(reward)}
                       >
-                        Delete
+                        {t("delete")}
                       </Button>
                     </div>
                   </TableCell>
@@ -253,14 +255,14 @@ export default function RewardsAdminPage() {
       {/* Batch Operations */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle>Batch Operations</CardTitle>
+          <CardTitle>{t("batchOperations")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Button>Enable Selected</Button>
-            <Button>Disable Selected</Button>
-            <Button>Delete Selected</Button>
-            <Button>Export Data</Button>
+            <Button>{t("enableSelected")}</Button>
+            <Button>{t("disableSelected")}</Button>
+            <Button>{t("deleteSelected")}</Button>
+            <Button>{t("exportData")}</Button>
           </div>
         </CardContent>
       </Card>
@@ -270,7 +272,7 @@ export default function RewardsAdminPage() {
         <DialogContent className="sm:max-w-[600px] z-200 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingReward ? 'Edit Reward' : 'Add New Reward'}
+              {editingReward ? '{t("edit")} Reward' : 'Add New Reward'}
             </DialogTitle>
           </DialogHeader>
           <RewardForm
@@ -284,23 +286,23 @@ export default function RewardsAdminPage() {
       <Dialog open={!!confirmDelete} onOpenChange={() => setConfirmDelete(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Reward</DialogTitle>
+            <DialogTitle>{t("deleteReward")}</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-            Are you sure you want to delete &quot;{confirmDelete?.prize}&quot;? This action cannot be undone.
+            {t("deleteConfirm", { prize: confirmDelete?.prize ?? "" })}
           </p>
           <div className="flex justify-end gap-3">
             <Button
               variant="outline"
               onClick={() => setConfirmDelete(null)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={() => confirmDelete && handleDelete(confirmDelete)}
             >
-              Delete
+              {t("delete")}
             </Button>
           </div>
         </DialogContent>

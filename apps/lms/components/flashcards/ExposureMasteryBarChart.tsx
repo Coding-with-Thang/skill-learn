@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -23,6 +24,7 @@ import { learningAnalyticsChartConfig } from "./learningAnalyticsChartConfig";
  * @param {{ chartData: Array<{ category: string, avgExposure: number, avgMastery: number }>, description?: string }} props
  */
 export function ExposureMasteryBarChart({ chartData, description }) {
+  const t = useTranslations("exposureMasteryChart");
   if (!chartData?.length) return null;
 
   return (
@@ -30,7 +32,7 @@ export function ExposureMasteryBarChart({ chartData, description }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5" />
-          Exposure vs Mastery by Category
+          {t("title")}
         </CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
@@ -52,13 +54,13 @@ export function ExposureMasteryBarChart({ chartData, description }) {
               dataKey="avgExposure"
               fill="var(--color-avgExposure)"
               radius={4}
-              name="Avg Exposure"
+              name={t("avgExposure")}
             />
             <Bar
               dataKey="avgMastery"
               fill="var(--color-avgMastery)"
               radius={4}
-              name="Mastery %"
+              name={t("masteryPct")}
             />
           </BarChart>
         </ChartContainer>

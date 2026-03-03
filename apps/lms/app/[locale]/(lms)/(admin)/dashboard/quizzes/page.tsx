@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useTranslations } from "next-intl"
 import { Link } from '@/i18n/navigation'
 import { useDebounce } from "@skill-learn/lib/hooks/useDebounce"
 import { useRouter } from '@/i18n/navigation'
@@ -64,6 +65,7 @@ type QuizItem = {
 type CategoryItem = { id: string; name: string }
 
 export default function QuizzesAdminPage() {
+  const t = useTranslations("adminDashboardQuizzes")
   const router = useRouter()
   const [quizzes, setQuizzes] = useState<QuizItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -112,14 +114,14 @@ export default function QuizzesAdminPage() {
         router.push('/sign-in?redirect=/dashboard/quizzes')
         return
       } else if (e.response?.status === 403) {
-        setError('You do not have permission to access this page. Please contact an administrator.')
+        setError(t("errorPermission"))
       } else {
-        setError('Failed to load quizzes. Please try again.')
+        setError(t("errorLoad"))
       }
     } finally {
       setLoading(false)
     }
-  }, [router])
+  }, [router, t])
 
   useEffect(() => {
     fetchQuizzes()
@@ -156,7 +158,7 @@ export default function QuizzesAdminPage() {
   }
 
   const handleBulkDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete ${selectedQuizzes.length} quizzes?`)) return
+    if (!window.confirm(t("confirmDeleteBulk", { count: selectedQuizzes.length }))) return
 
     try {
       await Promise.all(selectedQuizzes.map(id => api.delete(`/admin/quizzes/${id}`)))
@@ -164,7 +166,7 @@ export default function QuizzesAdminPage() {
       setSelectedQuizzes([])
     } catch (error) {
       console.error('Failed to delete quizzes:', error)
-      alert('Failed to delete quizzes. Please try again.')
+      alert(t("errorDeleteBulk"))
     }
   }
 
@@ -176,7 +178,7 @@ export default function QuizzesAdminPage() {
       await fetchQuizzes()
       setSelectedQuizzes([])
     } catch {
-      alert('Failed to update quizzes. Please try again.')
+      alert(t("errorBulkUpdate"))
     }
   }
 
@@ -240,13 +242,13 @@ export default function QuizzesAdminPage() {
   }
 
   const handleDeleteQuiz = async (quizId: string) => {
-    if (!window.confirm('Are you sure you want to delete this quiz?')) return
+    if (!window.confirm(t("confirmDeleteSingle"))) return
 
     try {
       await api.delete(`/admin/quizzes/${quizId}`)
       await fetchQuizzes()
     } catch {
-      alert('Failed to delete quiz. Please try again.')
+      alert(t("errorDeleteSingle"))
     }
   }
 
@@ -263,17 +265,17 @@ export default function QuizzesAdminPage() {
       <div className="p-8 max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>Access Error</CardTitle>
+            <CardTitle>{t("accessError")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-red-500 mb-4">{error}</p>
             {(error && error.includes('permission')) ? (
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                Return to Dashboard
+                {t("returnToDashboard")}
               </Button>
             ) : (
               <Button onClick={fetchQuizzes}>
-                Try Again
+                {t("tryAgain")}
               </Button>
             )}
           </CardContent>
@@ -288,13 +290,13 @@ export default function QuizzesAdminPage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Quizzes</CardTitle>
-              <CardDescription>Manage your quizzes here</CardDescription>
+              <CardTitle>{t("title")}</CardTitle>
+              <CardDescription>{t("description")}</CardDescription>
             </div>
             <Button asChild>
               <Link href="/dashboard/quizzes/quiz-manager">
                 <Plus className="w-4 h-4 mr-2" />
-                Create Quiz
+                {t("createQuiz")}
               </Link>
             </Button>
           </div>
@@ -307,7 +309,7 @@ export default function QuizzesAdminPage() {
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search quizzes..."
+                    placeholder={t("searchPlaceholder")}
                     className="pl-8"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
@@ -319,12 +321,12 @@ export default function QuizzesAdminPage() {
                 onValueChange={(value) => handleFilter('status', value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
+                  <SelectValue placeholder={t("filterByStatus")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="all">{t("allStatus")}</SelectItem>
+                  <SelectItem value="active">{t("active")}</SelectItem>
+                  <SelectItem value="inactive">{t("inactive")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select
@@ -332,10 +334,10 @@ export default function QuizzesAdminPage() {
                 onValueChange={(value) => handleFilter('category', value)}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by category" />
+                  <SelectValue placeholder={t("filterByCategory")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">{t("allCategories")}</SelectItem>
                   {/* Use optional chaining or array check */}
                   {(Array.isArray(categories) ? categories : []).map(category => (
                     <SelectItem key={category.id} value={category.id}>
@@ -349,12 +351,12 @@ export default function QuizzesAdminPage() {
                 onValueChange={handleItemsPerPageChange}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Items per page" />
+                  <SelectValue placeholder={t("itemsPerPage")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="10">10 per page</SelectItem>
-                  <SelectItem value="20">20 per page</SelectItem>
-                  <SelectItem value="50">50 per page</SelectItem>
+                  <SelectItem value="10">{t("perPage10")}</SelectItem>
+                  <SelectItem value="20">{t("perPage20")}</SelectItem>
+                  <SelectItem value="50">{t("perPage50")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -363,28 +365,28 @@ export default function QuizzesAdminPage() {
             {selectedQuizzes.length > 0 && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">
-                  {selectedQuizzes.length} selected
+                  {t("selectedCount", { count: selectedQuizzes.length })}
                 </span>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => handleBulkToggleStatus(true)}
                 >
-                  Activate
+                  {t("activate")}
                 </Button>
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={() => handleBulkToggleStatus(false)}
                 >
-                  Deactivate
+                  {t("deactivate")}
                 </Button>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={handleBulkDelete}
                 >
-                  Delete Selected
+                  {t("deleteSelected")}
                 </Button>
               </div>
             )}
@@ -407,7 +409,7 @@ export default function QuizzesAdminPage() {
                       onClick={() => handleSort('title')}
                       className="flex items-center gap-1"
                     >
-                      Title
+                      {t("titleCol")}
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </TableHead>
@@ -417,7 +419,7 @@ export default function QuizzesAdminPage() {
                       onClick={() => handleSort('category')}
                       className="flex items-center gap-1"
                     >
-                      Category
+                      {t("category")}
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </TableHead>
@@ -427,14 +429,14 @@ export default function QuizzesAdminPage() {
                       onClick={() => handleSort('questions')}
                       className="flex items-center gap-1"
                     >
-                      Questions
+                      {t("questions")}
                       <ArrowUpDown className="h-4 w-4" />
                     </Button>
                   </TableHead>
-                  <TableHead>Time Limit</TableHead>
-                  <TableHead>Passing Score</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t("timeLimit")}</TableHead>
+                  <TableHead>{t("passingScore")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead className="text-right">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -449,38 +451,38 @@ export default function QuizzesAdminPage() {
                     <TableCell className="font-medium">{quiz.title}</TableCell>
                     <TableCell>{quiz.category.name}</TableCell>
                     <TableCell>{quiz.questions?.length || 0}</TableCell>
-                    <TableCell>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</TableCell>
+                    <TableCell>{quiz.timeLimit ? `${quiz.timeLimit} min` : t("noLimit")}</TableCell>
                     <TableCell>{quiz.passingScore != null ? `${quiz.passingScore}%` : '-'}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${quiz.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {quiz.isActive ? 'Active' : 'Inactive'}
+                        {quiz.isActive ? t("active") : t("inactive")}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
+                            <span className="sr-only">{t("openMenu")}</span>
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuLabel>{t("actions")}</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem onClick={() => handleViewQuiz(quiz.id)}>
                             <Eye className="w-4 h-4 mr-2" />
-                            View
+                            {t("view")}
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleEditQuiz(quiz.id)}>
                             <Pencil className="w-4 h-4 mr-2" />
-                            Edit
+                            {t("edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-red-600"
                             onClick={() => handleDeleteQuiz(quiz.id)}
                           >
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
+                            {t("delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -494,7 +496,7 @@ export default function QuizzesAdminPage() {
           {/* Pagination */}
           <div className="mt-4 flex items-center justify-between text-nowrap">
             <div className="text-sm text-muted-foreground">
-              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} quizzes
+              {t("showingRange", { start: startIndex + 1, end: Math.min(endIndex, totalItems) })}
             </div>
             <Pagination>
               <PaginationContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -34,6 +35,7 @@ import api from "@skill-learn/lib/utils/axios";
 import { useRolesStore } from "@skill-learn/lib/stores/rolesStore";
 
 export default function RolesPage() {
+  const t = useTranslations("adminRoles");
   // Use selectors to only re-render when specific state changes
   const roles = useRolesStore((state) => state.roles);
   const tenant = useRolesStore((state) => state.tenant);
@@ -101,7 +103,7 @@ export default function RolesPage() {
         }
       } catch (err: unknown) {
         const e = err as { response?: { data?: { error?: string } }; message?: string };
-        setError(e.response?.data?.error || e.message || "Failed to load data");
+        setError(e.response?.data?.error || e.message || t("errorLoadData"));
       } finally {
         setLoading(false);
       }
@@ -130,7 +132,7 @@ export default function RolesPage() {
       resetRoleForm();
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setFormError(e.message ?? "Failed");
+      setFormError(e.message ?? t("errorGeneric"));
     } finally {
       setFormLoading(false);
     }
@@ -149,7 +151,7 @@ export default function RolesPage() {
       setSelectedRole(null);
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setFormError(e.message ?? "Failed");
+      setFormError(e.message ?? t("errorGeneric"));
     } finally {
       setFormLoading(false);
     }
@@ -163,7 +165,7 @@ export default function RolesPage() {
     try {
       const response = await api.put("/tenant/roles", { templateSetName: selectedTemplateSet });
 
-      if (response.data.error) throw new Error(response.data.error || "Failed to initialize roles");
+      if (response.data.error) throw new Error(response.data.error || t("errorInitRoles"));
 
       // Refresh roles from store
       await fetchRoles(true); // Force refresh
@@ -171,7 +173,7 @@ export default function RolesPage() {
       setInitDialogOpen(false);
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setFormError(e.message ?? "Failed");
+      setFormError(e.message ?? t("errorGeneric"));
     } finally {
       setFormLoading(false);
     }
@@ -189,7 +191,7 @@ export default function RolesPage() {
       });
 
       if (response.data.error) {
-        throw new Error(response.data.error || "Failed to update permissions");
+        throw new Error(response.data.error || t("errorUpdatePermissions"));
       }
 
       // Refresh roles and update selected from store
@@ -260,9 +262,9 @@ export default function RolesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Roles Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Create and manage roles for your organization.
+            {t("description")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -278,7 +280,7 @@ export default function RolesPage() {
           </Button>
           {roles.length === 0 && (
             <Button variant="outline" onClick={() => setInitDialogOpen(true)}>
-              Initialize from Template
+              {t("initFromTemplate")}
             </Button>
           )}
           <Button
@@ -289,7 +291,7 @@ export default function RolesPage() {
             disabled={availableSlots <= 0}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Add Role
+            {t("addRole")}
           </Button>
         </div>
       </div>
@@ -299,7 +301,7 @@ export default function RolesPage() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Role Slots Used</p>
+              <p className="text-sm text-muted-foreground">{t("roleSlotsUsed")}</p>
               <p className="text-2xl font-bold">
                 {usedSlots} / {tenant?.maxRoleSlots || 5}
               </p>
@@ -317,9 +319,9 @@ export default function RolesPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">No roles configured yet.</p>
+            <p className="text-muted-foreground mb-4">{t("noRolesYet")}</p>
             <Button onClick={() => setInitDialogOpen(true)}>
-              Initialize from Template Set
+              {t("initFromTemplateSet")}
             </Button>
           </CardContent>
         </Card>
@@ -338,20 +340,20 @@ export default function RolesPage() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary" className="text-xs">
-                          Slot {role.slotPosition}
+                          {t("slot")} {role.slotPosition}
                         </Badge>
                         {role.createdFromTemplate ? (
                           <Badge variant="default" className="text-xs bg-blue-500">
-                            Template
+                            {t("template")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">
-                            Custom
+                            {t("custom")}
                           </Badge>
                         )}
                         {!role.isActive && (
                           <Badge variant="destructive" className="text-xs">
-                            Inactive
+                            {t("inactive")}
                           </Badge>
                         )}
                       </div>
@@ -369,21 +371,21 @@ export default function RolesPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-1">
                         <Key className="h-4 w-4" />
-                        Permissions
+                        {t("permissions")}
                       </span>
                       <span className="font-medium">{role.permissionCount}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        Users
+                        {t("users")}
                       </span>
                       <span className="font-medium">{role.userCount}</span>
                     </div>
 
                     {role.createdFromTemplate && (
                       <p className="text-xs text-muted-foreground">
-                        Based on: {role.createdFromTemplate.roleName}
+                        {t("basedOn")}: {role.createdFromTemplate.roleName}
                       </p>
                     )}
 
@@ -398,7 +400,7 @@ export default function RolesPage() {
                         }}
                       >
                         <Key className="h-4 w-4 mr-1" />
-                        Permissions
+                        {t("permissions")}
                       </Button>
                       <Button
                         variant="outline"
@@ -432,39 +434,39 @@ export default function RolesPage() {
       <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isEditing ? "Edit Role" : "Create Role"}</DialogTitle>
+            <DialogTitle>{isEditing ? t("editRole") : t("createRole")}</DialogTitle>
             <DialogDescription>
               {isEditing
-                ? "Update the role details."
-                : "Create a new role for your organization."}
+                ? t("editRoleDescription")
+                : t("createRoleDescription")}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleRoleSubmit}>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Role Name *</Label>
+                <Label>{t("roleName")} *</Label>
                 <Input
                   value={roleForm.roleAlias}
                   onChange={(e) =>
                     setRoleForm({ ...roleForm, roleAlias: e.target.value })
                   }
-                  placeholder="Manager"
+                  placeholder={t("roleNamePlaceholder")}
                   required
                 />
               </div>
               <div className="grid gap-2">
-                <Label>Description</Label>
+                <Label>{t("descriptionLabel")}</Label>
                 <Input
                   value={roleForm.description}
                   onChange={(e) =>
                     setRoleForm({ ...roleForm, description: e.target.value })
                   }
-                  placeholder="Manages team and content"
+                  placeholder={t("descriptionPlaceholder")}
                 />
               </div>
               {!isEditing && (
                 <div className="grid gap-2">
-                  <Label>Base on Template (optional)</Label>
+                  <Label>{t("baseOnTemplate")}</Label>
                   <select
                     value={roleForm.templateId}
                     onChange={(e) =>
@@ -472,11 +474,11 @@ export default function RolesPage() {
                     }
                     className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
                   >
-                    <option value="">Custom role (no template)</option>
+                    <option value="">{t("customRoleNoTemplate")}</option>
                     {templates.map((set) =>
-                      set.roles.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {set.name} / {t.roleName} ({t.permissionCount} permissions)
+                      set.roles.map((tmpl) => (
+                        <option key={tmpl.id} value={tmpl.id}>
+                          {set.name} / {tmpl.roleName} ({tmpl.permissionCount} {t("permissionsCount")})
                         </option>
                       ))
                     )}
@@ -495,11 +497,11 @@ export default function RolesPage() {
                 variant="outline"
                 onClick={() => setRoleDialogOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={formLoading}>
                 {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {isEditing ? "Update Role" : "Create Role"}
+                {isEditing ? t("updateRole") : t("createRole")}
               </Button>
             </DialogFooter>
           </form>
@@ -510,9 +512,9 @@ export default function RolesPage() {
       <Dialog open={permissionsDialogOpen} onOpenChange={setPermissionsDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Manage Permissions - {selectedRole?.roleAlias}</DialogTitle>
+            <DialogTitle>{t("managePermissions")} - {selectedRole?.roleAlias}</DialogTitle>
             <DialogDescription>
-              Select which permissions this role should have.
+              {t("selectPermissionsDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -590,7 +592,7 @@ export default function RolesPage() {
               variant="outline"
               onClick={() => setPermissionsDialogOpen(false)}
             >
-              Done
+              {t("done")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -600,10 +602,9 @@ export default function RolesPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Role</DialogTitle>
+            <DialogTitle>{t("deleteRole")}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete &quot;{selectedRole?.roleAlias}&quot;?
-              This action cannot be undone.
+              {t("deleteRoleConfirm", { roleName: selectedRole?.roleAlias ?? "" })}
             </DialogDescription>
           </DialogHeader>
           {formError && (
@@ -616,7 +617,7 @@ export default function RolesPage() {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -624,7 +625,7 @@ export default function RolesPage() {
               disabled={formLoading}
             >
               {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Delete Role
+              {t("deleteRole")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -634,14 +635,14 @@ export default function RolesPage() {
       <Dialog open={initDialogOpen} onOpenChange={setInitDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Initialize Roles from Template</DialogTitle>
+            <DialogTitle>{t("initRolesTitle")}</DialogTitle>
             <DialogDescription>
-              Create default roles from a predefined template set.
+              {t("initRolesDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="grid gap-2">
-              <Label>Template Set</Label>
+              <Label>{t("templateSet")}</Label>
               <select
                 value={selectedTemplateSet}
                 onChange={(e) => setSelectedTemplateSet(e.target.value)}
@@ -657,13 +658,13 @@ export default function RolesPage() {
 
             {/* Preview */}
             <div className="rounded-lg border p-3 bg-muted/50">
-              <p className="text-sm font-medium mb-2">Roles to be created:</p>
+              <p className="text-sm font-medium mb-2">{t("rolesToBeCreated")}</p>
               <ul className="text-sm text-muted-foreground space-y-1">
                 {templates
                   .find((s) => s.key === selectedTemplateSet)
-                  ?.roles.map((role) => (
-                    <li key={role.id}>
-                      {role.slotPosition}. {role.roleName} - {role.description}
+                  ?.roles.map((tmplRole) => (
+                    <li key={tmplRole.id}>
+                      {tmplRole.slotPosition}. {tmplRole.roleName} - {tmplRole.description}
                     </li>
                   ))}
               </ul>
@@ -680,11 +681,11 @@ export default function RolesPage() {
               variant="outline"
               onClick={() => setInitDialogOpen(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleInitializeRoles} disabled={formLoading}>
               {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Initialize Roles
+              {t("initializeRoles")}
             </Button>
           </DialogFooter>
         </DialogContent>
