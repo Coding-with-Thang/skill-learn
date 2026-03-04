@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { useRouter, Link } from "@/i18n/navigation";
 import { buttonVariants , Button } from "@skill-learn/ui/components/button";
@@ -32,6 +33,7 @@ const TITLE_MAX = 200;
 type LessonData = { title?: string; description?: string; thumbnailUrl?: string | null; fileKey?: string | null; videoUrl?: string | null; courseChapter?: { title?: string } };
 
 export default function EditLessonPage() {
+  const t = useTranslations("adminLessonEdit");
   const params = useParams();
   const courseId = params.courseId as string;
   const chapterId = params.chapterId as string;
@@ -70,13 +72,13 @@ export default function EditLessonPage() {
             videoUrl: data.videoUrl ?? "",
           });
         } else {
-          toast.error("Lesson not found");
+          toast.error(t("toastNotFound"));
           router.push(`/dashboard/courses/${courseId}/edit`);
         }
       } catch (err: unknown) {
         console.error(err);
         const e = err as { response?: { data?: { message?: string } } };
-        toast.error(e?.response?.data?.message ?? "Failed to load lesson");
+        toast.error(e?.response?.data?.message ?? t("toastLoadFailed"));
         router.push(`/dashboard/courses/${courseId}/edit`);
       } finally {
         setLoading(false);
@@ -101,7 +103,7 @@ export default function EditLessonPage() {
           videoUrl: values.videoUrl?.trim() || null,
         }
       );
-      toast.success("Lesson saved");
+      toast.success(t("toastSaved"));
       setLesson((prev) => (prev ? { ...prev, ...values } : null));
       router.push(`/dashboard/courses/${courseId}/edit?tab=structure`);
     } catch (err: unknown) {
@@ -110,7 +112,7 @@ export default function EditLessonPage() {
         e?.response?.data?.fieldErrors?.title?.[0] ??
         e?.response?.data?.error ??
         e?.response?.data?.message;
-      toast.error(msg || "Failed to save lesson");
+      toast.error(msg || t("toastSaveFailed"));
     } finally {
       setSaving(false);
     }
@@ -134,18 +136,18 @@ export default function EditLessonPage() {
           <ArrowLeft className="size-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold">Edit Lesson</h1>
+          <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {lesson?.courseChapter?.title ?? "Chapter"} — {lesson?.title ?? "Lesson"}
+            {t("breadcrumb", { chapterTitle: lesson?.courseChapter?.title ?? t("chapter"), lessonTitle: lesson?.title ?? t("lesson") })}
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lesson content</CardTitle>
+          <CardTitle>{t("lessonContent")}</CardTitle>
           <CardDescription>
-            Update the lesson title, description, thumbnail, and video.
+            {t("lessonContentDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -155,17 +157,17 @@ export default function EditLessonPage() {
                 control={form.control}
                 name="title"
                 rules={{
-                  required: "Title is required",
+                  required: t("titleRequired"),
                   maxLength: {
                     value: TITLE_MAX,
-                    message: `Title must be ${TITLE_MAX} characters or less`,
+                    message: t("titleMaxLength", { max: TITLE_MAX }),
                   },
                 }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{t("titleLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Lesson title" {...field} />
+                      <Input placeholder={t("titlePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -177,10 +179,10 @@ export default function EditLessonPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>{t("descriptionLabel")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Brief description of the lesson"
+                        placeholder={t("descriptionPlaceholder")}
                         className="min-h-[120px]"
                         {...field}
                       />
@@ -195,7 +197,7 @@ export default function EditLessonPage() {
                 name="thumbnailUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thumbnail image</FormLabel>
+                    <FormLabel>{t("thumbnailImageLabel")}</FormLabel>
                     <FormControl>
                       <Uploader
                         onChange={field.onChange}
@@ -222,11 +224,11 @@ export default function EditLessonPage() {
                 name="videoUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Video URL</FormLabel>
+                    <FormLabel>{t("videoUrlLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="url"
-                        placeholder="https://..."
+                        placeholder={t("videoUrlPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -237,23 +239,23 @@ export default function EditLessonPage() {
 
               <div className="flex gap-2 pt-2">
                 <Button type="submit" disabled={saving}>
-                  {saving ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 size-4" />
-                      Save lesson
-                    </>
-                  )}
+                {saving ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    {t("saving")}
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 size-4" />
+                    {t("saveLesson")}
+                  </>
+                )}
                 </Button>
                 <Link
                   href={`/dashboard/courses/${courseId}/edit`}
                   className={buttonVariants({ variant: "outline" })}
                 >
-                  Back to course
+                  {t("backToCourse")}
                 </Link>
               </div>
             </form>

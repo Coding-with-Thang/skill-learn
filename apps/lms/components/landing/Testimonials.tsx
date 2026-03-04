@@ -19,8 +19,8 @@ export default function Testimonials() {
   const testimonialItems = t.raw("items") as { quote: string; author: string; role: string }[];
   const testimonials = testimonialItems.map((item, idx) => ({
     ...item,
-    avatar: AVATARS[idx],
-    companyIcon: COMPANY_ICONS[idx],
+    avatar: AVATARS[idx % AVATARS.length]!,
+    companyIcon: COMPANY_ICONS[idx % COMPANY_ICONS.length]!,
   }));
   const clientLogos = t.raw("clientLogos") as string[];
 

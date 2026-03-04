@@ -99,7 +99,7 @@ export default function DashboardLayout({ children }) {
           { name: t("courses"), href: "/dashboard/courses" },
           { name: t("chapters"), href: `/dashboard/courses/${courseId}/edit` },
         ],
-        endtrail: formatSegmentLabel(segments[segments.length - 1]),
+        endtrail: formatSegmentLabel(segments[segments.length - 1] ?? ""),
       };
     }
 
@@ -114,7 +114,7 @@ export default function DashboardLayout({ children }) {
           { name: t("dashboard"), href: "/dashboard" },
           { name: t("courses"), href: "/dashboard/courses" },
         ],
-        endtrail: formatSegmentLabel(action),
+        endtrail: formatSegmentLabel(action ?? ""),
       };
     }
 
@@ -123,13 +123,13 @@ export default function DashboardLayout({ children }) {
     const crumbs: { name: string; href: string }[] = [];
     for (let i = 0; i < segments.length - 1; i++) {
       const segment = segments[i];
-      const label = formatSegmentLabel(segment);
+      const label = formatSegmentLabel(segment ?? "");
       if (label === t("detail")) continue;
       const href = `/${segments.slice(0, i + 1).join("/")}`;
       crumbs.push({ name: label, href });
     }
     const lastSegment = segments[segments.length - 1];
-    const endtrail = formatSegmentLabel(lastSegment);
+    const endtrail = formatSegmentLabel(lastSegment ?? "");
 
     return { crumbs, endtrail };
   }, [pathname, t]);

@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl"
 type UserDetailsProps = { user?: { id?: string; firstName?: string; lastName?: string; username?: string; createdAt?: string } | null }
 
 export default function UserDetails({ user: propUser }: UserDetailsProps = {}) {
+  const t = useTranslations("userDetails")
   const clerk = useUser()
   const { user: clerkUser, isLoaded } = clerk
   const user = propUser ?? clerkUser

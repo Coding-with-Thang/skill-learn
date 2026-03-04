@@ -58,23 +58,23 @@ export default function RewardsAdminPage() {
     reward.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handle{t("edit")} = (reward: RewardItem) => {
-    set{t("edit")}ingReward(reward)
+  const handleEdit = (reward: RewardItem) => {
+    setEditingReward(reward)
     setShowModal(true)
   }
 
   const handleCloseModal = () => {
     setShowModal(false)
-    set{t("edit")}ingReward(null)
+    setEditingReward(null)
   }
 
-  const handle{t("delete")} = async (reward: RewardItem) => {
+  const handleDelete = async (reward: RewardItem) => {
     try {
       await deleteReward(reward.id)
-      toast.success(t('toast{t("delete")}d'))
+      toast.success(t("toastDeleted"))
       setConfirmDelete(null)
     } catch (error) {
-      toast.error(t('error{t("delete")}'))
+      toast.error(t("errorDelete"))
     }
   }
 
@@ -232,7 +232,7 @@ export default function RewardsAdminPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handle{t("edit")}(reward)}
+                        onClick={() => handleEdit(reward)}
                       >
                         {t("edit")}
                       </Button>
