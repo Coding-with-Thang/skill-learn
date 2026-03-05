@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@skil
 import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { Clock, ArrowRight } from 'lucide-react';
+import { getTranslations } from "next-intl/server";
 import CourseEditLink from '@/components/courses/CourseEditLink';
 import CourseFilters from '@/components/courses/CourseFilters';
 import CourseActions from '@/components/courses/CourseActions';
@@ -53,7 +54,7 @@ async function getCourses({ page = 1, pageSize = 5, category, tenantId }: { page
 }
 
 export default async function CoursesPage({ searchParams }) {
-
+    const t = await getTranslations("adminDashboardCourses");
     const params = await searchParams;
     const page = parseInt(params?.page || "1", 10) || 1;
     const pageSize = parseInt(params?.pageSize || "5", 10) || 5;
@@ -80,10 +81,10 @@ export default async function CoursesPage({ searchParams }) {
     return (
         <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 sm:gap-0">
-                <h1 className="text-2xl font-bold">Courses</h1>
+                <h1 className="text-2xl font-bold">{t("title")}</h1>
 
                 <Link className={buttonVariants()} href="/dashboard/courses/create">
-                    Create Course
+                    {t("createCourse")}
                 </Link>
             </div>
             {/* Client-side Filter & pageSize (always visible) */}
@@ -91,19 +92,23 @@ export default async function CoursesPage({ searchParams }) {
                 <CourseFilters categories={categories} initialCategory={category} initialPageSize={pageSize} />
 
                 <div className="text-sm text-muted-foreground">
-                    Showing <span className="font-medium">{total === 0 ? 0 : Math.min((currentPage - 1) * pageSize + 1, total || 0)}</span> - <span className="font-medium">{total === 0 ? 0 : Math.min(currentPage * pageSize, total)}</span> of <span className="font-medium">{total}</span>
+                    {t("showingRange", {
+                        start: total === 0 ? 0 : Math.min((currentPage - 1) * pageSize + 1, total || 0),
+                        end: total === 0 ? 0 : Math.min(currentPage * pageSize, total),
+                        total
+                    })}
                 </div>
             </div>
 
             {courses.length === 0 ? (
                 <Card>
                     <CardHeader>
-                        <CardTitle>No courses yet</CardTitle>
-                        <CardDescription>There are currently no courses in the system. Create one to get started.</CardDescription>
+                        <CardTitle>{t("noCoursesYet")}</CardTitle>
+                        <CardDescription>{t("noCoursesDescription")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href="/dashboard/courses/create" className={buttonVariants()}>
-                            Create your first course
+                            {t("createFirstCourse")}
                         </Link>
                     </CardContent>
                 </Card>
@@ -144,7 +149,7 @@ export default async function CoursesPage({ searchParams }) {
                                     <div className="flex items-center justify-between mt-4">
                                         <div>
                                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                                                {course.category?.name || 'Uncategorized'}
+                                                {course.category?.name || t("uncategorized")}
                                             </span>
                                         </div>
                                         <div />
@@ -154,7 +159,7 @@ export default async function CoursesPage({ searchParams }) {
                                         <CourseEditLink courseId={course.id} href={`/dashboard/courses/${course.slug ?? course.id}/edit`} previewUrl={course.thumbnailUrl} className={buttonVariants({
                                             className: "w-full justify-center mt-2",
                                         })}>
-                                            Edit Course <ArrowRight className="ml-2" />
+                                            {t("editCourse")} <ArrowRight className="ml-2" />
                                         </CourseEditLink>
                                     </div>
                                 </CardContent>

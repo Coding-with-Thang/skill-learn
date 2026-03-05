@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Sun, Moon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@skill-learn/ui/components/button";
@@ -11,6 +12,7 @@ import { useThemeStore } from "@/lib/store";
  * Uses LMS theme store (lms-theme in localStorage).
  */
 export default function ThemeToggle() {
+  const t = useTranslations("themeToggle");
   const { theme, toggleTheme } = useThemeStore();
 
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function ThemeToggle() {
       size="icon"
       onClick={toggleTheme}
       className="relative"
-      aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+      aria-label={theme === "light" ? t("toggleDark") : t("toggleLight")}
     >
       <AnimatePresence mode="wait">
         {theme === "light" ? (

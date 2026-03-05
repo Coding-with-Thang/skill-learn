@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
@@ -29,6 +30,7 @@ import { motion } from "framer-motion";
 import { useUserRolesStore } from "@skill-learn/lib/stores/userRolesStore";
 
 export default function UserRolesPage() {
+  const t = useTranslations("adminUserRoles");
   // Use selectors to only re-render when specific state changes
   const userRoles = useUserRolesStore((state) => state.userRoles);
   const roles = useUserRolesStore((state) => state.roles);
@@ -63,7 +65,7 @@ export default function UserRolesPage() {
         await fetchAll();
       } catch (err: unknown) {
         const e = err as { response?: { data?: { error?: string } }; message?: string };
-        setError(e.response?.data?.error || e.message || "Failed to load data");
+        setError(e.response?.data?.error || e.message || t("errorLoadData"));
       } finally {
         setLoading(false);
       }
@@ -92,7 +94,7 @@ export default function UserRolesPage() {
       setSelectedRoleId("");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
-      setFormError(e.response?.data?.error || e.message || "Failed to assign role");
+      setFormError(e.response?.data?.error || e.message || t("errorAssignRole"));
     } finally {
       setFormLoading(false);
     }
@@ -157,9 +159,9 @@ export default function UserRolesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Role Assignments</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Assign roles to users in your organization.
+            {t("description")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -179,7 +181,7 @@ export default function UserRolesPage() {
           </Button>
           <Button onClick={() => setAssignDialogOpen(true)} disabled={roles.length === 0}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Assign Role
+            {t("assignRole")}
           </Button>
         </div>
       </div>
@@ -189,7 +191,7 @@ export default function UserRolesPage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Assignments</p>
+              <p className="text-sm text-muted-foreground">{t("totalAssignments")}</p>
               <p className="text-2xl font-bold">{userRoles.length}</p>
             </div>
             <Key className="h-8 w-8 text-muted-foreground" />
@@ -198,7 +200,7 @@ export default function UserRolesPage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Users with Roles</p>
+              <p className="text-sm text-muted-foreground">{t("usersWithRoles")}</p>
               <p className="text-2xl font-bold">{Object.keys(userRolesByUser).length}</p>
             </div>
             <Users className="h-8 w-8 text-muted-foreground" />
@@ -207,7 +209,7 @@ export default function UserRolesPage() {
         <Card>
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Available Roles</p>
+              <p className="text-sm text-muted-foreground">{t("availableRoles")}</p>
               <p className="text-2xl font-bold">{roles.length}</p>
             </div>
             <Shield className="h-8 w-8 text-muted-foreground" />
@@ -219,7 +221,7 @@ export default function UserRolesPage() {
       <div className="relative max-w-sm">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Search by user or role..."
+          placeholder={t("searchPlaceholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-9"
@@ -232,10 +234,10 @@ export default function UserRolesPage() {
           <CardContent className="p-12 text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-muted-foreground mb-4">
-              No roles configured yet. Create roles first before assigning them.
+              {t("noRolesConfigured")}
             </p>
             <Button variant="outline" onClick={() => (window.location.href = "/dashboard/roles")}>
-              Go to Roles Management
+              {t("goToRolesManagement")}
             </Button>
           </CardContent>
         </Card>
@@ -243,29 +245,29 @@ export default function UserRolesPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <Key className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-4">No role assignments yet.</p>
+            <p className="text-muted-foreground mb-4">{t("noAssignmentsYet")}</p>
             <Button onClick={() => setAssignDialogOpen(true)}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Assign First Role
+              {t("assignFirstRole")}
             </Button>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Role Assignments</CardTitle>
+            <CardTitle>{t("roleAssignments")}</CardTitle>
             <CardDescription>
-              {filteredUserRoles.length} assignment(s) found
+              {t("assignmentsFound", { count: filteredUserRoles.length })}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left p-4 font-medium">User</th>
-                  <th className="text-left p-4 font-medium">Role</th>
-                  <th className="text-left p-4 font-medium">Assigned</th>
-                  <th className="text-right p-4 font-medium">Re-assign</th>
+                  <th className="text-left p-4 font-medium">{t("user")}</th>
+                  <th className="text-left p-4 font-medium">{t("role")}</th>
+                  <th className="text-left p-4 font-medium">{t("assigned")}</th>
+                  <th className="text-right p-4 font-medium">{t("reassign")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -307,11 +309,11 @@ export default function UserRolesPage() {
                         <Badge variant="outline">{ur.role?.roleAlias}</Badge>
                         {ur.role?.createdFromTemplate ? (
                           <Badge variant="secondary" className="text-xs">
-                            Template
+                            {t("template")}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">
-                            Custom
+                            {t("custom")}
                           </Badge>
                         )}
                       </div>
@@ -327,7 +329,7 @@ export default function UserRolesPage() {
                         className="gap-1.5"
                       >
                         <Pencil className="h-4 w-4" />
-                        Re-assign
+                        {t("reassign")}
                       </Button>
                     </td>
                   </motion.tr>
@@ -342,20 +344,20 @@ export default function UserRolesPage() {
       <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Assign or Re-assign Role</DialogTitle>
+            <DialogTitle>{t("assignReassignTitle")}</DialogTitle>
             <DialogDescription>
-              Every user must have a role. Select a user and role to assign or change their role.
+              {t("assignReassignDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>User *</Label>
+              <Label>{t("user")} *</Label>
               <select
                 value={selectedUserId}
                 onChange={(e) => setSelectedUserId(e.target.value)}
                 className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
               >
-                <option value="">Select a user...</option>
+                <option value="">{t("selectUser")}</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.clerkId || u.id}>
                     {u.firstName} {u.lastName} (@{u.username})
@@ -364,22 +366,22 @@ export default function UserRolesPage() {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label>Role *</Label>
+              <Label>{t("role")} *</Label>
               <select
                 value={selectedRoleId}
                 onChange={(e) => setSelectedRoleId(e.target.value)}
                 className="h-10 rounded-lg border border-input bg-background px-3 text-sm"
               >
-                <option value="">Select a role...</option>
+                <option value="">{t("selectRole")}</option>
                 {roles.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.roleAlias}
-                    {r.createdFromTemplate ? ` (Template: ${r.createdFromTemplate.templateSetName})` : ' (Custom)'}
+                    {r.createdFromTemplate ? ` (${t("template")}: ${r.createdFromTemplate.templateSetName})` : ` (${t("custom")})`}
                   </option>
                 ))}
               </select>
               <p className="text-xs text-muted-foreground">
-                You can assign both custom roles and roles created from templates.
+                {t("roleHint")}
               </p>
             </div>
             {formError && (
@@ -399,14 +401,14 @@ export default function UserRolesPage() {
                 setFormError(null);
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               onClick={handleAssignRole}
               disabled={!selectedUserId || !selectedRoleId || formLoading}
             >
               {formLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Assign Role
+              {t("assignRole")}
             </Button>
           </DialogFooter>
         </DialogContent>

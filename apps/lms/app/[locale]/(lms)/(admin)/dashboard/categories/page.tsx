@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { useDebounce } from "@skill-learn/lib/hooks/useDebounce"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -46,8 +47,9 @@ import {
     categoryUpdateSchema,
 } from "@/lib/zodSchemas"
 
-type CategoryItem = { id: string; name: string; description?: string; imageUrl?: string; fileKey?: string; isActive?: boolean; _count?: { quizzes: number; courses: number } }
+type CategoryItem = { id: string; name: string; description?: string; nameJson?: Record<string, string>; descriptionJson?: Record<string, string>; imageUrl?: string; fileKey?: string; isActive?: boolean; _count?: { quizzes: number; courses: number } }
 export default function CategoriesPage() {
+    const t = useTranslations("adminDashboardCategories")
     const [categories, setCategories] = useState<CategoryItem[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -65,6 +67,8 @@ export default function CategoriesPage() {
         defaultValues: {
             name: "",
             description: "",
+            nameFr: "",
+            descriptionFr: "",
             imageUrl: "",
             fileKey: "",
             isActive: true,
@@ -84,7 +88,7 @@ export default function CategoriesPage() {
             setCategories(categoriesArray)
         } catch (err: unknown) {
             console.error("Failed to fetch categories:", err)
-            setError(err instanceof Error ? err.message : "Failed to fetch categories")
+            setError(err instanceof Error ? err.message : t("errorFetch"))
         } finally {
             setLoading(false)
         }
@@ -92,20 +96,27 @@ export default function CategoriesPage() {
 
     const onSubmit = async (data) => {
         setFormError(null)
+        const payload = {
+            ...data,
+            nameJson: { en: data.name, ...(data.nameFr ? { fr: data.nameFr } : {}) },
+            descriptionJson: data.description || data.descriptionFr
+                ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+                : undefined,
+        }
         try {
             if (editingId) {
-                await api.put(`/admin/categories/${editingId}`, data)
-                toast.success("Category updated successfully")
+                await api.put(`/admin/categories/${editingId}`, payload)
+                toast.success(t("toastUpdated"))
             } else {
-                await api.post("/admin/categories", data)
-                toast.success("Category created successfully")
+                await api.post("/admin/categories", payload)
+                toast.success(t("toastCreated"))
             }
             await fetchCategories()
             handleCloseForm()
         } catch (err: unknown) {
             console.error("Failed to save category:", err)
             const e = err as { response?: { data?: { error?: string } } }
-            const msg = e.response?.data?.error || "Failed to save category"
+            const msg = e.response?.data?.error || t("errorSave")
             setFormError(msg)
             toast.error(msg)
         }
@@ -118,7 +129,7 @@ export default function CategoriesPage() {
     const handleDeleteInModal = async (id) => {
         try {
             await api.delete(`/admin/categories/${id}`)
-            toast.success("Category deleted successfully")
+            toast.success(t("toastDeleted"))
             await fetchCategories()
             setDeleteConfirmId(null)
             handleCloseForm()
@@ -126,15 +137,19 @@ export default function CategoriesPage() {
             console.error("Failed to delete category:", err)
             const e = err as { response?: { data?: { error?: string } } }
             toast.error(
-                e.response?.data?.error || "Failed to delete category"
+                e.response?.data?.error || t("errorDelete")
             )
         }
     }
 
     const handleEdit = (category) => {
+        const nameJson = category.nameJson as Record<string, string> | undefined
+        const descriptionJson = category.descriptionJson as Record<string, string> | undefined
         form.reset({
             name: category.name,
             description: category.description || "",
+            nameFr: nameJson?.fr || "",
+            descriptionFr: descriptionJson?.fr || "",
             imageUrl: category.imageUrl || "",
             fileKey: category.fileKey || "",
             isActive: category.isActive === true,
@@ -148,6 +163,8 @@ export default function CategoriesPage() {
         form.reset({
             name: "",
             description: "",
+            nameFr: "",
+            descriptionFr: "",
             imageUrl: "",
             fileKey: "",
             isActive: true,
@@ -173,7 +190,7 @@ export default function CategoriesPage() {
     if (error) {
         return (
             <div className="p-4 text-red-500">
-                Error loading categories. Please try again.
+                {t("errorLoading")}
             </div>
         )
     }
@@ -184,12 +201,12 @@ export default function CategoriesPage() {
                 <CardHeader>
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                         <div>
-                            <CardTitle>Categories</CardTitle>
-                            <CardDescription>Manage quiz categories</CardDescription>
+                            <CardTitle>{t("title")}</CardTitle>
+                            <CardDescription>{t("description")}</CardDescription>
                         </div>
                         <Button className="w-full sm:w-auto" onClick={() => { setFormError(null); setShowForm(true); }}>
                             <Plus className="w-4 h-4 mr-2" />
-                            Create Category
+                            {t("createCategory")}
                         </Button>
                     </div>
                 </CardHeader>
@@ -197,7 +214,7 @@ export default function CategoriesPage() {
                     {/* Search */}
                     <div className="mb-6">
                         <Input
-                            placeholder="Search categories..."
+                            placeholder={t("searchPlaceholder")}
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             className="w-full max-w-sm"
@@ -209,12 +226,12 @@ export default function CategoriesPage() {
                         <Table className="min-w-[600px]">
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>Quizzes</TableHead>
-                                    <TableHead>Courses</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t("name")}</TableHead>
+                                    <TableHead>{t("description")}</TableHead>
+                                    <TableHead>{t("quizzes")}</TableHead>
+                                    <TableHead>{t("courses")}</TableHead>
+                                    <TableHead>{t("status")}</TableHead>
+                                    <TableHead className="text-right">{t("actions")}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -233,7 +250,7 @@ export default function CategoriesPage() {
                                                     : "bg-red-100 text-red-800"
                                                     }`}
                                             >
-                                                {category.isActive ? "Active" : "Inactive"}
+                                                {category.isActive ? t("active") : t("inactive")}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -250,7 +267,7 @@ export default function CategoriesPage() {
                                 {filteredCategories.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan="6" className="text-center py-4">
-                                            No categories found
+                                            {t("noCategoriesFound")}
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -276,7 +293,7 @@ export default function CategoriesPage() {
                     <div className="relative z-10 w-full max-w-lg rounded-lg border bg-background p-6 shadow-lg">
                         <div className="flex items-center justify-between mb-4">
                             <h2 id="category-form-title" className="text-lg font-semibold">
-                                {editingId ? "Edit Category" : "Create Category"}
+                                {editingId ? t("editCategory") : t("createCategoryForm")}
                             </h2>
                             <Button
                                 type="button"
@@ -284,7 +301,7 @@ export default function CategoriesPage() {
                                 size="icon"
                                 className="h-8 w-8 rounded-full"
                                 onClick={handleCloseForm}
-                                aria-label="Close"
+                                aria-label={t("close")}
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -305,23 +322,39 @@ export default function CategoriesPage() {
                                 )}
                                 <FormInput
                                     name="name"
-                                    label="Name"
-                                    placeholder="Enter category name"
+                                    label={t("name")}
+                                    placeholder={t("enterNamePlaceholder")}
                                     required
                                 />
 
                                 <FormTextarea
                                     name="description"
-                                    label="Description"
-                                    placeholder="Enter category description"
+                                    label={t("description")}
+                                    placeholder={t("enterDescriptionPlaceholder")}
                                 />
+
+                                <div className="rounded-lg border p-3 bg-muted/30">
+                                    <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                                    <FormInput
+                                        name="nameFr"
+                                        label={t("nameFr") ?? "Name (French)"}
+                                        placeholder={t("nameFrPlaceholder") ?? "French name (optional)"}
+                                    />
+                                    <div className="mt-2">
+                                        <FormTextarea
+                                            name="descriptionFr"
+                                            label={t("descriptionFr") ?? "Description (French)"}
+                                            placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+                                        />
+                                    </div>
+                                </div>
 
                                 <FormField
                                     control={form.control}
                                     name="imageUrl"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Category image</FormLabel>
+                                            <FormLabel>{t("categoryImageLabel")}</FormLabel>
                                             <FormControl>
                                                 <Uploader
                                                     value={field.value}
@@ -335,7 +368,7 @@ export default function CategoriesPage() {
                                                 />
                                             </FormControl>
                                             <FormDescription>
-                                                Upload an image, paste a URL, or choose from existing media.
+                                                {t("uploaderDescription")}
                                             </FormDescription>
                                         </FormItem>
                                     )}
@@ -347,9 +380,9 @@ export default function CategoriesPage() {
                                     render={({ field }) => (
                                         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                                             <div className="space-y-0.5">
-                                                <FormLabel className="text-base">Active</FormLabel>
+                                                <FormLabel className="text-base">{t("activeLabel")}</FormLabel>
                                                 <FormDescription>
-                                                    When on, this category is available for quizzes and courses. When off, it is hidden from selection.
+                                                    {t("activeDescription")}
                                                 </FormDescription>
                                             </div>
                                             <div className="flex items-center gap-3">
@@ -362,7 +395,7 @@ export default function CategoriesPage() {
                                                     )}
                                                     aria-hidden
                                                 >
-                                                    {field.value === true ? "On" : "Off"}
+                                                    {field.value === true ? t("on") : t("off")}
                                                 </span>
                                                 <FormControl>
                                                     <AdminSwitch
@@ -382,14 +415,14 @@ export default function CategoriesPage() {
                                         onClick={handleCloseForm}
                                         className="w-full sm:w-auto"
                                     >
-                                        Cancel
+                                        {t("cancel")}
                                     </Button>
                                     <Button
                                         type="submit"
                                         disabled={form.formState.isSubmitting}
                                         className="w-full sm:w-auto"
                                     >
-                                        {editingId ? "Update" : "Create"}
+                                        {editingId ? t("update") : t("create")}
                                     </Button>
                                 </div>
 
@@ -398,7 +431,7 @@ export default function CategoriesPage() {
                                     const hasQuizzesOrCourses = categoryBeingEdited && ((categoryBeingEdited._count?.quizzes ?? 0) > 0 || (categoryBeingEdited._count?.courses ?? 0) > 0)
                                     return (
                                         <div className="mt-6 pt-6 border-t">
-                                            <p className="text-sm text-muted-foreground mb-2">Delete this category permanently. This cannot be undone.</p>
+                                            <p className="text-sm text-muted-foreground mb-2">{t("deleteWarning")}</p>
                                             <Button
                                                 type="button"
                                                 variant="destructive"
@@ -407,10 +440,10 @@ export default function CategoriesPage() {
                                                 onClick={() => setDeleteConfirmId(editingId)}
                                             >
                                                 <Trash2 className="w-4 h-4 mr-2" />
-                                                Delete category
+                                                {t("deleteCategory")}
                                             </Button>
                                             {hasQuizzesOrCourses && (
-                                                <p className="text-xs text-muted-foreground mt-2">Remove all quizzes and courses from this category before deleting.</p>
+                                                <p className="text-xs text-muted-foreground mt-2">{t("deleteHint")}</p>
                                             )}
                                         </div>
                                     )
@@ -424,18 +457,18 @@ export default function CategoriesPage() {
             <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
                 <AlertDialogContent className="z-200">
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete category?</AlertDialogTitle>
+                        <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete this category? This cannot be undone.
+                            {t("deleteConfirmDescription")}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
                         <AlertDialogAction
                             className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive/90"
                             onClick={() => deleteConfirmId && handleDeleteInModal(deleteConfirmId)}
                         >
-                            Delete
+                            {t("delete")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

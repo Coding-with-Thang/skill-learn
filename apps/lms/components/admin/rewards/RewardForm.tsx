@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@skill-learn/ui/components/button"
@@ -34,6 +35,8 @@ const rewardFormSchema = rewardCreateSchema.extend({
 const defaultValues = {
   prize: "",
   description: "",
+  prizeFr: "",
+  descriptionFr: "",
   imageUrl: "",
   fileKey: "",
   cost: "",
@@ -44,6 +47,7 @@ const defaultValues = {
 }
 
 export function RewardForm({ reward, onClose }) {
+  const t = useTranslations("adminRewards")
   const { addReward, updateReward } = useRewardStore()
   const form = useForm({
     resolver: zodResolver(rewardFormSchema),
@@ -55,9 +59,13 @@ export function RewardForm({ reward, onClose }) {
 
   useEffect(() => {
     if (reward) {
+      const prizeJson = (reward as { prizeJson?: Record<string, string> }).prizeJson;
+      const descriptionJson = (reward as { descriptionJson?: Record<string, string> }).descriptionJson;
       form.reset({
         prize: reward.prize,
         description: reward.description,
+        prizeFr: prizeJson?.fr || "",
+        descriptionFr: descriptionJson?.fr || "",
         imageUrl: reward.imageUrl || '',
         fileKey: reward.fileKey || '',
         cost: reward.cost,
@@ -80,9 +88,12 @@ export function RewardForm({ reward, onClose }) {
 
   const onSubmit = async (data) => {
     try {
-      // Format the data before sending
       const submitData = {
         ...data,
+        prizeJson: { en: data.prize, ...(data.prizeFr ? { fr: data.prizeFr } : {}) },
+        descriptionJson: data.description || data.descriptionFr
+          ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+          : undefined,
         cost: typeof data.cost === "string" ? parseInt(data.cost, 10) : data.cost,
         maxRedemptions:
           data.allowMultiple && data.maxRedemptions
@@ -94,14 +105,14 @@ export function RewardForm({ reward, onClose }) {
 
       if (reward) {
         await updateReward(reward.id, submitData)
-        toast.success("Reward updated successfully")
+        toast.success(t("toastUpdated"))
       } else {
         await addReward(submitData)
-        toast.success("Reward added successfully")
+        toast.success(t("toastAdded"))
       }
       onClose()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong")
+      toast.error(error instanceof Error ? error.message : t("toastError"))
     }
   }
 
@@ -111,31 +122,47 @@ export function RewardForm({ reward, onClose }) {
         <div className="grid gap-6 md:grid-cols-2">
           <FormInput
             name="prize"
-            label="Reward Name"
-            placeholder="Enter reward name"
+            label={t("rewardName")}
+            placeholder={t("rewardNamePlaceholder")}
             required
           />
 
           <FormInput
             name="cost"
-            label="Points Required"
+            label={t("pointsRequired")}
             type="number"
             min="0"
-            placeholder="10000"
+            placeholder={t("pointsPlaceholder")}
             required
           />
         </div>
 
         <FormTextarea
           name="description"
-          label="Description"
-          placeholder="Enter description"
+          label={t("descriptionLabel")}
+          placeholder={t("descriptionPlaceholder")}
           required
         />
 
+        <div className="rounded-lg border p-3 bg-muted/30">
+          <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+          <FormInput
+            name="prizeFr"
+            label={t("prizeFr") ?? "Prize name (French)"}
+            placeholder={t("prizeFrPlaceholder") ?? "French prize name (optional)"}
+          />
+          <div className="mt-2">
+            <FormTextarea
+              name="descriptionFr"
+              label={t("descriptionFr") ?? "Description (French)"}
+              placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
-            Reward Image <span className="text-red-500">*</span>
+            {t("rewardImage")} <span className="text-red-500">*</span>
           </Label>
           <Uploader
             api={api}
@@ -151,33 +178,33 @@ export function RewardForm({ reward, onClose }) {
 
         <FormInput
           name="claimUrl"
-          label="Claim URL"
+          label={t("claimUrl")}
           type="url"
-          placeholder="https://example.com/claim"
-          description="Optional"
+          placeholder={t("claimUrlPlaceholder")}
+          description={t("optional")}
         />
 
         <div className="space-y-4">
           <FormSwitch
             name="enabled"
-            label="Enable Reward"
-            description="Make this reward available for redemption"
+            label={t("enableReward")}
+            description={t("enableRewardDescription")}
           />
 
           <FormSwitch
             name="allowMultiple"
-            label="Allow Multiple Redemptions"
-            description="Allow users to redeem this reward multiple times"
+            label={t("allowMultiple")}
+            description={t("allowMultipleDescription")}
           />
 
           {watchedAllowMultiple && (
             <FormInput
               name="maxRedemptions"
-              label="Maximum Redemptions"
+              label={t("maxRedemptions")}
               type="number"
               min="1"
-              placeholder="Enter max redemptions"
-              description="Leave empty for unlimited"
+              placeholder={t("maxRedemptionsPlaceholder")}
+              description={t("maxRedemptionsHint")}
               className="w-32"
             />
           )}
@@ -190,7 +217,7 @@ export function RewardForm({ reward, onClose }) {
             onClick={onClose}
             disabled={form.formState.isSubmitting}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             type="submit"
@@ -199,11 +226,11 @@ export function RewardForm({ reward, onClose }) {
           >
             {form.formState.isSubmitting
               ? reward
-                ? "Saving..."
-                : "Adding..."
+                ? t("saving")
+                : t("adding")
               : reward
-                ? "Save Changes"
-                : "Add Reward"}
+                ? t("saveChanges")
+                : t("addReward")}
           </Button>
         </div>
       </form>

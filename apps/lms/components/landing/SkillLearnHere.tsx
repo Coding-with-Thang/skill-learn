@@ -5,8 +5,10 @@ import { Link } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Lightbulb, Trophy, TrendingUp, Sparkles, X } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
+import { useTranslations } from "next-intl";
 
 export default function SkillLearnHere() {
+  const t = useTranslations("skillLearnHere");
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -56,17 +58,17 @@ export default function SkillLearnHere() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-xs font-bold uppercase tracking-widest leading-none">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              New Performance Suite
+              {t("badge")}
             </div>
 
             <h2 className="text-brand-teal md:text-7xl font-extrabold leading-[1.1] tracking-tight font-display">
-              Empower Your <br />
-              Team with <br />
-              Skill-Learn
+              {t("titleLine1")} <br />
+              {t("titleLine2")} <br />
+              {t("titleLine3")}
             </h2>
 
             <p className="text-lg md:text-xl font-medium text-white/90 max-w-lg leading-relaxed">
-              Experience the next generation of team growth. Our platform integrates deep performance analytics with gamified learning to unlock your team's full potential.
+              {t("subtitle")}
             </p>
 
             <div className="flex flex-wrap gap-4 pt-4">
@@ -76,7 +78,7 @@ export default function SkillLearnHere() {
                 className="bg-white text-blue-600 hover:bg-white/90 h-14 px-8 rounded-4xl font-bold text-lg group shadow-lg shadow-black/5"
               >
                 <Link href="/pricing">
-                  Get Started Free
+                  {t("getStartedFree")}
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
@@ -87,7 +89,7 @@ export default function SkillLearnHere() {
                 className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 h-14 px-8 rounded-4xl font-bold text-lg"
               >
                 <Play className="mr-2 w-5 h-5 fill-current" />
-                Watch Video
+                {t("watchVideo")}
               </Button>
             </div>
           </motion.div>
@@ -104,8 +106,8 @@ export default function SkillLearnHere() {
               {/* Header */}
               <div className="flex justify-between items-start mb-8">
                 <div>
-                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">Performance Insights</h3>
-                  <p className="text-sm text-slate-400 font-medium">Real-time engagement metrics</p>
+                  <h3 className="text-2xl font-black text-slate-800 tracking-tight">{t("performanceInsights")}</h3>
+                  <p className="text-sm text-slate-400 font-medium">{t("realtimeMetrics")}</p>
                 </div>
                 <div className="flex gap-1">
                   <div className="w-1 h-1 rounded-full bg-slate-200" />
@@ -142,7 +144,7 @@ export default function SkillLearnHere() {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-4xl font-black text-slate-800 leading-none">85%</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Complete</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{t("complete")}</span>
                 </div>
 
                 {/* Micro trend labeling */}
@@ -164,7 +166,7 @@ export default function SkillLearnHere() {
                     <TrendingUp className="w-4 h-4" />
                     12%
                   </div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">Engagement Boost</div>
+                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{t("engagementBoost")}</div>
                 </div>
               </div>
             </motion.div>
@@ -183,8 +185,8 @@ export default function SkillLearnHere() {
                 <Trophy className="text-orange-400 w-6 h-6" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Team Progress</p>
-                <p className="text-sm font-black text-slate-800">Gold Achievement</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{t("teamProgress")}</p>
+                <p className="text-sm font-black text-slate-800">{t("goldAchievement")}</p>
               </div>
             </motion.div>
 
@@ -200,7 +202,7 @@ export default function SkillLearnHere() {
                 <TrendingUp className="text-emerald-500 w-5 h-5" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monthly Boost</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("monthlyBoost")}</p>
                 <p className="text-xs font-black text-slate-800">+ 12% Engagement</p>
               </div>
             </motion.div>

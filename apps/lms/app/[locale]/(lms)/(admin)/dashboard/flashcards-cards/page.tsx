@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import {
   Card,
@@ -50,6 +51,7 @@ type CardItem = { id: string; question: string; answer: string; categoryId: stri
 type CategoryItem = { id: string; name: string };
 
 export default function FlashCardsAdminCardsPage() {
+  const t = useTranslations("adminFlashcardsCards");
   const [cards, setCards] = useState<CardItem[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +72,7 @@ export default function FlashCardsAdminCardsPage() {
       setCategories((catsData.categories ?? []) as CategoryItem[]);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to load data");
+      toast.error(e.response?.data?.error || t("errorLoad"));
       setCards([]);
       setCategories([]);
     } finally {
@@ -88,14 +90,14 @@ export default function FlashCardsAdminCardsPage() {
       : cards.filter((c) => c.category?.id === categoryFilter);
 
   const handleDelete = async (card) => {
-    if (!window.confirm("Delete this card?")) return;
+    if (!window.confirm(t("confirmDelete"))) return;
     try {
       await api.delete(`/admin/flashcards/cards/${card.id}`);
-      toast.success("Card deleted");
+      toast.success(t("toastDeleted"));
       fetchData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Delete failed");
+      toast.error(e.response?.data?.error || t("errorDelete"));
     }
   };
 
@@ -109,12 +111,12 @@ export default function FlashCardsAdminCardsPage() {
         categoryId: editCard.categoryId,
         difficulty: editCard.difficulty || null,
       });
-      toast.success("Card updated");
+      toast.success(t("toastUpdated"));
       setEditCard(null);
       fetchData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Update failed");
+      toast.error(e.response?.data?.error || t("errorUpdate"));
     } finally {
       setSaving(false);
     }
@@ -125,9 +127,9 @@ export default function FlashCardsAdminCardsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Manage Flash Cards</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          View, edit, and delete flash cards across your tenant.
+          {t("description")}
         </p>
       </div>
 
@@ -137,22 +139,22 @@ export default function FlashCardsAdminCardsPage() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Layers className="h-5 w-5" />
-                All Cards
+                {t("allCards")}
               </CardTitle>
-              <CardDescription>{filtered.length} cards</CardDescription>
+              <CardDescription>{t("cardsCount", { count: filtered.length })}</CardDescription>
             </div>
             <Link href="/flashcards/create-card">
               <Button variant="outline" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
-                Create Card
+                {t("createCard")}
               </Button>
             </Link>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by category" />
+                <SelectValue placeholder={t("filterByCategory")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
+                <SelectItem value="all">{t("allCategories")}</SelectItem>
                 {categories.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -165,16 +167,16 @@ export default function FlashCardsAdminCardsPage() {
         <CardContent>
           {filtered.length === 0 ? (
             <p className="text-center py-12 text-muted-foreground">
-              No flash cards yet.
+              {t("noCards")}
             </p>
           ) : (
             <div className="rounded-4xld border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Question</TableHead>
-                    <TableHead>Answer</TableHead>
-                    <TableHead>Category</TableHead>
+                    <TableHead>{t("question")}</TableHead>
+                    <TableHead>{t("answer")}</TableHead>
+                    <TableHead>{t("category")}</TableHead>
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
@@ -208,14 +210,14 @@ export default function FlashCardsAdminCardsPage() {
                               }
                             >
                               <Pencil className="h-4 w-4 mr-2" />
-                              Edit
+                              {t("edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-brand-tealestructive"
                               onClick={() => handleDelete(card)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
+                              {t("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -232,12 +234,12 @@ export default function FlashCardsAdminCardsPage() {
       <Dialog open={!!editCard} onOpenChange={(o) => !o && setEditCard(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Card</DialogTitle>
+            <DialogTitle>{t("editCard")}</DialogTitle>
           </DialogHeader>
           {editCard && (
             <div className="space-y-4 py-4">
               <div>
-                <Label>Question</Label>
+                <Label>{t("question")}</Label>
                 <Textarea
                   value={editCard.question}
                   onChange={(e) =>
@@ -248,7 +250,7 @@ export default function FlashCardsAdminCardsPage() {
                 />
               </div>
               <div>
-                <Label>Answer</Label>
+                <Label>{t("answer")}</Label>
                 <Textarea
                   value={editCard.answer}
                   onChange={(e) =>
@@ -259,7 +261,7 @@ export default function FlashCardsAdminCardsPage() {
                 />
               </div>
               <div>
-                <Label>Category</Label>
+                <Label>{t("category")}</Label>
                 <Select
                   value={editCard.categoryId}
                   onValueChange={(v) =>
@@ -279,7 +281,7 @@ export default function FlashCardsAdminCardsPage() {
                 </Select>
               </div>
               <div>
-                <Label>Difficulty</Label>
+                <Label>{t("difficulty")}</Label>
                 <Select
                   value={editCard.difficulty != null ? String(editCard.difficulty) : "none"}
                   onValueChange={(v) =>
@@ -287,13 +289,13 @@ export default function FlashCardsAdminCardsPage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="None (always show)" />
+                    <SelectValue placeholder={t("difficultyNone")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None (always show)</SelectItem>
-                    <SelectItem value="easy">Easy</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="hard">Hard</SelectItem>
+                    <SelectItem value="none">{t("difficultyNone")}</SelectItem>
+                    <SelectItem value="easy">{t("difficultyEasy")}</SelectItem>
+                    <SelectItem value="good">{t("difficultyGood")}</SelectItem>
+                    <SelectItem value="hard">{t("difficultyHard")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -301,10 +303,10 @@ export default function FlashCardsAdminCardsPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditCard(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleSaveEdit} disabled={saving}>
-              {saving ? "Saving…" : "Save"}
+              {saving ? t("saving") : t("save")}
             </Button>
           </DialogFooter>
         </DialogContent>

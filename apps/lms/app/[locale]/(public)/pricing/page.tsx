@@ -48,6 +48,7 @@ const pricingTiers = [
     color: "from-gray-500 to-gray-600",
     bgColor: "bg-gray-50",
     borderColor: "border-gray-200",
+    usersKey: "usersUpTo5",
     users: "Up to 5 users",
     storage: "1 GB storage",
     features: [
@@ -80,6 +81,7 @@ const pricingTiers = [
     color: "from-brand-teal to-blue-600",
     bgColor: "bg-brand-teal/5",
     borderColor: "border-brand-teal",
+    usersKey: "usersUpTo10",
     users: "Up to 10 users",
     storage: "10 GB storage",
     features: [
@@ -112,6 +114,7 @@ const pricingTiers = [
     color: "from-brand-teal to-blue-600",
     bgColor: "bg-brand-teal/5",
     borderColor: "border-brand-teal",
+    usersKey: "usersUpTo100",
     users: "Up to 100 users",
     storage: "25 GB storage",
     features: [
@@ -145,6 +148,7 @@ const pricingTiers = [
     color: "from-purple-600 to-indigo-600",
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
+    usersKey: "usersUnlimited",
     users: "Unlimited users",
     storage: "Unlimited storage",
     features: [
@@ -173,10 +177,10 @@ const getFeatureCategories = (t) => [
     nameKey: "usersContent",
     icon: Users,
     features: [
-      { name: "Team members", nameKey: "teamMembers", free: "5", starter: "10", pro: "100", enterprise: t("unlimitedUsers") },
-      { name: "Courses", nameKey: "courses", free: "5", starter: t("unlimitedCourses"), pro: t("unlimitedCourses"), enterprise: t("unlimitedCourses") },
-      { name: "Storage", nameKey: "storage", free: "1 GB", starter: "10 GB", pro: "25 GB", enterprise: t("unlimitedUsers") },
-      { name: "File uploads", nameKey: "fileUploads", free: "100 MB/file", starter: "500 MB/file", pro: "1 GB/file", enterprise: t("unlimitedUsers") },
+      { name: "Team members", nameKey: "teamMembers", free: "5", starter: "10", pro: "100", enterpriseKey: "valueUnlimited" },
+      { name: "Courses", nameKey: "courses", free: "5", starterKey: "valueUnlimited", proKey: "valueUnlimited", enterpriseKey: "valueUnlimited" },
+      { name: "Storage", nameKey: "storage", freeKey: "storage1GB", starterKey: "storage10GB", proKey: "storage25GB", enterpriseKey: "storageUnlimited" },
+      { name: "File uploads", nameKey: "fileUploads", freeKey: "file100MB", starterKey: "file500MB", proKey: "file1GB", enterpriseKey: "valueUnlimited" },
     ],
   },
   {
@@ -184,7 +188,7 @@ const getFeatureCategories = (t) => [
     nameKey: "learningFeatures",
     icon: BookOpen,
     features: [
-      { name: "Quizzes & assessments", nameKey: "quizzesAssessments", free: "Basic", starter: "Advanced", pro: "Advanced", enterprise: "Advanced" },
+      { name: "Quizzes & assessments", nameKey: "quizzesAssessments", freeKey: "valueBasic", starterKey: "valueAdvanced", proKey: "valueAdvanced", enterpriseKey: "valueAdvanced" },
       { name: "Course certificates", nameKey: "courseCertificates", free: true, starter: true, pro: true, enterprise: true },
       { name: "Learning paths", nameKey: "learningPaths", free: false, starter: true, pro: true, enterprise: true },
       { name: "SCORM support", nameKey: "scormSupport", free: false, starter: true, pro: true, enterprise: true },
@@ -196,7 +200,7 @@ const getFeatureCategories = (t) => [
     icon: Trophy,
     features: [
       { name: "Points system", nameKey: "pointsSystem", free: true, starter: true, pro: true, enterprise: true },
-      { name: "Leaderboards", nameKey: "leaderboards", free: "Basic", starter: "Full", pro: "Full", enterprise: "Custom" },
+      { name: "Leaderboards", nameKey: "leaderboards", freeKey: "valueBasic", starterKey: "leaderboardFull", proKey: "leaderboardFull", enterpriseKey: "valueCustom" },
       { name: "Badges & achievements", nameKey: "badgesAchievements", free: false, starter: true, pro: true, enterprise: true },
       { name: "Rewards store", nameKey: "rewardsStore", free: false, starter: true, pro: true, enterprise: true },
       { name: "Games & activities", nameKey: "gamesActivities", free: false, starter: true, pro: true, enterprise: true },
@@ -210,7 +214,7 @@ const getFeatureCategories = (t) => [
       { name: "Basic reports", nameKey: "basicReports", free: true, starter: true, pro: true, enterprise: true },
       { name: "Advanced analytics", nameKey: "advancedAnalytics", free: false, starter: true, pro: true, enterprise: true },
       { name: "Custom dashboards", nameKey: "customDashboards", free: false, starter: true, pro: true, enterprise: true },
-      { name: "Data export", nameKey: "dataExport", free: "CSV", starter: "CSV, Excel", pro: "CSV, Excel", enterprise: "All formats" },
+      { name: "Data export", nameKey: "dataExport", freeKey: "exportCsv", starterKey: "exportCsvExcel", proKey: "exportCsvExcel", enterpriseKey: "exportAllFormats" },
     ],
   },
   {
@@ -218,7 +222,7 @@ const getFeatureCategories = (t) => [
     nameKey: "administration",
     icon: Shield,
     features: [
-      { name: "Role management", nameKey: "roleManagement", free: "Custom", starter: "Custom", pro: "Custom", enterprise: "Advanced" },
+      { name: "Role management", nameKey: "roleManagement", freeKey: "valueCustom", starterKey: "valueCustom", proKey: "valueCustom", enterpriseKey: "valueAdvanced" },
       { name: "Feature controls", nameKey: "featureControls", free: true, starter: true, pro: true, enterprise: true },
       { name: "Audit logs", nameKey: "auditLogs", free: false, starter: true, pro: true, enterprise: true },
       { name: "Bulk operations", nameKey: "bulkOperations", free: false, starter: true, pro: true, enterprise: true },
@@ -293,32 +297,32 @@ const translateFeatureName = (name, t) => {
     "Up to 10 users": t("upTo10Users"),
     "Up to 100 users": t("upTo100Users"),
     "Unlimited users": t("unlimitedUsers"),
-    "5 courses": "5 courses",
+    "5 courses": t("fiveCourses"),
     "Unlimited courses": t("unlimitedCourses"),
-    "Basic quizzes": "Basic quizzes",
-    "Advanced quizzes": "Advanced quizzes",
+    "Basic quizzes": t("basicQuizzes"),
+    "Advanced quizzes": t("advancedQuizzes"),
     "Point system": t("pointsSystem"),
-    "Basic leaderboard": t("leaderboards") + " (Basic)",
-    "Full leaderboard": t("leaderboards") + " (Full)",
-    "Custom leaderboards": t("leaderboards") + " (Custom)",
+    "Basic leaderboard": `${t("leaderboards")} (${t("leaderboardBasic")})`,
+    "Full leaderboard": `${t("leaderboards")} (${t("leaderboardFull")})`,
+    "Custom leaderboards": `${t("leaderboards")} (${t("leaderboardCustom")})`,
     "Email support": t("emailSupport"),
     "24/7 phone support": t("phoneSupport"),
     "Standard analytics": t("basicReports"),
     "Advanced analytics": t("advancedAnalytics"),
     "Enterprise analytics": t("advancedAnalytics"),
-    "Custom branding": "Custom branding",
+    "Custom branding": t("customBranding"),
     "SSO integration": t("ssoIntegration"),
     "SSO/SAML/SCIM": t("samlScim"),
     "Priority support": t("prioritySupport"),
     "Advanced security": t("advancedSecurity"),
     "Gamification suite": t("gamification"),
     "Full gamification": t("gamification"),
-    "API access": "API access",
-    "White-label solution": "White-label solution",
+    "API access": t("apiAccess"),
+    "White-label solution": t("whiteLabel"),
     "Dedicated CSM": t("dedicatedCsm"),
     "SOC 2 compliance": t("soc2Type2"),
   };
-  return featureMap[name] || name;
+  return featureMap[name] ?? name;
 };
 
 // Pricing card component
@@ -390,7 +394,7 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
             {t("saveYear", { amount: (tier.price.monthly - tier.price.annually) * 12 })}
           </p>
         )}
-        <p className="text-sm text-gray-500 mt-2">{tier.users}</p>
+        <p className="text-sm text-gray-500 mt-2">{tier.usersKey ? t(tier.usersKey) : tier.users}</p>
       </div>
 
       {/* Features */}
@@ -449,23 +453,24 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
 function FeatureComparison() {
   const t = useTranslations("pricing");
   const featureCategories = getFeatureCategories(t);
-  const [expandedCategories, setExpandedCategories] = useState(new Set([t("usersContent")]));
+  const [expandedCategories, setExpandedCategories] = useState(new Set(["usersContent"]));
 
-  const toggleCategory = (name) => {
+  const toggleCategory = (nameKey) => {
     setExpandedCategories((prev) => {
       const next = new Set(prev);
-      if (next.has(name)) {
-        next.delete(name);
+      if (next.has(nameKey)) {
+        next.delete(nameKey);
       } else {
-        next.add(name);
+        next.add(nameKey);
       }
       return next;
     });
   };
 
-  const renderValue = (value) => {
+  const renderValue = (value, valueKey) => {
     if (value === true) return <Check className="w-5 h-5 text-green-500 mx-auto" />;
     if (value === false) return <X className="w-5 h-5 text-gray-300 mx-auto" />;
+    if (valueKey) return <span className="text-sm font-medium text-gray-700">{t(valueKey)}</span>;
     return <span className="text-sm font-medium text-gray-700">{value}</span>;
   };
 
@@ -513,13 +518,13 @@ function FeatureComparison() {
           {featureCategories.map((category) => {
             const Icon = category.icon;
             const categoryName = category.nameKey ? t(category.nameKey) : category.name;
-            const isExpanded = expandedCategories.has(categoryName);
+            const isExpanded = expandedCategories.has(category.nameKey);
 
             return (
-              <div key={category.name} className="mb-2">
+              <div key={category.nameKey} className="mb-2">
                 {/* Category header */}
                 <button
-                  onClick={() => toggleCategory(category.name)}
+                  onClick={() => toggleCategory(category.nameKey)}
                   className="w-full grid grid-cols-5 gap-4 items-center py-4 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -543,10 +548,10 @@ function FeatureComparison() {
                         className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-4xl-lg"
                       >
                         <div className="text-sm text-gray-600 pl-4">{featureName}</div>
-                        <div className="text-center">{renderValue(feature.free)}</div>
-                        <div className="text-center">{renderValue(feature.starter)}</div>
-                        <div className="text-center">{renderValue(feature.pro)}</div>
-                        <div className="text-center">{renderValue(feature.enterprise)}</div>
+                        <div className="text-center">{renderValue(feature.free, feature.freeKey)}</div>
+                        <div className="text-center">{renderValue(feature.starter, feature.starterKey)}</div>
+                        <div className="text-center">{renderValue(feature.pro, feature.proKey)}</div>
+                        <div className="text-center">{renderValue(feature.enterprise, feature.enterpriseKey)}</div>
                       </div>
                       );
                     })}

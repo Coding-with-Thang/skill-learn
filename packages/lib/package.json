@@ -109,6 +109,8 @@
     "./utils/flashCardPriority.ts": "./utils/flashCardPriority.ts",
     "./utils/flashCardFingerprint": "./utils/flashCardFingerprint.ts",
     "./utils/flashCardFingerprint.ts": "./utils/flashCardFingerprint.ts",
+    "./utils/i18nDb": "./utils/i18nDb.ts",
+    "./utils/i18nDb.ts": "./utils/i18nDb.ts",
     "./constants/defaultFeatures": "./constants/defaultFeatures.ts",
     "./constants/defaultFeatures.ts": "./constants/defaultFeatures.ts"
   },

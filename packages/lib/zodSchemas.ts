@@ -128,6 +128,10 @@ export const quizCreateSchema = z.object({
     .min(1, "Title is required")
     .max(200, "Title must be less than 200 characters"),
   description: z.string().optional(),
+  titleFr: z.string().max(200).optional(),
+  descriptionFr: z.string().optional(),
+  titleJson: z.record(z.string(), z.string()).optional(),
+  descriptionJson: z.record(z.string(), z.string()).optional(),
   imageUrl: z
     .string()
     .optional()
@@ -265,6 +269,10 @@ export const rewardCreateSchema = z.object({
     .string()
     .min(1, "Prize name is required")
     .max(200, "Prize name must be less than 200 characters"),
+  prizeFr: z.string().max(200).optional(),
+  descriptionFr: z.string().optional(),
+  prizeJson: z.record(z.string(), z.string()).optional(),
+  descriptionJson: z.record(z.string(), z.string()).optional(),
   cost: z
     .number()
     .int("Cost must be an integer")
@@ -297,6 +305,9 @@ export const rewardCreateSchema = z.object({
 
 export const rewardUpdateSchema = rewardCreateSchema.partial();
 
+// Localized string: { en: "...", fr: "..." } for i18n
+const localizedStringSchema = z.record(z.string(), z.string()).optional();
+
 // Category schemas
 export const categoryCreateSchema = z.object({
   name: z
@@ -304,6 +315,10 @@ export const categoryCreateSchema = z.object({
     .min(1, "Category name is required")
     .max(100, "Category name must be less than 100 characters"),
   description: z.string().optional(),
+  nameFr: z.string().max(100).optional(),
+  descriptionFr: z.string().optional(),
+  nameJson: localizedStringSchema,
+  descriptionJson: localizedStringSchema,
   imageUrl: z.string().optional(),
   fileKey: z.string().optional(),
   isActive: z.boolean().optional().default(true),

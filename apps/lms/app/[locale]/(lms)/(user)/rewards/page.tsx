@@ -123,7 +123,7 @@ const RewardsHero = ({ t }) => (
     )
   }
 
-const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
+const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading, t }) => {
   const { isOneTime, max, isFullyRedeemed } = status || {};
 
   return (
@@ -141,11 +141,11 @@ const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) =
         <div className="absolute top-4 left-4 flex gap-2">
           {isOneTime ? (
             <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-gray-200">
-              One-time
+              {t("oneTime")}
             </span>
           ) : (
             <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-purple-200">
-              {max ? `Limit: ${max}` : "Multiple"}
+              {max ? t("limit", { max }) : t("multiple")}
             </span>
           )}
         </div>
@@ -166,15 +166,15 @@ const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) =
               }`}
           >
             {isLoading
-              ? "Processing..."
+              ? t("processing")
               : isFullyRedeemed
-                ? (isOneTime ? "Already Redeemed" : "Max Redemptions Reached")
-                : "Redeem Reward"
+                ? (isOneTime ? t("alreadyRedeemed") : t("maxRedemptionsReached"))
+                : t("redeemReward")
             }
           </EnhancedButton>
           {isFullyRedeemed && (
             <p className="text-xs text-gray-400 mt-2">
-              * View details in Redemption History below
+              * {t("viewDetailsInHistory")}
             </p>
           )}
         </div>
@@ -183,7 +183,7 @@ const FeaturedRewardCard = ({ reward, status, onRedeem, disabled, isLoading }) =
   )
 }
 
-const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
+const RewardCard = ({ reward, status, onRedeem, disabled, isLoading, t }) => {
   const { isOneTime, max, isFullyRedeemed } = status || {};
 
   return (
@@ -203,11 +203,11 @@ const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
         <div className="absolute top-3 left-3">
           {isOneTime ? (
             <span className="bg-gray-100/90 backdrop-blur-sm text-gray-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-4xld border border-gray-200">
-              One-time
+              {t("oneTime")}
             </span>
           ) : (
             <span className="bg-purple-100/90 backdrop-blur-sm text-purple-700 text-[10px] uppercase tracking-wide font-bold px-2 py-1 rounded-4xld border border-purple-200">
-              {max ? `Limit: ${max}` : "Multiple"}
+              {max ? t("limit", { max }) : t("multiple")}
             </span>
           )}
         </div>
@@ -227,10 +227,10 @@ const RewardCard = ({ reward, status, onRedeem, disabled, isLoading }) => {
           loading={isLoading}
         >
           {isLoading
-            ? "Processing..."
+            ? t("processing")
             : isFullyRedeemed
-              ? (isOneTime ? "Redeemed" : "Max Reached")
-              : "Redeem"
+              ? (isOneTime ? t("redeemed") : t("maxReached"))
+              : t("redeem")
           }
         </EnhancedButton>
       </div>
@@ -261,7 +261,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
       <div className="flex flex-col gap-2">
         <span className="text-success flex items-center gap-1">
           <Check size={16} />
-          Claimed
+          {t("claimed")}
         </span>
         {redemption.claimUrl && (
           <BlurredClaimUrl url={redemption.claimUrl} />
@@ -274,7 +274,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
     return (
       <span className="text-warning flex items-center gap-1">
         <Circle size={16} className="fill-warning" />
-        Pending
+        {t("pending")}
       </span>
     )
   }
@@ -294,11 +294,11 @@ const ClaimButton = ({ redemption, onClaim }) => {
     >
       {claiming ? (
         <span className="flex items-center gap-2">
-          <span className="animate-spin">⭐</span> Claiming...
+          <span className="animate-spin">⭐</span> {t("claiming")}
         </span>
       ) : (
         <span className="flex items-center gap-2">
-          <Gift size={16} /> Claim Reward
+          <Gift size={16} /> {t("claimReward")}
         </span>
       )}
     </EnhancedButton>
@@ -306,6 +306,7 @@ const ClaimButton = ({ redemption, onClaim }) => {
 }
 
 const BlurredClaimUrl = ({ url }) => {
+  const t = useTranslations("rewards");
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -325,14 +326,14 @@ const BlurredClaimUrl = ({ url }) => {
       </span>
       {!isHovered && (
         <span className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
-          Hover to reveal
+          {t("hoverToReveal")}
         </span>
       )}
     </a>
   );
 };
 
-const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, isLoading }) => {
+const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, isLoading, t }) => {
   if (!reward) return null;
 
   const insufficientPoints = userPoints < reward.cost;
@@ -350,10 +351,10 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
                   <div className="p-2 bg-red-100 rounded-full">
                     <div className="text-red-600 font-bold text-lg select-none">!</div>
                   </div>
-                  <span className="text-gray-900">Insufficient Points</span>
+                  <span className="text-gray-900">{t("insufficientPointsTitle")}</span>
                 </>
               ) : (
-                <span className="text-gray-900">Confirm Redemption</span>
+                <span className="text-gray-900">{t("confirmRedemption")}</span>
               )}
             </DialogTitle>
           </div>
@@ -376,24 +377,24 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
 
           <p className="text-center text-gray-500 text-sm mb-6 px-4">
             {insufficientPoints
-              ? "You do not have enough points to redeem this reward yet. Complete more training modules to build your balance."
-              : "Are you sure you want to redeem this reward? This action will deduct points from your balance."
+              ? t("insufficientPoints")
+              : t("confirmRedemptionMessage")
             }
           </p>
 
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-medium text-gray-500">Current Balance</span>
+              <span className="text-sm font-medium text-gray-500">{t("currentBalance")}</span>
               <span className="text-sm font-bold text-gray-900">{new Intl.NumberFormat('en-US').format(userPoints)} pts</span>
             </div>
             <div className="flex justify-between items-center mb-3">
-              <span className="text-sm font-medium text-gray-500">Redemption Cost</span>
+              <span className="text-sm font-medium text-gray-500">{t("redemptionCost")}</span>
               <span className="text-sm font-bold text-gray-900">{new Intl.NumberFormat('en-US').format(reward.cost)} pts</span>
             </div>
             <div className="h-px bg-gray-200 my-3"></div>
             <div className="flex justify-between items-center">
               <span className={`text-sm font-bold ${insufficientPoints ? 'text-red-500' : 'text-gray-500'}`}>
-                {insufficientPoints ? 'Points Shortfall' : 'Remaining Balance'}
+                {insufficientPoints ? t("pointsShortfall") : t("remainingBalance")}
               </span>
               <span className={`text-sm font-bold ${insufficientPoints ? 'text-red-500' : 'text-green-600'}`}>
                 {insufficientPoints
@@ -416,14 +417,14 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
             className="flex-1 border-gray-200 hover:bg-gray-100/50 hover:text-gray-900 text-gray-700"
             disabled={isLoading}
           >
-            Cancel
+            {t("cancel")}
           </EnhancedButton>
           {insufficientPoints ? (
             <EnhancedButton
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => window.location.href = '/training'} // Default action
+              onClick={() => window.location.href = '/training'}
             >
-              Earn More Points
+              {t("earnMorePoints")}
             </EnhancedButton>
           ) : (
             <EnhancedButton
@@ -431,7 +432,7 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
               onClick={onConfirm}
               loading={isLoading}
             >
-              Confirm Redeem
+              {t("confirmRedeem")}
             </EnhancedButton>
           )}
         </div>
@@ -440,7 +441,7 @@ const RedemptionModal = ({ open, onOpenChange, reward, userPoints, onConfirm, is
   );
 };
 
-const RedemptionGroup = ({ redemptions, onClaimReward }) => {
+const RedemptionGroup = ({ redemptions, onClaimReward, t }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const latestRedemption = redemptions[0]; // Assuming sorted by date desc
   const totalRedemptions = redemptions.length;
@@ -469,10 +470,10 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-sm text-info hover:text-info-hover mt-1 flex items-center gap-1 transition-colors duration-200"
               >
-                {isExpanded ? "Hide" : "Show"} all {totalRedemptions} redemptions
+                {isExpanded ? t("hide") : t("show")} {t("showAllRedemptions", { count: totalRedemptions })}
                 {unclaimedCount > 0 && !isExpanded && (
                   <span className="text-warning">
-                    ({unclaimedCount} unclaimed)
+                    ({unclaimedCount} {t("unclaimed")})
                   </span>
                 )}
               </button>
@@ -528,7 +529,7 @@ const RedemptionGroup = ({ redemptions, onClaimReward }) => {
   );
 };
 
-const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
+const RedemptionHistory = ({ rewardHistory, onClaimReward, t }) => {
   if (!rewardHistory.length) {
     return (
       <div className="text-center py-12">
@@ -536,10 +537,10 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
           <Gift className="h-6 w-6 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium text-foreground">
-          No Rewards Redeemed Yet
+          {t("noRewardsRedeemedYet")}
         </h3>
         <p className="mt-1 text-muted-foreground">
-          Complete quizzes and earn points to redeem exciting rewards!
+          {t("noHistoryDescription")}
         </p>
       </div>
     )
@@ -572,10 +573,10 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Reward</TableHead>
-            <TableHead>Points</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>{t("reward")}</TableHead>
+            <TableHead>{t("points")}</TableHead>
+            <TableHead>{t("status")}</TableHead>
+            <TableHead>{t("date")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -586,6 +587,7 @@ const RedemptionHistory = ({ rewardHistory, onClaimReward }) => {
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               )}
               onClaimReward={onClaimReward}
+              t={t}
             />
           ))}
         </TableBody>
@@ -705,8 +707,8 @@ export default function RewardsPage() {
   return (
     <FeatureGate
       feature="rewards_store"
-      featureName="Rewards Store"
-      fallback={<FeatureDisabledPage featureName="Rewards Store" />}
+      featureName={t("rewardsStore")}
+      fallback={<FeatureDisabledPage featureName={t("rewardsStore")} />}
     >
       <div className="min-h-screen bg-gray-50/50 p-4 sm:p-8">
         <div className="max-w-7xl mx-auto pb-20">
@@ -720,7 +722,7 @@ export default function RewardsPage() {
           {featuredReward && (
             <section className="mb-12">
               <div className="flex items-center gap-2 mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Featured Reward</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t("featuredReward")}</h2>
               </div>
               <FeaturedRewardCard
                 reward={featuredReward}
@@ -728,6 +730,7 @@ export default function RewardsPage() {
                 onRedeem={(r) => handleRewardClick(r, getRedemptionStatus(r))}
                 disabled={false}
                 isLoading={redeemingRewardId === featuredReward.id}
+                t={t}
               />
             </section>
           )}
@@ -735,20 +738,19 @@ export default function RewardsPage() {
           {/* All Rewards */}
           <section className="mb-12">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-              <h2 className="text-xl font-bold text-gray-900">All Rewards</h2>
+              <h2 className="text-xl font-bold text-gray-900">{t("allRewards")}</h2>
               <div className="flex gap-2">
-                {/* Placeholder for filters if needed, or simple text for now */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">{t("sortBy")}</span>
                   <select className="text-sm border-gray-300 rounded-4xld shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white py-1.5 pl-3 pr-8">
-                    <option>Popularity</option>
-                    <option>Cost: Low to High</option>
-                    <option>Cost: High to Low</option>
+                    <option>{t("popularity")}</option>
+                    <option>{t("costLowToHigh")}</option>
+                    <option>{t("costHighToLow")}</option>
                   </select>
                 </div>
                 <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-4xld text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                   <Filter className="h-4 w-4 mr-2 text-gray-500" />
-                  Filter
+                  {t("filter")}
                 </button>
               </div>
             </div>
@@ -763,6 +765,7 @@ export default function RewardsPage() {
                     onRedeem={(r) => handleRewardClick(r, status)}
                     disabled={false}
                     isLoading={redeemingRewardId === reward.id}
+                    t={t}
                   />
                 );
               })}
@@ -771,11 +774,12 @@ export default function RewardsPage() {
 
           {/* Redemption History */}
           <section id="redemption-history" className="scroll-mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Redemption History</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">{t("redemptionHistory")}</h2>
             <InteractiveCard className="rounded-xl shadow-sm border border-gray-200 overflow-hidden">
               <RedemptionHistory
                 rewardHistory={rewardHistory}
                 onClaimReward={handleClaimReward}
+                t={t}
               />
             </InteractiveCard>
           </section>
@@ -788,6 +792,7 @@ export default function RewardsPage() {
           userPoints={points}
           onConfirm={confirmRedemption}
           isLoading={redeemingRewardId === selectedReward?.id}
+          t={t}
         />
       </div>
     </FeatureGate>

@@ -245,7 +245,7 @@ export default function DeckBuilderPage() {
                               }`}
                             onClick={() => {
                               if (atCardLimit && !isSelected(c.id)) {
-                                toast.error(`Deck limit: ${limits.maxCardsPerDeck} cards max. Upgrade your plan for larger decks.`);
+                                toast.error(t("deckLimitCardsMax", { max: limits.maxCardsPerDeck }));
                                 return;
                               }
                               toggleCard(c.id);
@@ -264,7 +264,7 @@ export default function DeckBuilderPage() {
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{c.question}</p>
                               <p className="text-xs text-muted-foreground">
-                                {c.source === "shared" ? "Shared" : "Owned"}
+                                {c.source === "shared" ? t("shared") : t("owned")}
                               </p>
                             </div>
                           </div>
@@ -288,15 +288,15 @@ export default function DeckBuilderPage() {
             }
           >
             {saving
-              ? "Saving..."
+              ? t("saving")
               : !isEdit && !limits.canCreateDeck
-                ? "Deck limit reached"
+                ? t("deckLimitReached")
                 : isEdit
-                  ? "Save changes"
-                  : "Create deck"}
+                  ? t("saveChanges")
+                  : t("createDeck")}
           </Button>
           <Button variant="outline" onClick={() => router.push("/flashcards")}>
-            Cancel
+            {t("cancel")}
           </Button>
         </div>
       </div>

@@ -17,9 +17,11 @@ import { Button } from "@skill-learn/ui/components/button";
 import { getDashboardStats } from "@/lib/dashboard";
 import { Link } from "@/i18n/navigation";
 import { formatDistanceToNow } from "date-fns";
+import { getTranslations } from "next-intl/server";
 import TenantSummary from "@/components/admin/TenantSummary";
 
 export default async function DashboardPage() {
+  const t = await getTranslations("adminDashboard");
   let stats;
   try {
     stats = await getDashboardStats();
@@ -51,7 +53,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Total Users</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("totalUsers")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{totalUsers.value.toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-primary/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -63,7 +65,7 @@ export default async function DashboardPage() {
                 <TrendingUp className={`w-3 h-3 ${totalUsers.trend < 0 ? 'rotate-180' : ''}`} />
                 {Math.abs(totalUsers.trend).toFixed(1)}%
               </div>
-              <span className="text-[11px] text-muted-foreground ml-2 font-medium">vs last month</span>
+              <span className="text-[11px] text-muted-foreground ml-2 font-medium">{t("vsLastMonth")}</span>
             </div>
           </CardContent>
         </Card>
@@ -73,7 +75,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Active Rewards</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("activeRewards")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{activeRewards.value}</h3>
               </div>
               <div className="p-3 bg-violet-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -81,7 +83,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center mt-6">
-              <span className="text-[11px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">Global Catalog</span>
+              <span className="text-[11px] font-medium text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">{t("globalCatalog")}</span>
             </div>
           </CardContent>
         </Card>
@@ -91,7 +93,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Points Awarded</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("pointsAwarded")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{totalPointsAwarded.value.toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-amber-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -103,7 +105,7 @@ export default async function DashboardPage() {
                 <TrendingUp className={`w-3 h-3 ${totalPointsAwarded.trend < 0 ? 'rotate-180' : ''}`} />
                 {Math.abs(totalPointsAwarded.trend).toFixed(1)}%
               </div>
-              <span className="text-[11px] text-muted-foreground ml-2 font-medium">Growth rate</span>
+              <span className="text-[11px] text-muted-foreground ml-2 font-medium">{t("growthRate")}</span>
             </div>
           </CardContent>
         </Card>
@@ -113,7 +115,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Rewards Claimed</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("rewardsClaimed")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{rewardsClaimed.value}</h3>
               </div>
               <div className="p-3 bg-emerald-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -121,7 +123,7 @@ export default async function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center mt-6">
-              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-pulse">Live: 2m ago</span>
+              <span className="text-[11px] font-medium text-emerald-600 bg-emerald-500/10 px-2 py-0.5 rounded-full animate-pulse">{t("liveAgo")}</span>
             </div>
           </CardContent>
         </Card>
@@ -131,7 +133,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Uncompleted Courses</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("uncompletedCourses")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{courseUncompleted.uncompletedCount.toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-blue-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -140,7 +142,7 @@ export default async function DashboardPage() {
             </div>
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                <span>Uncompleted %</span>
+                <span>{t("uncompletedPct")}</span>
                 <span className="text-blue-600">{courseUncompleted.uncompletedPercentage}%</span>
               </div>
               <Progress
@@ -149,9 +151,9 @@ export default async function DashboardPage() {
                 indicatorClassName="bg-blue-500"
               />
               <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                <span>{courseUncompleted.totalAssignments.toLocaleString()} assignments</span>
+                <span>{courseUncompleted.totalAssignments.toLocaleString()} {t("assignments")}</span>
                 <Link href="/dashboard/course-status" className="text-blue-600 hover:underline font-bold">
-                  view more
+                  {t("viewMore")}
                 </Link>
               </div>
             </div>
@@ -163,7 +165,7 @@ export default async function DashboardPage() {
           <CardContent className="p-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Uncompleted Quizzes</p>
+                <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("uncompletedQuizzes")}</p>
                 <h3 className="text-3xl font-extrabold tracking-tight">{quizUncompleted.uncompletedCount.toLocaleString()}</h3>
               </div>
               <div className="p-3 bg-indigo-500/10 rounded-4xl group-hover:scale-110 transition-transform duration-300">
@@ -172,7 +174,7 @@ export default async function DashboardPage() {
             </div>
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                <span>Uncompleted %</span>
+                <span>{t("uncompletedPct")}</span>
                 <span className="text-indigo-600">{quizUncompleted.uncompletedPercentage}%</span>
               </div>
               <Progress
@@ -181,9 +183,9 @@ export default async function DashboardPage() {
                 indicatorClassName="bg-indigo-500"
               />
               <div className="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-                <span>{quizUncompleted.totalAssignments.toLocaleString()} assignments</span>
+                <span>{quizUncompleted.totalAssignments.toLocaleString()} {t("assignments")}</span>
                 <Link href="/dashboard/quiz-status" className="text-indigo-600 hover:underline font-bold">
-                  view more
+                  {t("viewMore")}
                 </Link>
               </div>
             </div>
@@ -199,11 +201,11 @@ export default async function DashboardPage() {
         <Card className="lg:col-span-2 shadow-none border border-border/50 bg-card/30 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border/30 pb-4">
             <div className="space-y-0.5">
-              <CardTitle className="text-lg font-bold">User Activity</CardTitle>
-              <CardDescription>Daily engagement metrics</CardDescription>
+              <CardTitle className="text-lg font-bold">{t("userActivity")}</CardTitle>
+              <CardDescription>{t("dailyEngagement")}</CardDescription>
             </div>
             <Button variant="outline" size="sm" className="h-9 rounded-xl gap-2 font-semibold">
-              Last 7 Days <ChevronDown className="h-4 w-4" />
+              {t("last7Days")} <ChevronDown className="h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent className="p-6 pt-4">
@@ -215,8 +217,8 @@ export default async function DashboardPage() {
 
         <Card className="shadow-none border border-border/50 bg-card/30 backdrop-blur-sm">
           <CardHeader className="border-b border-border/30 pb-4">
-            <CardTitle className="text-lg font-bold">Points Distribution</CardTitle>
-            <CardDescription>Usage across categories</CardDescription>
+            <CardTitle className="text-lg font-bold">{t("pointsDistribution")}</CardTitle>
+            <CardDescription>{t("usageAcrossCategories")}</CardDescription>
           </CardHeader>
           <CardContent className="p-6">
             <div className="h-[200px] w-full">
@@ -239,8 +241,8 @@ export default async function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-1">
             <div className="space-y-1">
-              <h2 className="text-xl font-bold tracking-tight">Category Performance</h2>
-              <p className="text-sm text-muted-foreground">Course completion & scoring efficiency</p>
+              <h2 className="text-xl font-bold tracking-tight">{t("categoryPerformance")}</h2>
+              <p className="text-sm text-muted-foreground">{t("courseCompletionEfficiency")}</p>
             </div>
           </div>
 
@@ -261,14 +263,14 @@ export default async function DashboardPage() {
                   <div className="space-y-6">
                     <div className="space-y-2">
                       <div className="flex justify-between items-end">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Completion</span>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t("completion")}</span>
                         <span className="text-sm font-black text-primary">{Math.round(category.completionRate)}%</span>
                       </div>
                       <Progress value={category.completionRate} className="h-2 rounded-full bg-muted/50" indicatorClassName="bg-primary shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
                     </div>
 
                     <div className="flex justify-between items-center pt-2 border-t border-border/30">
-                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Avg. Score</span>
+                      <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{t("avgScore")}</span>
                       <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-black">{category.averageScore.toFixed(0)}</span>
                         <span className="text-sm font-bold text-muted-foreground">%</span>
@@ -284,8 +286,8 @@ export default async function DashboardPage() {
         {/* Recent Activity */}
         <div className="space-y-6">
           <div className="flex items-center justify-between px-1">
-            <h2 className="text-xl font-bold tracking-tight">Activity</h2>
-            <Link href="/dashboard/audit-logs" className="text-xs font-bold text-primary hover:underline bg-primary/5 px-3 py-1.5 rounded-full">View Logs</Link>
+            <h2 className="text-xl font-bold tracking-tight">{t("activity")}</h2>
+            <Link href="/dashboard/audit-logs" className="text-xs font-bold text-primary hover:underline bg-primary/5 px-3 py-1.5 rounded-full">{t("viewLogs")}</Link>
           </div>
           <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm">
             <CardContent className="p-6 space-y-6">

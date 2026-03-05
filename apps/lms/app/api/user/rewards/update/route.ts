@@ -61,9 +61,25 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Update updateData with the signed URL if fileKey was provided
     if (updateData.fileKey && imageUrl) {
       updateData.imageUrl = imageUrl;
+    }
+
+    if (updateData.prizeJson !== undefined) {
+      updateData.prizeJson = updateData.prizeJson;
+    } else if (updateData.prize !== undefined || updateData.prizeFr !== undefined) {
+      updateData.prizeJson = {
+        ...(updateData.prize ? { en: updateData.prize } : (existingReward.prize ? { en: existingReward.prize } : {})),
+        ...(updateData.prizeFr ? { fr: updateData.prizeFr } : {}),
+      };
+    }
+    if (updateData.descriptionJson !== undefined) {
+      updateData.descriptionJson = updateData.descriptionJson;
+    } else if (updateData.description !== undefined || updateData.descriptionFr !== undefined) {
+      updateData.descriptionJson = {
+        ...(updateData.description ? { en: updateData.description } : (existingReward.description ? { en: existingReward.description } : {})),
+        ...(updateData.descriptionFr ? { fr: updateData.descriptionFr } : {}),
+      };
     }
 
     // If setting a reward as featured, we need to handle it in a transaction

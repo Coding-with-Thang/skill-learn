@@ -4,6 +4,8 @@ import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeQuiz, localizeCategory } from "@/lib/localize";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +13,14 @@ export const dynamic = "force-dynamic";
  * GET /api/quizzes
  * Returns all quizzes available to the current user (tenant + global).
  * Used by the training page so quizzes show even when categories list is empty or loaded separately.
+ * Pass ?locale=fr or x-locale header for localized content.
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const context = await getTenantContext();
     if (context instanceof Response) return context;
     const { tenantId } = context;
+    const locale = getLocaleFromRequest(request);
 
     const whereClause = buildTenantContentFilter(tenantId, {
       isActive: true,
@@ -61,10 +65,12 @@ export async function GET(_request: NextRequest) {
           );
         }
 
-        return {
-          ...quiz,
-          imageUrl,
-        };
+        const withImage = { ...quiz, imageUrl };
+        const localized = localizeQuiz(withImage, locale);
+        if (localized.category) {
+          localized.category = localizeCategory(localized.category, locale);
+        }
+        return localized;
       })
     );
 

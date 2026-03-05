@@ -17,7 +17,7 @@ import {
   Globe,
   ArrowRight,
   MessageSquare,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import Image from "next/image";
 import { Link } from "@/i18n/navigation";
@@ -30,7 +30,7 @@ export default function FeaturesPage() {
     initial: { opacity: 0, y: 30 },
     whileInView: { opacity: 1, y: 0 },
     viewport: { once: true },
-    transition: { duration: 0.6 }
+    transition: { duration: 0.6 },
   };
 
   const features = [
@@ -42,11 +42,11 @@ export default function FeaturesPage() {
       highlights: [
         { labelKey: "gamificationH1", subKey: "gamificationH1Sub" },
         { labelKey: "gamificationH2", subKey: "gamificationH2Sub" },
-        { labelKey: "gamificationH3", subKey: "gamificationH3Sub" }
+        { labelKey: "gamificationH3", subKey: "gamificationH3Sub" },
       ],
       image: "gamification_dashboard_ui_1768456006376.png",
       reverse: false,
-      color: "bg-emerald-50 text-emerald-600"
+      color: "bg-emerald-50 text-emerald-600",
     },
     {
       id: "quiz-builder",
@@ -56,11 +56,11 @@ export default function FeaturesPage() {
       highlights: [
         { labelKey: "quizBuilderH1", subKey: "quizBuilderH1Sub" },
         { labelKey: "quizBuilderH2", subKey: "quizBuilderH2Sub" },
-        { labelKey: "quizBuilderH3", subKey: "quizBuilderH3Sub" }
+        { labelKey: "quizBuilderH3", subKey: "quizBuilderH3Sub" },
       ],
       image: "quiz_builder_interface_1768456021921.png",
       reverse: true,
-      color: "bg-blue-50 text-blue-600"
+      color: "bg-blue-50 text-blue-600",
     },
     {
       id: "analytics",
@@ -70,12 +70,12 @@ export default function FeaturesPage() {
       highlights: [
         { labelKey: "analyticsH1", subKey: "analyticsH1Sub" },
         { labelKey: "analyticsH2", subKey: "analyticsH2Sub" },
-        { labelKey: "analyticsH3", subKey: "analyticsH3Sub" }
+        { labelKey: "analyticsH3", subKey: "analyticsH3Sub" },
       ],
       image: "analytics_dashboard_saas_1768456040846.png",
       reverse: false,
-      color: "bg-brand-teal/10 text-brand-teal"
-    }
+      color: "bg-brand-teal/10 text-brand-teal",
+    },
   ];
 
   return (
@@ -93,7 +93,8 @@ export default function FeaturesPage() {
               {t("platformFeatures")}
             </span>
             <h1 className="text-brand-teal md:text-7xl font-extrabold text-[#1B1B53] mb-8 tracking-tight max-w-4xl mx-auto leading-[1.05]">
-              {t("heroTitle")} <span className="text-[#00D181]">{t("heroTitleHighlight")}</span>
+              {t("heroTitle")}{" "}
+              <span className="text-[#00D181]">{t("heroTitleHighlight")}</span>
             </h1>
             <p className="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed mb-12">
               {t("heroSubtitle")}
@@ -105,16 +106,29 @@ export default function FeaturesPage() {
       {/* Feature Sections */}
       <div className="space-y-32 py-20 md:py-32">
         {features.map((feature, idx) => (
-          <section key={feature.id} id={feature.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-16 items-center ${feature.reverse ? 'lg:flex-row-reverse' : ''}`}>
-
+          <section
+            key={feature.id}
+            id={feature.id}
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+          >
+            <div
+              className={`grid grid-cols-1 lg:grid-cols-2 gap-16 items-center ${feature.reverse ? "lg:flex-row-reverse" : ""}`}
+            >
               {/* Content */}
               <motion.div
                 {...fadeInUp}
-                className={feature.reverse ? 'lg:order-2' : ''}
+                className={feature.reverse ? "lg:order-2" : ""}
               >
-                <div className={`w-12 h-12 rounded-4xl ${feature.color} flex items-center justify-center mb-8 shadow-sm`}>
-                  {idx === 0 ? <Gamepad2 className="w-6 h-6" /> : idx === 1 ? <Layout className="w-6 h-6" /> : <BarChart3 className="w-6 h-6" />}
+                <div
+                  className={`w-12 h-12 rounded-4xl ${feature.color} flex items-center justify-center mb-8 shadow-sm`}
+                >
+                  {idx === 0 ? (
+                    <Gamepad2 className="w-6 h-6" />
+                  ) : idx === 1 ? (
+                    <Layout className="w-6 h-6" />
+                  ) : (
+                    <BarChart3 className="w-6 h-6" />
+                  )}
                 </div>
                 <h2 className="text-4xl font-extrabold text-[#1B1B53] mb-6 tracking-tight">
                   {t(feature.titleKey)}
@@ -130,7 +144,9 @@ export default function FeaturesPage() {
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-base font-bold text-slate-900 mb-1">{t(h.labelKey)}</h4>
+                        <h4 className="text-base font-bold text-slate-900 mb-1">
+                          {t(h.labelKey)}
+                        </h4>
                         <p className="text-sm text-slate-500">{t(h.subKey)}</p>
                       </div>
                     </div>
@@ -141,7 +157,7 @@ export default function FeaturesPage() {
               {/* Image Visual */}
               <motion.div
                 {...fadeInUp}
-                className={`relative ${feature.reverse ? 'lg:order-1' : ''}`}
+                className={`relative ${feature.reverse ? "lg:order-1" : ""}`}
               >
                 <div className="relative rounded-[40px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.08)] bg-slate-100 group">
                   <Image
@@ -167,8 +183,12 @@ export default function FeaturesPage() {
       <section className="bg-[#F8F9FB] py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-xs font-black text-brand-teal uppercase tracking-[0.3em] mb-4 block">{t("successStories")}</span>
-            <h2 className="text-4xl md:text-brand-teal font-extrabold text-[#1B1B53] tracking-tight">{t("trustedBy")}</h2>
+            <span className="text-xs font-black text-brand-teal uppercase tracking-[0.3em] mb-4 block">
+              {t("successStories")}
+            </span>
+            <h2 className="text-4xl md:text-brand-teal font-extrabold text-[#1B1B53] tracking-tight">
+              {t("trustedBy")}
+            </h2>
           </div>
 
           <motion.div
@@ -180,10 +200,13 @@ export default function FeaturesPage() {
               <div className="lg:col-span-3 p-12 md:p-20">
                 <div className="flex items-center gap-2 mb-8">
                   <Target className="w-5 h-5 text-[#00D181]" />
-                  <span className="text-xs font-black text-[#1B1B53] uppercase tracking-widest">TechFlow</span>
+                  <span className="text-xs font-black text-[#1B1B53] uppercase tracking-widest">
+                    TechFlow
+                  </span>
                 </div>
                 <h3 className="text-4xl md:text-brand-teal font-extrabold text-[#1B1B53] mb-8 leading-[1.1]">
-                  Boosted employee engagement by <span className="text-[#00D181]">45%</span> in six months.
+                  Boosted employee engagement by{" "}
+                  <span className="text-[#00D181]">45%</span> in six months.
                 </h3>
                 <blockquote className="text-xl text-slate-600 italic mb-12 border-l-4 border-[#00D181] pl-8 leading-relaxed">
                   "{t("caseStudyQuote")}"
@@ -195,7 +218,9 @@ export default function FeaturesPage() {
                   </div>
                   <div>
                     <h5 className="font-bold text-slate-900">Gavin Jenkins</h5>
-                    <p className="text-sm text-slate-500">Chief Technology Officer, TechFlow</p>
+                    <p className="text-sm text-slate-500">
+                      Chief Technology Officer, TechFlow
+                    </p>
                   </div>
                 </div>
               </div>
@@ -203,16 +228,28 @@ export default function FeaturesPage() {
               {/* Stats Card Side */}
               <div className="lg:col-span-2 bg-white/40 backdrop-blur-md p-12 flex flex-col justify-center gap-12 border-l border-white/50">
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em]">{t("theChallenge")}</span>
-                  <p className="text-slate-600 font-medium">{t("challengeText")}</p>
+                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em]">
+                    {t("theChallenge")}
+                  </span>
+                  <p className="text-slate-600 font-medium">
+                    {t("challengeText")}
+                  </p>
                 </div>
                 <div className="space-y-4">
-                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em]">{t("theSolution")}</span>
-                  <p className="text-slate-600 font-medium">{t("solutionText")}</p>
+                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em]">
+                    {t("theSolution")}
+                  </span>
+                  <p className="text-slate-600 font-medium">
+                    {t("solutionText")}
+                  </p>
                 </div>
                 <div className="pt-8 border-t border-slate-200/50">
-                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em] mb-4 block">{t("theResult")}</span>
-                  <div className="text-4xl font-black text-[#1B1B53]">{t("result92")}</div>
+                  <span className="text-[10px] font-black text-[#00D181] uppercase tracking-[0.2em] mb-4 block">
+                    {t("theResult")}
+                  </span>
+                  <div className="text-4xl font-black text-[#1B1B53]">
+                    {t("result92")}
+                  </div>
                 </div>
                 <Link href="/resources/case-studies/techflow" className="block">
                   <Button className="w-full h-14 bg-[#1B1B53] hover:bg-[#1B1B53]/90 text-white rounded-4xl font-bold">
@@ -232,8 +269,8 @@ export default function FeaturesPage() {
           className="max-w-6xl mx-auto bg-brand-dark-blue rounded-[56px] p-12 md:p-24 text-center relative overflow-hidden"
           style={{
             backgroundImage: `url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop')`,
-            backgroundPosition: 'center',
-            backgroundSize: 'cover'
+            backgroundPosition: "center",
+            backgroundSize: "cover",
           }}
         >
           <div className="absolute inset-0 bg-brand-dark-blue/90" />
@@ -245,10 +282,17 @@ export default function FeaturesPage() {
               {t("joinOver500")}
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button size="lg" className="h-16 px-10 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-4xl shadow-xl shadow-emerald-500/20">
+              <Button
+                size="lg"
+                className="h-16 px-10 bg-[#00D181] hover:bg-[#00B871] text-brand-dark-blue font-black text-lg rounded-4xl shadow-xl shadow-emerald-500/20"
+              >
                 {t("startFreeTrial")}
               </Button>
-              <Button size="lg" variant="outline" className="h-16 px-10 border-2 border-white/20 text-white hover:bg-white/10 font-bold text-lg rounded-4xl backdrop-blur-md">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-16 px-10 border-2 border-white/20 text-gray-900 hover:bg-white/10 font-bold text-lg rounded-4xl backdrop-blur-md"
+              >
                 {t("scheduleDemo")}
               </Button>
             </div>

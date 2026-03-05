@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { useTranslations } from "next-intl"
 import { format } from "date-fns"
 import { Download, History, Filter, RotateCcw, Database, Activity } from "lucide-react"
 import { useAuditLogStore } from "@skill-learn/lib/stores/auditLogStore"
@@ -29,10 +30,6 @@ import {
 import { DatePickerWithRange } from "@skill-learn/ui/components/date-range-picker"
 import { Avatar, AvatarFallback } from "@skill-learn/ui/components/avatar"
 
-function formatActionLabel(action?: string) {
-  if (!action) return "Unknown";
-  return action.replaceAll("_", " ");
-}
 
 function getActionBadgeClass(action?: string) {
   switch (action) {
@@ -52,7 +49,13 @@ function getActionBadgeClass(action?: string) {
 }
 
 export default function AuditLogsPage() {
+  const t = useTranslations("adminAuditLogs")
   const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
+
+  function formatActionLabel(action?: string) {
+    if (!action) return t("unknown")
+    return action.replaceAll("_", " ")
+  }
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null })
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -114,13 +117,13 @@ export default function AuditLogsPage() {
             <div className="p-2 bg-primary/10 rounded-lg">
               <History className="w-5 h-5 text-primary" />
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight">Audit Logs</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">{t("title")}</h1>
           </div>
-          <p className="text-sm text-muted-foreground ml-9">Track system activities and resource modifications across your organization</p>
+          <p className="text-sm text-muted-foreground ml-9">{t("description")}</p>
         </div>
         <Button onClick={handleExport} className="h-10 rounded-xl gap-2 font-semibold shadow-xs hover:scale-105 transition-all">
           <Download className="h-4 w-4" />
-          Export Logs
+          {t("exportLogs")}
         </Button>
       </div>
 
@@ -128,52 +131,52 @@ export default function AuditLogsPage() {
       <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-4 flex flex-row items-center gap-2">
           <Filter className="w-4 h-4 text-primary" />
-          <CardTitle className="text-lg font-bold">Filters</CardTitle>
+          <CardTitle className="text-lg font-bold">{t("filters")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Resource</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("resource")}</label>
               <Select
                 value={filters.resource || "all"}
                 onValueChange={(value: string) => handleFilterChange({ resource: value === "all" ? null : value })}
               >
                 <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
-                  <SelectValue placeholder="All Resources" />
+                  <SelectValue placeholder={t("allResources")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Resources</SelectItem>
-                  <SelectItem value="reward">Rewards</SelectItem>
-                  <SelectItem value="user">Users</SelectItem>
-                  <SelectItem value="points">Points</SelectItem>
-                  <SelectItem value="quiz">Quizzes</SelectItem>
-                  <SelectItem value="quiz_attempt">Quiz Attempts</SelectItem>
+                  <SelectItem value="all">{t("allResources")}</SelectItem>
+                  <SelectItem value="reward">{t("rewards")}</SelectItem>
+                  <SelectItem value="user">{t("users")}</SelectItem>
+                  <SelectItem value="points">{t("points")}</SelectItem>
+                  <SelectItem value="quiz">{t("quizzes")}</SelectItem>
+                  <SelectItem value="quiz_attempt">{t("quizAttempts")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Action</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("action")}</label>
               <Select
                 value={filters.action || "all"}
                 onValueChange={(value: string) => handleFilterChange({ action: value === "all" ? null : value })}
               >
                 <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
-                  <SelectValue placeholder="All Actions" />
+                  <SelectValue placeholder={t("allActions")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="create">Create</SelectItem>
-                  <SelectItem value="update">Update</SelectItem>
-                  <SelectItem value="delete">Delete</SelectItem>
-                  <SelectItem value="attempt_started">Attempt Started</SelectItem>
-                  <SelectItem value="attempt_completed">Attempt Completed</SelectItem>
+                  <SelectItem value="all">{t("allActions")}</SelectItem>
+                  <SelectItem value="create">{t("create")}</SelectItem>
+                  <SelectItem value="update">{t("update")}</SelectItem>
+                  <SelectItem value="delete">{t("delete")}</SelectItem>
+                  <SelectItem value="attempt_started">{t("attemptStarted")}</SelectItem>
+                  <SelectItem value="attempt_completed">{t("attemptCompleted")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Date Range</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("dateRange")}</label>
               <DatePickerWithRange
                 value={dateRange}
                 onChange={handleDateRangeChange}
@@ -189,7 +192,7 @@ export default function AuditLogsPage() {
                 disabled={isLoading}
               >
                 <RotateCcw className="h-4 w-4" />
-                Reset
+                {t("reset")}
               </Button>
             </div>
           </div>
@@ -203,11 +206,11 @@ export default function AuditLogsPage() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="hover:bg-transparent border-border/50">
-                  <TableHead className="w-[180px] font-bold uppercase text-[10px] tracking-widest text-muted-foreground py-4">Timestamp</TableHead>
-                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">User</TableHead>
-                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Action</TableHead>
-                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Resource</TableHead>
-                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Details</TableHead>
+                  <TableHead className="w-[180px] font-bold uppercase text-[10px] tracking-widest text-muted-foreground py-4">{t("timestamp")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("user")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("action")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("resource")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("details")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -237,7 +240,7 @@ export default function AuditLogsPage() {
                           </Avatar>
                           <div className="flex flex-col min-w-0">
                             <span className="font-bold text-sm truncate">
-                              {`${log.user?.firstName || ""} ${log.user?.lastName || ""}`.trim() || log.user?.username || "Unknown User"}
+                              {`${log.user?.firstName || ""} ${log.user?.lastName || ""}`.trim() || log.user?.username || t("unknownUser")}
                             </span>
                             <span className="text-[10px] text-muted-foreground truncate uppercase font-medium tracking-tighter">
                               ID: {log.user?.id ? `${log.user.id.substring(0, 8)}...` : "N/A"}
@@ -263,7 +266,7 @@ export default function AuditLogsPage() {
                       </TableCell>
                       <TableCell>
                         <p className="text-sm text-foreground/80 max-w-md truncate font-medium group-hover:text-foreground transition-colors">
-                          {log.details || (log.resourceId ? `Resource ID: ${log.resourceId}` : "—")}
+                          {log.details || (log.resourceId ? `${t("resourceId")}: ${log.resourceId}` : "—")}
                         </p>
                       </TableCell>
                     </TableRow>
@@ -273,8 +276,8 @@ export default function AuditLogsPage() {
                     <TableCell colSpan={5} className="text-center py-20">
                       <div className="flex flex-col items-center gap-3 opacity-50 text-muted-foreground">
                         <Activity className="w-12 h-12" />
-                        <p className="font-bold">No audit logs found</p>
-                        <p className="text-xs">Adjust your filters or try again later</p>
+                        <p className="font-bold">{t("noLogsFound")}</p>
+                        <p className="text-xs">{t("adjustFilters")}</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -287,9 +290,11 @@ export default function AuditLogsPage() {
           {pagination && pagination.pages > 1 && (
             <div className="flex items-center justify-between p-4 border-t border-border/50 bg-muted/10">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                Showing <span className="text-foreground">{(pagination.currentPage - 1) * (pagination.perPage || 50) + 1}</span> to{" "}
-                <span className="text-foreground">{Math.min(pagination.currentPage * (pagination.perPage || 50), pagination.total)}</span> of{" "}
-                <span className="text-foreground font-black">{pagination.total}</span> entries
+                {t("showingEntries", {
+                start: (pagination.currentPage - 1) * (pagination.perPage || 50) + 1,
+                end: Math.min(pagination.currentPage * (pagination.perPage || 50), pagination.total),
+                total: pagination.total
+              })}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -299,7 +304,7 @@ export default function AuditLogsPage() {
                   onClick={() => fetchLogs(pagination.currentPage - 1)}
                   className="rounded-xl font-bold h-9 px-4 border-border/40 hover:bg-primary/5"
                 >
-                  Previous
+                  {t("previous")}
                 </Button>
                 <div className="flex items-center px-3 bg-primary/10 rounded-xl font-black text-xs text-primary">
                   {pagination.currentPage} / {pagination.pages}
@@ -311,7 +316,7 @@ export default function AuditLogsPage() {
                   onClick={() => fetchLogs(pagination.currentPage + 1)}
                   className="rounded-xl font-bold h-9 px-4 border-border/40 hover:bg-primary/5"
                 >
-                  Next
+                  {t("next")}
                 </Button>
               </div>
             </div>

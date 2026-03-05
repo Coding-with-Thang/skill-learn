@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@skill-learn/ui/components/card'
 import { Badge } from '@skill-learn/ui/components/badge'
@@ -54,6 +55,7 @@ const featureIcons = {
 type FeatureItem = { id: string; enabled?: boolean; isEffectivelyEnabled?: boolean; icon?: string; canToggle?: boolean; name?: string; description?: string; [key: string]: unknown };
 
 export default function FeaturesPage() {
+  const t = useTranslations("adminFeatures")
   // Note: Tenant-specific features are different from global features
   // For tenant admin, we need to fetch tenant features, not global features
   // So we'll keep local state for tenant features, but use store for global feature flags if needed
@@ -77,7 +79,7 @@ export default function FeaturesPage() {
     } catch (err: unknown) {
       console.error('Error fetching features:', err)
       const e = err as { response?: { data?: { error?: string } }; message?: string }
-      setError(e.response?.data?.error || e.message || 'Failed to fetch features')
+      setError(e.response?.data?.error || e.message || t('errorFetch'))
     } finally {
       setLoading(false)
     }
@@ -97,7 +99,7 @@ export default function FeaturesPage() {
       const response = await api.put('/tenant/features', { featureId, enabled: newEnabledState })
 
       if (response.data.error) {
-        throw new Error(response.data.error || 'Failed to update feature')
+        throw new Error(response.data.error || t('errorUpdate'))
       }
 
       // Re-fetch page data so list and summary show new state (skip full loading to avoid flash)
@@ -106,7 +108,7 @@ export default function FeaturesPage() {
       await refreshStoreFeatures()
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string }
-      setError(e.response?.data?.error || e.message || 'Failed to update feature')
+      setError(e.response?.data?.error || e.message || t('errorUpdate'))
     } finally {
       setTogglingFeatureId(null)
     }
@@ -114,12 +116,12 @@ export default function FeaturesPage() {
 
   // Get category display name
   const getCategoryDisplayName = (category) => {
-    const names = {
-      gamification: 'Gamification',
-      learning: 'Learning & Training',
-      analytics: 'Analytics',
-      admin: 'Administration',
-      general: 'General',
+    const names: Record<string, string> = {
+      gamification: t('categoryGamification'),
+      learning: t('categoryLearning'),
+      analytics: t('categoryAnalytics'),
+      admin: t('categoryAdmin'),
+      general: t('categoryGeneral'),
     }
     return names[category] || category.charAt(0).toUpperCase() + category.slice(1)
   }
@@ -146,9 +148,9 @@ export default function FeaturesPage() {
         className="flex items-center justify-between"
       >
         <div>
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Feature Management</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Enable or disable features for your organization.
+            {t("description")}
           </p>
         </div>
         <Button variant="ghost" size="icon" onClick={fetchFeatures} disabled={loading}>
@@ -162,7 +164,7 @@ export default function FeaturesPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Features</p>
+                <p className="text-sm text-muted-foreground">{t("totalFeatures")}</p>
                 <p className="text-2xl font-bold">{summary.total}</p>
               </div>
               <ToggleLeft className="h-8 w-8 text-muted-foreground" />
@@ -173,7 +175,7 @@ export default function FeaturesPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Enabled</p>
+                <p className="text-sm text-muted-foreground">{t("enabled")}</p>
                 <p className="text-2xl font-bold text-green-600">{summary.enabled}</p>
               </div>
               <CheckCircle2 className="h-8 w-8 text-green-500" />
@@ -184,7 +186,7 @@ export default function FeaturesPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Disabled</p>
+                <p className="text-sm text-muted-foreground">{t("disabled")}</p>
                 <p className="text-2xl font-bold text-amber-600">{summary.disabled}</p>
               </div>
               <XCircle className="h-8 w-8 text-amber-500" />
@@ -195,7 +197,7 @@ export default function FeaturesPage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Locked</p>
+                <p className="text-sm text-muted-foreground">{t("locked")}</p>
                 <p className="text-2xl font-bold text-red-600">{summary.locked}</p>
               </div>
               <Lock className="h-8 w-8 text-red-500" />
@@ -217,11 +219,9 @@ export default function FeaturesPage() {
           <div className="flex items-start gap-3">
             <Info className="h-5 w-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="font-medium text-blue-900 dark:text-blue-100">Feature Management</p>
+              <p className="font-medium text-blue-900 dark:text-blue-100">{t("infoTitle")}</p>
               <p className="text-sm text-blue-700 dark:text-blue-300">
-                Toggle features on or off to customize your organization&apos;s experience.
-                Features marked with a lock icon have been restricted by your platform administrator
-                and cannot be enabled.
+                {t("infoDescription")}
               </p>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function FeaturesPage() {
         <Card>
           <CardContent className="p-12 text-center">
             <ToggleLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No features available.</p>
+            <p className="text-muted-foreground">{t("noFeatures")}</p>
           </CardContent>
         </Card>
       ) : (
@@ -249,7 +249,7 @@ export default function FeaturesPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{getCategoryDisplayName(category)}</CardTitle>
                   <CardDescription>
-                    {categoryFeatures.filter(f => f.isEffectivelyEnabled).length} of {categoryFeatures.length} enabled
+                    {t("enabledOfTotal", { enabled: categoryFeatures.filter(f => f.isEffectivelyEnabled).length, total: categoryFeatures.length })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -284,7 +284,7 @@ export default function FeaturesPage() {
                               {!feature.canToggle && (
                                 <Badge variant="secondary" className="text-xs gap-1">
                                   <Lock className="h-3 w-3" />
-                                  Restricted
+                                  {t("restricted")}
                                 </Badge>
                               )}
                             </div>
@@ -304,7 +304,7 @@ export default function FeaturesPage() {
                                 disabled={!feature.canToggle || loading}
                               />
                               <span className="text-xs text-muted-foreground">
-                                {feature.enabled ? 'On' : 'Off'}
+                                {feature.enabled ? t("on") : t("off")}
                               </span>
                             </>
                           )}
@@ -322,21 +322,21 @@ export default function FeaturesPage() {
       {/* Legend */}
       <Card>
         <CardContent className="p-4">
-          <h4 className="font-medium mb-3">Legend</h4>
+          <h4 className="font-medium mb-3">{t("legend")}</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <ToggleRight className="h-4 w-4 text-primary" />
-                <span className="font-medium">Enabled</span>
+                <span className="font-medium">{t("enabled")}</span>
               </div>
-              <span className="text-muted-foreground">- Feature is active for your organization</span>
+              <span className="text-muted-foreground">- {t("legendEnabled")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <Lock className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">Restricted</span>
+                <span className="font-medium">{t("restricted")}</span>
               </div>
-              <span className="text-muted-foreground">- Feature controlled by platform admin</span>
+              <span className="text-muted-foreground">- {t("legendRestricted")}</span>
             </div>
           </div>
         </CardContent>

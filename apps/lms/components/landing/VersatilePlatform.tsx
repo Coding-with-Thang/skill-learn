@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,84 +17,70 @@ import {
   Palette,
   Sparkles,
   Target,
-  Zap,
   CheckCircle2
 } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
+import { useTranslations } from "next-intl";
 
-const tabs = [
-  { id: "Courses", icon: BookOpen, label: "Courses" },
-  { id: "Quizzes", icon: HelpCircle, label: "Quizzes" },
-  { id: "Dashboards", icon: BarChart3, label: "Dashboards" },
-  { id: "Games", icon: Gamepad2, label: "Games" },
-  { id: "Rewards", icon: Trophy, label: "Rewards" },
+const TAB_IDS = ["Courses", "Quizzes", "Dashboards", "Games", "Rewards"] as const;
+const TAB_CONFIG = [
+  { id: "Courses" as const, icon: BookOpen },
+  { id: "Quizzes" as const, icon: HelpCircle },
+  { id: "Dashboards" as const, icon: BarChart3 },
+  { id: "Games" as const, icon: Gamepad2 },
+  { id: "Rewards" as const, icon: Trophy },
 ];
 
-const CONTENT = {
-  Courses: {
-    badge: "4.2k+ Enrolled Today",
-    title: "Endless variety of",
-    titleAccent: "learning paths",
-    description: "Whether you're looking to grow a new skill, improve existing ones, or simply explore new interests, Skill-Learn has everything covered. We've curated the world's best educational content into easy-to-digest paths.",
-    items: [
-      { icon: Briefcase, label: "Business & Entrepreneurship", color: "bg-blue-50 text-blue-600" },
-      { icon: Code, label: "Technology & Programming", color: "bg-orange-50 text-orange-600" },
-      { icon: Palette, label: "Design & Creativity", color: "bg-indigo-600 text-white shadow-xl shadow-indigo-200" },
-    ],
-    floating: { icon: Sparkles, color: "text-amber-400", pos: "-top-8 -right-8" }
-  },
-  Quizzes: {
-    badge: "Interactive Assessments",
-    title: "Validate skills with",
-    titleAccent: "smart quizzes",
-    description: "Evaluation doesn't have to be intimidating. Our interactive assessments provide instant feedback, helping your team identify gaps and celebrate wins in real-time.",
-    items: [
-      { icon: HelpCircle, label: "Skill Certification", color: "bg-emerald-50 text-emerald-600" },
-      { icon: BarChart3, label: "Knowledge Retention", color: "bg-indigo-600 text-white shadow-xl shadow-indigo-200" },
-      { icon: Code, label: "Technical Proficiency", color: "bg-rose-50 text-rose-600" },
-    ],
-    floating: { icon: CheckCircle2, color: "text-emerald-500", pos: "-bottom-10 -left-12" }
-  },
-  Dashboards: {
-    badge: "Real-time Analytics",
-    title: "Visualize your team's",
-    titleAccent: "performance",
-    description: "Make data-driven decisions with insights that actually make sense. Monitor progress, engagement, and skill growth across your entire organization from one central hub.",
-    items: [
-      { icon: BarChart3, label: "Department Rankings", color: "bg-indigo-600 text-white shadow-xl shadow-indigo-200" },
-      { icon: HelpCircle, label: "Engagement Metrics", color: "bg-blue-50 text-blue-600" },
-      { icon: Briefcase, label: "ROI Tracking", color: "bg-amber-50 text-amber-600" },
-    ],
-    floating: { icon: BarChart3, color: "text-blue-500", pos: "-top-12 -left-10" }
-  },
-  Games: {
-    badge: "Immersive Learning",
-    title: "Master skills through",
-    titleAccent: "gamification",
-    description: "Transform boring training sessions into engaging challenges. Our platform uses proven game mechanics to boost retention and keep your team coming back for more.",
-    items: [
-      { icon: Gamepad2, label: "Scenario Challenges", color: "bg-violet-50 text-violet-600" },
-      { icon: Palette, label: "Simulated Sandboxes", color: "bg-teal-50 text-teal-600" },
-      { icon: Trophy, label: "Global Leaderboards", color: "bg-indigo-600 text-white shadow-xl shadow-indigo-200" },
-    ],
-    floating: { icon: Target, color: "text-rose-500", pos: "top-1/2 -right-14 -translate-y-1/2" }
-  },
-  Rewards: {
-    badge: "Incentivize Growth",
-    title: "Celebrate Every",
-    titleAccent: "Milestone",
-    description: "People thrive on recognition. Skill-Learn allows you to reward your team with digital badges, tangible rewards, and public shoutouts that drive morale and excellence.",
-    items: [
-      { icon: Trophy, label: "Achievement Badges", color: "bg-indigo-600 text-white shadow-xl shadow-indigo-200" },
-      { icon: Briefcase, label: "Redeemable Credits", color: "bg-sky-50 text-sky-600" },
-      { icon: BarChart3, label: "Internal Certificates", color: "bg-purple-50 text-purple-600" },
-    ],
-    floating: { icon: Trophy, color: "text-amber-500", pos: "-top-10 -right-10" }
-  }
+const ITEM_ICONS = {
+  Courses: [Briefcase, Code, Palette],
+  Quizzes: [HelpCircle, BarChart3, Code],
+  Dashboards: [BarChart3, HelpCircle, Briefcase],
+  Games: [Gamepad2, Palette, Trophy],
+  Rewards: [Trophy, Briefcase, BarChart3],
+};
+
+const ITEM_COLORS = {
+  Courses: ["bg-blue-50 text-blue-600", "bg-orange-50 text-orange-600", "bg-indigo-600 text-white shadow-xl shadow-indigo-200"],
+  Quizzes: ["bg-emerald-50 text-emerald-600", "bg-indigo-600 text-white shadow-xl shadow-indigo-200", "bg-rose-50 text-rose-600"],
+  Dashboards: ["bg-indigo-600 text-white shadow-xl shadow-indigo-200", "bg-blue-50 text-blue-600", "bg-amber-50 text-amber-600"],
+  Games: ["bg-violet-50 text-violet-600", "bg-teal-50 text-teal-600", "bg-indigo-600 text-white shadow-xl shadow-indigo-200"],
+  Rewards: ["bg-indigo-600 text-white shadow-xl shadow-indigo-200", "bg-sky-50 text-sky-600", "bg-purple-50 text-purple-600"],
+};
+
+const FLOATING_CONFIG = {
+  Courses: { icon: Sparkles, color: "text-amber-400", pos: "-top-8 -right-8" },
+  Quizzes: { icon: CheckCircle2, color: "text-emerald-500", pos: "-bottom-10 -left-12" },
+  Dashboards: { icon: BarChart3, color: "text-blue-500", pos: "-top-12 -left-10" },
+  Games: { icon: Target, color: "text-rose-500", pos: "top-1/2 -right-14 -translate-y-1/2" },
+  Rewards: { icon: Trophy, color: "text-amber-500", pos: "-top-10 -right-10" },
 };
 
 export default function VersatilePlatform() {
-  const [activeTab, setActiveTab] = useState("Courses");
+  const t = useTranslations("versatilePlatform");
+  const [activeTab, setActiveTab] = useState<(typeof TAB_IDS)[number]>("Courses");
+
+  const tabs = useMemo(() => TAB_CONFIG.map((tab) => ({ ...tab, label: t(`tabs.${tab.id.toLowerCase()}` as "courses" | "quizzes" | "dashboards" | "games" | "rewards") })), [t]);
+
+  const contentKey = activeTab.toLowerCase();
+  const CONTENT = useMemo(() => {
+    const rawItems = t.raw(`${contentKey}.items`);
+    const labels = Array.isArray(rawItems) ? (rawItems as string[]) : [];
+    const icons = ITEM_ICONS[activeTab] ?? ITEM_ICONS.Courses;
+    const colors = ITEM_COLORS[activeTab] ?? ITEM_COLORS.Courses;
+    const floating = FLOATING_CONFIG[activeTab] ?? FLOATING_CONFIG.Courses;
+    return {
+      badge: t(`${contentKey}.badge`),
+      title: t(`${contentKey}.title`),
+      titleAccent: t(`${contentKey}.titleAccent`),
+      description: t(`${contentKey}.description`),
+      items: labels.map((label, idx) => ({
+        icon: icons[idx] ?? icons[0],
+        label,
+        color: colors[idx] ?? colors[0],
+      })),
+      floating,
+    };
+  }, [activeTab, contentKey, t]);
 
   return (
     <section className="py-12 lg:py-16 relative overflow-hidden bg-slate-50/30 min-h-screen flex flex-col justify-center">
@@ -108,18 +94,18 @@ export default function VersatilePlatform() {
           className="space-y-2"
         >
           <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-widest">
-            Skill-Learn Platform
+            {t("platformBadge")}
           </span>
           <h2 className="text-4xl md:text-brand-teal lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-            The Most <span className="relative inline-block">
-              Versatile
+            {t("headerTitle")} <span className="relative inline-block">
+              {t("headerTitleAccent")}
               <svg className="absolute -bottom-1 left-0 w-full" height="8" viewBox="0 0 100 10" preserveAspectRatio="none">
                 <path d="M0 5 Q 25 0, 50 5 T 100 5" stroke="#6366f1" strokeWidth="4" fill="transparent" strokeLinecap="round" />
               </svg>
-            </span> Work Management
+            </span> {t("headerSubtitle")}
           </h2>
           <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed">
-            Maximize performance with unique customization features for every department.
+            {t("headerDesc")}
           </p>
         </motion.div>
       </div>
@@ -170,24 +156,24 @@ export default function VersatilePlatform() {
               <div className="space-y-4">
                 <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {CONTENT[activeTab].badge}
+                  {CONTENT?.badge ?? ""}
                 </span>
                 <h3 className="text-3xl md:text-4xl lg:text-brand-teal font-black text-slate-900 leading-[1.1] tracking-tight">
-                  {CONTENT[activeTab].title} <br />
-                  <span className="text-indigo-600">{CONTENT[activeTab].titleAccent}</span>
+                  {CONTENT?.title ?? ""} <br />
+                  <span className="text-indigo-600">{CONTENT?.titleAccent ?? ""}</span>
                 </h3>
                 <p className="text-sm md:text-base text-slate-500 leading-relaxed max-w-lg font-medium">
-                  {CONTENT[activeTab].description}
+                  {CONTENT?.description ?? ""}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Button className="h-12 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 group text-sm">
-                  Explore Catalog
+                  {t("exploreCatalog")}
                   <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button variant="outline" className="h-12 px-6 bg-white text-slate-900 rounded-xl font-bold border-slate-200 text-sm">
-                  View Demo
+                  {t("viewDemo")}
                 </Button>
               </div>
             </div>
@@ -198,15 +184,15 @@ export default function VersatilePlatform() {
               <div className="bg-white rounded-[2.5rem] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group max-w-md mx-auto">
                 {/* Platform Frame UI */}
                 <div className="bg-slate-50/50 rounded-4xl p-6 lg:p-8 min-h-[300px] flex flex-col justify-center gap-3">
-                  {CONTENT[activeTab].items.map((item, idx) => {
-                    const ItemIcon = item.icon;
+                  {(CONTENT?.items ?? []).map((item, idx) => {
+                    const ItemIcon = item.icon ?? BookOpen;
                     return (
                       <motion.div
                         key={idx}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className={`flex items-center gap-4 p-4 rounded-[1.2rem] transition-all duration-300 text-sm ${item.color}`}
+                        className={`flex items-center gap-4 p-4 rounded-[1.2rem] transition-all duration-300 text-sm ${item.color ?? ""}`}
                       >
                         <div className={`p-2.5 rounded-lg ${idx === 2 ? 'bg-white/20' : 'bg-white/80'} shadow-sm`}>
                           <ItemIcon className="w-4 h-4" />
@@ -234,11 +220,11 @@ export default function VersatilePlatform() {
                     scale: { duration: 0.3 },
                     y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
                   }}
-                  className={`absolute ${CONTENT[activeTab].floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
+                  className={`absolute ${CONTENT?.floating?.pos ?? ""} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
                 >
                   {(() => {
-                    const FloatingIcon = CONTENT[activeTab].floating.icon;
-                    return <FloatingIcon className={`w-8 h-8 ${CONTENT[activeTab].floating.color}`} />;
+                    const FloatingIcon = CONTENT?.floating?.icon;
+                    return FloatingIcon ? <FloatingIcon className={`w-8 h-8 ${CONTENT?.floating?.color ?? ""}`} /> : null;
                   })()}
                 </motion.div>
               </AnimatePresence>
@@ -255,17 +241,17 @@ export default function VersatilePlatform() {
               <Rocket className="w-5 h-5 text-white" />
             </div>
             <div className="">
-              <h4 className="text-base font-bold text-slate-900">Ready to transform your team?</h4>
-              <p className="text-[10px] text-slate-500 font-medium">Join 1,200+ companies scaling with Skill-Learn.</p>
+              <h4 className="text-base font-bold text-slate-900">{t("ctaTitle")}</h4>
+              <p className="text-[10px] text-slate-500 font-medium">{t("ctaSubtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-6">
             <Link href="/features" className="text-indigo-600 text-sm font-bold hover:text-indigo-700 transition-colors flex items-center gap-2 group">
-              View all features
+              {t("viewAllFeatures")}
               <ChevronRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Button className="h-10 px-6 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs">
-              Get Started Free
+              {t("getStartedFree")}
             </Button>
           </div>
         </div>

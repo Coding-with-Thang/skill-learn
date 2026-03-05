@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -22,32 +23,17 @@ import { Sliders, Settings2 } from "lucide-react";
 import api from "@skill-learn/lib/utils/axios";
 import { toast } from "sonner";
 
-const OVERRIDE_MODES = [
-  {
-    value: "USER_OVERRIDES_ADMIN",
-    label: "User overrides admin",
-    description: "User priorities take precedence when set",
-  },
-  {
-    value: "ADMIN_OVERRIDES_USER",
-    label: "Admin overrides user",
-    description: "Admin priorities always win",
-  },
-  {
-    value: "ADMIN_ONLY",
-    label: "Admin only",
-    description: "User priorities are ignored",
-  },
-  {
-    value: "USER_ONLY",
-    label: "User only",
-    description: "Admin priorities are ignored",
-  },
-];
+const OVERRIDE_MODE_KEYS: Record<string, { labelKey: string; descKey: string }> = {
+  USER_OVERRIDES_ADMIN: { labelKey: "overrideUserOverridesAdmin", descKey: "overrideUserOverridesAdminDesc" },
+  ADMIN_OVERRIDES_USER: { labelKey: "overrideAdminOverridesUser", descKey: "overrideAdminOverridesUserDesc" },
+  ADMIN_ONLY: { labelKey: "overrideAdminOnly", descKey: "overrideAdminOnlyDesc" },
+  USER_ONLY: { labelKey: "overrideUserOnly", descKey: "overrideUserOnlyDesc" },
+};
 
 type CategoryItem = { id: string; name: string; cardCount?: number; priority?: number };
 
 export default function FlashCardsPrioritiesPage() {
+  const t = useTranslations("adminFlashcardsPriorities");
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [overrideMode, setOverrideMode] = useState("USER_OVERRIDES_ADMIN");
   const [loading, setLoading] = useState(true);
@@ -69,7 +55,7 @@ export default function FlashCardsPrioritiesPage() {
       );
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to load data");
+      toast.error(e.response?.data?.error || t("toastLoadFailed"));
       setCategories([]);
     } finally {
       setLoading(false);
@@ -88,10 +74,10 @@ export default function FlashCardsPrioritiesPage() {
           c.id === categoryId ? { ...c, priority: newPriority } : c
         )
       );
-      toast.success("Priority updated");
+      toast.success(t("toastPriorityUpdated"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to update priority");
+      toast.error(e.response?.data?.error || t("toastUpdatePriorityFailed"));
       setCategories((prev) =>
         prev.map((c) =>
           c.id === categoryId ? { ...c, priority: previousPriority } : c
@@ -107,10 +93,10 @@ export default function FlashCardsPrioritiesPage() {
       setSavingSettings(true);
       await api.patch("/admin/flashcards/settings", { overrideMode: value });
       setOverrideMode(value);
-      toast.success("Override mode updated");
+      toast.success(t("toastOverrideModeUpdated"));
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to update settings");
+      toast.error(e.response?.data?.error || t("toastUpdateSettingsFailed"));
     } finally {
       setSavingSettings(false);
     }
@@ -123,9 +109,9 @@ export default function FlashCardsPrioritiesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Flash Card Priorities</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Set category priorities (1–10) and override mode. Higher priority categories appear more often in study sessions.
+          {t("description")}
         </p>
       </div>
 
@@ -133,15 +119,15 @@ export default function FlashCardsPrioritiesPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
-            Override Mode
+            {t("overrideMode")}
           </CardTitle>
           <CardDescription>
-            How admin and user priorities are combined when both are set
+            {t("overrideDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-w-md">
-            <Label>Priority resolution</Label>
+            <Label>{t("priorityResolution")}</Label>
             <Select
               value={overrideMode}
               onValueChange={handleOverrideModeChange}
@@ -151,9 +137,9 @@ export default function FlashCardsPrioritiesPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {OVERRIDE_MODES.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
+                {Object.entries(OVERRIDE_MODE_KEYS).map(([value, { labelKey }]) => (
+                  <SelectItem key={value} value={value}>
+                    {t(labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -166,10 +152,10 @@ export default function FlashCardsPrioritiesPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sliders className="h-5 w-5" />
-            Category Priorities
+            {t("categoryPriorities")}
           </CardTitle>
           <CardDescription>
-            1 = lowest, 10 = highest. Categories with higher priority are shown more often.
+            {t("prioritiesDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -179,9 +165,9 @@ export default function FlashCardsPrioritiesPage() {
             </div>
           ) : categories.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No flash card categories yet.</p>
+              <p>{t("noCategories")}</p>
               <p className="text-sm mt-1">
-                Categories are created when users add flash cards.
+                {t("categoriesHint")}
               </p>
             </div>
           ) : (
@@ -194,7 +180,7 @@ export default function FlashCardsPrioritiesPage() {
                   <div className="flex-1 min-w-0">
                     <span className="font-medium truncate block">{c.name}</span>
                     <span className="text-sm text-muted-foreground">
-                      {c.cardCount} card{c.cardCount !== 1 ? "s" : ""}
+                      {t("cardsCount", { count: c.cardCount ?? 0 })}
                     </span>
                   </div>
                   <Select

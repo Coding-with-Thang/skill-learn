@@ -66,11 +66,26 @@ export async function POST(request: NextRequest) {
         // Get current user's tenantId using standardized utility
         const tenantId = await getTenantId();
 
-        // Create new category (assigned to current tenant, not global)
+        // Build nameJson: use provided, or build from name/nameFr, or seed from name (en)
+        const nameJson =
+            data.nameJson ??
+            (data.name || data.nameFr
+                ? { ...(data.name ? { en: data.name } : {}), ...(data.nameFr ? { fr: data.nameFr } : {}) }
+                : undefined) ??
+            (data.name ? { en: data.name } : undefined);
+        const descriptionJson =
+            data.descriptionJson ??
+            (data.description || data.descriptionFr
+                ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+                : undefined) ??
+            (data.description ? { en: data.description } : undefined);
+
         const category = await prisma.category.create({
             data: {
                 name: data.name,
-                description: data.description,
+                description: data.description ?? null,
+                nameJson: nameJson ?? undefined,
+                descriptionJson: descriptionJson ?? undefined,
                 imageUrl: data.imageUrl,
                 fileKey: data.fileKey ?? undefined,
                 isActive: data.isActive ?? true,

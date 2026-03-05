@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -40,6 +41,7 @@ import { toast } from "sonner";
 type CategoryItem = { id: string; name: string; cardCount?: number };
 
 export default function FlashCardsAdminCategoriesPage() {
+  const t = useTranslations("adminFlashcardsCategories");
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editCat, setEditCat] = useState<CategoryItem | null>(null);
@@ -54,7 +56,7 @@ export default function FlashCardsAdminCategoriesPage() {
       setCategories((data.categories ?? []) as CategoryItem[]);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to load categories");
+      toast.error(e.response?.data?.error || t("toastLoadFailed"));
       setCategories([]);
     } finally {
       setLoading(false);
@@ -67,7 +69,7 @@ export default function FlashCardsAdminCategoriesPage() {
 
   const handleCreate = async () => {
     if (!newName.trim()) {
-      toast.error("Name is required");
+      toast.error(t("toastNameRequired"));
       return;
     }
     setSaving(true);
@@ -76,12 +78,12 @@ export default function FlashCardsAdminCategoriesPage() {
         name: newName.trim(),
         isSystem: true,
       });
-      toast.success("Category created");
+      toast.success(t("toastCategoryCreated"));
       setNewName("");
       fetchData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Create failed");
+      toast.error(e.response?.data?.error || t("toastCreateFailed"));
     } finally {
       setSaving(false);
     }
@@ -94,12 +96,12 @@ export default function FlashCardsAdminCategoriesPage() {
       await api.put(`/admin/flashcards/categories/${editCat.id}`, {
         name: editCat.name,
       });
-      toast.success("Category updated");
+      toast.success(t("toastCategoryUpdated"));
       setEditCat(null);
       fetchData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Update failed");
+      toast.error(e.response?.data?.error || t("toastUpdateFailed"));
     } finally {
       setSaving(false);
     }
@@ -108,16 +110,16 @@ export default function FlashCardsAdminCategoriesPage() {
   const handleDelete = async (cat: CategoryItem) => {
     const msg =
       (cat.cardCount ?? 0) > 0
-        ? `Delete "${cat.name}"? This will remove ${cat.cardCount} cards.`
-        : `Delete "${cat.name}"?`;
+        ? t("confirmDeleteWithCards", { name: cat.name, count: cat.cardCount ?? 0 })
+        : t("confirmDelete", { name: cat.name });
     if (!window.confirm(msg)) return;
     try {
       await api.delete(`/admin/flashcards/categories/${cat.id}`);
-      toast.success("Category deleted");
+      toast.success(t("toastCategoryDeleted"));
       fetchData();
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Delete failed");
+      toast.error(e.response?.data?.error || t("toastDeleteFailed"));
     }
   };
 
@@ -126,9 +128,9 @@ export default function FlashCardsAdminCategoriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Manage Categories</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Create, edit, and delete flash card categories.
+          {t("description")}
         </p>
       </div>
 
@@ -136,32 +138,32 @@ export default function FlashCardsAdminCategoriesPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FolderTree className="h-5 w-5" />
-            Categories
+            {t("categories")}
           </CardTitle>
-          <CardDescription>{categories.length} categories</CardDescription>
+          <CardDescription>{t("categoriesCount", { count: categories.length })}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
             <Input
-              placeholder="New category name"
+              placeholder={t("newCategoryPlaceholder")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="max-w-xs"
             />
             <Button onClick={handleCreate} disabled={saving}>
-              {saving ? "Creating…" : "Create"}
+              {saving ? t("creating") : t("create")}
             </Button>
           </div>
 
           {categories.length === 0 ? (
-            <p className="text-muted-foreground py-8">No categories yet.</p>
+            <p className="text-muted-foreground py-8">{t("noCategories")}</p>
           ) : (
             <div className="rounded-4xld border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Cards</TableHead>
+                    <TableHead>{t("name")}</TableHead>
+                    <TableHead>{t("cards")}</TableHead>
                     <TableHead className="w-12" />
                   </TableRow>
                 </TableHeader>
@@ -184,14 +186,14 @@ export default function FlashCardsAdminCategoriesPage() {
                               }
                             >
                               <Pencil className="h-4 w-4 mr-2" />
-                              Edit
+                              {t("edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-brand-tealestructive"
                               onClick={() => handleDelete(cat)}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
+                              {t("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -208,12 +210,12 @@ export default function FlashCardsAdminCategoriesPage() {
       <Dialog open={!!editCat} onOpenChange={(o) => !o && setEditCat(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Category</DialogTitle>
+            <DialogTitle>{t("editCategory")}</DialogTitle>
           </DialogHeader>
           {editCat && (
             <div className="space-y-4 py-4">
               <div>
-                <Label>Name</Label>
+                <Label>{t("name")}</Label>
                 <Input
                   value={editCat.name}
                   onChange={(e) =>
@@ -226,10 +228,10 @@ export default function FlashCardsAdminCategoriesPage() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditCat(null)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button onClick={handleUpdate} disabled={saving}>
-              {saving ? "Saving…" : "Save"}
+              {saving ? t("saving") : t("save")}
             </Button>
           </DialogFooter>
         </DialogContent>

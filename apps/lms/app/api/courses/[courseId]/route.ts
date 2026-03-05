@@ -4,6 +4,8 @@ import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeCourse, localizeCategory } from "@/lib/localize";
 import type { RouteContext } from "@/types";
 
 type CourseIdParams = { courseId: string };
@@ -11,9 +13,10 @@ type CourseIdParams = { courseId: string };
 /**
  * GET /api/courses/[courseId]
  * Returns a single published course with chapters and lessons (tenant-aware).
+ * Pass ?locale=fr or x-locale header for localized content.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteContext<CourseIdParams>
 ) {
   try {
@@ -51,6 +54,7 @@ export async function GET(
       });
     }
 
+    const locale = getLocaleFromRequest(request);
     let imageUrl = "/placeholder-course.jpg";
     try {
       if (course.fileKey) {
@@ -61,7 +65,12 @@ export async function GET(
       console.warn("Signed URL failed for course", courseId, err instanceof Error ? err.message : err);
     }
 
-    return successResponse({ course: { ...course, imageUrl } });
+    const withImage = { ...course, imageUrl };
+    const localized = localizeCourse(withImage, locale);
+    if (localized.category) {
+      localized.category = localizeCategory(localized.category, locale);
+    }
+    return successResponse({ course: localized });
   } catch (error) {
     return handleApiError(error);
   }

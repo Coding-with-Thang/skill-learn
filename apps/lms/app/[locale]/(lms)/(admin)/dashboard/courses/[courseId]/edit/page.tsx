@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { useParams, useSearchParams } from "next/navigation";
 import { useRouter, Link } from "@/i18n/navigation";
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -54,6 +55,7 @@ import CourseStructure from '@/components/courses/CourseStructure'
 type AxiosErr = { response?: { data?: { message?: string; fieldErrors?: { title?: string[] }; details?: { fieldErrors?: { title?: string[] } }; error?: string } } };
 
 export default function EditCoursePage() {
+    const t = useTranslations("adminCourseEdit");
     const params = useParams();
     const searchParams = useSearchParams();
     const courseId = params.courseId;
@@ -74,11 +76,11 @@ export default function EditCoursePage() {
     const [structureMutationPending, setStructureMutationPending] = useState(false);
     const [structureRefreshing, setStructureRefreshing] = useState(false);
     const [addChapterDialogOpen, setAddChapterDialogOpen] = useState(false);
-    const [addChapterTitle, setAddChapterTitle] = useState("New Chapter");
+    const [addChapterTitle, setAddChapterTitle] = useState("");
     const [addChapterTitleError, setAddChapterTitleError] = useState<string | null>(null);
     const [addLessonDialogOpen, setAddLessonDialogOpen] = useState(false);
     const [addLessonChapterId, setAddLessonChapterId] = useState<string | null>(null);
-    const [addLessonTitle, setAddLessonTitle] = useState("New Lesson");
+    const [addLessonTitle, setAddLessonTitle] = useState("");
     const [addLessonTitleError, setAddLessonTitleError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
     const router = useRouter();
@@ -92,6 +94,9 @@ export default function EditCoursePage() {
         defaultValues: {
             title: "",
             description: "",
+            titleFr: "",
+            descriptionFr: "",
+            excerptFr: "",
             imageUrl: "",
             fileKey: "",
             category: "",
@@ -134,10 +139,15 @@ export default function EditCoursePage() {
 
                 if (course) {
                     setCourse(course);
+                    const titleJson = course.titleJson as Record<string, string> | undefined;
+                    const descriptionJson = course.descriptionJson as Record<string, string> | undefined;
+                    const excerptJson = course.excerptDescriptionJson as Record<string, string> | undefined;
                     form.reset({
                         title: course.title || "",
                         description: course.description || "",
-                        // Prefer any client-side preview (set when clicking Edit) so preview doesn't flash
+                        titleFr: titleJson?.fr || "",
+                        descriptionFr: descriptionJson?.fr || "",
+                        excerptFr: excerptJson?.fr || "",
                         imageUrl: previewImageUrl || course.imageUrl || "",
                         fileKey: course.fileKey || "",
                         category: course.categoryId || "",
@@ -153,7 +163,7 @@ export default function EditCoursePage() {
                 }
             } catch (error) {
                 console.error('Error fetching course:', error);
-                toast.error('Failed to load course details');
+                toast.error(t("toastFailedLoad"));
                 router.push('/dashboard/courses');
             } finally {
                 setCourseLoading(false);
@@ -207,7 +217,7 @@ export default function EditCoursePage() {
             const d = res.data?.data?.course || res.data?.course || res.data;
             if (d) setCourse(d);
         } catch (e) {
-            if (!silent) toast.error('Failed to refresh course');
+            if (!silent) toast.error(t("errorRefreshCourse"));
         }
     };
 
@@ -217,7 +227,7 @@ export default function EditCoursePage() {
         setStructureMutationPending(true);
         try {
             await api.delete(`/admin/courses/${courseId}/chapters/${chapterToDelete.id}`);
-            toast.success('Chapter deleted');
+            toast.success(t("toastChapterDeleted"));
             setChapterToDelete(null);
             setStructureRefreshing(true);
             try {
@@ -227,7 +237,7 @@ export default function EditCoursePage() {
             }
         } catch (err: unknown) {
             const e = err as AxiosErr;
-            toast.error(e?.response?.data?.message || 'Failed to delete chapter');
+            toast.error(e?.response?.data?.message || t("errorDeleteChapter"));
             await refreshCourse({ silent: true }); // Revert UI to server state (toast already shown above)
         } finally {
             setDeleteChapterPending(false);
@@ -240,7 +250,7 @@ export default function EditCoursePage() {
 
     const openAddChapterDialog = () => {
         if (structureMutationPending) return;
-        setAddChapterTitle("New Chapter");
+        setAddChapterTitle(t("addChapterTitle"));
         setAddChapterTitleError(null);
         setAddChapterDialogOpen(true);
     };
@@ -249,17 +259,17 @@ export default function EditCoursePage() {
         const title = addChapterTitle.trim();
         setAddChapterTitleError(null);
         if (title.length < TITLE_MIN) {
-            setAddChapterTitleError("Title is required.");
+            setAddChapterTitleError(t("titleRequired"));
             return;
         }
         if (title.length > TITLE_MAX) {
-            setAddChapterTitleError(`Title must be ${TITLE_MAX} characters or less.`);
+            setAddChapterTitleError(t("titleMaxLength", { max: TITLE_MAX }));
             return;
         }
         setStructureMutationPending(true);
         try {
             await api.post(`/admin/courses/${courseId}/chapters`, { title });
-            toast.success('Chapter added');
+            toast.success(t("toastChapterAdded"));
             setAddChapterDialogOpen(false);
             setStructureRefreshing(true);
             try {
@@ -271,7 +281,7 @@ export default function EditCoursePage() {
             const e = err as AxiosErr;
             const fieldErrors = e?.response?.data?.fieldErrors ?? e?.response?.data?.details?.fieldErrors;
             const msg = fieldErrors?.title?.[0] ?? e?.response?.data?.error ?? e?.response?.data?.message;
-            setAddChapterTitleError(msg || "Failed to add chapter.");
+            setAddChapterTitleError(msg || t("errorAddChapter"));
             await refreshCourse({ silent: true });
         } finally {
             setStructureMutationPending(false);
@@ -281,7 +291,7 @@ export default function EditCoursePage() {
     const openAddLessonDialog = (chapterId) => {
         if (structureMutationPending) return;
         setAddLessonChapterId(chapterId);
-        setAddLessonTitle("New Lesson");
+        setAddLessonTitle(t("addLessonTitle"));
         setAddLessonTitleError(null);
         setAddLessonDialogOpen(true);
     };
@@ -291,17 +301,17 @@ export default function EditCoursePage() {
         const title = addLessonTitle.trim();
         setAddLessonTitleError(null);
         if (title.length < TITLE_MIN) {
-            setAddLessonTitleError("Title is required.");
+            setAddLessonTitleError(t("titleRequired"));
             return;
         }
         if (title.length > TITLE_MAX) {
-            setAddLessonTitleError(`Title must be ${TITLE_MAX} characters or less.`);
+            setAddLessonTitleError(t("titleMaxLength", { max: TITLE_MAX }));
             return;
         }
         setStructureMutationPending(true);
         try {
             await api.post(`/admin/courses/${courseId}/chapters/${addLessonChapterId}/lessons`, { title });
-            toast.success('Lesson added');
+            toast.success(t("toastLessonAdded"));
             setAddLessonDialogOpen(false);
             setAddLessonChapterId(null);
             setStructureRefreshing(true);
@@ -314,7 +324,7 @@ export default function EditCoursePage() {
             const e = err as AxiosErr;
             const fieldErrors = e?.response?.data?.fieldErrors ?? e?.response?.data?.details?.fieldErrors;
             const msg = fieldErrors?.title?.[0] ?? e?.response?.data?.error ?? e?.response?.data?.message;
-            setAddLessonTitleError(msg || "Failed to add lesson.");
+            setAddLessonTitleError(msg || t("errorAddLesson"));
             await refreshCourse({ silent: true });
         } finally {
             setStructureMutationPending(false);
@@ -327,7 +337,7 @@ export default function EditCoursePage() {
         setStructureMutationPending(true);
         try {
             await api.delete(`/admin/courses/${courseId}/chapters/${lessonToDelete.chapterId}/lessons/${lessonToDelete.lesson.id}`);
-            toast.success('Lesson deleted');
+            toast.success(t("toastLessonDeleted"));
             setLessonToDelete(null);
             setStructureRefreshing(true);
             try {
@@ -337,7 +347,7 @@ export default function EditCoursePage() {
             }
         } catch (err: unknown) {
             const e = err as AxiosErr;
-            toast.error(e?.response?.data?.message || 'Failed to delete lesson');
+            toast.error(e?.response?.data?.message || t("errorDeleteLesson"));
             await refreshCourse({ silent: true }); // Revert UI to server state (toast already shown above)
         } finally {
             setDeleteLessonPending(false);
@@ -361,7 +371,7 @@ export default function EditCoursePage() {
                     } catch (e) {
                         // noop
                     }
-                    toast.success('Course updated successfully');
+                    toast.success(t("toastCourseUpdated"));
                     router.refresh();
                     router.push('/dashboard/courses');
                     return;
@@ -373,7 +383,7 @@ export default function EditCoursePage() {
                         if (messages.length) {
                             messages.forEach((m) => toast.error(m));
                         } else {
-                            toast.error(payload.message || 'An error occurred while updating the course');
+                            toast.error(payload.message || t("errorUpdateCourse"));
                         }
                     } else {
                         toast.error(payload.message || 'An error occurred while updating the course');
@@ -395,7 +405,7 @@ export default function EditCoursePage() {
                         return;
                     }
                 }
-                toast.error(e?.message || 'An error occurred while updating the course');
+                toast.error(e?.message || t("errorUpdateCourse"));
                 return;
             }
         });
@@ -419,7 +429,7 @@ export default function EditCoursePage() {
                     })}>
                     <ArrowLeft className="size-4" />
                 </Link>
-                <h1 className="text-2xl font-bold">Edit Course</h1>
+                <h1 className="text-2xl font-bold">{t("title")}</h1>
             </div>
 
             <div className="flex gap-2 border-b">
@@ -431,7 +441,7 @@ export default function EditCoursePage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                         }`}
                 >
-                    Course Details
+                    {t("tabDetails")}
                 </button>
                 <button
                     type="button"
@@ -441,15 +451,15 @@ export default function EditCoursePage() {
                         : "border-transparent text-muted-foreground hover:text-foreground"
                         }`}
                 >
-                    Course Structure
+                    {t("tabStructure")}
                 </button>
             </div>
 
             {activeTab === "details" && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Course Information</CardTitle>
-                        <CardDescription>Update the course information</CardDescription>
+                        <CardTitle>{t("courseInfo")}</CardTitle>
+                        <CardDescription>{t("courseInfoDescription")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
@@ -461,9 +471,9 @@ export default function EditCoursePage() {
                                     name="title"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Title</FormLabel>
+                                            <FormLabel>{t("titleLabel")}</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="Title" {...field} />
+                                                <Input placeholder={t("titlePlaceholder")} {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -475,9 +485,9 @@ export default function EditCoursePage() {
                                         name="slug"
                                         render={({ field }) => (
                                             <FormItem className="full-w">
-                                                <FormLabel>Slug</FormLabel>
+                                                <FormLabel>{t("slugLabel")}</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Slug" {...field} />
+                                                    <Input placeholder={t("slugPlaceholder")} {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -488,7 +498,7 @@ export default function EditCoursePage() {
                                         const slug = slugify(titleValue) || "course";
                                         form.setValue("slug", slug, { shouldValidate: true });
                                     }}>
-                                        Generate Slug <Sparkles className="ml-1" size="16" />
+                                        {t("generateSlug")} <Sparkles className="ml-1" size="16" />
                                     </Button>
                                 </div>
 
@@ -497,22 +507,58 @@ export default function EditCoursePage() {
                                     name="excerptDescription"
                                     render={({ field }) => (
                                         <FormItem className="full-w">
-                                            <FormLabel>Excerpt Description</FormLabel>
+                                            <FormLabel>{t("excerptDescriptionLabel")}</FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder="description"
+                                                    placeholder={t("descriptionPlaceholder")}
                                                     className="min-h-[120px]"
                                                     {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
+                                <div className="rounded-lg border p-3 bg-muted/30">
+                                    <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                                    <FormField
+                                        control={form.control}
+                                        name="titleFr"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t("titleFr") ?? "Title (French)"}</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder={t("titleFrPlaceholder") ?? "French title (optional)"} {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )} />
+                                    <FormField
+                                        control={form.control}
+                                        name="excerptFr"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-2">
+                                                <FormLabel>{t("excerptFr") ?? "Excerpt (French)"}</FormLabel>
+                                                <FormControl>
+                                                    <Textarea placeholder={t("excerptFrPlaceholder") ?? "French excerpt (optional)"} rows={3} {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )} />
+                                    <FormField
+                                        control={form.control}
+                                        name="descriptionFr"
+                                        render={({ field }) => (
+                                            <FormItem className="mt-2">
+                                                <FormLabel>{t("descriptionFr") ?? "Description (French)"}</FormLabel>
+                                                <FormControl>
+                                                    <Textarea placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"} rows={4} {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )} />
+                                </div>
                                 <FormField
                                     control={form.control}
                                     name="description"
                                     render={({ field }) => (
                                         <FormItem className="full-w">
-                                            <FormLabel>Description</FormLabel>
+                                            <FormLabel>{t("descriptionLabel")}</FormLabel>
                                             <FormControl>
                                                 <RichTextEditor field={field} editorClass="text-xs" />
                                             </FormControl>
@@ -524,7 +570,7 @@ export default function EditCoursePage() {
                                     name="imageUrl"
                                     render={({ field }) => (
                                         <FormItem className="full-w">
-                                            <FormLabel>Thumbnail Image</FormLabel>
+                                            <FormLabel>{t("thumbnailImageLabel")}</FormLabel>
                                             <FormControl>
                                                 <Uploader
                                                     onChange={field.onChange}
@@ -547,11 +593,11 @@ export default function EditCoursePage() {
                                             name="category"
                                             render={({ field }) => (
                                                 <FormItem className="full-w">
-                                                    <FormLabel>Category</FormLabel>
+                                                    <FormLabel>{t("categoryLabel")}</FormLabel>
                                                     <Select onValueChange={field.onChange} value={field.value}>
                                                         <FormControl>
                                                             <SelectTrigger>
-                                                                <SelectValue placeholder="Select a category" />
+                                                                <SelectValue placeholder={t("selectCategory")} />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent>
@@ -573,7 +619,7 @@ export default function EditCoursePage() {
                                                 <FormItem className="full-w">
                                                     <FormLabel className="flex align-center gap-1">
                                                         <Clock className="ml-2 text-muted-foreground" size={18} />
-                                                        Duration (minutes)
+                                                        {t("durationLabel")}
                                                     </FormLabel>
                                                     <FormControl>
                                                         <div className="flex items-center">
@@ -584,11 +630,11 @@ export default function EditCoursePage() {
                                                                 aria-label="Duration in minutes"
                                                                 value={field.value}
                                                                 onChange={(e) => field.onChange(Number(e.target.value))}
-                                                                placeholder="e.g. 30"
+                                                                placeholder={t("durationPlaceholder")}
                                                             />
                                                         </div>
                                                     </FormControl>
-                                                    <p className="text-sm text-muted-foreground mt-1">Estimated duration in minutes.</p>
+                                                    <p className="text-sm text-muted-foreground mt-1">{t("durationHint")}</p>
                                                     <FormMessage />
                                                 </FormItem>
                                             )} />
@@ -601,11 +647,11 @@ export default function EditCoursePage() {
                                                 name="status"
                                                 render={({ field }) => (
                                                     <FormItem className="full-w">
-                                                        <FormLabel>Status</FormLabel>
+                                                        <FormLabel>{t("statusLabel")}</FormLabel>
                                                         <Select onValueChange={field.onChange} value={field.value}>
                                                             <FormControl>
                                                                 <SelectTrigger>
-                                                                    <SelectValue placeholder="Select status" />
+                                                                    <SelectValue placeholder={t("selectStatus")} />
                                                                 </SelectTrigger>
                                                             </FormControl>
                                                             <SelectContent>
@@ -626,12 +672,12 @@ export default function EditCoursePage() {
                                                 {pending ?
                                                     (
                                                         <>
-                                                            Saving...
+                                                            {t("saving")}
                                                             <Loader2 className="animate-spin ml-1" />
                                                         </>
                                                     ) : (
                                                         <>
-                                                            Save
+                                                            {t("save")}
                                                         </>
                                                     )}
                                             </Button>
@@ -647,8 +693,8 @@ export default function EditCoursePage() {
             {activeTab === "structure" && (
                 <Card className="relative">
                     <CardHeader>
-                        <CardTitle>Course Structure</CardTitle>
-                        <CardDescription>Chapters and curriculum. Add, reorder, or remove chapters and lessons.</CardDescription>
+                        <CardTitle>{t("courseStructure")}</CardTitle>
+                        <CardDescription>{t("courseStructureDescription")}</CardDescription>
                     </CardHeader>
                     <CardContent className="relative">
                         {structureRefreshing && (
@@ -678,7 +724,7 @@ export default function EditCoursePage() {
                                         title: newTitle,
                                         order: chapter.position ?? chapter.order ?? 0,
                                     });
-                                    toast.success('Chapter renamed');
+                                    toast.success(t("toastChapterRenamed"));
                                     setStructureRefreshing(true);
                                     try {
                                         await refreshCourse();
@@ -687,7 +733,7 @@ export default function EditCoursePage() {
                                     }
                                 } catch (err: unknown) {
                                     const e = err as AxiosErr;
-                                    toast.error(e?.response?.data?.message || 'Failed to rename chapter');
+                                    toast.error(e?.response?.data?.message || t("errorRenameChapter"));
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);
@@ -698,7 +744,7 @@ export default function EditCoursePage() {
                                 setStructureMutationPending(true);
                                 try {
                                     await api.put(`/admin/courses/${courseId}/chapters/reorder`, { chapterIds });
-                                    toast.success('Chapters reordered');
+                                    toast.success(t("toastChaptersReordered"));
                                     setStructureRefreshing(true);
                                     try {
                                         await refreshCourse();
@@ -707,7 +753,7 @@ export default function EditCoursePage() {
                                     }
                                 } catch (err: unknown) {
                                     const e = err as AxiosErr;
-                                    toast.error(e?.response?.data?.message || 'Failed to reorder chapters');
+                                    toast.error(e?.response?.data?.message || t("errorReorderChapters"));
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);
@@ -720,7 +766,7 @@ export default function EditCoursePage() {
                                 setStructureMutationPending(true);
                                 try {
                                     await api.put(`/admin/courses/${courseId}/chapters/${chapterId}/lessons/reorder`, { lessonIds });
-                                    toast.success('Lessons reordered');
+                                    toast.success(t("toastLessonsReordered"));
                                     setStructureRefreshing(true);
                                     try {
                                         await refreshCourse();
@@ -729,7 +775,7 @@ export default function EditCoursePage() {
                                     }
                                 } catch (err: unknown) {
                                     const e = err as AxiosErr;
-                                    toast.error(e?.response?.data?.message || 'Failed to reorder lessons');
+                                    toast.error(e?.response?.data?.message || t("errorReorderLessons"));
                                     await refreshCourse({ silent: true });
                                 } finally {
                                     setStructureMutationPending(false);
@@ -746,15 +792,13 @@ export default function EditCoursePage() {
                         <AlertTriangle className="size-6 text-red-600" />
                     </div>
                     <AlertDialogHeader className="items-center space-y-2">
-                        <AlertDialogTitle className="text-xl font-semibold">Delete Chapter?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-xl font-semibold">{t("deleteChapterTitle")}</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-muted-foreground">
-                            This will permanently delete the chapter <span className="font-medium text-foreground">&quot;{chapterToDelete?.title}&quot;</span> and <span className="font-medium text-red-600">all lessons inside it</span>.
-                            <br />
-                            This action cannot be undone.
+                            {t("deleteChapterDescription", { title: chapterToDelete?.title ?? "" })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="w-full sm:justify-between gap-2">
-                        <AlertDialogCancel disabled={deleteChapterPending} className="flex-1 mt-0">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={deleteChapterPending} className="flex-1 mt-0">{t("cancel")}</AlertDialogCancel>
                         <Button
                             variant="destructive"
                             disabled={deleteChapterPending}
@@ -763,10 +807,10 @@ export default function EditCoursePage() {
                         >
                             {deleteChapterPending ? (
                                 <>
-                                    Deleting... <Loader2 className="ml-1 size-4 animate-spin inline" />
+                                    {t("deleting")} <Loader2 className="ml-1 size-4 animate-spin inline" />
                                 </>
                             ) : (
-                                'Delete Chapter'
+                                t("deleteChapter")
                             )}
                         </Button>
                     </AlertDialogFooter>
@@ -779,15 +823,13 @@ export default function EditCoursePage() {
                         <AlertTriangle className="size-6 text-red-600" />
                     </div>
                     <AlertDialogHeader className="items-center space-y-2">
-                        <AlertDialogTitle className="text-xl font-semibold">Delete Lesson?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-xl font-semibold">{t("deleteLessonTitle")}</AlertDialogTitle>
                         <AlertDialogDescription className="text-center text-muted-foreground">
-                            This will permanently delete the lesson <span className="font-medium text-foreground">&quot;{lessonToDelete?.lesson?.title}&quot;</span>.
-                            <br />
-                            This action cannot be undone.
+                            {t("deleteLessonDescription", { title: lessonToDelete?.lesson?.title ?? "" })}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="w-full sm:justify-between gap-2">
-                        <AlertDialogCancel disabled={deleteLessonPending} className="flex-1 mt-0">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={deleteLessonPending} className="flex-1 mt-0">{t("cancel")}</AlertDialogCancel>
                         <Button
                             variant="destructive"
                             disabled={deleteLessonPending}
@@ -796,10 +838,10 @@ export default function EditCoursePage() {
                         >
                             {deleteLessonPending ? (
                                 <>
-                                    Deleting... <Loader2 className="ml-1 size-4 animate-spin inline" />
+                                    {t("deleting")} <Loader2 className="ml-1 size-4 animate-spin inline" />
                                 </>
                             ) : (
-                                'Delete Lesson'
+                                t("deleteLesson")
                             )}
                         </Button>
                     </AlertDialogFooter>
@@ -809,8 +851,8 @@ export default function EditCoursePage() {
             <Dialog open={addChapterDialogOpen} onOpenChange={(open) => { if (!open) setAddChapterTitleError(null); setAddChapterDialogOpen(open); }}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle>Add chapter</DialogTitle>
-                        <DialogDescription>Give the chapter a title. You can rename it later in the course wizard.</DialogDescription>
+                        <DialogTitle>{t("addChapter")}</DialogTitle>
+                        <DialogDescription>{t("addChapterDescription")}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-2">
                         <div className="grid gap-2">
@@ -819,7 +861,7 @@ export default function EditCoursePage() {
                                 id="add-chapter-title"
                                 value={addChapterTitle}
                                 onChange={(e) => { setAddChapterTitle(e.target.value); setAddChapterTitleError(null); }}
-                                placeholder="New Chapter"
+                                placeholder={t("addChapterTitle")}
                                 aria-invalid={!!addChapterTitleError}
                                 aria-describedby={addChapterTitleError ? "add-chapter-title-error" : undefined}
                                 className={addChapterTitleError ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -833,9 +875,9 @@ export default function EditCoursePage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setAddChapterDialogOpen(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setAddChapterDialogOpen(false)}>{t("cancel")}</Button>
                         <Button onClick={handleAddChapterSubmit} disabled={structureMutationPending}>
-                            {structureMutationPending ? <><Loader2 className="mr-1 size-4 animate-spin" /> Adding... </> : "Add chapter"}
+                            {structureMutationPending ? <><Loader2 className="mr-1 size-4 animate-spin" /> {t("adding")} </> : t("addChapter")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -844,8 +886,8 @@ export default function EditCoursePage() {
             <Dialog open={addLessonDialogOpen} onOpenChange={(open) => { if (!open) { setAddLessonChapterId(null); setAddLessonTitleError(null); } setAddLessonDialogOpen(open); }}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle>Add lesson</DialogTitle>
-                        <DialogDescription>Give the lesson a title. You can rename it later in the course wizard.</DialogDescription>
+                        <DialogTitle>{t("addLesson")}</DialogTitle>
+                        <DialogDescription>{t("addLessonDescription")}</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-2">
                         <div className="grid gap-2">
@@ -854,7 +896,7 @@ export default function EditCoursePage() {
                                 id="add-lesson-title"
                                 value={addLessonTitle}
                                 onChange={(e) => { setAddLessonTitle(e.target.value); setAddLessonTitleError(null); }}
-                                placeholder="New Lesson"
+                                placeholder={t("addLessonTitle")}
                                 aria-invalid={!!addLessonTitleError}
                                 aria-describedby={addLessonTitleError ? "add-lesson-title-error" : undefined}
                                 className={addLessonTitleError ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -868,9 +910,9 @@ export default function EditCoursePage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setAddLessonDialogOpen(false)}>Cancel</Button>
+                        <Button variant="outline" onClick={() => setAddLessonDialogOpen(false)}>{t("cancel")}</Button>
                         <Button onClick={handleAddLessonSubmit} disabled={structureMutationPending || !addLessonChapterId}>
-                            {structureMutationPending ? <><Loader2 className="mr-1 size-4 animate-spin" /> Adding... </> : "Add lesson"}
+                            {structureMutationPending ? <><Loader2 className="mr-1 size-4 animate-spin" /> {t("adding")} </> : t("addLesson")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

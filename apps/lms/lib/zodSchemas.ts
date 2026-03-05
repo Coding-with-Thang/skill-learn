@@ -48,6 +48,8 @@ const slugSchema = z
     "Slug must contain only lowercase letters, numbers, and hyphens (e.g. my-course-name)"
   );
 
+const localizedStringSchema = z.record(z.string(), z.string()).optional();
+
 // Course schemas
 export const courseSchema = z.object({
   title: z
@@ -55,6 +57,12 @@ export const courseSchema = z.object({
     .min(10, "Title must be at least 10 characters")
     .max(100, "Title must be less than 100 characters"),
   description: z.string().min(10).max(1000),
+  titleFr: z.string().max(100).optional(),
+  descriptionFr: z.string().max(1000).optional(),
+  excerptFr: z.string().max(200).optional(),
+  titleJson: localizedStringSchema,
+  descriptionJson: localizedStringSchema,
+  excerptDescriptionJson: localizedStringSchema,
   // imageUrl can be empty/undefined while creating — make it optional
   imageUrl: z.string().optional(),
   category: objectIdSchema,
@@ -78,6 +86,12 @@ export const courseUpdateSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(1000, "Description must be less than 1000 characters"),
+  titleFr: z.string().max(100).optional(),
+  descriptionFr: z.string().max(1000).optional(),
+  excerptFr: z.string().max(200).optional(),
+  titleJson: localizedStringSchema,
+  descriptionJson: localizedStringSchema,
+  excerptDescriptionJson: localizedStringSchema,
   imageUrl: z.string(),
   category: objectIdSchema,
   duration: z.number().min(1, "Duration must be at least 1 minute"),

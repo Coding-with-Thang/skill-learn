@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslations } from "next-intl"
 import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@skill-learn/ui/components/dialog"
@@ -23,6 +24,7 @@ import { UserFilters } from "@/components/user/UserFilters"
 type UserItem = { id: string; firstName?: string; lastName?: string; username?: string; tenantRole?: string; createdAt?: string; reportsTo?: { firstName?: string; lastName?: string } };
 
 export default function UsersPage() {
+  const t = useTranslations("adminDashboardUsers");
   const { users, isLoading, error, fetchUsers } = useUsersStore();
   const hasPermission = usePermissionsStore((s) => s.hasPermission);
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
@@ -85,7 +87,7 @@ export default function UsersPage() {
       await fetchUsers(true)
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      setErrorUsers(e.response?.data?.error || 'An error occurred')
+      setErrorUsers(e.response?.data?.error || t("errorGeneric"))
     }
   }
 
@@ -106,7 +108,7 @@ export default function UsersPage() {
       await fetchUsers(true)
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      setErrorUsers(e.response?.data?.error || 'Failed to delete user')
+      setErrorUsers(e.response?.data?.error || t("errorDelete"))
       setUserToDelete(null)
     }
   }
@@ -114,9 +116,9 @@ export default function UsersPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">User Management</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <div className="flex gap-3">
-          <Button type="button" onClick={() => { setEditingUser(null); setShowForm(true); }} variant="default">Add User</Button>
+          <Button type="button" onClick={() => { setEditingUser(null); setShowForm(true); }} variant="default">{t("addUser")}</Button>
         </div>
       </div>
 
@@ -140,7 +142,7 @@ export default function UsersPage() {
           {showForm && (
             <>
               <DialogHeader className="mb-4">
-                <DialogTitle className="text-lg font-bold">{editingUser ? 'Edit' : 'Create'} User</DialogTitle>
+                <DialogTitle className="text-lg font-bold">{editingUser ? t("editUser") : t("createUser")}</DialogTitle>
               </DialogHeader>
               <UserForm
                 key={editingUser ? String(editingUser.id) : 'new'}
@@ -159,18 +161,18 @@ export default function UsersPage() {
       <AlertDialog open={userToDelete !== null} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogTitle>{t("deleteConfirmTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName} (${userToDelete.username})` : 'this user'}? This action cannot be undone.
+              {t("deleteConfirmDescription", { name: userToDelete ? `${userToDelete.firstName} ${userToDelete.lastName} (${userToDelete.username})` : t("deleteConfirmThisUser") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row justify-center sm:justify-center">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => handleDeleteConfirm(userToDelete)}
               className="bg-destructive text-brand-tealestructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t("delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -193,19 +195,19 @@ export default function UsersPage() {
       />
 
       {isLoading ? (
-        <div className="text-center py-4">Loading users...</div>
+        <div className="text-center py-4">{t("loading")}</div>
       ) : error ? (
         <div className="text-red-500 text-center py-4">{error}</div>
       ) : (
         <Table>
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-4 text-left">Username</th>
-              <th className="p-4 text-left">First Name</th>
-              <th className="p-4 text-left">Last Name</th>
-              <th className="p-4 text-left">Reports to</th>
-              <th className="p-4 text-left">Role</th>
-              <th className="p-4 text-left">Actions</th>
+              <th className="p-4 text-left">{t("username")}</th>
+              <th className="p-4 text-left">{t("firstName")}</th>
+              <th className="p-4 text-left">{t("lastName")}</th>
+              <th className="p-4 text-left">{t("reportsTo")}</th>
+              <th className="p-4 text-left">{t("role")}</th>
+              <th className="p-4 text-left">{t("actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -219,14 +221,14 @@ export default function UsersPage() {
                     ? `${user.reportsTo.firstName} ${user.reportsTo.lastName}`
                     : "—"}
                 </td>
-                <td className="p-4">{user.tenantRole || 'No role'}</td>
+                <td className="p-4">{user.tenantRole || t("noRole")}</td>
                 <td className="p-4 space-x-4">
                   <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
-                    Edit
+                    {t("edit")}
                   </Button>
                   {canDeleteUsers && (
                     <Button type="button" onClick={() => handleDeleteClick(user)} variant="destructive">
-                      Delete
+                      {t("delete")}
                     </Button>
                   )}
                 </td>
@@ -235,7 +237,7 @@ export default function UsersPage() {
             {filteredUsers.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center py-4">
-                  No users found
+                  {t("noUsersFound")}
                 </td>
               </tr>
             )}
@@ -247,7 +249,7 @@ export default function UsersPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : 'User details'}
+              {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : t("userDetails")}
             </DialogTitle>
           </DialogHeader>
           {selectedUser && <UserDetails user={selectedUser} />}

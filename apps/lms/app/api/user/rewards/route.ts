@@ -4,8 +4,10 @@ import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeReward } from "@/lib/localize";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Get current user's tenantId using standardized utility
     const tenantId = await getTenantId();
@@ -14,12 +16,16 @@ export async function GET(_request: NextRequest) {
     // Pattern: (tenantId = userTenantId OR (isGlobal = true AND tenantId IS NULL))
     const whereClause = buildTenantContentFilter(tenantId);
 
+    const locale = getLocaleFromRequest(request);
+
     const rewards = await prisma.reward.findMany({
       where: whereClause,
       select: {
         id: true,
         prize: true,
+        prizeJson: true,
         description: true,
+        descriptionJson: true,
         cost: true,
         imageUrl: true,
         fileKey: true,
@@ -47,10 +53,8 @@ export async function GET(_request: NextRequest) {
           );
         }
 
-        return {
-          ...reward,
-          imageUrl,
-        };
+        const withImage = { ...reward, imageUrl };
+        return localizeReward(withImage, locale);
       })
     );
 

@@ -2,6 +2,7 @@
 
 import { usePathname } from "@/i18n/navigation";
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import {
   SidebarInset,
@@ -13,60 +14,60 @@ import Footer from "@/components/layout/Footer";
 import { PageErrorBoundary } from "@/components/layout/PageErrorBoundary";
 import TopBar from "@/components/layout/TopBar";
 
-// Friendly labels for known path segments (lowercase key)
-const SEGMENT_LABELS = {
-  dashboard: "Dashboard",
-  categories: "Categories",
-  courses: "Courses",
-  create: "Create",
-  edit: "Edit",
-  preview: "Preview",
-  quizzes: "Quizzes",
-  "quiz-manager": "Quiz Manager",
-  rewards: "Rewards",
-  users: "Users",
-  roles: "Roles",
-  "user-roles": "User Roles",
-  settings: "Settings",
-  "audit-logs": "Audit Logs",
-  billing: "Billing",
-  features: "Features",
-  documentation: "Documentation",
-  "flashcards-analytics": "Flashcards Analytics",
-  "flashcards-cards": "Flashcards Cards",
-  "flashcards-categories": "Flashcards Categories",
-  "flashcards-import": "Flashcards Import",
-  "flashcards-learning-analytics": "Flashcards Learning Analytics",
-  "flashcards-priorities": "Flashcards Priorities",
-  "course-status": "Course Status",
-  "quiz-status": "Quiz Status",
+const SEGMENT_KEYS: Record<string, string> = {
+  dashboard: "dashboard",
+  categories: "categories",
+  courses: "courses",
+  create: "create",
+  edit: "edit",
+  preview: "preview",
+  quizzes: "quizzes",
+  "quiz-manager": "quizManager",
+  rewards: "rewards",
+  users: "users",
+  roles: "roles",
+  "user-roles": "userRoles",
+  settings: "settings",
+  "audit-logs": "auditLogs",
+  billing: "billing",
+  features: "features",
+  documentation: "documentation",
+  "flashcards-analytics": "flashcardsAnalytics",
+  "flashcards-cards": "flashcardsCards",
+  "flashcards-categories": "flashcardsCategories",
+  "flashcards-import": "flashcardsImport",
+  "flashcards-learning-analytics": "flashcardsLearningAnalytics",
+  "flashcards-priorities": "flashcardsPriorities",
+  "course-status": "courseStatus",
+  "quiz-status": "quizStatus",
 };
 
-function formatSegmentLabel(segment) {
-  const key = segment.toLowerCase();
-  if (SEGMENT_LABELS[key]) return SEGMENT_LABELS[key];
-  // Dynamic segment (e.g. courseId): show shortened or generic
-  if (/^[0-9a-f-]{36}$/i.test(segment) || /^[0-9a-f]{24}$/i.test(segment)) {
-    return "Detail";
-  }
-  return segment
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 export default function DashboardLayout({ children }) {
+  const t = useTranslations("adminLayout");
   const pathname = usePathname();
+
+  const formatSegmentLabel = (segment: string) => {
+    const key = segment.toLowerCase();
+    const tKey = SEGMENT_KEYS[key];
+    if (tKey) return t(tKey as keyof typeof t);
+    if (/^[0-9a-f-]{36}$/i.test(segment) || /^[0-9a-f]{24}$/i.test(segment)) {
+      return t("detail");
+    }
+    return segment
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   const { crumbs, endtrail } = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
 
     if (segments.length === 0) {
-      return { crumbs: [], endtrail: "Dashboard" };
+      return { crumbs: [], endtrail: t("dashboard") };
     }
 
     if (segments.length === 1 && segments[0] === "dashboard") {
-      return { crumbs: [], endtrail: "Dashboard Overview" };
+      return { crumbs: [], endtrail: t("dashboardOverview") };
     }
 
     // Shortened trail for lesson edit: remove "Detail" segments
@@ -77,12 +78,12 @@ export default function DashboardLayout({ children }) {
       const [, courseId] = lessonEditMatch;
       return {
         crumbs: [
-          { name: "Dashboard", href: "/dashboard" },
-          { name: "Courses", href: "/dashboard/courses" },
-          { name: "Chapters", href: `/dashboard/courses/${courseId}/edit` },
-          { name: "Lessons", href: `/dashboard/courses/${courseId}/edit` },
+          { name: t("dashboard"), href: "/dashboard" },
+          { name: t("courses"), href: "/dashboard/courses" },
+          { name: t("chapters"), href: `/dashboard/courses/${courseId}/edit` },
+          { name: t("lessons"), href: `/dashboard/courses/${courseId}/edit` },
         ],
-        endtrail: "Edit",
+        endtrail: t("edit"),
       };
     }
 
@@ -94,11 +95,11 @@ export default function DashboardLayout({ children }) {
       const [, courseId] = chapterMatch;
       return {
         crumbs: [
-          { name: "Dashboard", href: "/dashboard" },
-          { name: "Courses", href: "/dashboard/courses" },
-          { name: "Chapters", href: `/dashboard/courses/${courseId}/edit` },
+          { name: t("dashboard"), href: "/dashboard" },
+          { name: t("courses"), href: "/dashboard/courses" },
+          { name: t("chapters"), href: `/dashboard/courses/${courseId}/edit` },
         ],
-        endtrail: formatSegmentLabel(segments[segments.length - 1]),
+        endtrail: formatSegmentLabel(segments[segments.length - 1] ?? ""),
       };
     }
 
@@ -110,10 +111,10 @@ export default function DashboardLayout({ children }) {
       const [, , action] = courseEditMatch;
       return {
         crumbs: [
-          { name: "Dashboard", href: "/dashboard" },
-          { name: "Courses", href: "/dashboard/courses" },
+          { name: t("dashboard"), href: "/dashboard" },
+          { name: t("courses"), href: "/dashboard/courses" },
         ],
-        endtrail: formatSegmentLabel(action),
+        endtrail: formatSegmentLabel(action ?? ""),
       };
     }
 
@@ -122,16 +123,16 @@ export default function DashboardLayout({ children }) {
     const crumbs: { name: string; href: string }[] = [];
     for (let i = 0; i < segments.length - 1; i++) {
       const segment = segments[i];
-      const label = formatSegmentLabel(segment);
-      if (label === "Detail") continue;
+      const label = formatSegmentLabel(segment ?? "");
+      if (label === t("detail")) continue;
       const href = `/${segments.slice(0, i + 1).join("/")}`;
       crumbs.push({ name: label, href });
     }
     const lastSegment = segments[segments.length - 1];
-    const endtrail = formatSegmentLabel(lastSegment);
+    const endtrail = formatSegmentLabel(lastSegment ?? "");
 
     return { crumbs, endtrail };
-  }, [pathname]);
+  }, [pathname, t]);
 
   return (
     <div className="relative flex flex-col md:flex-row min-h-screen w-full">

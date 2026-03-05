@@ -18,7 +18,8 @@ interface CategoryStore {
   isLoading: boolean;
   error: string | null;
   lastFetch: number | null;
-  fetchCategories: (force?: boolean) => Promise<unknown[]>;
+  /** Pass locale (e.g. "en", "fr") for localized category names/descriptions */
+  fetchCategories: (force?: boolean, locale?: string) => Promise<unknown[]>;
   reset: () => void;
 }
 
@@ -30,13 +31,15 @@ export const useCategoryStore = create<CategoryStore>()(
       error: null,
       lastFetch: null,
 
-      fetchCategories: async (force = false) => {
+      fetchCategories: async (force = false, locale?: string) => {
+        const cacheKey = `fetchCategories:${locale ?? "default"}`;
         return requestDeduplicator.dedupe(
-          "fetchCategories",
+          cacheKey,
           async () => {
             set({ isLoading: true, error: null });
             try {
-              const response = await api.get("/categories");
+              const url = locale ? `/categories?locale=${encodeURIComponent(locale)}` : "/categories";
+              const response = await api.get(url);
               if (!response.data) {
                 throw new Error("No data received from server");
               }

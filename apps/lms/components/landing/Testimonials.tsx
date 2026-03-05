@@ -5,33 +5,24 @@ import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { Quote, Box, Layers, BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "@skill-learn/ui/components/button";
+import { useTranslations } from "next-intl";
+
+const AVATARS = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop",
+];
+const COMPANY_ICONS = [Layers, Box, BookOpen];
 
 export default function Testimonials() {
-  const testimonials = [
-    {
-      quote: "Skill-Learn completely transformed how our marketing team adopts AI. It only took me 1 month to master concepts that used to feel impossible.",
-      author: "Sarah Johnson",
-      role: "Marketing Manager",
-      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
-      companyIcon: Layers
-    },
-    {
-      quote: "The interactive coding environments are world-class. I've used dozens of platforms, but Skill-Learn is the only one that actually stuck.",
-      author: "Michael Chen",
-      role: "Software Engineer",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop",
-      companyIcon: Box
-    },
-    {
-      quote: "Onboarding our entire HR department was seamless. The progress tracking gave us real data on how our skills were evolving week by week.",
-      author: "Emily Rodriguez",
-      role: "HR Director",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop",
-      companyIcon: BookOpen
-    }
-  ];
-
-  const clientLogos = ["VECTA", "CLOUDRA", "LUMINA", "SYNTH"];
+  const t = useTranslations("testimonials");
+  const testimonialItems = t.raw("items") as { quote: string; author: string; role: string }[];
+  const testimonials = testimonialItems.map((item, idx) => ({
+    ...item,
+    avatar: AVATARS[idx % AVATARS.length]!,
+    companyIcon: COMPANY_ICONS[idx % COMPANY_ICONS.length]!,
+  }));
+  const clientLogos = t.raw("clientLogos") as string[];
 
   return (
     <section className="relative py-24 md:py-32 overflow-hidden bg-[#EAEDF5]">
@@ -47,7 +38,7 @@ export default function Testimonials() {
             viewport={{ once: true }}
             className="inline-block px-4 py-1 bg-blue-100 text-[#4F67E1] rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-6"
           >
-            Success Stories
+            {t("badge")}
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
@@ -56,7 +47,7 @@ export default function Testimonials() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-6xl font-extrabold text-[#1B1B53] mb-6 tracking-tight"
           >
-            Humanizing the AI<br />Learning Experience
+            {t("title")}<br />{t("titleLine2")}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -65,13 +56,13 @@ export default function Testimonials() {
             transition={{ delay: 0.2 }}
             className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed"
           >
-            Join over 50,000+ professionals who have accelerated their careers with Skill-Learn's interactive paths.
+            {t("subtitle")}
           </motion.p>
         </div>
 
         {/* Testimonials Grid */}
         <div className="grid md:grid-cols-3 gap-8 mb-24">
-          {testimonials.map((t, idx) => (
+          {testimonials.map((item, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -83,8 +74,8 @@ export default function Testimonials() {
               <div className="flex justify-between items-start mb-8">
                 <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-white shadow-md">
                   <Image
-                    src={t.avatar}
-                    alt={t.author}
+                    src={item.avatar}
+                    alt={item.author}
                     fill
                     className="object-cover"
                   />
@@ -93,15 +84,15 @@ export default function Testimonials() {
               </div>
 
               <p className="text-xl text-[#1B1B53]/80 mb-10 italic leading-relaxed min-h-[140px]">
-                &quot;{t.quote}&quot;
+                &quot;{item.quote}&quot;
               </p>
 
               <div className="pt-8 border-t border-[#1B1B53]/5 flex justify-between items-center">
                 <div>
-                  <h4 className="font-bold text-[#1B1B53] mb-1">{t.author}</h4>
-                  <p className="text-xs text-slate-500 font-medium">{t.role}</p>
+                  <h4 className="font-bold text-[#1B1B53] mb-1">{item.author}</h4>
+                  <p className="text-xs text-slate-500 font-medium">{item.role}</p>
                 </div>
-                <t.companyIcon className="w-5 h-5 text-slate-300" />
+                <item.companyIcon className="w-5 h-5 text-slate-300" />
               </div>
             </motion.div>
           ))}

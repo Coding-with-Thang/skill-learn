@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -62,6 +63,7 @@ function parseJSON(text: string) {
 type CategoryItem = { id: string; name: string };
 
 export default function FlashCardsImportPage() {
+  const t = useTranslations("adminFlashcardsImport");
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -79,7 +81,7 @@ export default function FlashCardsImportPage() {
       if (cats.length && !categoryId) setCategoryId(cats[0].id);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Failed to load categories");
+      toast.error(e.response?.data?.error || t("toastLoadFailed"));
       setCategories([]);
     } finally {
       setLoading(false);
@@ -116,11 +118,11 @@ export default function FlashCardsImportPage() {
 
   const handleImport = async () => {
     if (!categoryId) {
-      toast.error("Select a category");
+      toast.error(t("toastSelectCategory"));
       return;
     }
     if (!rawInput.trim()) {
-      toast.error("Paste or upload content");
+      toast.error(t("toastPasteOrUpload"));
       return;
     }
 
@@ -132,12 +134,12 @@ export default function FlashCardsImportPage() {
         cards = parseCSV(rawInput);
       }
     } catch {
-      toast.error("Invalid format. Check your input.");
+      toast.error(t("toastInvalidFormat"));
       return;
     }
 
     if (cards.length === 0) {
-      toast.error("No valid cards found");
+      toast.error(t("toastNoValidCards"));
       return;
     }
 
@@ -149,12 +151,14 @@ export default function FlashCardsImportPage() {
       });
       const data = res.data?.data ?? res.data;
       toast.success(
-        `Imported ${data.created ?? 0} cards${(data.skipped ?? 0) > 0 ? `, ${data.skipped} skipped (duplicates)` : ""}`
+        (data.skipped ?? 0) > 0
+          ? t("toastImportSkipped", { created: data.created ?? 0, skipped: data.skipped ?? 0 })
+          : t("toastImportSuccess", { created: data.created ?? 0 })
       );
       setRawInput("");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } } };
-      toast.error(e.response?.data?.error || "Import failed");
+      toast.error(e.response?.data?.error || t("toastImportFailed"));
     } finally {
       setImporting(false);
     }
@@ -165,9 +169,9 @@ export default function FlashCardsImportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Bulk Import</h1>
+        <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-muted-foreground mt-1">
-          Import flash cards from CSV or JSON.
+          {t("description")}
         </p>
       </div>
 
@@ -175,19 +179,19 @@ export default function FlashCardsImportPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Import Cards
+            {t("importCards")}
           </CardTitle>
           <CardDescription>
-            CSV: question,answer per line (or use ; as separator). JSON: array of {`{ "question", "answer", "tags?", "difficulty?" }`}
+            {t("formatDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-4">
             <div>
-              <Label>Category</Label>
+              <Label>{t("category")}</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
                 <SelectTrigger className="w-48 mt-1">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t("selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
@@ -199,14 +203,14 @@ export default function FlashCardsImportPage() {
               </Select>
             </div>
             <div>
-              <Label>Format</Label>
+              <Label>{t("format")}</Label>
               <Select value={format} onValueChange={setFormat}>
                 <SelectTrigger className="w-32 mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
+                  <SelectItem value="csv">{t("formatCsv")}</SelectItem>
+                  <SelectItem value="json">{t("formatJson")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -219,21 +223,21 @@ export default function FlashCardsImportPage() {
                     className="hidden"
                     onChange={handleFile}
                   />
-                  Upload file
+                  {t("uploadFile")}
                 </label>
               </Button>
             </div>
           </div>
 
           <div>
-            <Label>Paste content or upload a file</Label>
+            <Label>{t("pasteOrUpload")}</Label>
             <Textarea
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
               placeholder={
                 format === "csv"
-                  ? "What is 2+2?,4\nCapital of France?,Paris"
-                  : '[{"question":"...","answer":"..."}]'
+                  ? t("placeholderCsv")
+                  : t("placeholderJson")
               }
               rows={12}
               className="font-mono text-sm mt-1"
@@ -241,7 +245,7 @@ export default function FlashCardsImportPage() {
           </div>
 
           <Button onClick={handleImport} disabled={importing}>
-            {importing ? "Importing…" : "Import"}
+            {importing ? t("importing") : t("import")}
           </Button>
         </CardContent>
       </Card>
