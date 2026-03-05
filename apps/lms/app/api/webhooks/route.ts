@@ -4,6 +4,8 @@ import { prisma } from "@skill-learn/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { getTenantDefaultRoleId } from "@skill-learn/lib/utils/tenantDefaultRole";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 
 /**
  * Clerk Webhook Handler
@@ -28,6 +30,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       console.error(
         "[Webhook] CLERK_WEBHOOK_SECRET or WEBHOOK_SECRET is missing"
       );
+      await logSecurityEvent({
+        actorType: "system",
+        eventType: SECURITY_EVENT_TYPES.WEBHOOK_PROCESSING_FAILED,
+        category: SECURITY_EVENT_CATEGORIES.WEBHOOK,
+        action: "process",
+        resource: "clerk_webhook",
+        outcome: "failure",
+        severity: "high",
+        message: "Webhook secret not configured",
+        details: {
+          reason: "missing_webhook_secret",
+        },
+        request: req,
+      });
       return NextResponse.json(
         { error: "Webhook secret not configured" },
         { status: 500 }
@@ -43,6 +59,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // If there are no headers, error out
     if (!svix_id || !svix_timestamp || !svix_signature) {
       console.error("[Webhook] Missing svix headers");
+      await logSecurityEvent({
+        actorType: "anonymous",
+        eventType: SECURITY_EVENT_TYPES.WEBHOOK_VERIFICATION_FAILED,
+        category: SECURITY_EVENT_CATEGORIES.WEBHOOK,
+        action: "verify",
+        resource: "clerk_webhook",
+        outcome: "failure",
+        severity: "high",
+        message: "Missing required Svix headers",
+        details: {
+          hasSvixId: !!svix_id,
+          hasSvixTimestamp: !!svix_timestamp,
+          hasSvixSignature: !!svix_signature,
+        },
+        request: req,
+      });
       return NextResponse.json(
         { error: "Missing svix headers" },
         { status: 400 }
@@ -63,6 +95,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }) as { type: string; data: Record<string, unknown> };
     } catch (err: unknown) {
       console.error("[Webhook] Verification failed:", err instanceof Error ? err.message : String(err));
+      await logSecurityEvent({
+        actorType: "anonymous",
+        eventType: SECURITY_EVENT_TYPES.WEBHOOK_VERIFICATION_FAILED,
+        category: SECURITY_EVENT_CATEGORIES.WEBHOOK,
+        action: "verify",
+        resource: "clerk_webhook",
+        outcome: "failure",
+        severity: "high",
+        message: "Webhook signature verification failed",
+        details: {
+          error: err instanceof Error ? err.message : String(err),
+          svixId: svix_id,
+          svixTimestamp: svix_timestamp,
+        },
+        request: req,
+      });
       return NextResponse.json(
         { error: "Webhook verification failed" },
         { status: 400 }
@@ -367,6 +415,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         if (user?.tenantId) {
           await syncTenantMetadataToClerk(userId, user.tenantId);
         }
+
+        await logSecurityEvent({
+          actorClerkId: userId,
+          tenantId: user?.tenantId || undefined,
+          eventType: SECURITY_EVENT_TYPES.AUTH_SESSION_CREATED,
+          category: SECURITY_EVENT_CATEGORIES.AUTH,
+          action: "authenticate",
+          resource: "session",
+          outcome: "success",
+          severity: "low",
+          message: "Session created via Clerk webhook",
+          details: {
+            provider: "clerk",
+            webhookEventType: eventType,
+          },
+          request: req,
+        });
       }
     }
 
@@ -374,6 +439,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (error: unknown) {
     const err = error instanceof Error ? error : new Error(String(error));
     console.error("[Webhook] Error:", { message: err.message, stack: err.stack });
+    await logSecurityEvent({
+      actorType: "system",
+      eventType: SECURITY_EVENT_TYPES.WEBHOOK_PROCESSING_FAILED,
+      category: SECURITY_EVENT_CATEGORIES.WEBHOOK,
+      action: "process",
+      resource: "clerk_webhook",
+      outcome: "failure",
+      severity: "high",
+      message: "Unhandled webhook processing failure",
+      details: {
+        error: err.message,
+      },
+      request: req,
+    });
     return NextResponse.json(
       { error: "Webhook processing failed" },
       { status: 500 }

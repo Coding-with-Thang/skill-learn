@@ -133,7 +133,17 @@ export async function POST(request: NextRequest) {
     });
 
     // Log audit event
-    await rewardRedeemed(user.id, rewardId, reward.prize, reward.cost);
+    await rewardRedeemed(user.id, rewardId, reward.prize, reward.cost, {
+      request,
+      tenantId,
+      eventDetails: {
+        rewardId,
+        rewardName: reward.prize,
+        pointsSpent: reward.cost,
+        remainingPoints: result.updatedPoints,
+      },
+      severity: "high",
+    });
 
     return successResponse({
       message: `Successfully redeemed ${reward.prize}`,

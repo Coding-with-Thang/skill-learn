@@ -3,6 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync";
 import type { RouteContext } from "@/types";
 
@@ -31,7 +33,7 @@ export async function GET(
     const { roleId } = await params;
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
@@ -112,7 +114,7 @@ export async function PUT(
     const { roleId } = await params;
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
@@ -207,6 +209,33 @@ export async function PUT(
       }
     }
 
+    await logSecurityEvent({
+      actorUserId: user.id,
+      actorClerkId: userId,
+      tenantId: user.tenantId,
+      eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_UPDATED,
+      category: SECURITY_EVENT_CATEGORIES.RBAC,
+      action: "update",
+      resource: "tenant_role",
+      resourceId: roleId,
+      severity: "high",
+      message: `Updated role: ${role?.roleAlias || existingRole.roleAlias}`,
+      details: {
+        roleId,
+        previousRoleAlias: existingRole.roleAlias,
+        updatedRoleAlias: role?.roleAlias || existingRole.roleAlias,
+        updatedFields: {
+          roleAlias: roleAlias !== undefined,
+          description: description !== undefined,
+          slotPosition: slotPosition !== undefined,
+          isActive: isActive !== undefined,
+          permissions: permissionIds !== undefined,
+        },
+        permissionCount: role?.tenantRolePermissions.length || 0,
+      },
+      request,
+    });
+
     return NextResponse.json({
       role: {
         id: role.id,
@@ -240,7 +269,7 @@ export async function DELETE(
     const { roleId } = await params;
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { tenantId: true },
+      select: { id: true, tenantId: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
@@ -266,6 +295,25 @@ export async function DELETE(
     // Delete role (cascade removes permissions)
     await prisma.tenantRole.delete({
       where: { id: roleId },
+    });
+
+    await logSecurityEvent({
+      actorUserId: user.id,
+      actorClerkId: userId,
+      tenantId: user.tenantId,
+      eventType: SECURITY_EVENT_TYPES.RBAC_ROLE_DELETED,
+      category: SECURITY_EVENT_CATEGORIES.RBAC,
+      action: "delete",
+      resource: "tenant_role",
+      resourceId: roleId,
+      severity: "high",
+      message: `Deleted role: ${role.roleAlias}`,
+      details: {
+        roleId,
+        roleAlias: role.roleAlias,
+        slotPosition: role.slotPosition,
+      },
+      request: _request,
     });
 
     return NextResponse.json({

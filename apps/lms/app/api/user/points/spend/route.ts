@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { requireAuth } from "@skill-learn/lib/utils/auth";
+import { pointsDeducted } from "@skill-learn/lib/utils/auditLogger";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
@@ -56,6 +57,15 @@ export async function POST(request: NextRequest) {
       });
 
       return updatedUser;
+    });
+
+    await pointsDeducted(userId, user.id, amount, reason, {
+      request,
+      eventDetails: {
+        amount,
+        reason,
+        remainingPoints: result.points,
+      },
     });
 
     return successResponse({

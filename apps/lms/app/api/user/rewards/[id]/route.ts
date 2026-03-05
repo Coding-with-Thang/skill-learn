@@ -4,6 +4,7 @@ import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { logAuditEvent } from "@skill-learn/lib/utils/auditLogger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { validateRequestParams } from "@skill-learn/lib/utils/validateRequest";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
 import { objectIdSchema } from "@/lib/zodSchemas";
@@ -43,7 +44,17 @@ export async function DELETE(
       prisma.reward.delete({ where: { id } }),
     ]);
 
-    await logAuditEvent(userId, "delete", "reward", id, `Deleted reward: ${existingReward.prize}`);
+    await logAuditEvent(userId, "delete", "reward", id, `Deleted reward: ${existingReward.prize}`, {
+      eventType: SECURITY_EVENT_TYPES.REWARD_DELETED,
+      category: SECURITY_EVENT_CATEGORIES.REWARD,
+      severity: "high",
+      tenantId,
+      request: _request,
+      eventDetails: {
+        rewardId: id,
+        prize: existingReward.prize,
+      },
+    });
 
     return successResponse({ deleted: true });
   } catch (error) {
