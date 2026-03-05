@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       // Real Stripe validation
       const stripe = (await import("stripe")).default;
       const stripeClient = new stripe(stripeSecretKey, {
-        apiVersion: "2026-01-28.clover",
+        apiVersion: "2026-02-25.clover",
       });
 
       try {

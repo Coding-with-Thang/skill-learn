@@ -162,8 +162,9 @@ export async function POST(req: NextRequest) {
         flashCardId: { in: cardIdList },
       },
     });
-    const progressByCard = new Map(
-      progressList.map((p) => [p.flashCardId, p])
+    type ProgressRow = { nextReviewAt: Date | null; masteryScore: number; exposureCount: number };
+    const progressByCard = new Map<string, ProgressRow>(
+      progressList.map((p) => [p.flashCardId, { nextReviewAt: p.nextReviewAt, masteryScore: p.masteryScore, exposureCount: p.exposureCount }])
     );
 
     // 3. SM-2 due filter + virtual deck filters
@@ -226,7 +227,8 @@ export async function POST(req: NextRequest) {
         return d == null || diffSet.has(d);
       });
     }
-    const cardMap = new Map(filteredCards.map((c) => [c.id, c]));
+    type CardWithCategory = (typeof filteredCards)[number];
+    const cardMap = new Map<string, CardWithCategory>(filteredCards.map((c) => [c.id, c]));
 
     // 5. Resolve category priorities
     const [adminPriorities, userPriorities, settings] = await Promise.all([
@@ -248,10 +250,10 @@ export async function POST(req: NextRequest) {
       }),
     ]);
 
-    const adminByCat = new Map(
+    const adminByCat = new Map<string, number>(
       adminPriorities.map((p) => [p.categoryId, p.priority])
     );
-    const userByCat = new Map(
+    const userByCat = new Map<string, number>(
       userPriorities.map((p) => [p.categoryId, p.priority])
     );
     const overrideMode = settings?.overrideMode ?? "USER_OVERRIDES_ADMIN";
@@ -275,13 +277,13 @@ export async function POST(req: NextRequest) {
       .filter((w): w is { card: (typeof filteredCards)[number]; weight: number } => w != null);
 
     // 7. Weighted shuffle
-    const shuffled = weightedShuffle(
+    const shuffled = weightedShuffle<CardWithCategory>(
       weighted.map((w) => w.card),
       weighted.map((w) => w.weight)
     );
 
     // 8. Slice to limit
-    const selected = shuffled.slice(0, limit);
+    const selected: CardWithCategory[] = shuffled.slice(0, limit);
 
     return successResponse({
       cards: selected.map((c) => ({

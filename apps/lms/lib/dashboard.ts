@@ -695,7 +695,10 @@ export async function getDashboardStats() {
           },
         })
       : [];
-    const recentUserMap = new Map(recentUsers.map((user) => [user.id, user]));
+    type RecentUserRow = { username: string | null; imageUrl: string | null; role: string | null };
+    const recentUserMap = new Map<string, RecentUserRow>(
+      recentUsers.map((user) => [user.id, { username: user.username, imageUrl: user.imageUrl, role: user.role }])
+    );
 
     // CRITICAL: Filter categories by tenant or global content using standardized utility
     const categoryWhereClause = buildTenantContentFilter(tenantId);

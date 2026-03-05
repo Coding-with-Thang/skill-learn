@@ -48,7 +48,9 @@ export async function GET(_request: NextRequest) {
       }),
     ]);
 
-    const priorityByCat = new Map(userPriorities.map((p) => [p.categoryId, p]));
+    const priorityByCat = new Map<string, { priority: number }>(
+      userPriorities.map((p) => [p.categoryId, { priority: p.priority }])
+    );
 
     const enriched = categories.map((c) => {
       const up = priorityByCat.get(c.id);

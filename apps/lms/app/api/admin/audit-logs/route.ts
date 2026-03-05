@@ -7,6 +7,8 @@ import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import type { Prisma } from "@prisma/client";
 
+type ActorUser = { id: string; firstName: string | null; lastName: string | null };
+
 function stringifyDetails(details: unknown): string | undefined {
   if (details === undefined || details === null) return undefined;
   if (typeof details === "string") return details;
@@ -81,7 +83,7 @@ export async function GET(_request: NextRequest) {
       .filter((id): id is string => typeof id === "string");
     const uniqueActorIds = [...new Set(actorIds)];
 
-    const users = uniqueActorIds.length
+    const users: ActorUser[] = uniqueActorIds.length
       ? await prisma.user.findMany({
           where: { id: { in: uniqueActorIds } },
           select: {
@@ -92,10 +94,10 @@ export async function GET(_request: NextRequest) {
         })
       : [];
 
-    const userMap = new Map(users.map((user) => [user.id, user]));
+    const userMap = new Map<string, ActorUser>(users.map((user) => [user.id, user]));
 
     const logs = events.map((event) => {
-      const actorUser = event.actorUserId ? userMap.get(event.actorUserId) : undefined;
+      const actorUser: ActorUser | undefined = event.actorUserId ? userMap.get(event.actorUserId) : undefined;
       const details =
         event.message ||
         stringifyDetails(event.details) ||

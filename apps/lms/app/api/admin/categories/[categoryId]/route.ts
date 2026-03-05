@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
@@ -83,18 +82,17 @@ export async function PUT(
     );
     const data = await validateRequestBody(request, categoryUpdateSchema);
 
-    const updateData: Prisma.CategoryUpdateInput = {};
-    if (data.name !== undefined) updateData.name = data.name;
-    if (data.description !== undefined) updateData.description = data.description;
-    if (data.nameJson !== undefined) updateData.nameJson = data.nameJson;
-    if (data.descriptionJson !== undefined) updateData.descriptionJson = data.descriptionJson;
-    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
-    if (data.fileKey !== undefined) updateData.fileKey = data.fileKey;
-    if (data.isActive !== undefined) updateData.isActive = data.isActive;
-
     const category = await prisma.category.update({
       where: { id: categoryId },
-      data: updateData,
+      data: {
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.description !== undefined && { description: data.description }),
+        ...(data.nameJson !== undefined && { nameJson: data.nameJson as object }),
+        ...(data.descriptionJson !== undefined && { descriptionJson: data.descriptionJson as object }),
+        ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+        ...(data.fileKey !== undefined && { fileKey: data.fileKey }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
     });
 
     return successResponse({ category });

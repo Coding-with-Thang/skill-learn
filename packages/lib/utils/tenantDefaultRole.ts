@@ -58,21 +58,22 @@ export async function ensureTenantHasGuestRole(tenantId) {
     });
     const permissionIds = permissions.map((p) => p.id);
 
-    const createData: Parameters<typeof prisma.tenantRole.create>[0]["data"] = {
-      tenantId,
-      roleAlias: GUEST_ROLE_ALIAS,
-      description: "View-only access to content and features enabled for the tenant.",
-      slotPosition: 0,
-      isActive: true,
-      doesNotCountTowardSlotLimit: true,
-    };
-    if (permissionIds.length > 0) {
-      createData.tenantRolePermissions = {
-        create: permissionIds.map((permissionId) => ({ permissionId })),
-      };
-    }
     guestRole = await prisma.tenantRole.create({
-      data: createData,
+      data: {
+        tenantId,
+        roleAlias: GUEST_ROLE_ALIAS,
+        description: "View-only access to content and features enabled for the tenant.",
+        slotPosition: 0,
+        isActive: true,
+        doesNotCountTowardSlotLimit: true,
+        ...(permissionIds.length > 0
+          ? {
+              tenantRolePermissions: {
+                create: permissionIds.map((permissionId) => ({ permissionId })),
+              },
+            }
+          : {}),
+      },
       select: { id: true, roleAlias: true },
     });
   }

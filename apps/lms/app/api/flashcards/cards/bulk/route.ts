@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@skill-learn/database";
 import { requireAuth } from "@skill-learn/lib/utils/auth";
 import {
@@ -95,10 +94,12 @@ export async function POST(req: NextRequest) {
       ).map((c) => c.fingerprint)
     );
 
-    type CardWithCategory = Prisma.FlashCardGetPayload<{
-      include: { category: { select: { id: true; name: true } } };
-    }>;
-    const created: CardWithCategory[] = [];
+    const created: Array<{
+      id: string;
+      question: string;
+      answer: string;
+      category: { id: string; name: string };
+    }> = [];
     let skipped = 0;
 
     for (const item of cardsToCreate) {

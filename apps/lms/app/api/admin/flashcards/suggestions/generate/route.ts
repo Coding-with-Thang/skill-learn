@@ -63,7 +63,9 @@ export async function POST() {
     const adminPriorities = await prisma.categoryPriorityAdmin.findMany({
       where: { tenantId },
     });
-    const adminByCat = new Map(adminPriorities.map((p) => [p.categoryId, p]));
+    const adminByCat = new Map<string, { priority: number }>(
+      adminPriorities.map((p) => [p.categoryId, { priority: p.priority }])
+    );
 
     type SuggestionWithCategory = { id: string; categoryId: string; suggestedPriority: number; reason: string; generatedAt: Date; category: { name: string } };
     const suggestions: SuggestionWithCategory[] = [];

@@ -27,6 +27,7 @@
     "vitest": "^4.0.18"
   },
   "overrides": {
+    "firebase-admin": "13.7.0",
     "http-proxy-agent": {
       "@tootallnate/once": "^3.0.1"
     },

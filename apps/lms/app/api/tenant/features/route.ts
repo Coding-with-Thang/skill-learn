@@ -96,8 +96,12 @@ export async function GET(_request: NextRequest) {
     });
 
     // Create a map of tenant features by featureId
-    const tenantFeatureMap = new Map(
-      tenantFeatures.map((tf) => [tf.featureId, tf]),
+    type TenantFeatureRow = { id: string; superAdminEnabled: boolean; enabled: boolean; lastToggledAt: Date | null };
+    const tenantFeatureMap = new Map<string, TenantFeatureRow>(
+      tenantFeatures.map((tf) => [
+        tf.featureId,
+        { id: tf.id, superAdminEnabled: tf.superAdminEnabled, enabled: tf.enabled, lastToggledAt: tf.lastToggledAt },
+      ]),
     );
 
     // Merge global features with tenant settings

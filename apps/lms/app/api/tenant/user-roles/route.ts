@@ -77,7 +77,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const userMap = new Map(users.map((u) => [u.clerkId, u]));
+    type UserRow = { username: string | null; firstName: string | null; lastName: string | null; imageUrl: string | null; email: string | null };
+    const userMap = new Map<string, UserRow>(
+      users.map((u) => [
+        u.clerkId,
+        { username: u.username, firstName: u.firstName, lastName: u.lastName, imageUrl: u.imageUrl, email: u.email },
+      ])
+    );
 
     const formattedUserRoles = userRoles.map((ur) => {
       const userData = userMap.get(ur.userId);

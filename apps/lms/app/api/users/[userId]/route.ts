@@ -207,7 +207,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
         }
 
         // Build user update payload (profile + reportsTo) for Prisma (unchecked = scalar fields)
-        const updateData: Prisma.UserUncheckedUpdateInput = {};
+        const updateData: {
+            username?: string;
+            firstName?: string;
+            lastName?: string;
+            reportsToUserId?: string | null;
+        } = {};
         if (username !== undefined) updateData.username = username;
         if (firstName !== undefined) updateData.firstName = firstName;
         if (lastName !== undefined) updateData.lastName = lastName;

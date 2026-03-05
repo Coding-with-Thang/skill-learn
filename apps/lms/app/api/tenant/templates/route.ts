@@ -60,18 +60,22 @@ export async function GET(_request: NextRequest) {
     }));
 
     // Group by template set
-    type SetGroup = { name: string; isDefault: boolean | null; roles: (typeof formattedTemplates)[number][] };
-    const groupedBySet = formattedTemplates.reduce<Record<string, SetGroup>>((acc, t) => {
-      if (!acc[t.templateSetName]) {
-        acc[t.templateSetName] = {
-          name: t.templateSetName,
-          isDefault: t.isDefaultSet,
-          roles: [],
-        };
-      }
-      acc[t.templateSetName]!.roles.push(t);
-      return acc;
-    }, {});
+    type FormattedTemplate = (typeof formattedTemplates)[number];
+    type SetGroup = { name: string; isDefault: boolean | null; roles: FormattedTemplate[] };
+    const groupedBySet = formattedTemplates.reduce(
+      (acc: Record<string, SetGroup>, t) => {
+        if (!acc[t.templateSetName]) {
+          acc[t.templateSetName] = {
+            name: t.templateSetName,
+            isDefault: t.isDefaultSet,
+            roles: [],
+          };
+        }
+        acc[t.templateSetName]!.roles.push(t);
+        return acc;
+      },
+      {} as Record<string, SetGroup>
+    );
 
     // Template set descriptions
     const setDescriptions = {
@@ -85,7 +89,7 @@ export async function GET(_request: NextRequest) {
     };
 
     // Format sets with descriptions
-    const templateSets = Object.entries(groupedBySet).map(([key, set]) => ({
+    const templateSets = (Object.entries(groupedBySet) as [string, SetGroup][]).map(([key, set]) => ({
       key,
       name: key.charAt(0).toUpperCase() + key.slice(1),
       description: setDescriptions[key] || "",

@@ -49,9 +49,9 @@ const defaultValues = {
 export function RewardForm({ reward, onClose }) {
   const t = useTranslations("adminRewards")
   const { addReward, updateReward } = useRewardStore()
-  const form = useForm({
-    resolver: zodResolver(rewardFormSchema),
-    defaultValues,
+  const form = useForm<z.infer<typeof rewardFormSchema>>({
+    resolver: zodResolver(rewardFormSchema) as never,
+    defaultValues: defaultValues as unknown as z.infer<typeof rewardFormSchema>,
   })
 
   const watchedAllowMultiple = form.watch("allowMultiple")

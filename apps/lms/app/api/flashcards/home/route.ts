@@ -85,7 +85,7 @@ export async function GET(_request: NextRequest) {
       }),
     ]);
 
-    const ownedCardIds = new Set(
+    const ownedCardIds = new Set<string>(
       (
         await prisma.flashCard.findMany({
           where: { tenantId, createdBy: userId },
@@ -93,7 +93,7 @@ export async function GET(_request: NextRequest) {
         })
       ).map((c) => c.id)
     );
-    const sharedCardIds = new Set(
+    const sharedCardIds = new Set<string>(
       (
         await prisma.flashCardAccess.findMany({
           where: { tenantId, userId },
@@ -101,10 +101,11 @@ export async function GET(_request: NextRequest) {
         })
       ).map((a) => a.flashCardId)
     );
-    const allCardIds = new Set([...ownedCardIds, ...sharedCardIds]);
+    const allCardIds = new Set<string>([...ownedCardIds, ...sharedCardIds]);
 
-    const progressByCard = new Map(
-      progressList.map((p) => [p.flashCardId, p])
+    type ProgressRow = { nextReviewAt: Date | null; masteryScore: number; exposureCount: number };
+    const progressByCard = new Map<string, ProgressRow>(
+      progressList.map((p) => [p.flashCardId, { nextReviewAt: p.nextReviewAt, masteryScore: p.masteryScore, exposureCount: p.exposureCount }])
     );
 
     let dueTodayCount = 0;

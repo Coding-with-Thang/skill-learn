@@ -45,13 +45,16 @@ export default async function ChangelogPage() {
     });
 
     // Extract years for archiving
-    years = [...new Set(updates.map(u => {
-      try {
-        return new Date(u.releaseDate).getFullYear();
-      } catch {
-        return new Date().getFullYear();
-      }
-    }))].sort((a, b) => b - a);
+    const yearSet = new Set<number>(
+      updates.map((u) => {
+        try {
+          return new Date(u.releaseDate).getFullYear();
+        } catch {
+          return new Date().getFullYear();
+        }
+      })
+    );
+    years = Array.from(yearSet).sort((a, b) => b - a);
 
     // Count by tag
     updates.forEach(u => {

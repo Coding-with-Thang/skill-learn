@@ -79,8 +79,12 @@ export async function GET(_request: NextRequest) {
     });
 
     // Create a map of tenant features by featureId
-    const tenantFeatureMap = new Map(
-      tenantFeatures.map((tf) => [tf.featureId, tf])
+    type TenantFeatureRow = { superAdminEnabled: boolean; enabled: boolean };
+    const tenantFeatureMap = new Map<string, TenantFeatureRow>(
+      tenantFeatures.map((tf) => [
+        tf.featureId,
+        { superAdminEnabled: tf.superAdminEnabled, enabled: tf.enabled },
+      ])
     );
 
     // Build feature flags object

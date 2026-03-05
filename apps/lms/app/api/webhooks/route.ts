@@ -175,7 +175,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
       await prisma.user.upsert({
         where: { clerkId: id },
-        update: updatePayload as Parameters<typeof prisma.user.upsert>[0]["update"],
+        update: updatePayload as Record<string, unknown>,
         create: {
           clerkId: id,
           username: attributes.username || id,

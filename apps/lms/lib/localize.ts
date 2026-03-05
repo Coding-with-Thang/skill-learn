@@ -81,7 +81,7 @@ export function localizeReward<T extends Record<string, unknown>>(
     description: description || (reward.description as string) || null,
     prizeJson: reward.prizeJson,
     descriptionJson: reward.descriptionJson,
-  } as T & { prize: string; description: string | null };
+  } as unknown as T & { prize: string; description: string | null };
 }
 
 /**

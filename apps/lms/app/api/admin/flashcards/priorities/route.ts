@@ -37,7 +37,10 @@ export async function GET() {
       }),
     ]);
 
-    const priorityByCat = new Map(adminPriorities.map((p) => [p.categoryId, p]));
+    type PriorityRecord = { id: string; categoryId: string; priority: number };
+    const priorityByCat = new Map<string, PriorityRecord>(
+      adminPriorities.map((p) => [p.categoryId, { id: p.id, categoryId: p.categoryId, priority: p.priority }])
+    );
 
     const enriched = categories.map((c) => {
       const ap = priorityByCat.get(c.id);
