@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { format } from "date-fns"
 import { Clock, Trophy, Target } from "lucide-react"
 import { SCORE_THRESHOLDS } from "@/config/constants"
@@ -24,11 +25,11 @@ import {
   SelectValue,
 } from "@skill-learn/ui/components/select"
 
-// Helper function to get quiz status configuration
-function getQuizStatus(quiz) {
+// Helper function to get quiz status configuration (labels passed from parent)
+function getQuizStatus(quiz, t) {
   if (quiz.completed > 0) {
     return {
-      label: "Completed",
+      label: t("completed"),
       icon: Trophy,
       className: "bg-green-100 text-green-800",
     };
@@ -36,14 +37,14 @@ function getQuizStatus(quiz) {
 
   if (quiz.attempts > 0) {
     return {
-      label: "In Progress",
+      label: t("inProgress"),
       icon: Clock,
       className: "bg-yellow-100 text-yellow-800",
     };
   }
 
   return {
-    label: "Not Started",
+    label: t("notStarted"),
     icon: Target,
     className: "bg-gray-100 text-gray-800",
   };
@@ -63,6 +64,7 @@ function getScoreBadgeClass(score) {
 }
 
 export default function QuizStats({ quizStats, categories }) {
+  const t = useTranslations("quizStats")
   const [selectedCategory, setSelectedCategory] = useState("all")
 
   // Memoize filtered quizzes to avoid recalculating on every render
@@ -106,13 +108,13 @@ export default function QuizStats({ quizStats, categories }) {
           <Table>
             <TableHeader className="text-base font-semibold bg-gray-50">
               <TableRow>
-                <TableHead className="py-4">Quiz Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center">Attempts</TableHead>
-                <TableHead className="text-center">Best Score</TableHead>
-                <TableHead className="text-center">Avg. Score</TableHead>
-                <TableHead>Last Attempt</TableHead>
+                <TableHead className="py-4">{t("quizTitle")}</TableHead>
+                <TableHead>{t("category")}</TableHead>
+                <TableHead className="text-center">{t("status")}</TableHead>
+                <TableHead className="text-center">{t("attempts")}</TableHead>
+                <TableHead className="text-center">{t("bestScore")}</TableHead>
+                <TableHead className="text-center">{t("avgScore")}</TableHead>
+                <TableHead>{t("lastAttempt")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody key={`${selectedCategory}-${filteredQuizzes?.length}`}>
@@ -126,7 +128,7 @@ export default function QuizStats({ quizStats, categories }) {
                   </TableCell>
                   <TableCell className="text-center">
                     {(() => {
-                      const status = getQuizStatus(quiz);
+                      const status = getQuizStatus(quiz, t);
                       const Icon = status.icon;
                       return (
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${status.className}`}>
@@ -165,7 +167,7 @@ export default function QuizStats({ quizStats, categories }) {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-gray-400">Never attempted</span>
+                      <span className="text-gray-400">{t("neverAttempted")}</span>
                     )}
                   </TableCell>
                 </TableRow>

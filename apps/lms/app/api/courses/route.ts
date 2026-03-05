@@ -4,14 +4,17 @@ import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { getTenantContext, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeCourse, localizeCategory } from "@/lib/localize";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const context = await getTenantContext();
     if (context instanceof Response) return context;
     const { tenantId } = context;
+    const locale = getLocaleFromRequest(request);
 
     // CRITICAL: Filter courses by tenant or global content
     const whereClause = buildTenantContentFilter(tenantId, {
@@ -28,7 +31,7 @@ export async function GET(_request: NextRequest) {
       },
     });
 
-    // Resolve signed URLs for thumbnails (fileKey). If unavailable, use default image
+    // Resolve signed URLs and localize content for user's locale
     const coursesWithImages = await Promise.all(
       courses.map(async (course) => {
         let imageUrl = "/placeholder-course.jpg";
@@ -45,10 +48,12 @@ export async function GET(_request: NextRequest) {
           );
         }
 
-        return {
-          ...course,
-          imageUrl,
-        };
+        const withImage = { ...course, imageUrl };
+        const localized = localizeCourse(withImage, locale);
+        if (localized.category) {
+          localized.category = localizeCategory(localized.category, locale);
+        }
+        return localized;
       })
     );
 

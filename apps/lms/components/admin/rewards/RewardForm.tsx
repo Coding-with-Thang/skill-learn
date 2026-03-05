@@ -35,6 +35,8 @@ const rewardFormSchema = rewardCreateSchema.extend({
 const defaultValues = {
   prize: "",
   description: "",
+  prizeFr: "",
+  descriptionFr: "",
   imageUrl: "",
   fileKey: "",
   cost: "",
@@ -57,9 +59,13 @@ export function RewardForm({ reward, onClose }) {
 
   useEffect(() => {
     if (reward) {
+      const prizeJson = (reward as { prizeJson?: Record<string, string> }).prizeJson;
+      const descriptionJson = (reward as { descriptionJson?: Record<string, string> }).descriptionJson;
       form.reset({
         prize: reward.prize,
         description: reward.description,
+        prizeFr: prizeJson?.fr || "",
+        descriptionFr: descriptionJson?.fr || "",
         imageUrl: reward.imageUrl || '',
         fileKey: reward.fileKey || '',
         cost: reward.cost,
@@ -82,9 +88,12 @@ export function RewardForm({ reward, onClose }) {
 
   const onSubmit = async (data) => {
     try {
-      // Format the data before sending
       const submitData = {
         ...data,
+        prizeJson: { en: data.prize, ...(data.prizeFr ? { fr: data.prizeFr } : {}) },
+        descriptionJson: data.description || data.descriptionFr
+          ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+          : undefined,
         cost: typeof data.cost === "string" ? parseInt(data.cost, 10) : data.cost,
         maxRedemptions:
           data.allowMultiple && data.maxRedemptions
@@ -134,6 +143,22 @@ export function RewardForm({ reward, onClose }) {
           placeholder={t("descriptionPlaceholder")}
           required
         />
+
+        <div className="rounded-lg border p-3 bg-muted/30">
+          <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+          <FormInput
+            name="prizeFr"
+            label={t("prizeFr") ?? "Prize name (French)"}
+            placeholder={t("prizeFrPlaceholder") ?? "French prize name (optional)"}
+          />
+          <div className="mt-2">
+            <FormTextarea
+              name="descriptionFr"
+              label={t("descriptionFr") ?? "Description (French)"}
+              placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+            />
+          </div>
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">

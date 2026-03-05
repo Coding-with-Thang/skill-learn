@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Play, Pause, Volume2, VolumeX, Maximize, SkipBack, Settings, Subtitles } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils";
 
@@ -29,6 +30,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
   onProgress?: (current: number, duration: number) => void;
   onEnded?: () => void;
 }) {
+  const t = useTranslations("lessonVideoPlayer");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -160,7 +162,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
           className
         )}
       >
-        <p>No video URL for this lesson.</p>
+        <p>{t("noVideoUrl")}</p>
       </div>
     );
   }
@@ -171,7 +173,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
         <div className="aspect-video">
           <iframe
             src={youtubeEmbedUrl}
-            title="Lesson video"
+            title={t("lessonVideo")}
             className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
@@ -209,7 +211,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             type="button"
             onClick={togglePlay}
             className="absolute inset-0 flex items-center justify-center z-10 rounded-none bg-transparent focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            aria-label="Play"
+            aria-label={t("play")}
           >
             <span className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg hover:bg-white/95 transition-colors">
               <Play className="h-10 w-10 text-black fill-black ml-1" />
@@ -230,7 +232,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
           className="h-1 w-full bg-white/30 rounded-full cursor-pointer overflow-hidden"
           onClick={seek}
           role="slider"
-          aria-label="Seek"
+          aria-label={t("seek")}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progressPct}
@@ -259,7 +261,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             type="button"
             onClick={togglePlay}
             className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
-            aria-label={playing ? "Pause" : "Play"}
+            aria-label={playing ? t("pause") : t("play")}
           >
             {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
           </button>
@@ -268,7 +270,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             type="button"
             onClick={skipBack}
             className="p-1.5 rounded text-white hover:bg-white/20 transition-colors"
-            aria-label="Rewind 10 seconds"
+            aria-label={t("rewind")}
           >
             <SkipBack className="h-5 w-5" />
           </button>
@@ -277,7 +279,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             type="button"
             onClick={toggleMute}
             className="p-1.5 rounded text-white hover:bg-white/20"
-            aria-label={muted ? "Unmute" : "Mute"}
+            aria-label={muted ? t("unmute") : t("mute")}
           >
             {muted || volume === 0 ? (
               <VolumeX className="h-5 w-5" />
@@ -290,7 +292,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             className="w-16 h-1.5 bg-white/30 rounded-full cursor-pointer overflow-hidden shrink-0"
             onClick={setVol}
             role="slider"
-            aria-label="Volume"
+            aria-label={t("volume")}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={muted ? 0 : Math.round(volume * 100)}
@@ -313,7 +315,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
               onClick={() => setShowRateMenu((s) => !s)}
               className="flex items-center gap-1 px-2 py-1.5 rounded text-white/90 text-sm hover:bg-white/20"
             >
-              <span className="text-xs font-medium">SPEED</span>
+              <span className="text-xs font-medium">{t("speed")}</span>
               <span>{playbackRate}x</span>
             </button>
             {showRateMenu && (
@@ -351,7 +353,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
           <button
             type="button"
             className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
-            aria-label="Captions"
+            aria-label={t("captions")}
           >
             <Subtitles className="h-5 w-5" />
           </button>
@@ -359,7 +361,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
           <button
             type="button"
             className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
-            aria-label="Settings"
+            aria-label={t("settings")}
           >
             <Settings className="h-5 w-5" />
           </button>
@@ -368,7 +370,7 @@ export default function LessonVideoPlayer({ src, className, onProgress, onEnded 
             type="button"
             onClick={toggleFullscreen}
             className="p-1.5 rounded text-white hover:bg-white/20 shrink-0"
-            aria-label="Fullscreen"
+            aria-label={t("fullscreen")}
           >
             <Maximize className="h-5 w-5" />
           </button>

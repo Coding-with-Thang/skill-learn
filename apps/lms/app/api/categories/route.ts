@@ -3,14 +3,18 @@ import { prisma } from "@skill-learn/database";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeCategory } from "@/lib/localize";
 
-export async function GET(_request: NextRequest) {
+/**
+ * GET /api/categories
+ * Pass ?locale=fr or x-locale header for localized names/descriptions.
+ */
+export async function GET(request: NextRequest) {
   try {
-    // Get current user's tenantId using standardized utility
     const tenantId = await getTenantId();
+    const locale = getLocaleFromRequest(request);
 
-    // CRITICAL: Filter categories by tenant or global content using standardized utility
-    // Pattern: (tenantId = userTenantId OR (isGlobal = true AND tenantId IS NULL))
     const whereClause = buildTenantContentFilter(tenantId, {
       isActive: true,
     });
@@ -27,7 +31,8 @@ export async function GET(_request: NextRequest) {
       },
     });
 
-    return successResponse({ categories: categories || [] });
+    const localized = categories.map((c) => localizeCategory(c, locale));
+    return successResponse({ categories: localized || [] });
   } catch (error) {
     return handleApiError(error);
   }

@@ -47,7 +47,7 @@ import {
     categoryUpdateSchema,
 } from "@/lib/zodSchemas"
 
-type CategoryItem = { id: string; name: string; description?: string; imageUrl?: string; fileKey?: string; isActive?: boolean; _count?: { quizzes: number; courses: number } }
+type CategoryItem = { id: string; name: string; description?: string; nameJson?: Record<string, string>; descriptionJson?: Record<string, string>; imageUrl?: string; fileKey?: string; isActive?: boolean; _count?: { quizzes: number; courses: number } }
 export default function CategoriesPage() {
     const t = useTranslations("adminDashboardCategories")
     const [categories, setCategories] = useState<CategoryItem[]>([])
@@ -67,6 +67,8 @@ export default function CategoriesPage() {
         defaultValues: {
             name: "",
             description: "",
+            nameFr: "",
+            descriptionFr: "",
             imageUrl: "",
             fileKey: "",
             isActive: true,
@@ -94,12 +96,19 @@ export default function CategoriesPage() {
 
     const onSubmit = async (data) => {
         setFormError(null)
+        const payload = {
+            ...data,
+            nameJson: { en: data.name, ...(data.nameFr ? { fr: data.nameFr } : {}) },
+            descriptionJson: data.description || data.descriptionFr
+                ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+                : undefined,
+        }
         try {
             if (editingId) {
-                await api.put(`/admin/categories/${editingId}`, data)
+                await api.put(`/admin/categories/${editingId}`, payload)
                 toast.success(t("toastUpdated"))
             } else {
-                await api.post("/admin/categories", data)
+                await api.post("/admin/categories", payload)
                 toast.success(t("toastCreated"))
             }
             await fetchCategories()
@@ -134,9 +143,13 @@ export default function CategoriesPage() {
     }
 
     const handleEdit = (category) => {
+        const nameJson = category.nameJson as Record<string, string> | undefined
+        const descriptionJson = category.descriptionJson as Record<string, string> | undefined
         form.reset({
             name: category.name,
             description: category.description || "",
+            nameFr: nameJson?.fr || "",
+            descriptionFr: descriptionJson?.fr || "",
             imageUrl: category.imageUrl || "",
             fileKey: category.fileKey || "",
             isActive: category.isActive === true,
@@ -150,6 +163,8 @@ export default function CategoriesPage() {
         form.reset({
             name: "",
             description: "",
+            nameFr: "",
+            descriptionFr: "",
             imageUrl: "",
             fileKey: "",
             isActive: true,
@@ -317,6 +332,22 @@ export default function CategoriesPage() {
                                     label={t("description")}
                                     placeholder={t("enterDescriptionPlaceholder")}
                                 />
+
+                                <div className="rounded-lg border p-3 bg-muted/30">
+                                    <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                                    <FormInput
+                                        name="nameFr"
+                                        label={t("nameFr") ?? "Name (French)"}
+                                        placeholder={t("nameFrPlaceholder") ?? "French name (optional)"}
+                                    />
+                                    <div className="mt-2">
+                                        <FormTextarea
+                                            name="descriptionFr"
+                                            label={t("descriptionFr") ?? "Description (French)"}
+                                            placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+                                        />
+                                    </div>
+                                </div>
 
                                 <FormField
                                     control={form.control}

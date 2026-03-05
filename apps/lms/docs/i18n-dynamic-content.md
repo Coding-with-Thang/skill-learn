@@ -2,6 +2,14 @@
 
 This doc describes how to handle **dynamic content** (API/runtime data) and **database-stored content** in a bilingual (en/fr) app using `next-intl` and your current stack.
 
+## Implemented (Phase 1)
+
+- **Course, Quiz, Category** models have `*Json` columns (e.g. `titleJson`, `descriptionJson`).
+- **`getLocalized()`** in `@skill-learn/lib/utils/i18nDb` resolves `{ en, fr }` or legacy string to current locale.
+- **APIs** `/api/courses`, `/api/quizzes`, `/api/categories` accept `?locale=` or `x-locale` header and return localized content.
+- **Training page** passes user locale to these APIs; content shows in user's language.
+- **Approach A**: Only the locale-matching version is shown; same logical entity, translated.
+
 ---
 
 ## 1. Dynamic values in static UI (already supported)

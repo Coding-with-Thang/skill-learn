@@ -83,10 +83,11 @@ export async function PUT(
     );
     const data = await validateRequestBody(request, categoryUpdateSchema);
 
-    // Update category (only include defined fields; type as Prisma input for exactOptionalPropertyTypes)
     const updateData: Prisma.CategoryUpdateInput = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
+    if (data.nameJson !== undefined) updateData.nameJson = data.nameJson;
+    if (data.descriptionJson !== undefined) updateData.descriptionJson = data.descriptionJson;
     if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
     if (data.fileKey !== undefined) updateData.fileKey = data.fileKey;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;

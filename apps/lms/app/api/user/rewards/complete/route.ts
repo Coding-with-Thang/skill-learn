@@ -5,12 +5,15 @@ import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/erro
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getSignedUrl } from "@skill-learn/lib/utils/adminStorage";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeReward } from "@/lib/localize";
 
 /**
  * Combined rewards endpoint that returns both available rewards and user's reward history
  * Replaces the need for separate calls to /user/rewards and /user/rewards/history
+ * Pass ?locale=fr or x-locale header for localized prize/description.
  */
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const authResult = await requireAuth();
     if (authResult instanceof NextResponse) {
@@ -38,15 +41,17 @@ export async function GET(_request: NextRequest) {
       enabled: true,
     });
 
-    // Fetch both rewards and history in parallel
+    const locale = getLocaleFromRequest(request);
+
     const [rewards, history] = await Promise.all([
-      // Get all available rewards
       prisma.reward.findMany({
         where: whereClause,
         select: {
           id: true,
           prize: true,
+          prizeJson: true,
           description: true,
+          descriptionJson: true,
           cost: true,
           imageUrl: true,
           fileKey: true,
@@ -66,7 +71,9 @@ export async function GET(_request: NextRequest) {
           reward: {
             select: {
               prize: true,
+              prizeJson: true,
               description: true,
+              descriptionJson: true,
               imageUrl: true,
               fileKey: true,
               claimUrl: true,
@@ -93,7 +100,8 @@ export async function GET(_request: NextRequest) {
             err instanceof Error ? err.message : err
           );
         }
-        return { ...reward, imageUrl };
+        const withImage = { ...reward, imageUrl };
+        return localizeReward(withImage, locale);
       })
     );
 
@@ -103,7 +111,7 @@ export async function GET(_request: NextRequest) {
         if (log.reward?.fileKey) {
           try {
             const signedUrl = await getSignedUrl(log.reward.fileKey, 7);
-            if (signedUrl) log.reward.imageUrl = signedUrl;
+            if (signedUrl) (log.reward as { imageUrl?: string }).imageUrl = signedUrl;
           } catch (err) {
             console.warn(
               "Failed to generate signed URL for reward image in history:",
@@ -116,9 +124,23 @@ export async function GET(_request: NextRequest) {
       })
     );
 
+    // Localize reward names in history
+    const historyWithLocalizedRewards = historyWithImages.map((log) => {
+      if (log.reward) {
+        const rewardWithJson = {
+          ...log.reward,
+          prizeJson: (log.reward as { prizeJson?: unknown }).prizeJson,
+          descriptionJson: (log.reward as { descriptionJson?: unknown }).descriptionJson,
+        };
+        const localized = localizeReward(rewardWithJson as Record<string, unknown>, locale);
+        return { ...log, reward: localized };
+      }
+      return log;
+    });
+
     return successResponse({
       rewards: rewardsWithImages || [],
-      history: historyWithImages || [],
+      history: historyWithLocalizedRewards || [],
     });
   } catch (error) {
     return handleApiError(error);

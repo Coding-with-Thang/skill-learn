@@ -74,6 +74,8 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
     defaultValues: {
       title: "",
       description: "",
+      titleFr: "",
+      descriptionFr: "",
       imageUrl: "",
       fileKey: "",
       categoryId: "",
@@ -147,9 +149,13 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
       if (!quizData.questions || !Array.isArray(quizData.questions)) {
         quizData.questions = []
       }
+      const titleJson = quizData.titleJson as Record<string, string> | undefined;
+      const descriptionJson = quizData.descriptionJson as Record<string, string> | undefined;
       form.reset({
         title: quizData.title || "",
         description: quizData.description || "",
+        titleFr: titleJson?.fr || "",
+        descriptionFr: descriptionJson?.fr || "",
         imageUrl: quizData.imageUrl || "",
         fileKey: quizData.fileKey || "",
         categoryId: quizData.categoryId || "",
@@ -240,12 +246,18 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
         }
       }
 
-      // Save the quiz
+      const payload = {
+        ...data,
+        titleJson: { en: data.title, ...(data.titleFr ? { fr: data.titleFr } : {}) },
+        descriptionJson: data.description || data.descriptionFr
+          ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+          : undefined,
+      }
       if (quizId) {
-        await api.put(`/admin/quizzes/${quizId}`, data)
+        await api.put(`/admin/quizzes/${quizId}`, payload)
         toast.success(t("toastUpdated"))
       } else {
-        await api.post("/admin/quizzes", data)
+        await api.post("/admin/quizzes", payload)
         toast.success(t("toastCreated"))
       }
 
@@ -411,6 +423,24 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                 placeholder={t("descriptionPlaceholder")}
                 rows={3}
               />
+
+              {/* Translations (French) */}
+              <div className="rounded-lg border p-3 bg-muted/30">
+                <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                <FormInput
+                  name="titleFr"
+                  label={t("titleFr") ?? "Title (French)"}
+                  placeholder={t("titleFrPlaceholder") ?? "French title (optional)"}
+                />
+                <div className="mt-2">
+                  <FormTextarea
+                    name="descriptionFr"
+                    label={t("descriptionFr") ?? "Description (French)"}
+                    placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+                    rows={2}
+                  />
+                </div>
+              </div>
 
               {/* Thumbnail */}
               <FormField
@@ -641,7 +671,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                             onClick={() => handleRemoveOption(qIndex, oIndex)}
                             disabled={(form.watch(`questions.${qIndex}.options`) || []).length <= 2}
                             className="text-muted-foreground hover:text-brand-tealestructive shrink-0"
-                            aria-label="Remove option"
+                            aria-label={t("removeOption")}
                           >
                             <X className="w-4 h-4" />
                           </Button>

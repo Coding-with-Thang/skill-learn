@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@skill-learn/ui/components/card";
 import {
   Table,
@@ -9,7 +9,8 @@ import {
   TableRow,
 } from "@skill-learn/ui/components/table";
 import { Button } from "@skill-learn/ui/components/button";
-import { getQuizStatusReport } from "@/lib/dashboard";
+import { getCourseStatusReport } from "@/lib/dashboard";
+import { getTranslations } from "next-intl/server";
 
 function statusBadgeClass(status: string) {
   switch (status) {
@@ -26,44 +27,40 @@ function statusLabel(status: string) {
   return status.replaceAll("-", " ");
 }
 
-function formatLastAttempt(date: Date | null) {
-  if (!date) return "—";
-  return new Date(date).toLocaleString();
-}
-
-export default async function QuizStatusPage() {
-  const { summary, rows } = await getQuizStatusReport();
+export default async function CourseStatusPage() {
+  const t = await getTranslations("courseStatus");
+  const { summary, rows } = await getCourseStatusReport();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Quiz Status by User</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            All tenant users against all active tenant/global quizzes.
+            {t("description")}
           </p>
         </div>
         <Button asChild variant="outline" className="w-fit">
-          <Link href="/dashboard">Back to dashboard</Link>
+          <Link href="/dashboard">{t("backToDashboard")}</Link>
         </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="shadow-none border border-border/50">
           <CardHeader className="pb-2">
-            <CardDescription>Total assignments</CardDescription>
+            <CardDescription>{t("totalAssignments")}</CardDescription>
             <CardTitle className="text-2xl">{summary.totalAssignments.toLocaleString()}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-none border border-border/50">
           <CardHeader className="pb-2">
-            <CardDescription>Uncompleted</CardDescription>
+            <CardDescription>{t("uncompleted")}</CardDescription>
             <CardTitle className="text-2xl">{summary.uncompletedCount.toLocaleString()}</CardTitle>
           </CardHeader>
         </Card>
         <Card className="shadow-none border border-border/50">
           <CardHeader className="pb-2">
-            <CardDescription>Uncompleted percentage</CardDescription>
+            <CardDescription>{t("uncompletedPercentage")}</CardDescription>
             <CardTitle className="text-2xl">{summary.uncompletedPercentage}%</CardTitle>
           </CardHeader>
         </Card>
@@ -71,9 +68,13 @@ export default async function QuizStatusPage() {
 
       <Card className="shadow-none border border-border/50">
         <CardHeader>
-          <CardTitle>All quiz statuses per user</CardTitle>
+          <CardTitle>{t("allStatuses")}</CardTitle>
           <CardDescription>
-            {rows.length.toLocaleString()} rows ({summary.totalUsers} users × {summary.totalItems} quizzes)
+            {t("rowsSummary", {
+              rows: rows.length.toLocaleString(),
+              users: summary.totalUsers.toString(),
+              courses: summary.totalItems.toString(),
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -81,34 +82,34 @@ export default async function QuizStatusPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Quiz</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Attempts</TableHead>
-                  <TableHead>Best Score</TableHead>
-                  <TableHead>Last Attempt</TableHead>
+                  <TableHead>{t("user")}</TableHead>
+                  <TableHead>{t("course")}</TableHead>
+                  <TableHead>{t("status")}</TableHead>
+                  <TableHead>{t("progress")}</TableHead>
+                  <TableHead>{t("lessons")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.length > 0 ? (
                   rows.map((row) => (
-                    <TableRow key={`${row.userId}-${row.quizId}`}>
+                    <TableRow key={`${row.userId}-${row.courseId}`}>
                       <TableCell className="font-medium">{row.userName}</TableCell>
-                      <TableCell>{row.quizTitle}</TableCell>
+                      <TableCell>{row.courseTitle}</TableCell>
                       <TableCell>
                         <span className={`inline-flex rounded-lg px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${statusBadgeClass(row.status)}`}>
                           {statusLabel(row.status)}
                         </span>
                       </TableCell>
-                      <TableCell>{row.attempts}</TableCell>
-                      <TableCell>{row.bestScore != null ? `${row.bestScore.toFixed(1)}%` : "—"}</TableCell>
-                      <TableCell>{formatLastAttempt(row.lastAttemptAt)}</TableCell>
+                      <TableCell>{row.progressPercent}%</TableCell>
+                      <TableCell>
+                        {row.totalLessons > 0 ? `${row.completedLessons}/${row.totalLessons}` : "—"}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                      No quiz status records available for this tenant.
+                    <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                      {t("noRecords")}
                     </TableCell>
                   </TableRow>
                 )}

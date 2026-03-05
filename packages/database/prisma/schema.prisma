@@ -73,7 +73,9 @@ model User {
 model Category {
   id            String         @id @default(auto()) @map("_id") @db.ObjectId
   name          String
+  nameJson      Json?          // { "en": "...", "fr": "..." } for localized display
   description   String?
+  descriptionJson Json?        // { "en": "...", "fr": "..." } for localized display
   imageUrl      String?
   fileKey       String?        // Storage path for uploaded image (tenant-scoped); signed URL resolved when serving
   isActive      Boolean        @default(true)
@@ -98,7 +100,9 @@ model Category {
 model Quiz {
   id                 String     @id @default(auto()) @map("_id") @db.ObjectId
   title              String
+  titleJson          Json?      // { "en": "...", "fr": "..." } for localized display
   description        String?
+  descriptionJson    Json?      // { "en": "...", "fr": "..." } for localized display
   imageUrl           String?
   fileKey            String? // Firebase Storage path for quiz image (similar to Course model)
   categoryId         String     @db.ObjectId
@@ -251,7 +255,9 @@ model PointLog {
 model Reward {
   id             String      @id @default(auto()) @map("_id") @db.ObjectId
   prize          String
+  prizeJson      Json?       // { "en": "...", "fr": "..." } for localized display
   description    String?
+  descriptionJson Json?      // { "en": "...", "fr": "..." } for localized display
   cost           Int
   imageUrl       String?
   fileKey        String? // Firebase Storage path for reward image (similar to Quiz/Course)
@@ -356,12 +362,15 @@ model SystemSetting {
 model Course {
   id                 String       @id @default(auto()) @map("_id") @db.ObjectId
   title              String
+  titleJson          Json?        // { "en": "...", "fr": "..." } for localized display
   description        String
+  descriptionJson    Json?        // { "en": "...", "fr": "..." } for localized display
+  excerptDescription String
+  excerptDescriptionJson Json?    // { "en": "...", "fr": "..." } for localized display
   fileKey            String
   duration           Int
   categoryId         String       @db.ObjectId
   category           Category     @relation(fields: [categoryId], references: [id])
-  excerptDescription String
   slug               String
   status             CourseStatus @default(Draft)
   tenantId           String?      @db.ObjectId // Multi-tenant: course belongs to ONE tenant (null = global)

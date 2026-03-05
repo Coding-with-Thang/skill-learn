@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from 'react'
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion"
@@ -49,6 +49,7 @@ type QuizProgressSummary = {
 export default function TrainingPage() {
   const t = useTranslations("training")
   const tNav = useTranslations("nav")
+  const locale = useLocale()
   const router = useRouter()
   const { isLoaded: clerkLoaded } = useUser()
   const { fetchCategories } = useCategoryStore()
@@ -75,8 +76,8 @@ export default function TrainingPage() {
   const [contentMessage, setContentMessage] = useState<string | null>(null) // e.g. "Complete onboarding" when 400
 
   useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+    fetchCategories(false, locale)
+  }, [fetchCategories, locale])
 
   // Fetch all courses from the database (wait for Clerk so auth token is sent)
   useEffect(() => {
@@ -86,7 +87,7 @@ export default function TrainingPage() {
       setCoursesLoading(true)
       try {
         setContentMessage(null)
-        const response = await api.get("/courses")
+        const response = await api.get(`/courses?locale=${encodeURIComponent(locale)}`)
         const result = response.data
 
         // Treat 2xx as success
@@ -146,7 +147,7 @@ export default function TrainingPage() {
     }
 
     fetchCourses()
-  }, [clerkLoaded])
+  }, [clerkLoaded, locale])
 
   // Fetch course progress in bulk once courses are loaded.
   useEffect(() => {
@@ -224,7 +225,7 @@ export default function TrainingPage() {
     const fetchAllQuizzes = async () => {
       setQuizzesLoading(true)
       try {
-        const response = await api.get("/quizzes")
+        const response = await api.get(`/quizzes?locale=${encodeURIComponent(locale)}`)
         const result = response.data
 
         const isSuccess = response.status >= 200 && response.status < 300
@@ -271,7 +272,7 @@ export default function TrainingPage() {
     }
 
     fetchAllQuizzes()
-  }, [clerkLoaded, t])
+  }, [clerkLoaded, locale, t])
 
   // Fetch quiz progress in bulk once quizzes are loaded.
   useEffect(() => {

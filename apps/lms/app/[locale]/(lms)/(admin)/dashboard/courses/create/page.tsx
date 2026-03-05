@@ -44,6 +44,9 @@ export default function CreateCoursePage() {
         defaultValues: {
             title: "",
             description: "",
+            titleFr: "",
+            descriptionFr: "",
+            excerptFr: "",
             imageUrl: "",
             fileKey: "",
             category: "",
@@ -203,6 +206,42 @@ export default function CreateCoursePage() {
                                         <FormMessage />
                                     </FormItem>
                                 )} />
+                            <div className="rounded-lg border p-3 bg-muted/30">
+                                <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                                <FormField
+                                    control={form.control}
+                                    name="titleFr"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t("titleFr") ?? "Title (French)"}</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder={t("titleFrPlaceholder") ?? "French title (optional)"} {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="excerptFr"
+                                    render={({ field }) => (
+                                        <FormItem className="mt-2">
+                                            <FormLabel>{t("excerptFr") ?? "Excerpt (French)"}</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder={t("excerptFrPlaceholder") ?? "French excerpt (optional)"} rows={3} {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                                <FormField
+                                    control={form.control}
+                                    name="descriptionFr"
+                                    render={({ field }) => (
+                                        <FormItem className="mt-2">
+                                            <FormLabel>{t("descriptionFr") ?? "Description (French)"}</FormLabel>
+                                            <FormControl>
+                                                <Textarea placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"} rows={4} {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )} />
+                            </div>
                             <FormField
                                 control={form.control}
                                 name="description"

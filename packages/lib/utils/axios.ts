@@ -36,7 +36,7 @@ type WindowWithClerk = Window & {
   Clerk?: { session?: { getToken(): Promise<string | null>; end(): void } };
 };
 
-// Add auth header to every request
+// Add auth header and locale to every request
 api.interceptors.request.use(async (config) => {
   try {
     const clerk = typeof window !== "undefined" ? (window as WindowWithClerk).Clerk : undefined;
@@ -44,6 +44,13 @@ api.interceptors.request.use(async (config) => {
       const token = await clerk.session.getToken();
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
+      }
+    }
+    // Add locale from path (e.g. /fr/... -> fr) for localized API responses
+    if (typeof window !== "undefined" && window.location?.pathname) {
+      const match = window.location.pathname.match(/^\/(en|fr)(?:\/|$)/);
+      if (match) {
+        config.headers["x-locale"] = match[1];
       }
     }
   } catch (error) {

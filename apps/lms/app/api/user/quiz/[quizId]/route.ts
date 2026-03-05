@@ -4,16 +4,19 @@ import { requireAuth } from "@skill-learn/lib/utils/auth";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { getTenantId, buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import { getLocaleFromRequest } from "@/lib/localeFromRequest";
+import { localizeQuiz, localizeCategory } from "@/lib/localize";
 import type { RouteContext } from "@/types";
 
 type QuizIdParams = { quizId: string };
 
 /**
  * GET /api/user/quiz/:quizId
- * Fetches a quiz with all questions and options for authenticated users
+ * Fetches a quiz with all questions and options for authenticated users.
+ * Pass ?locale=fr or x-locale header for localized title/description.
  */
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: RouteContext<QuizIdParams>
 ) {
   try {
@@ -37,33 +40,18 @@ export async function GET(
       isActive: true,
     });
 
-    // Use findFirst with tenant filter since findUnique doesn't support OR clauses
+    const locale = getLocaleFromRequest(req);
+
     const quiz = await prisma.quiz.findFirst({
       where: {
         id: quizId,
         ...whereClause,
       },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        imageUrl: true,
-        timeLimit: true,
-        passingScore: true,
-        categoryId: true,
+      include: {
+        category: true,
         questions: {
-          select: {
-            id: true,
-            text: true,
-            imageUrl: true,
-            videoUrl: true,
-            options: {
-              select: {
-                id: true,
-                text: true,
-                isCorrect: true,
-              },
-            },
+          include: {
+            options: true,
           },
         },
       },
@@ -75,7 +63,11 @@ export async function GET(
       });
     }
 
-    return successResponse({ quiz });
+    const localized = localizeQuiz(quiz, locale);
+    if (localized.category) {
+      localized.category = localizeCategory(localized.category, locale);
+    }
+    return successResponse({ quiz: localized });
   } catch (error) {
     return handleApiError(error);
   }

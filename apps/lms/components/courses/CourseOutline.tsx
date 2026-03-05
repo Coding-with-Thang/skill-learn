@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ChevronDown, ChevronUp, BookOpen, FileText, Play, CheckCircle2 } from "lucide-react";
 import { cn } from "@skill-learn/lib/utils";
@@ -31,6 +32,7 @@ export default function CourseOutline({
   completedLessonIds?: string[];
   className?: string;
 }) {
+  const t = useTranslations("courseOutline");
   const courseSlug = courseSlugProp ?? courseId;
   const completedSet = useMemo(
     () => (Array.isArray(completedLessonIds) ? new Set(completedLessonIds) : new Set(completedLessonIds || [])),
@@ -78,7 +80,7 @@ export default function CourseOutline({
         )}
       >
         <BookOpen className="mx-auto h-10 w-10 opacity-50" />
-        <p className="mt-2">This course has no chapters yet.</p>
+        <p className="mt-2">{t("noChapters")}</p>
       </div>
     );
   }
@@ -89,10 +91,10 @@ export default function CourseOutline({
     <div className={cn("space-y-4", className)}>
       <div className="flex items-baseline justify-between gap-2">
         <h2 className="text-lg font-semibold text-foreground">
-          Course Content
+          {t("courseContent")}
         </h2>
         <span className="text-sm text-muted-foreground shrink-0">
-          {totalLessons} {totalLessons === 1 ? "Lesson" : "Lessons"} • {sortedChapters.length} {sortedChapters.length === 1 ? "Chapter" : "Chapters"}
+          {totalLessons} {totalLessons === 1 ? t("lesson") : t("lessons")} • {sortedChapters.length} {sortedChapters.length === 1 ? t("chapter") : t("chapters")}
         </span>
       </div>
       <div className="space-y-2">
@@ -104,10 +106,10 @@ export default function CourseOutline({
           const totalInChapter = chapter.totalInChapter;
           const progressLabel =
             totalInChapter === 0
-              ? "0 LESSONS"
+              ? t("zeroLessons")
               : completedInChapter >= totalInChapter
-                ? `${completedInChapter}/${totalInChapter} COMPLETED`
-                : `${completedInChapter}/${totalInChapter} LESSONS`;
+                ? t("lessonsCompleted", { completed: completedInChapter, total: totalInChapter })
+                : t("lessonsCount", { completed: completedInChapter, total: totalInChapter });
 
           return (
             <div
@@ -131,7 +133,7 @@ export default function CourseOutline({
                     {chapter.title}
                   </span>
                   <span className="text-sm text-muted-foreground">
-                    {totalInChapter} {totalInChapter === 1 ? "Lesson" : "Lessons"}
+                    {totalInChapter} {totalInChapter === 1 ? t("lesson") : t("lessons")}
                   </span>
                 </div>
                 <span
