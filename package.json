@@ -27,6 +27,10 @@
     "vitest": "^4.0.18"
   },
   "overrides": {
+    "http-proxy-agent": {
+      "@tootallnate/once": "^3.0.1"
+    },
+    "@tootallnate/once": "^3.0.1",
     "fast-xml-parser": "^5.4.2",
     "next": "16.1.6"
   },
