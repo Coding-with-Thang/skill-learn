@@ -125,10 +125,7 @@ export async function PUT(
       });
     }
 
-    // Update quiz and manage questions
-    const quiz = await prisma.quiz.update({
-      where: { id: quizId },
-      data: {
+    const updatePayload: Record<string, unknown> = {
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
@@ -141,7 +138,13 @@ export async function PUT(
         isActive: data.isActive ?? true,
         showQuestionReview: data.showQuestionReview,
         showCorrectAnswers: data.showCorrectAnswers,
-      },
+    };
+    if (data.titleJson !== undefined) updatePayload.titleJson = data.titleJson;
+    if (data.descriptionJson !== undefined) updatePayload.descriptionJson = data.descriptionJson;
+
+    const quiz = await prisma.quiz.update({
+      where: { id: quizId },
+      data: updatePayload,
     });
 
     // Handle questions if provided

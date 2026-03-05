@@ -145,11 +145,15 @@ export async function POST(request: NextRequest) {
             },
           }));
 
-    // Create new quiz with questions and options
+    const titleJson = data.titleJson ?? (data.title ? { en: data.title } : undefined);
+    const descriptionJson = data.descriptionJson ?? (data.description ? { en: data.description } : undefined);
+
     const quiz = await prisma.quiz.create({
       data: {
         title: data.title,
-        description: data.description,
+        description: data.description ?? null,
+        titleJson: titleJson ?? undefined,
+        descriptionJson: descriptionJson ?? undefined,
         imageUrl: data.imageUrl,
         fileKey: data.fileKey,
         categoryId: data.categoryId,

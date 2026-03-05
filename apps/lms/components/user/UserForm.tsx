@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Button } from "@skill-learn/ui/components/button"
@@ -17,6 +18,7 @@ import api from "@skill-learn/lib/utils/axios"
 
 type UserFormProps = { user?: Record<string, unknown> | null; onSuccess?: () => void | Promise<void> };
 export default function UserForm({ user = null, onSuccess }: UserFormProps) {
+    const t = useTranslations("adminDashboardUsers")
     const { createUser, updateUser, isLoading, users } = useUsersStore()
     const { roles, tenant, fetchRoles } = useRolesStore()
     const hasPermission = usePermissionsStore((s) => s.hasPermission)
@@ -92,7 +94,7 @@ export default function UserForm({ user = null, onSuccess }: UserFormProps) {
     // Reports-to: same-tenant users, exclude self when editing
     const reportsToOptions = useMemo(() => {
         const list = (users || []).filter((u) => !user || u.id !== user.id)
-        const options = [{ value: "", label: "None" }]
+        const options = [{ value: "", label: t("reportsToNone") }]
         list.forEach((u) => {
             options.push({
                 value: u.id,
@@ -118,55 +120,55 @@ export default function UserForm({ user = null, onSuccess }: UserFormProps) {
 
             if (user) {
                 await updateUser(user.id, submitData)
-                toast.success("User updated successfully!")
+                toast.success(t("userUpdated"))
             } else {
                 await createUser(submitData)
-                toast.success("User created successfully!")
+                toast.success(t("userCreated"))
             }
             onSuccess?.()
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "An error occurred")
+            toast.error(err instanceof Error ? err.message : t("errorGeneric"))
         }
     }
 
     return (
         <Card className="w-full max-w-md mx-auto">
             <CardHeader>
-                <CardTitle>{user ? "Edit User" : "Create User"}</CardTitle>
+                <CardTitle>{user ? t("editUser") : t("createUser")}</CardTitle>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormInput
                             name="firstName"
-                            label="First Name"
-                            placeholder="Enter first name"
+                            label={t("firstName")}
+                            placeholder={t("firstNamePlaceholder")}
                         />
 
                         <FormInput
                             name="lastName"
-                            label="Last Name"
-                            placeholder="Enter last name"
+                            label={t("lastName")}
+                            placeholder={t("lastNamePlaceholder")}
                         />
 
                         <FormInput
                             name="username"
-                            label="Username"
-                            placeholder="Enter username"
+                            label={t("username")}
+                            placeholder={t("usernamePlaceholder")}
                         />
 
                         <FormInput
                             name="password"
-                            label="Password"
+                            label={t("password")}
                             type="password"
-                            placeholder={user ? "Leave blank to keep current password" : "Enter password"}
+                            placeholder={user ? t("passwordPlaceholderEdit") : t("passwordPlaceholder")}
                             autoComplete="new-password"
                         />
                         <FormInput
                             name="confirmPassword"
-                            label="Confirm password"
+                            label={t("confirmPasswordLabel")}
                             type="password"
-                            placeholder={user ? "Re-enter new password (if changing)" : "Re-enter password"}
+                            placeholder={user ? t("confirmPasswordPlaceholderEdit") : t("confirmPasswordPlaceholder")}
                             autoComplete="new-password"
                         />
 
@@ -174,35 +176,35 @@ export default function UserForm({ user = null, onSuccess }: UserFormProps) {
                             <>
                                 <FormSelect
                                     name="tenantRoleId"
-                                    label="Role"
+                                    label={t("role")}
                                     options={roleOptions}
                                     disabled={isRoleDisabled}
                                 />
                                 {isRoleDisabled && (
                                     <FormDescription>
-                                        You do not have permission to change user roles
+                                        {t("noPermissionChangeRoles")}
                                     </FormDescription>
                                 )}
                                 {!user && defaultRoleId && watchedTenantRoleId === defaultRoleId && (
                                     <FormDescription>
-                                        Default role for new users (can be changed in tenant settings)
+                                        {t("defaultRoleHint")}
                                     </FormDescription>
                                 )}
                             </>
                         ) : (
                             <div className="text-sm text-muted-foreground p-3 border rounded">
-                                No roles available. Please configure roles for this tenant first.
+                                {t("noRolesAvailable")}
                             </div>
                         )}
 
                         <FormSelect
                             name="reportsToUserId"
-                            label="Reports to"
+                            label={t("reportsToLabel")}
                             options={reportsToOptions}
                         />
 
                         <Button type="submit" disabled={isLoading} className="w-full">
-                            {isLoading ? "Loading..." : user ? "Update User" : "Create User"}
+                            {isLoading ? t("loadingSubmit") : user ? t("updateUser") : t("createUser")}
                         </Button>
                     </form>
                 </Form>

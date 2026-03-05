@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { Button } from "@skill-learn/ui/components/button";
-import QuizModal from "@/components/quiz/QuizModal"
+import QuizModal from "@/components/quiz/QuizModal";
+import { useTranslations } from "next-intl";
 
 const allEmojis = ['🌟', '🎨', '🎮', '🎲', '🎸', '🎭', '🎪', '🎯', '🎩', '🎬', '🧩', '🚀', '🌈', '💎', '🔥', '🍦'];
 
@@ -15,6 +16,7 @@ const difficulties = {
 };
 
 const MemoryGame = () => {
+  const t = useTranslations("memoryGame");
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -98,9 +100,9 @@ const MemoryGame = () => {
   return (
     <div className="flex flex-col items-center w-full max-w-2xl">
       <div className="flex justify-between w-full mb-8 text-sm font-bold uppercase tracking-widest text-slate-400">
-        <div>Moves: <span className="text-slate-800 ml-1">{moves}</span></div>
+        <div>{t("moves")}: <span className="text-slate-800 ml-1">{moves}</span></div>
         <div className={timeLeft <= 10 ? 'text-rose-500 animate-pulse' : 'text-cyan-500'}>
-          Time: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+          {t("timeLeft")}: {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
         </div>
       </div>
 
@@ -112,7 +114,7 @@ const MemoryGame = () => {
             className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all
               ${difficulty === diff ? 'bg-cyan-400 text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}
           >
-            {diff}
+            {t(`difficulty.${diff}`)}
           </button>
         ))}
       </div>
@@ -146,7 +148,7 @@ const MemoryGame = () => {
       {gameOver && (
         <div className="mt-12 text-center animate-fade-in">
           <h3 className="text-2xl font-black text-slate-800 mb-4">
-            {matched.length === cards.length ? 'AWESOME!' : 'TIME UP!'}
+            {matched.length === cards.length ? t("youWin") : t("timeUp")}
           </h3>
           <button
             onClick={() => {
@@ -155,7 +157,7 @@ const MemoryGame = () => {
             }}
             className="px-8 py-3 bg-cyan-400 text-white font-bold rounded-xl shadow-lg hover:bg-cyan-500 active:scale-95 transition-all"
           >
-            NEXT ROUND
+            {t("playAgain")}
           </button>
         </div>
       )}

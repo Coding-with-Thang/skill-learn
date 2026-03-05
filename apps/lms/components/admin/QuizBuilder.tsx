@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
+import { useRouter } from "@/i18n/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useFieldArray } from "react-hook-form"
 import {
@@ -38,6 +39,7 @@ import { AdminSwitch } from "@/components/admin/AdminSwitch"
 
 type QuizBuilderProps = { quizId?: string | null };
 export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
+  const t = useTranslations("adminQuizBuilder")
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -72,6 +74,8 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
     defaultValues: {
       title: "",
       description: "",
+      titleFr: "",
+      descriptionFr: "",
       imageUrl: "",
       fileKey: "",
       categoryId: "",
@@ -115,7 +119,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
       const categoriesArray = responseData?.categories || responseData || []
       setCategories(Array.isArray(categoriesArray) ? categoriesArray : [])
     } catch (error) {
-      handleErrorWithNotification(error, "Failed to load categories")
+      handleErrorWithNotification(error, t("toastLoadCategoriesFailed"))
       setCategories([])
     }
   }, [])
@@ -145,9 +149,13 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
       if (!quizData.questions || !Array.isArray(quizData.questions)) {
         quizData.questions = []
       }
+      const titleJson = quizData.titleJson as Record<string, string> | undefined;
+      const descriptionJson = quizData.descriptionJson as Record<string, string> | undefined;
       form.reset({
         title: quizData.title || "",
         description: quizData.description || "",
+        titleFr: titleJson?.fr || "",
+        descriptionFr: descriptionJson?.fr || "",
         imageUrl: quizData.imageUrl || "",
         fileKey: quizData.fileKey || "",
         categoryId: quizData.categoryId || "",
@@ -182,7 +190,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
         showCorrectAnswers: quizData.showCorrectAnswers ?? false,
       }))
     } catch (error) {
-      handleErrorWithNotification(error, "Failed to load quiz")
+      handleErrorWithNotification(error, t("toastLoadQuizFailed"))
     } finally {
       setLoading(false)
     }
@@ -203,7 +211,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
     try {
       // Validate questions
       if (!data.questions || data.questions.length < 1) {
-        toast.error("Quiz must have at least one question")
+        toast.error(t("toastMinQuestions"))
         setSaving(false)
         return
       }
@@ -211,50 +219,52 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
       // Validate each question
       for (const [qIndex, question] of data.questions.entries()) {
         if (!question.text.trim()) {
-          toast.error(`Question ${qIndex + 1} must have text`)
+          toast.error(t("toastQuestionText", { number: qIndex + 1 }))
           setSaving(false)
           return
         }
 
         if (!question.options || question.options.length < 2) {
-          toast.error(`Question ${qIndex + 1} must have at least 2 options`)
+          toast.error(t("toastQuestionOptions", { number: qIndex + 1 }))
           setSaving(false)
           return
         }
 
         const hasCorrectOption = question.options.some((opt) => opt.isCorrect)
         if (!hasCorrectOption) {
-          toast.error(
-            `Question ${qIndex + 1} must have at least one correct answer`
-          )
+          toast.error(t("toastQuestionCorrect", { number: qIndex + 1 }))
           setSaving(false)
           return
         }
 
         for (const [oIndex, option] of question.options.entries()) {
           if (!option.text.trim()) {
-            toast.error(
-              `Option ${oIndex + 1} in Question ${qIndex + 1} must have text`
-            )
+            toast.error(t("toastOptionText", { option: oIndex + 1, question: qIndex + 1 }))
             setSaving(false)
             return
           }
         }
       }
 
-      // Save the quiz
+      const payload = {
+        ...data,
+        titleJson: { en: data.title, ...(data.titleFr ? { fr: data.titleFr } : {}) },
+        descriptionJson: data.description || data.descriptionFr
+          ? { ...(data.description ? { en: data.description } : {}), ...(data.descriptionFr ? { fr: data.descriptionFr } : {}) }
+          : undefined,
+      }
       if (quizId) {
-        await api.put(`/admin/quizzes/${quizId}`, data)
-        toast.success("Quiz updated successfully")
+        await api.put(`/admin/quizzes/${quizId}`, payload)
+        toast.success(t("toastUpdated"))
       } else {
-        await api.post("/admin/quizzes", data)
-        toast.success("Quiz created successfully")
+        await api.post("/admin/quizzes", payload)
+        toast.success(t("toastCreated"))
       }
 
       router.refresh()
       router.push("/dashboard/quizzes")
     } catch (error) {
-      handleErrorWithNotification(error, "Failed to save quiz")
+      handleErrorWithNotification(error, t("toastSaveFailed"))
     } finally {
       setSaving(false)
     }
@@ -262,7 +272,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
 
   const handleAddQuestion = () => {
     if (questionFields.length >= 10) {
-      toast.error("Maximum 10 questions allowed per quiz")
+      toast.error(t("toastMaxQuestions"))
       return
     }
     appendQuestion({
@@ -281,11 +291,11 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
 
   const handleRemoveQuestion = (index) => {
     if (questionFields.length <= 1) {
-      toast.error("Quiz must have at least one question")
+      toast.error(t("toastMinQuestions"))
       return
     }
     removeQuestion(index)
-    toast.info(`Question ${index + 1} removed`)
+    toast.info(t("toastQuestionRemoved", { number: index + 1 }))
   }
 
   const handleAddOption = (qIndex) => {
@@ -299,7 +309,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
   const handleRemoveOption = (qIndex, oIndex) => {
     const options = form.getValues(`questions.${qIndex}.options`) || []
     if (options.length <= 2) {
-      toast.error("Each question must have at least 2 options")
+      toast.error(t("toastMinOptions"))
       return
     }
     const next = options.filter((_, i) => i !== oIndex)
@@ -367,7 +377,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
           onClick={() => router.push("/dashboard/quizzes")}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Quizzes
+          {t("backToQuizzes")}
         </Button>
       </div>
 
@@ -383,24 +393,24 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
               }
               return null
             }
-            const message = getMessage(errors) || "Please fill in required fields (e.g. Title, Category) and add at least one question with text and options."
+            const message = getMessage(errors) || t("fillRequiredFields")
             toast.error(message)
           })}
         >
           {/* Quiz Details Card */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>{quizId ? "Edit Quiz" : "Create Quiz"}</CardTitle>
-              <CardDescription>Enter the quiz details below</CardDescription>
+              <CardTitle>{quizId ? t("editQuiz") : t("createQuiz")}</CardTitle>
+              <CardDescription>{t("enterDetails")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Basic Info */}
               <div className="grid grid-cols-2 gap-4">
-                <FormInput name="title" label="Title" placeholder="Enter quiz title" required />
+                <FormInput name="title" label={t("title")} placeholder={t("titlePlaceholder")} required />
                 <FormSelect
                   name="categoryId"
-                  label="Category"
-                  placeholder="Select a category"
+                  label={t("category")}
+                  placeholder={t("selectCategory")}
                   options={categoryOptions}
                   required
                 />
@@ -409,10 +419,28 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
               {/* Description */}
               <FormTextarea
                 name="description"
-                label="Description"
-                placeholder="Enter quiz description"
+                label={t("description")}
+                placeholder={t("descriptionPlaceholder")}
                 rows={3}
               />
+
+              {/* Translations (French) */}
+              <div className="rounded-lg border p-3 bg-muted/30">
+                <p className="text-sm font-medium mb-2">{t("translationsSection") ?? "Translations (French)"}</p>
+                <FormInput
+                  name="titleFr"
+                  label={t("titleFr") ?? "Title (French)"}
+                  placeholder={t("titleFrPlaceholder") ?? "French title (optional)"}
+                />
+                <div className="mt-2">
+                  <FormTextarea
+                    name="descriptionFr"
+                    label={t("descriptionFr") ?? "Description (French)"}
+                    placeholder={t("descriptionFrPlaceholder") ?? "French description (optional)"}
+                    rows={2}
+                  />
+                </div>
+              </div>
 
               {/* Thumbnail */}
               <FormField
@@ -420,7 +448,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Quiz thumbnail</FormLabel>
+                    <FormLabel>{t("quizThumbnail")}</FormLabel>
                     <FormControl>
                       <Uploader
                         value={field.value}
@@ -435,7 +463,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Upload an image, paste a URL, or choose from existing media.
+                      {t("uploaderDescription")}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -446,14 +474,14 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
                   name="timeLimit"
-                  label="Time Limit (minutes)"
+                  label={t("timeLimit")}
                   type="number"
                   min="0"
                   placeholder="0"
                 />
                 <FormInput
                   name="passingScore"
-                  label="Passing Score (%)"
+                  label={t("passingScore")}
                   type="number"
                   min="0"
                   max="100"
@@ -468,8 +496,8 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Active</FormLabel>
-                      <FormDescription>Make this quiz available for users</FormDescription>
+                      <FormLabel className="text-base">{t("active")}</FormLabel>
+                      <FormDescription>{t("activeDescription")}</FormDescription>
                     </div>
                     <FormControl>
                       <AdminSwitch
@@ -490,8 +518,8 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">Show Question Review</FormLabel>
-                        <FormDescription>Allow users to review questions after quiz</FormDescription>
+                        <FormLabel className="text-base">{t("showQuestionReview")}</FormLabel>
+                        <FormDescription>{t("showQuestionReviewDescription")}</FormDescription>
                       </div>
                       <FormControl>
                         <AdminSwitch
@@ -509,8 +537,8 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
-                        <FormLabel className="text-base">Show Correct Answers</FormLabel>
-                        <FormDescription>Display correct answers for incorrect attempts</FormDescription>
+                        <FormLabel className="text-base">{t("showCorrectAnswers")}</FormLabel>
+                        <FormDescription>{t("showCorrectAnswersDescription")}</FormDescription>
                       </div>
                       <FormControl>
                         <AdminSwitch
@@ -532,15 +560,15 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-semibold">
-                  Questions ({questionFields.length})
+                  {t("questionsCount", { count: questionFields.length })}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Add at least one question to your quiz
+                  {t("addQuestionHint")}
                 </p>
               </div>
               <Button type="button" onClick={handleAddQuestion} className="space-x-2">
                 <Plus className="w-4 h-4" />
-                <span>Add Question</span>
+                <span>{t("addQuestion")}</span>
               </Button>
             </div>
 
@@ -549,7 +577,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-base">
-                      Question {qIndex + 1}
+                      {t("questionNumber", { number: qIndex + 1 })}
                     </CardTitle>
                     <Button
                       type="button"
@@ -568,11 +596,11 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                     name={`questions.${qIndex}.text`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Question text</FormLabel>
+                        <FormLabel>{t("questionText")}</FormLabel>
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="Enter the question"
+                            placeholder={t("questionPlaceholder")}
                             className="font-medium"
                           />
                         </FormControl>
@@ -583,9 +611,9 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div>
-                        <FormLabel className="text-sm block">Answer options</FormLabel>
+                        <FormLabel className="text-sm block">{t("answerOptions")}</FormLabel>
                         <p className="text-xs text-muted-foreground">
-                          Enter each option and check the correct answer(s). Minimum 2 options.
+                          {t("answerOptionsHint")}
                         </p>
                       </div>
                       <Button
@@ -595,7 +623,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                         onClick={() => handleAddOption(qIndex)}
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        Add option
+                        {t("addOption")}
                       </Button>
                     </div>
                     <div className="space-y-2">
@@ -612,7 +640,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                                 <FormControl>
                                   <Input
                                     {...field}
-                                    placeholder={`Option ${oIndex + 1}`}
+                                    placeholder={t("optionPlaceholder", { number: oIndex + 1 })}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -631,7 +659,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                                   />
                                 </FormControl>
                                 <FormLabel className="text-sm font-normal cursor-pointer">
-                                  Correct
+                                  {t("correct")}
                                 </FormLabel>
                               </FormItem>
                             )}
@@ -643,7 +671,7 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
                             onClick={() => handleRemoveOption(qIndex, oIndex)}
                             disabled={(form.watch(`questions.${qIndex}.options`) || []).length <= 2}
                             className="text-muted-foreground hover:text-brand-tealestructive shrink-0"
-                            aria-label="Remove option"
+                            aria-label={t("removeOption")}
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -664,16 +692,16 @@ export default function QuizBuilder({ quizId = null }: QuizBuilderProps) {
               onClick={() => router.push("/dashboard/quizzes")}
               disabled={saving}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving ? (
                 <>
                   <LoadingSpinner className="w-4 h-4 mr-2" />
-                  {quizId ? "Updating..." : "Creating..."}
+                  {quizId ? t("updating") : t("creating")}
                 </>
               ) : (
-                quizId ? "Update Quiz" : "Create Quiz"
+                quizId ? t("updateQuiz") : t("createQuizButton")
               )}
             </Button>
           </div>

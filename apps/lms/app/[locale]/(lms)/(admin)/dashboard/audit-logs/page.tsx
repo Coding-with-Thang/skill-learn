@@ -1,0 +1,328 @@
+"use client"
+
+import { useEffect, useState, useRef } from "react"
+import { useTranslations } from "next-intl"
+import { format } from "date-fns"
+import { Download, History, Filter, RotateCcw, Database, Activity } from "lucide-react"
+import { useAuditLogStore } from "@skill-learn/lib/stores/auditLogStore"
+import { Button } from "@skill-learn/ui/components/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@skill-learn/ui/components/select"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@skill-learn/ui/components/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@skill-learn/ui/components/table"
+import { DatePickerWithRange } from "@skill-learn/ui/components/date-range-picker"
+import { Avatar, AvatarFallback } from "@skill-learn/ui/components/avatar"
+
+
+function getActionBadgeClass(action?: string) {
+  switch (action) {
+    case "create":
+      return "bg-emerald-500/10 text-emerald-600";
+    case "update":
+      return "bg-amber-500/10 text-amber-600";
+    case "delete":
+      return "bg-rose-500/10 text-rose-600";
+    case "attempt_started":
+      return "bg-sky-500/10 text-sky-600";
+    case "attempt_completed":
+      return "bg-indigo-500/10 text-indigo-600";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+export default function AuditLogsPage() {
+  const t = useTranslations("adminAuditLogs")
+  const { logs, pagination, filters, isLoading, fetchLogs, setFilters } = useAuditLogStore()
+
+  function formatActionLabel(action?: string) {
+    if (!action) return t("unknown")
+    return action.replaceAll("_", " ")
+  }
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ from: null, to: null })
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    fetchLogs()
+  }, [fetchLogs])
+
+  // Debounced filter update function
+  const debouncedSetFilters = (newFilters: Record<string, unknown>) => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      setFilters(newFilters)
+    }, 300)
+  }
+
+  const handleDateRangeChange = (range: { from: Date | null; to: Date | null } | undefined) => {
+    setDateRange(range ?? { from: null, to: null })
+    debouncedSetFilters({
+      startDate: range?.from ? range.from.toISOString() : null,
+      endDate: range?.to ? range.to.toISOString() : null,
+    })
+  }
+
+  const handleFilterChange = (newFilters: Record<string, unknown>) => {
+    debouncedSetFilters(newFilters)
+  }
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [])
+
+  const handleExport = () => {
+    // TODO: Implement CSV export functionality
+  }
+
+  const resetFilters = () => {
+    setDateRange({ from: null, to: null })
+    setFilters({
+      resource: null,
+      action: null,
+      startDate: null,
+      endDate: null,
+    })
+  }
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-1">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <History className="w-5 h-5 text-primary" />
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight">{t("title")}</h1>
+          </div>
+          <p className="text-sm text-muted-foreground ml-9">{t("description")}</p>
+        </div>
+        <Button onClick={handleExport} className="h-10 rounded-xl gap-2 font-semibold shadow-xs hover:scale-105 transition-all">
+          <Download className="h-4 w-4" />
+          {t("exportLogs")}
+        </Button>
+      </div>
+
+      {/* Filters Card */}
+      <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm">
+        <CardHeader className="pb-4 flex flex-row items-center gap-2">
+          <Filter className="w-4 h-4 text-primary" />
+          <CardTitle className="text-lg font-bold">{t("filters")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("resource")}</label>
+              <Select
+                value={filters.resource || "all"}
+                onValueChange={(value: string) => handleFilterChange({ resource: value === "all" ? null : value })}
+              >
+                <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
+                  <SelectValue placeholder={t("allResources")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("allResources")}</SelectItem>
+                  <SelectItem value="reward">{t("rewards")}</SelectItem>
+                  <SelectItem value="user">{t("users")}</SelectItem>
+                  <SelectItem value="points">{t("points")}</SelectItem>
+                  <SelectItem value="quiz">{t("quizzes")}</SelectItem>
+                  <SelectItem value="quiz_attempt">{t("quizAttempts")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("action")}</label>
+              <Select
+                value={filters.action || "all"}
+                onValueChange={(value: string) => handleFilterChange({ action: value === "all" ? null : value })}
+              >
+                <SelectTrigger className="bg-background/50 border-border/40 h-10 rounded-xl">
+                  <SelectValue placeholder={t("allActions")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("allActions")}</SelectItem>
+                  <SelectItem value="create">{t("create")}</SelectItem>
+                  <SelectItem value="update">{t("update")}</SelectItem>
+                  <SelectItem value="delete">{t("delete")}</SelectItem>
+                  <SelectItem value="attempt_started">{t("attemptStarted")}</SelectItem>
+                  <SelectItem value="attempt_completed">{t("attemptCompleted")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider ml-1">{t("dateRange")}</label>
+              <DatePickerWithRange
+                value={dateRange}
+                onChange={handleDateRangeChange}
+                className="bg-background/50 rounded-xl"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button
+                variant="outline"
+                onClick={resetFilters}
+                className="w-full h-10 rounded-xl gap-2 font-semibold border-border/40 hover:bg-primary/5 hover:text-primary transition-colors"
+                disabled={isLoading}
+              >
+                <RotateCcw className="h-4 w-4" />
+                {t("reset")}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Main Content Table */}
+      <Card className="shadow-none border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
+                <TableRow className="hover:bg-transparent border-border/50">
+                  <TableHead className="w-[180px] font-bold uppercase text-[10px] tracking-widest text-muted-foreground py-4">{t("timestamp")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("user")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("action")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("resource")}</TableHead>
+                  <TableHead className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">{t("details")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i} className="animate-pulse border-border/30">
+                      <TableCell colSpan={5} className="h-16">
+                        <div className="h-4 bg-muted/40 rounded-full w-full"></div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : logs && logs.length > 0 ? (
+                  logs.map((log: { id: string; timestamp: string; resourceId?: string; user?: { firstName?: string; lastName?: string; username?: string; id?: string }; action: string; resource: string; details?: string }) => (
+                    <TableRow key={log.id} className="hover:bg-primary/5 transition-colors border-border/30 group">
+                      <TableCell className="py-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm">{format(new Date(log.timestamp), "MMM dd, yyyy")}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium">{format(new Date(log.timestamp), "HH:mm:ss")}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8 border border-border/50">
+                            <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">
+                              {log.user?.firstName?.[0]}{log.user?.lastName?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-sm truncate">
+                              {`${log.user?.firstName || ""} ${log.user?.lastName || ""}`.trim() || log.user?.username || t("unknownUser")}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground truncate uppercase font-medium tracking-tighter">
+                              ID: {log.user?.id ? `${log.user.id.substring(0, 8)}...` : "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className={`
+                          inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black tracking-tighter uppercase
+                          ${getActionBadgeClass(log.action)}
+                        `}>
+                          {formatActionLabel(log.action)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <div className="p-1 rounded-4xld bg-muted/50 group-hover:bg-primary/10 transition-colors">
+                            <Database className="w-3 h-3 text-muted-foreground group-hover:text-primary" />
+                          </div>
+                          <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{log.resource}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-foreground/80 max-w-md truncate font-medium group-hover:text-foreground transition-colors">
+                          {log.details || (log.resourceId ? `${t("resourceId")}: ${log.resourceId}` : "—")}
+                        </p>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-20">
+                      <div className="flex flex-col items-center gap-3 opacity-50 text-muted-foreground">
+                        <Activity className="w-12 h-12" />
+                        <p className="font-bold">{t("noLogsFound")}</p>
+                        <p className="text-xs">{t("adjustFilters")}</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Pagination */}
+          {pagination && pagination.pages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t border-border/50 bg-muted/10">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                {t("showingEntries", {
+                start: (pagination.currentPage - 1) * (pagination.perPage || 50) + 1,
+                end: Math.min(pagination.currentPage * (pagination.perPage || 50), pagination.total),
+                total: pagination.total
+              })}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.currentPage === 1 || isLoading}
+                  onClick={() => fetchLogs(pagination.currentPage - 1)}
+                  className="rounded-xl font-bold h-9 px-4 border-border/40 hover:bg-primary/5"
+                >
+                  {t("previous")}
+                </Button>
+                <div className="flex items-center px-3 bg-primary/10 rounded-xl font-black text-xs text-primary">
+                  {pagination.currentPage} / {pagination.pages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pagination.currentPage === pagination.pages || isLoading}
+                  onClick={() => fetchLogs(pagination.currentPage + 1)}
+                  className="rounded-xl font-bold h-9 px-4 border-border/40 hover:bg-primary/5"
+                >
+                  {t("next")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

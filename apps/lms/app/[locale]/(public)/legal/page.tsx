@@ -1,0 +1,128 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { motion } from "framer-motion";
+import {
+  Shield,
+  FileText,
+  Lock,
+  Accessibility,
+  ChevronRight,
+  ArrowRight,
+  ExternalLink,
+  Scale,
+  Building,
+  Info,
+} from "lucide-react";
+import { Link } from "@/i18n/navigation";
+
+export default function LegalHubPage() {
+  const t = useTranslations("legal");
+  
+  const legalPages = [
+    {
+      title: t("privacyPolicy"),
+      description: t("privacyPolicyDesc"),
+      href: "/legal/privacy-policy",
+      icon: Lock,
+      color: "bg-blue-50 text-blue-600",
+    },
+    {
+      title: t("termsConditions"),
+      description: t("termsConditionsDesc"),
+      href: "/legal/terms-of-condition",
+      icon: FileText,
+      color: "bg-purple-50 text-purple-600",
+    },
+    {
+      title: t("accessibility"),
+      description: t("accessibilityDesc"),
+      href: "/legal/accessibility",
+      icon: Accessibility,
+      color: "bg-emerald-50 text-emerald-600",
+    },
+    {
+      title: t("securityCompliance"),
+      description: t("securityComplianceDesc"),
+      href: "/legal/compliance",
+      icon: Shield,
+      color: "bg-slate-50 text-slate-600",
+    },
+  ];
+  return (
+    <div className="min-h-screen bg-[#F8F9FB] font-sans">
+      {/* Hero Section */}
+      <section className="bg-white border-b border-slate-100 pt-16 pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-4xl md:text-brand-teal font-bold text-slate-900 mb-6 tracking-tight">
+              {t("legalHub")}
+            </h1>
+            <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
+              {t("legalHubSubtitle")}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Grid Section */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {legalPages.map((page, index) => (
+            <motion.div
+              key={page.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Link
+                href={page.href}
+                className="group block bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-xl hover:border-brand-teal/20 transition-all duration-300"
+              >
+                <div className="flex items-start gap-6">
+                  <div className={`p-4 rounded-4xl ${page.color} group-hover:scale-110 transition-transform`}>
+                    <page.icon className="w-8 h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-brand-teal transition-colors">
+                      {page.title}
+                    </h2>
+                    <p className="text-slate-500 leading-relaxed mb-6">
+                      {page.description}
+                    </p>
+                    <div className="flex items-center text-sm font-bold text-brand-teal group-hover:gap-2 transition-all">
+                      {t("readDocumentation")} <ArrowRight className="w-4 h-4 ml-1" />
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Contact/Support Section */}
+        <section className="mt-20">
+          <div className="bg-brand-dark-blue rounded-[40px] p-12 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32" />
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="max-w-xl text-center md:text-left">
+                <h3 className="text-3xl font-bold mb-4">{t("contactSectionTitle")}</h3>
+                <p className="text-white/70 text-lg">{t("contactSectionDescription")}</p>
+              </div>
+              <Link
+                href="mailto:legal@skill-learn.ca"
+                className="px-8 py-4 bg-brand-teal text-white font-bold rounded-4xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
+              >
+                {t("contactLegalSupport")}
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}

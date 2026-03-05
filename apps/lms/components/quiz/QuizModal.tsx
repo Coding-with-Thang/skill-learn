@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@skill-learn/ui/components/dialog";
 import { Button } from "@skill-learn/ui/components/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@skill-learn/ui/components/select";
@@ -18,6 +19,7 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selec
   selectedCategory: string;
   setSelectedCategory: (v: string) => void;
 }) {
+    const t = useTranslations("quizModal");
     const [randomQuestion, setRandomQuestion] = useState<QuizQuestion | null>(null);
     const [selectedAnswer, setSelectedAnswer] = useState("");
     const [answered, setAnswered] = useState(false);
@@ -487,12 +489,12 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selec
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogContent className="max-w-md mx-auto rounded-lg shadow-lg">
                 <DialogHeader>
-                    <DialogTitle>Select a Quiz Category</DialogTitle>
+                    <DialogTitle>{t("selectCategory")}</DialogTitle>
                 </DialogHeader>
                 {!randomQuestion ? (
                     <Select onValueChange={confirmCategory}>
                         <SelectTrigger className="w-full mt-2">
-                            <SelectValue placeholder="Choose a category" />
+                            <SelectValue placeholder={t("chooseCategory")} />
                         </SelectTrigger>
                         <SelectContent>
                             {Object.keys(quizCategories).map((category) => (
@@ -517,7 +519,7 @@ export default function QuizModal({ isOpen, setIsOpen, setRound, setScore, selec
                             ))}
                         </RadioGroup>
                         <Button onClick={submitAnswer} disabled={!selectedAnswer || answered} className="mt-4 w-full">
-                            Submit Answer
+                            {t("submitAnswer")}
                         </Button>
                     </div>
                 )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { Card, CardContent } from "@skill-learn/ui/components/card";
@@ -11,6 +12,7 @@ import { LoadingUserBadge } from "@skill-learn/ui/components/loading";
 import { ErrorCard } from "@skill-learn/ui/components/error-boundary";
 
 export default function UserBadge() {
+  const t = useTranslations("userBadge");
   const { user, isLoaded, isSignedIn } = useUser();
   const { points, lifetimePoints, isLoading, fetchUserData } = usePointsStore();
   const [error, setError] = useState<Error | null>(null);
@@ -50,7 +52,7 @@ export default function UserBadge() {
     return (
       <ErrorCard
         error={error}
-        message="Failed to load user data"
+        message={t("failedToLoad")}
         reset={() => {
           setError(null);
           fetchUserData(true); // Force refresh on retry
@@ -95,7 +97,7 @@ export default function UserBadge() {
           </div>
         )}
         <h2 className="text-4xl font-bold my-6 drop-shadow-lg text-center text-primary font-marker">
-          {user ? `Welcome, ${user.firstName}!` : "Welcome!"}
+          {user?.firstName ? t("welcome", { name: user.firstName }) : t("welcomeGeneric")}
         </h2>
         {!isLoading ? (
           <div
@@ -112,7 +114,7 @@ export default function UserBadge() {
                 {formatNumber(points)}
               </p>
               <p className="text-lg sm:text-xl text-muted-foreground">
-                Current Reward Points
+                {t("currentPoints")}
               </p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
@@ -120,7 +122,7 @@ export default function UserBadge() {
                 {formatNumber(lifetimePoints)}
               </p>
               <p className="text-lg sm:text-xl text-muted-foreground">
-                All Time Reward Points
+                {t("allTimePoints")}
               </p>
             </div>
             <div className="p-4 flex flex-col justify-center items-center">
@@ -128,7 +130,7 @@ export default function UserBadge() {
                 {formatNumber(10)}
               </p>
               <p className="text-lg sm:text-xl text-muted-foreground">
-                Training Sessions Last 30 Days
+                {t("trainingSessions30Days")}
               </p>
             </div>
           </div>

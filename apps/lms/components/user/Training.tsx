@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@skill-learn/ui/components/button";
 import { Progress } from "@skill-learn/ui/components/progress"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@skill-learn/ui/components/card";

@@ -40,11 +40,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the reward
+    const prizeJson = body.prizeJson ?? (body.prize || body.prizeFr
+      ? { ...(body.prize ? { en: body.prize } : {}), ...(body.prizeFr ? { fr: body.prizeFr } : {}) }
+      : undefined) ?? (body.prize ? { en: body.prize } : undefined);
+    const descriptionJson = body.descriptionJson ?? (body.description || body.descriptionFr
+      ? { ...(body.description ? { en: body.description } : {}), ...(body.descriptionFr ? { fr: body.descriptionFr } : {}) }
+      : undefined) ?? (body.description ? { en: body.description } : undefined);
+
     const reward = await prisma.reward.create({
       data: {
         prize: body.prize,
-        description: body.description,
+        prizeJson: prizeJson ?? undefined,
+        description: body.description ?? null,
+        descriptionJson: descriptionJson ?? undefined,
         cost: body.cost,
         imageUrl: imageUrl,
         fileKey: body.fileKey,

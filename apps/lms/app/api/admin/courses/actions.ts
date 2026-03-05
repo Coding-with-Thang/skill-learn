@@ -41,13 +41,29 @@ export async function createCourse(data, userId, tenantId = null) {
             };
         }
 
+        const titleJson = validation.data.titleJson ?? {
+            en: validation.data.title,
+            ...(validation.data.titleFr ? { fr: validation.data.titleFr } : {}),
+        };
+        const descriptionJson = validation.data.descriptionJson ?? {
+            en: validation.data.description,
+            ...(validation.data.descriptionFr ? { fr: validation.data.descriptionFr } : {}),
+        };
+        const excerptDescriptionJson = validation.data.excerptDescriptionJson ?? {
+            en: validation.data.excerptDescription,
+            ...(validation.data.excerptFr ? { fr: validation.data.excerptFr } : {}),
+        };
+
         const payload = {
             title: validation.data.title,
             description: validation.data.description,
+            titleJson,
+            descriptionJson,
+            excerptDescription: validation.data.excerptDescription,
+            excerptDescriptionJson,
             fileKey: validation.data.fileKey ?? "",
             duration: validation.data.duration,
             categoryId: validation.data.category,
-            excerptDescription: validation.data.excerptDescription,
             slug,
             status: validation.data.status,
             userId: userId,

@@ -5,6 +5,7 @@ import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/li
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
+import type { Prisma } from "@prisma/client";
 
 function stringifyDetails(details: unknown): string | undefined {
   if (details === undefined || details === null) return undefined;

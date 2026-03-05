@@ -34,10 +34,22 @@ export async function GET(_request: NextRequest) {
       });
     }
 
-    // Get the user's actual role from UserRole → TenantRole
+    // Get the user's display role from UserRole → TenantRole. When they have multiple
+    // roles, prefer one that has admin permissions so the UI shows "Administrator" (or similar).
+    const ADMIN_PERMISSIONS = [
+      "dashboard.admin",
+      "dashboard.manager",
+      "roles.assign",
+      "roles.create",
+      "settings.update",
+      "users.create",
+      "users.update",
+      "users.delete",
+      "flashcards.manage_tenant",
+    ];
     let roleAlias: string | null = null;
     if (user.tenantId) {
-      const userRole = await prisma.userRole.findFirst({
+      const userRoles = await prisma.userRole.findMany({
         where: {
           userId: userId,
           tenantId: user.tenantId,
@@ -46,16 +58,27 @@ export async function GET(_request: NextRequest) {
           tenantRole: {
             select: {
               roleAlias: true,
+              isActive: true,
+              tenantRolePermissions: {
+                include: {
+                  permission: { select: { name: true } },
+                },
+              },
             },
           },
         },
-        orderBy: {
-          assignedAt: "desc", // Get the most recently assigned role
-        },
+        orderBy: { assignedAt: "desc" },
       });
 
-      if (userRole?.tenantRole?.roleAlias) {
-        roleAlias = userRole.tenantRole.roleAlias;
+      const activeRoles = userRoles.filter((ur) => ur.tenantRole?.isActive);
+      const adminRole = activeRoles.find((ur) =>
+        ur.tenantRole?.tenantRolePermissions?.some((trp) =>
+          ADMIN_PERMISSIONS.includes(trp.permission?.name ?? "")
+        )
+      );
+      const roleToShow = adminRole ?? activeRoles[0];
+      if (roleToShow?.tenantRole?.roleAlias) {
+        roleAlias = roleToShow.tenantRole.roleAlias;
       }
     }
 

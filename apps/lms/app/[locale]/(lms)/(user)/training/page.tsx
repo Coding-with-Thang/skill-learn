@@ -1,0 +1,765 @@
+"use client"
+
+import { useEffect, useState, useMemo } from 'react'
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter, Link } from "@/i18n/navigation";
+import { useUser } from "@clerk/nextjs";
+import { motion, AnimatePresence } from "framer-motion"
+import { LayoutGrid, BookOpen, GraduationCap, Heart, Filter, Grid3x3, List, X } from "lucide-react"
+import { useCategoryStore } from "@skill-learn/lib/stores/categoryStore";
+import { useQuizStartStore } from "@skill-learn/lib/stores/quizStore";
+import { EnhancedButton } from "@skill-learn/ui/components/enhanced-button";
+import { FeatureGate, FeatureDisabledPage } from "@skill-learn/ui/components/feature-gate"
+import BreadCrumbCom from "@/components/shared/BreadCrumb"
+import { Loader } from "@skill-learn/ui/components/loader"
+import { SearchBar } from "@skill-learn/ui/components/search-bar"
+import { CourseCard } from "@skill-learn/ui/components/course-card"
+import { QuizCard } from "@skill-learn/ui/components/quiz-card"
+import { cn, extractTextFromProseMirror } from "@skill-learn/lib/utils"
+import api from "@skill-learn/lib/utils/axios"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@skill-learn/ui/components/select"
+import { Checkbox } from "@skill-learn/ui/components/checkbox"
+
+type CourseProgressSummary = {
+  completedLessonIds?: string[];
+  completedCount?: number;
+  totalLessons?: number;
+  progressPercent?: number;
+  courseCompleted?: boolean;
+  completedAt?: string | null;
+  status?: "not-started" | "in-progress" | "completed";
+};
+
+type QuizProgressSummary = {
+  attempts?: number;
+  completedAttempts?: number;
+  passedAttempts?: number;
+  averageScore?: number | null;
+  bestScore?: number | null;
+  lastAttemptAt?: string | null;
+  status?: "not-started" | "in-progress" | "completed";
+};
+
+export default function TrainingPage() {
+  const t = useTranslations("training")
+  const tNav = useTranslations("nav")
+  const locale = useLocale()
+  const router = useRouter()
+  const { isLoaded: clerkLoaded } = useUser()
+  const { fetchCategories } = useCategoryStore()
+  const setSelectedQuiz = useQuizStartStore(state => state.setSelectedQuiz)
+  const clearActiveAttemptId = useQuizStartStore(state => state.clearActiveAttemptId)
+
+  // State
+  const [searchQuery, setSearchQuery] = useState("")
+  const [viewMode, setViewMode] = useState("grid") // "grid" or "list"
+  const [contentType, setContentType] = useState("all") // "all", "courses", "quizzes"
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [showFilters, setShowFilters] = useState(false)
+  const [activeTab, setActiveTab] = useState("all") // "all", "quizzes", "courses", "favorites"
+  type TransformedCourse = { title?: string; description?: string; category?: string; status?: string; id?: string; imageUrl?: string; duration?: string; moduleCount?: number; progress?: number; slug?: string };
+  type TransformedQuiz = { title?: string; description?: string; categoryName?: string; categoryId?: string; [key: string]: unknown };
+  const [allQuizzes, setAllQuizzes] = useState<TransformedQuiz[]>([])
+  const [quizzesLoading, setQuizzesLoading] = useState(true)
+  const [rawCourses, setRawCourses] = useState<unknown[]>([]) // Store raw course data from API
+  const [allCourses, setAllCourses] = useState<TransformedCourse[]>([]) // Transformed courses with progress data
+  const [coursesLoading, setCoursesLoading] = useState(true)
+  const [courseProgressById, setCourseProgressById] = useState<Record<string, CourseProgressSummary>>({})
+  const [quizProgressById, setQuizProgressById] = useState<Record<string, QuizProgressSummary>>({})
+  const [contentMessage, setContentMessage] = useState<string | null>(null) // e.g. "Complete onboarding" when 400
+  const [showOnboardingLink, setShowOnboardingLink] = useState(false)
+
+  useEffect(() => {
+    fetchCategories(false, locale)
+  }, [fetchCategories, locale])
+
+  // Fetch all courses from the database (wait for Clerk so auth token is sent)
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const fetchCourses = async () => {
+      setCoursesLoading(true)
+      try {
+        setContentMessage(null)
+        setShowOnboardingLink(false)
+        const response = await api.get(`/courses?locale=${encodeURIComponent(locale)}`)
+        const result = response.data
+
+        // Treat 2xx as success
+        const isSuccess = response.status >= 200 && response.status < 300
+        if (!isSuccess || result?.success === false || result?.error) {
+          if (response.status === 400 && result?.message) {
+            setContentMessage(result.message)
+            setShowOnboardingLink(result?.message?.toLowerCase?.().includes("onboarding") ?? false)
+          }
+          if (response.status === 401) {
+            setCoursesLoading(false)
+            return // interceptor will redirect
+          }
+          if (response.status === 404 && (result?.error === "User not found" || result?.message?.toLowerCase?.().includes("user not found"))) {
+            setContentMessage(t("completeOnboardingToAccess"))
+            setShowOnboardingLink(true)
+            setRawCourses([])
+            setCoursesLoading(false)
+            return
+          }
+          console.error("Failed to fetch courses:", response.status, result)
+          throw new Error(result?.error || result?.message || `Failed to fetch courses: ${response.status}`)
+        }
+
+        // API returns { success: true, data: { courses: [...] } }
+        let courses: unknown[] = []
+        const data = result?.data ?? result
+        if (Array.isArray(data?.courses)) {
+          courses = data.courses
+        } else if (Array.isArray(result?.courses)) {
+          courses = result.courses
+        } else if (Array.isArray(data)) {
+          courses = data
+        } else if (Array.isArray(result)) {
+          courses = result
+        }
+
+        if (!Array.isArray(courses)) {
+          console.warn("Courses is not an array:", typeof courses, courses)
+          courses = []
+        }
+
+        // Store raw course data; UI transformation happens in a separate effect
+        setRawCourses(courses)
+      } catch (error) {
+        console.error("Error fetching courses:", error)
+        const err = error as { response?: { status?: number; data?: { error?: string; message?: string }; headers?: unknown }; request?: unknown; message?: string };
+        if (err.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error("Error response status:", err.response.status)
+          console.error("Error response data:", err.response.data)
+          console.error("Error response headers:", err.response.headers)
+          const errorMessage = err.response?.data?.error || err.response?.data?.message || `Server error: ${err.response.status}`
+          console.error("Error message:", errorMessage)
+        } else if (err.request) {
+          // The request was made but no response was received
+          console.error("No response received:", err.request)
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error("Error setting up request:", err.message)
+        }
+        setRawCourses([])
+      } finally {
+        setCoursesLoading(false)
+      }
+    }
+
+    fetchCourses()
+  }, [clerkLoaded, locale])
+
+  // Fetch course progress in bulk once courses are loaded.
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const ids = rawCourses
+      .map((course) => (course as { id?: string })?.id)
+      .filter((id): id is string => Boolean(id))
+
+    if (ids.length === 0) {
+      setCourseProgressById({})
+      return
+    }
+
+    const fetchCourseProgress = async () => {
+      try {
+        const response = await api.get(`/user/courses/progress?courseIds=${ids.join(",")}`)
+        const progressData = response.data?.data || response.data
+        setCourseProgressById(progressData?.progressByCourseId || {})
+      } catch (error) {
+        console.error("Error fetching course progress:", error)
+        setCourseProgressById({})
+      }
+    }
+
+    fetchCourseProgress()
+  }, [clerkLoaded, rawCourses])
+
+  // Transform courses when raw courses or progress updates.
+  useEffect(() => {
+    if (rawCourses.length === 0) {
+      setAllCourses([])
+      return
+    }
+
+    // Transform course data to match CourseCard format
+    type RawCourse = { duration?: number; id?: string; slug?: string; title?: string; description?: unknown; excerptDescription?: string; imageUrl?: string; category?: { name?: string } };
+    const transformedCourses = rawCourses.map((course: unknown) => {
+      const c = course as RawCourse;
+      // Format duration from minutes to "Xh Ym" format
+      const hours = Math.floor((c.duration || 0) / 60)
+      const minutes = (c.duration || 0) % 60
+      const durationStr = hours > 0
+        ? `${hours}h ${minutes > 0 ? `${minutes}m` : ''}`.trim()
+        : `${minutes}m`
+
+      const progressData = c.id ? courseProgressById[c.id] : null
+      const moduleCount = progressData?.totalLessons ?? 0
+      const progress = progressData?.progressPercent ?? 0
+      const status =
+        progressData?.status ??
+        (progress >= 100 ? "completed" : progress > 0 ? "in-progress" : "not-started")
+
+      return {
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        description: extractTextFromProseMirror(c.description) || c.excerptDescription || "",
+        imageUrl: c.imageUrl || "/placeholder-course.jpg",
+        duration: durationStr,
+        moduleCount,
+        progress,
+        status,
+        category: c.category?.name || t("uncategorized")
+      }
+    })
+
+    setAllCourses(transformedCourses as TransformedCourse[])
+  }, [rawCourses, courseProgressById, t]) // Re-transform when raw courses, progress, or locale changes
+
+  // Fetch all quizzes from /api/quizzes (wait for Clerk so auth token is sent)
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const fetchAllQuizzes = async () => {
+      setQuizzesLoading(true)
+      try {
+        const response = await api.get(`/quizzes?locale=${encodeURIComponent(locale)}`)
+        const result = response.data
+
+        const isSuccess = response.status >= 200 && response.status < 300
+        if (!isSuccess || result?.success === false || result?.error) {
+          if (response.status === 400 && result?.message) {
+            setContentMessage(result.message)
+            setShowOnboardingLink(result?.message?.toLowerCase?.().includes("onboarding") ?? false)
+          }
+          if (response.status === 404 && (result?.error === "User not found" || result?.message?.toLowerCase?.().includes("user not found"))) {
+            setContentMessage(t("completeOnboardingToAccess"))
+            setShowOnboardingLink(true)
+          }
+          setAllQuizzes([])
+          return
+        }
+
+        // API returns { success: true, data: { quizzes: [...] } }
+        let quizzes: unknown[] = []
+        const data = result?.data ?? result
+        if (Array.isArray(data?.quizzes)) {
+          quizzes = data.quizzes
+        } else if (Array.isArray(result?.quizzes)) {
+          quizzes = result.quizzes
+        } else if (Array.isArray(data)) {
+          quizzes = data
+        } else if (Array.isArray(result)) {
+          quizzes = result
+        }
+
+        if (!Array.isArray(quizzes)) {
+          quizzes = []
+        }
+
+        // Normalize category info for filtering (category can be relation object)
+        type QuizItem = { category?: { name?: string; id?: string }; categoryName?: string; categoryId?: string; [key: string]: unknown };
+        const normalized = quizzes.map((quiz) => {
+          const q = quiz as QuizItem;
+          return {
+            ...q,
+            categoryName: q.category?.name ?? q.categoryName ?? t("uncategorized"),
+            categoryId: q.category?.id ?? q.categoryId,
+          };
+        });
+        setAllQuizzes(normalized as TransformedQuiz[])
+      } catch (error) {
+        console.error("Error fetching quizzes:", error)
+        setAllQuizzes([])
+      } finally {
+        setQuizzesLoading(false)
+      }
+    }
+
+    fetchAllQuizzes()
+  }, [clerkLoaded, locale, t])
+
+  // Fetch quiz progress in bulk once quizzes are loaded.
+  useEffect(() => {
+    if (!clerkLoaded) return
+
+    const ids = allQuizzes
+      .map((quiz) => quiz.id)
+      .filter((id): id is string => typeof id === "string" && id.length > 0)
+
+    if (ids.length === 0) {
+      setQuizProgressById({})
+      return
+    }
+
+    const fetchQuizProgress = async () => {
+      try {
+        const response = await api.get(`/user/quizzes/progress?quizIds=${ids.join(",")}`)
+        const progressData = response.data?.data || response.data
+        setQuizProgressById(progressData?.progressByQuizId || {})
+      } catch (error) {
+        console.error("Error fetching quiz progress:", error)
+        setQuizProgressById({})
+      }
+    }
+
+    fetchQuizProgress()
+  }, [clerkLoaded, allQuizzes])
+
+  // Filter and search logic
+  const filteredCourses = useMemo(() => {
+    let filtered = allCourses
+
+    // Search
+    if (searchQuery) {
+      filtered = filtered.filter(course =>
+        (course.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (course.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(course =>
+        course.category != null && selectedCategories.includes(course.category)
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(course =>
+        course.status === statusFilter
+      )
+    }
+
+    return filtered
+  }, [searchQuery, selectedCategories, statusFilter, allCourses])
+
+  const filteredQuizzes = useMemo(() => {
+    let filtered = allQuizzes
+
+    // Search
+    if (searchQuery) {
+      filtered = filtered.filter(quiz =>
+        (quiz.title ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (quiz.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(quiz =>
+        quiz.categoryName != null && selectedCategories.includes(quiz.categoryName)
+      )
+    }
+
+    return filtered
+  }, [searchQuery, selectedCategories, allQuizzes])
+
+  // Handle quiz click - integrate with existing quiz system
+  const handleQuizClick = (quiz) => {
+    clearActiveAttemptId()
+    setSelectedQuiz(quiz)
+    router.push(`/quiz/start/${quiz.id}`)
+  }
+
+  const toggleCategory = (category) => {
+    setSelectedCategories(prev =>
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    )
+  }
+
+  const clearFilters = () => {
+    setSearchQuery("")
+    setSelectedCategories([])
+    setStatusFilter("all")
+  }
+
+  const hasActiveFilters = searchQuery || selectedCategories.length > 0 ||
+    statusFilter !== "all"
+
+  // Stats
+  const stats = {
+    totalCourses: allCourses.length,
+    activeCourses: allCourses.filter(c => c.status === "in-progress").length,
+    totalQuizzes: allQuizzes.length,
+    completedQuizzes: allQuizzes.filter((quiz) => {
+      if (typeof quiz.id !== "string") return false
+      return quizProgressById[quiz.id]?.status === "completed"
+    }).length,
+  }
+
+  const isLoading = quizzesLoading || coursesLoading
+
+  // Get unique category names from both quizzes and courses
+  const availableCategories = useMemo(() => {
+    const categorySet = new Set<string>()
+    allQuizzes.forEach(quiz => {
+      if (quiz.categoryName) categorySet.add(quiz.categoryName)
+    })
+    allCourses.forEach(course => {
+      if (course.category) categorySet.add(course.category)
+    })
+    return Array.from(categorySet).sort()
+  }, [allQuizzes, allCourses])
+
+  return (
+    <FeatureGate
+      feature="training_courses"
+      featureName={t("featureName")}
+      fallback={<FeatureDisabledPage featureName={t("featureName")} />}
+    >
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <aside className="hidden lg:flex flex-col w-64 border-r border-border bg-card/50 p-6 sticky top-0 h-screen overflow-y-auto">
+          <h2 className="text-lg font-bold text-foreground mb-6">{t("trainingCategories")}</h2>
+
+          {/* Category Tabs */}
+          <div className="space-y-2 mb-6">
+            <button
+              onClick={() => {
+                setActiveTab("all")
+                setContentType("all")
+              }}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
+                activeTab === "all"
+                  ? "bg-brand-teal text-white"
+                  : "hover:bg-muted text-muted-foreground"
+              )}
+            >
+              <LayoutGrid className="h-5 w-5" />
+              <span className="font-medium">{t("allContent")}</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("courses")
+                setContentType("courses")
+              }}
+              className={cn(
+                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all",
+                activeTab === "courses"
+                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                  : "hover:bg-muted text-muted-foreground"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-5 w-5" />
+                <span className="font-medium">{t("courses")}</span>
+              </div>
+              <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                {stats.totalCourses}
+              </span>
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("quizzes")
+                setContentType("quizzes")
+              }}
+              className={cn(
+                "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all",
+                activeTab === "quizzes"
+                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                  : "hover:bg-muted text-muted-foreground"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <GraduationCap className="h-5 w-5" />
+                <span className="font-medium">{t("quizzes")}</span>
+              </div>
+              <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">
+                {stats.totalQuizzes}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("favorites")}
+              disabled={true}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:cursor-not-allowed",
+                activeTab === "favorites"
+                  ? "bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-400"
+                  : "hover:bg-muted text-muted-foreground hover:cursor-not-allowed"
+              )}
+            >
+              <Heart className="h-5 w-5" />
+              <span className="font-medium">{t("myFavorites")}</span>
+            </button>
+          </div>
+
+          {/* Category Filters */}
+          <div className="border-t border-border pt-6">
+            <h3 className="text-sm font-semibold text-foreground mb-3">{t("filterByCategory")}</h3>
+            {isLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-8 bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+            ) : availableCategories.length > 0 ? (
+              <div className="space-y-2">
+                {availableCategories.map((category) => (
+                  <label
+                    key={category}
+                    className="flex items-center gap-2 cursor-pointer hover:bg-muted px-2 py-1.5 rounded transition-colors"
+                  >
+                    <Checkbox
+                      checked={selectedCategories.includes(category)}
+                      onCheckedChange={() => toggleCategory(category)}
+                    />
+                    <span className="text-sm text-foreground">{category}</span>
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("noCategoriesAvailable")}</p>
+            )}
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 px-4 sm:px-8 md:px-12 py-8">
+          <BreadCrumbCom crumbs={[]} endtrail={tNav("training")} />
+
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-6 mb-8"
+          >
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
+              {t("myTrainingHub")}
+            </h1>
+            <p className="text-muted-foreground text-base sm:text-lg">
+              {t("subtitle")}
+            </p>
+          </motion.div>
+
+          {/* Search and Filters Bar */}
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onClear={() => setSearchQuery("")}
+                placeholder={t("searchPlaceholder")}
+                className="flex-1"
+              />
+
+              <div className="flex gap-2">
+                <EnhancedButton
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={cn(
+                    "gap-2",
+                    hasActiveFilters && "border-brand-teal text-brand-teal"
+                  )}
+                >
+                  <Filter className="h-4 w-4" />
+                  {t("filters")}
+                  {hasActiveFilters && (
+                    <span className="bg-brand-teal text-white text-xs px-1.5 py-0.5 rounded-full">
+                      {selectedCategories.length +
+                        (statusFilter !== "all" ? 1 : 0)}
+                    </span>
+                  )}
+                </EnhancedButton>
+
+                <div className="flex border border-border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={cn(
+                      "p-2 transition-colors",
+                      viewMode === "grid"
+                        ? "bg-brand-teal text-white"
+                        : "bg-background hover:bg-muted"
+                    )}
+                    aria-label={t("gridView")}
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={cn(
+                      "p-2 transition-colors",
+                      viewMode === "list"
+                        ? "bg-brand-teal text-white"
+                        : "bg-background hover:bg-muted"
+                    )}
+                    aria-label={t("listView")}
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Advanced Filters */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="flex flex-wrap gap-4 p-4 bg-muted/50 rounded-lg">
+
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder={t("status")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">{t("allStatus")}</SelectItem>
+                        <SelectItem value="not-started">{t("notStarted")}</SelectItem>
+                        <SelectItem value="in-progress">{t("inProgress")}</SelectItem>
+                        <SelectItem value="completed">{t("completed")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {hasActiveFilters && (
+                      <EnhancedButton
+                        variant="ghost"
+                        onClick={clearFilters}
+                        className="gap-2"
+                      >
+                        <X className="h-4 w-4" />
+                        {t("clearFilters")}
+                      </EnhancedButton>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Message when API returns 400 (e.g. no tenant) */}
+          {contentMessage && !coursesLoading && !quizzesLoading && (
+            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+              {contentMessage}
+              {showOnboardingLink && (
+                <Link href="/onboarding/workspace" className="ml-2 font-medium underline">{t("goToOnboarding")}</Link>
+              )}
+            </div>
+          )}
+
+          {/* Content Sections */}
+          <div className="space-y-12">
+            {/* Courses Section */}
+            {(contentType === "all" || contentType === "courses") && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <BookOpen className="h-6 w-6 text-brand-teal" />
+                    {t("courses")}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({filteredCourses.length})
+                    </span>
+                  </h2>
+                </div>
+
+                {coursesLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader />
+                    <p className="mt-4 text-muted-foreground">{t("loadingCourses")}</p>
+                  </div>
+                ) : filteredCourses.length > 0 ? (
+                  <div className={cn(
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  )}>
+                    {filteredCourses.map((course) => (
+                      <CourseCard
+                        key={course.id}
+                        course={course}
+                        variant={viewMode}
+                        onClick={() => router.push(`/courses/${course.slug ?? course.id}`)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {contentMessage || t("noCoursesFound")}
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Quizzes Section */}
+            {(contentType === "all" || contentType === "quizzes") && (
+              <section>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                    <GraduationCap className="h-6 w-6 text-brand-teal" />
+                    {t("quizzes")}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      ({filteredQuizzes.length})
+                    </span>
+                  </h2>
+                </div>
+
+                {quizzesLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader />
+                    <p className="mt-4 text-muted-foreground">{t("loadingQuizzes")}</p>
+                  </div>
+                ) : filteredQuizzes.length > 0 ? (
+                  <div className={cn(
+                    viewMode === "grid"
+                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      : "space-y-4"
+                  )}>
+                    {filteredQuizzes.map((quiz) => (
+                      (() => {
+                        const quizId = typeof quiz.id === "string" ? quiz.id : ""
+                        const progress = quizId ? quizProgressById[quizId] : undefined
+                        return (
+                          <QuizCard
+                            key={quiz.id}
+                            quiz={{
+                              ...quiz,
+                              questionCount: (Array.isArray(quiz.questions) ? quiz.questions.length : 0) || 0,
+                              status: progress?.status || "not-started",
+                              score: progress?.bestScore ?? undefined,
+                              attempts: progress?.attempts ?? 0,
+                              averageScore: progress?.averageScore ?? undefined,
+                            }}
+                            variant={viewMode}
+                            onClick={() => handleQuizClick(quiz)}
+                          />
+                        )
+                      })()
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {contentMessage || t("noQuizzesFound")}
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+        </main>
+      </div>
+    </FeatureGate>
+  )
+}

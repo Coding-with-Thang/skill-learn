@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@skill-learn/ui/components/card";
+import { useTranslations } from "next-intl";
 import { Button } from "@skill-learn/ui/components/button";
 import { Badge } from "@skill-learn/ui/components/badge";
 import { Progress } from "@skill-learn/ui/components/progress";
@@ -13,10 +14,11 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useBillingStore } from "@skill-learn/lib/stores/billingStore";
 
 export function TenantSummary() {
+  const t = useTranslations("tenantSummary");
   // Use selectors to only re-render when specific state changes
   const tenant = useBillingStore((state) => state.tenant);
   const billing = useBillingStore((state) => state.billing);
@@ -80,7 +82,7 @@ export function TenantSummary() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Organization Overview
+            {t("organizationOverview")}
           </CardTitle>
           <Badge className={getTierColor(tenant.subscriptionTier)}>
             {billing?.subscription?.tierName || tenant.subscriptionTier}
@@ -102,7 +104,7 @@ export function TenantSummary() {
 
         {billing?.subscription && (
           <div className="text-sm text-muted-foreground">
-            {billing.subscription.daysRemaining} days until next billing
+            {billing.subscription.daysRemaining} {t("daysUntilBilling")}
           </div>
         )}
 
@@ -112,7 +114,7 @@ export function TenantSummary() {
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Users className="h-3.5 w-3.5" />
-                Users
+                {t("users")}
               </span>
               <span className="font-medium">
                 {billing?.usage?.users?.current || tenant.stats?.users || 0}
@@ -135,7 +137,7 @@ export function TenantSummary() {
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <Shield className="h-3.5 w-3.5" />
-                Roles
+                {t("roles")}
               </span>
               <span className="font-medium">
                 {billing?.usage?.roleSlots?.current || tenant.stats?.roles || 0}
@@ -156,14 +158,14 @@ export function TenantSummary() {
           <Link href="/dashboard/billing">
             <Button variant="outline" size="sm" className="h-8">
               <CreditCard className="h-3.5 w-3.5 mr-1.5" />
-              Billing
+              {t("billing")}
               <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </Link>
           <Link href="/dashboard/roles">
             <Button variant="outline" size="sm" className="h-8">
               <Shield className="h-3.5 w-3.5 mr-1.5" />
-              Manage Roles
+              {t("manageRoles")}
               <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </Link>

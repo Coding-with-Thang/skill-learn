@@ -24,8 +24,8 @@ export async function GET(_request: NextRequest) {
       });
     }
 
-    // Get category stats with category information
-    const categoryStatsRaw = await prisma.categoryStat.findMany({
+    // Build per-category stats from quiz progress rows.
+    const quizProgressRows = await prisma.quizProgress.findMany({
       where: {
         userId: user.id,
       },
@@ -34,42 +34,101 @@ export async function GET(_request: NextRequest) {
       },
     });
 
+    const categoryAccumulator = new Map<
+      string,
+      {
+        name: string;
+        attempts: number;
+        completed: number;
+        weightedScoreTotal: number;
+        weightedScoreCount: number;
+        bestScore: number;
+        lastAttempt: Date | null;
+      }
+    >();
+
+    for (const row of quizProgressRows) {
+      const key = row.categoryId;
+      const existing = categoryAccumulator.get(key) ?? {
+        name: row.category.name,
+        attempts: 0,
+        completed: 0,
+        weightedScoreTotal: 0,
+        weightedScoreCount: 0,
+        bestScore: 0,
+        lastAttempt: null,
+      };
+
+      const completedAttempts = row.completedAttempts || 0;
+      const attempts = row.attempts || 0;
+      const bestScore = row.bestScore || 0;
+      const averageScore = row.averageScore || 0;
+
+      existing.attempts += attempts;
+      existing.completed += completedAttempts;
+      existing.weightedScoreTotal += averageScore * completedAttempts;
+      existing.weightedScoreCount += completedAttempts;
+      existing.bestScore = Math.max(existing.bestScore, bestScore);
+      if (
+        row.lastAttemptAt &&
+        (!existing.lastAttempt || row.lastAttemptAt > existing.lastAttempt)
+      ) {
+        existing.lastAttempt = row.lastAttemptAt;
+      }
+
+      categoryAccumulator.set(key, existing);
+    }
+
+    const categoryStats = Array.from(categoryAccumulator.entries()).map(
+      ([categoryId, value]) => ({
+        name: value.name,
+        attempts: value.attempts,
+        completed: value.completed,
+        averageScore:
+          value.weightedScoreCount > 0
+            ? value.weightedScoreTotal / value.weightedScoreCount
+            : 0,
+        bestScore: value.bestScore,
+        lastAttempt: value.lastAttempt,
+        categoryId,
+      })
+    );
+    categoryStats.sort(
+      (a, b) =>
+        (b.lastAttempt ? new Date(b.lastAttempt).getTime() : 0) -
+        (a.lastAttempt ? new Date(a.lastAttempt).getTime() : 0)
+    );
+
     // Calculate aggregated stats
-    const totalAttempts = categoryStatsRaw.reduce(
+    const totalAttempts = categoryStats.reduce(
       (sum, stat) => sum + (stat.attempts || 0),
       0
     );
-    const totalCompleted = categoryStatsRaw.reduce(
+    const totalCompleted = categoryStats.reduce(
       (sum, stat) => sum + (stat.completed || 0),
       0
     );
 
-    // Calculate average score across all categories
-    const scoresWithValues = categoryStatsRaw
-      .map((stat) => stat.averageScore)
-      .filter((score) => score !== null && score !== undefined);
+    const weightedScoreTotal = categoryStats.reduce(
+      (sum, stat) => sum + (stat.averageScore || 0) * (stat.completed || 0),
+      0
+    );
+    const weightedScoreCount = categoryStats.reduce(
+      (sum, stat) => sum + (stat.completed || 0),
+      0
+    );
     const averageScore =
-      scoresWithValues.length > 0
-        ? scoresWithValues.reduce((sum, score) => sum + score, 0) /
-          scoresWithValues.length
-        : 0;
+      weightedScoreCount > 0 ? weightedScoreTotal / weightedScoreCount : 0;
 
-    // Find best score across all categories
-    const allBestScores = categoryStatsRaw
-      .map((stat) => stat.bestScore)
-      .filter((score) => score !== null && score !== undefined);
-    const bestScore = allBestScores.length > 0 ? Math.max(...allBestScores) : 0;
+    const bestScore = categoryStats.reduce(
+      (maxScore, stat) => Math.max(maxScore, stat.bestScore || 0),
+      0
+    );
 
-    // Find most recent attempt date
-    const allLastAttempts = categoryStatsRaw
+    const recentAttemptDate = categoryStats
       .map((stat) => stat.lastAttempt)
-      .filter((date) => date !== null);
-    const recentAttemptDate =
-      allLastAttempts.length > 0
-        ? new Date(
-            Math.max(...allLastAttempts.map((date) => new Date(date).getTime()))
-          )
-        : null;
+      .filter((date): date is Date => date instanceof Date)
+      .sort((a, b) => b.getTime() - a.getTime())[0] ?? null;
 
     // Get user streak data and points
     const userWithStreak = await prisma.user.findUnique({
@@ -83,18 +142,6 @@ export async function GET(_request: NextRequest) {
     const totalPoints = userWithStreak?.points || 0;
     const currentStreak = userWithStreak?.currentStreak || 0;
     const longestStreak = userWithStreak?.longestStreak || 0;
-
-
-    // Transform category stats to match component expectations
-    const categoryStats = categoryStatsRaw.map((stat) => ({
-      name: stat.category.name,
-      attempts: stat.attempts || 0,
-      completed: stat.completed || 0,
-      averageScore: stat.averageScore || 0,
-      bestScore: stat.bestScore || 0,
-      lastAttempt: stat.lastAttempt,
-      categoryId: stat.categoryId,
-    }));
 
     // Fetch recent quiz completions from PointLog
     const recentLogs = await prisma.pointLog.findMany({

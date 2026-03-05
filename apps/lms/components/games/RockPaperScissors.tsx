@@ -2,19 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { Button } from "@skill-learn/ui/components/button";
-import QuizModal from "@/components/quiz/QuizModal"
+import QuizModal from "@/components/quiz/QuizModal";
+import { useTranslations } from "next-intl";
 
 const choices = [
-  { name: 'Rock', emoji: '✊', beats: 'Scissors' },
-  { name: 'Paper', emoji: '✋', beats: 'Rock' },
-  { name: 'Scissors', emoji: '✌️', beats: 'Paper' }
+  { name: 'Rock', key: 'rock' as const, emoji: '✊', beats: 'Scissors' },
+  { name: 'Paper', key: 'paper' as const, emoji: '✋', beats: 'Rock' },
+  { name: 'Scissors', key: 'scissors' as const, emoji: '✌️', beats: 'Paper' }
 ] as const;
 
 type Choice = (typeof choices)[number];
 
 export default function RockPaperScissors() {
+  const t = useTranslations("rockPaperScissors");
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isOpen, setIsOpen] = useState(false);
@@ -41,12 +43,12 @@ export default function RockPaperScissors() {
     setComputerChoice(computer);
 
     if (choice.name === computer.name) {
-      setResult("It's a Tie!");
+      setResult(t("tie"));
     } else if (choice.beats === computer.name) {
-      setResult('You Win!');
+      setResult(t("youWin"));
       setScore(prev => prev + 100);
     } else {
-      setResult('AI Wins!');
+      setResult(t("youLose"));
     }
     setGameOver(true);
   };
@@ -70,7 +72,7 @@ export default function RockPaperScissors() {
               className="group aspect-square bg-slate-100 hover:bg-white rounded-[2.5rem] shadow-inner hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center gap-2"
             >
               <span className="text-brand-teal group-hover:scale-125 transition-transform duration-300">{choice.emoji}</span>
-              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{choice.name}</span>
+              <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{t(choice.key)}</span>
             </button>
           ))}
         </div>
@@ -94,7 +96,7 @@ export default function RockPaperScissors() {
             </div>
           </div>
 
-          <p className={`text-4xl font-black uppercase tracking-tighter mb-8 animate-scale-in ${result === 'You Win!' ? 'text-cyan-500' : result === 'AI Wins!' ? 'text-rose-400' : 'text-slate-400'
+          <p className={`text-4xl font-black uppercase tracking-tighter mb-8 animate-scale-in ${result === t("youWin") ? 'text-cyan-500' : result === t("youLose") ? 'text-rose-400' : 'text-slate-400'
             }`}>
             {result}
           </p>
@@ -103,7 +105,7 @@ export default function RockPaperScissors() {
             onClick={nextRound}
             className="h-14 px-10 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-4xl transition-all shadow-lg active:scale-95"
           >
-            NEXT MATCH
+            {t("nextRound")}
           </Button>
         </div>
       )}

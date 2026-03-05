@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   DndContext,
   useSensor,
@@ -24,7 +25,7 @@ import {
 import { Button } from "@skill-learn/ui/components/button";
 import { Input } from "@skill-learn/ui/components/input";
 import { useState, useMemo, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { GripVertical, ChevronDown, ChevronRight, Trash2, Plus, Pencil, Check } from "lucide-react";
 
 function arrayMove(items, fromIndex, toIndex) {
@@ -47,6 +48,7 @@ export default function CourseStructure({
   onDeleteLesson,
   onReorderLessons,
 }) {
+  const t = useTranslations("adminCourseStructure");
   const slugOrId = courseSlug ?? courseId;
   const chapters = useMemo(() => course?.chapters ?? [], [course?.chapters]);
   const [openChapters, setOpenChapters] = useState({});
@@ -85,7 +87,7 @@ export default function CourseStructure({
           className="cursor-grab touch-none p-0.5 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
           {...attributes}
           {...listeners}
-          aria-label="Drag to reorder lesson"
+          aria-label={t("dragReorderLesson")}
           disabled={disabled}
         >
           <GripVertical className="size-4" />
@@ -108,7 +110,7 @@ export default function CourseStructure({
               if (!disabled) onDelete(chapter?.id, lesson);
             }}
             className="text-muted-foreground hover:text-brand-tealestructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-            aria-label="Delete lesson"
+            aria-label={t("deleteLesson")}
             disabled={disabled}
           >
             <Trash2 className="size-4" />
@@ -214,7 +216,7 @@ export default function CourseStructure({
             className="cursor-grab touch-none p-0.5 disabled:cursor-not-allowed disabled:opacity-50"
             {...attributes}
             {...listeners}
-            aria-label="Drag to reorder chapter"
+            aria-label={t("dragReorderChapter")}
             disabled={disabled}
           >
             <GripVertical className="size-4" />
@@ -223,7 +225,7 @@ export default function CourseStructure({
             type="button"
             onClick={onToggle}
             className="text-muted-foreground hover:text-foreground p-0.5"
-            aria-label={isOpen ? "Collapse" : "Expand"}
+            aria-label={isOpen ? t("collapse") : t("expand")}
           >
             {isOpen ? (
               <ChevronDown className="size-4" />
@@ -242,7 +244,7 @@ export default function CourseStructure({
                 className="h-8 flex-1 min-w-0"
                 disabled={disabled}
                 onClick={(e) => e.stopPropagation()}
-                aria-label="Chapter title"
+                aria-label={t("chapterTitle")}
               />
               <button
                 type="button"
@@ -251,7 +253,7 @@ export default function CourseStructure({
                   handleSaveTitle();
                 }}
                 className="p-1.5 shrink-0 rounded text-primary hover:bg-primary/10 disabled:opacity-50 disabled:pointer-events-none"
-                aria-label="Save chapter title"
+                aria-label={t("saveChapterTitle")}
                 disabled={disabled}
               >
                 <Check className="size-4" />
@@ -265,7 +267,7 @@ export default function CourseStructure({
                   type="button"
                   onClick={handleStartEdit}
                   className="p-0.5 shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:pointer-events-none"
-                  aria-label="Edit chapter title"
+                  aria-label={t("editChapterTitle")}
                   disabled={disabled}
                 >
                   <Pencil className="size-3.5" />
@@ -274,7 +276,7 @@ export default function CourseStructure({
             </div>
           )}
           <span className="text-sm text-muted-foreground shrink-0">
-            {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
+            {t("lessonCount", { count: lessons.length })}
           </span>
           {onDelete && (
             <button
@@ -284,7 +286,7 @@ export default function CourseStructure({
                 if (!disabled) onDelete(chapter);
               }}
               className="text-muted-foreground hover:text-brand-tealestructive p-0.5 shrink-0 disabled:opacity-50 disabled:pointer-events-none"
-              aria-label="Delete chapter"
+              aria-label={t("deleteChapter")}
               disabled={disabled}
             >
               <Trash2 className="size-4" />
@@ -329,7 +331,7 @@ export default function CourseStructure({
                 disabled={disabled}
               >
                 <Plus className="size-4 mr-1" />
-                Add lesson
+                {t("addLesson")}
               </Button>
             )}
           </div>
@@ -374,14 +376,14 @@ export default function CourseStructure({
     return (
       <Card>
         <CardHeader className="border-b border-border">
-          <CardTitle>Chapters</CardTitle>
+          <CardTitle>{t("chapters")}</CardTitle>
         </CardHeader>
         <CardContent className="py-8 text-center text-muted-foreground space-y-4">
-          <p>No chapters yet. Add a chapter to build your course structure.</p>
+          <p>{t("noChaptersYet")}</p>
           {onAddChapter && (
             <Button type="button" onClick={onAddChapter} disabled={mutationPending}>
               <Plus className="size-4 mr-2" />
-              Add chapter
+              {t("addChapter")}
             </Button>
           )}
         </CardContent>
@@ -392,11 +394,11 @@ export default function CourseStructure({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between border-b border-border">
-        <CardTitle>Chapters</CardTitle>
+        <CardTitle>{t("chapters")}</CardTitle>
         {onAddChapter && (
           <Button type="button" variant="outline" size="sm" onClick={onAddChapter} disabled={mutationPending}>
             <Plus className="size-4 mr-1" />
-            Add chapter
+            {t("addChapter")}
           </Button>
         )}
       </CardHeader>

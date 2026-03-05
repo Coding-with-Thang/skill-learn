@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   type LucideIcon,
   LayoutGrid,
@@ -40,31 +40,34 @@ export default function Sidebar({ isOperations }) {
     special?: boolean;
   };
 
+  const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
+
   // User Navigation Items
   const userNavItems: NavItem[] = [
-    { label: "Dashboard", href: "/home", icon: LayoutGrid },
+    { label: t("dashboard"), href: "/home", icon: LayoutGrid },
     {
-      label: "Training",
+      label: t("training"),
       href: "/training",
       icon: GraduationCap,
       feature: "training_courses",
     },
     {
-      label: "Flash Cards",
+      label: t("flashCards"),
       href: "/flashcards",
       icon: Layers,
       feature: "flash_cards",
     },
     {
-      label: "Report Card",
+      label: t("reportCard"),
       href: "/user/stats",
       icon: BarChart2,
       feature: "user_stats",
     },
-    { label: "Games", href: "/games", icon: Gamepad2, feature: "games" },
-    { label: "Achievements", href: "/achievements", icon: Trophy },
+    { label: t("games"), href: "/games", icon: Gamepad2, feature: "games" },
+    { label: t("achievements"), href: "/achievements", icon: Trophy },
     {
-      label: "Rewards",
+      label: t("rewards"),
       href: "/rewards",
       icon: Gift,
       feature: "rewards_store",
@@ -77,7 +80,7 @@ export default function Sidebar({ isOperations }) {
 
   if (isOperations) {
     items.push({
-      label: "Admin Dashboard",
+      label: t("adminDashboard"),
       href: "/dashboard",
       icon: ShieldCheck,
       special: true,
@@ -137,7 +140,7 @@ export default function Sidebar({ isOperations }) {
           <div className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
-                <span>Weekly Goal</span>
+                <span>{tCommon("weeklyGoal")}</span>
                 <span className="text-primary">65%</span>
               </div>
               <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
@@ -166,7 +169,7 @@ export default function Sidebar({ isOperations }) {
           </div>
           {!isCollapsed && (
             <span className="text-sm text-muted-foreground group-hover:text-foreground">
-              Collapse Sidebar
+              {tCommon("collapseSidebar")}
             </span>
           )}
         </div>
@@ -190,10 +193,10 @@ export default function Sidebar({ isOperations }) {
               {!isCollapsed && (
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-foreground">
-                    Need Help?
+                    {tCommon("needHelp")}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    Contact Support
+                    {tCommon("contactSupport")}
                   </span>
                 </div>
               )}

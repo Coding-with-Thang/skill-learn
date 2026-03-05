@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@skill-learn/ui/components/button";
 import { UserButtonWrapper } from "@/components/auth/UserButtonWrapper";
 import { Menu, X, ChevronDown } from "lucide-react";
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function LandingHeader() {
-  const { isLoaded } = useUser();
+  const t = useTranslations("landing");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const resourcesRef = useRef<HTMLButtonElement | null>(null);
@@ -57,11 +59,12 @@ export default function LandingHeader() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 overflow-visible">
+            <LanguageSwitcher className="hidden md:flex" />
             <Link
               href="/features"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
-              Features
+              {t("features")}
             </Link>
             {/* Resources Dropdown */}
             <div className="relative flex items-center">
@@ -69,13 +72,13 @@ export default function LandingHeader() {
                 href="/resources"
                 className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
               >
-                Resources
+                {t("resources")}
               </Link>
               <button
                 ref={resourcesRef}
                 onClick={() => setResourcesOpen(!resourcesOpen)}
                 className="text-gray-700 hover:text-brand-teal p-1 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200 ml-1"
-                aria-label="Toggle resources menu"
+                aria-label={t("toggleResources")}
               >
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${resourcesOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -93,35 +96,35 @@ export default function LandingHeader() {
                       onClick={() => setResourcesOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-teal transition-colors"
                     >
-                      Help Center
+                      {t("helpCenter")}
                     </Link>
                     <Link
                       href="/legal"
                       onClick={() => setResourcesOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-teal transition-colors"
                     >
-                      Legal Hub
+                      {t("legalHub")}
                     </Link>
                     <Link
                       href="/resources/case-studies/techflow"
                       onClick={() => setResourcesOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-teal transition-colors"
                     >
-                      Case Studies
+                      {t("caseStudies")}
                     </Link>
                     <Link
                       href="/sitemap"
                       onClick={() => setResourcesOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-teal transition-colors"
                     >
-                      Sitemap
+                      {t("sitemap")}
                     </Link>
                     <Link
                       href="/changelog"
                       onClick={() => setResourcesOpen(false)}
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-teal transition-colors"
                     >
-                      Changelog
+                      {t("changelog")}
                     </Link>
                   </div>
                 </div>
@@ -131,36 +134,32 @@ export default function LandingHeader() {
               href="/pricing"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
-              Pricing
+              {t("pricing")}
             </Link>
             <Link
               href="#solutions"
               className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
-              Why Skill-Learn
+              {t("whySkillLearn")}
             </Link>
           </nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons - Always show login when not signed in (including before Clerk loads) */}
           <div className="hidden md:flex items-center gap-4">
-            {isLoaded && (
-              <>
-                <SignedIn>
-                  <UserButtonWrapper />
-                </SignedIn>
-                <SignedOut>
-                  <Link href="/sign-in" className="text-gray-700 hover:text-brand-teal transition-colors">
-                    Log in
-                  </Link>
-                  <Button
-                    asChild
-                    className="bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg px-6"
-                  >
-                    <Link href="/sign-up">Schedule Demo</Link>
-                  </Button>
-                </SignedOut>
-              </>
-            )}
+            <SignedIn>
+              <UserButtonWrapper />
+            </SignedIn>
+            <SignedOut>
+              <Link href="/sign-in" className="text-gray-700 hover:text-brand-teal transition-colors">
+                {t("logIn")}
+              </Link>
+              <Button
+                asChild
+                className="bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg px-6"
+              >
+                <Link href="/sign-up">{t("scheduleDemo")}</Link>
+              </Button>
+            </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
@@ -168,7 +167,7 @@ export default function LandingHeader() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-4xld text-gray-700 hover:text-brand-teal hover:bg-gray-100"
-              aria-label="Toggle menu"
+              aria-label={t("toggleMenu")}
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -188,59 +187,59 @@ export default function LandingHeader() {
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Features
+                {t("features")}
               </Link>
               <Link
                 href="#solutions"
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Why Skill-Learn
+                {t("whySkillLearn")}
               </Link>
               <Link
                 href="/resources"
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Resources
+                {t("resources")}
               </Link>
               <div className="px-2">
-                <div className="text-gray-700 font-medium mb-2">Quick Links</div>
+                <div className="text-gray-700 font-medium mb-2">{t("quickLinks")}</div>
                 <div className="pl-4 flex flex-col gap-2">
                   <Link
                     href="/changelog"
                     className="text-gray-600 hover:text-brand-teal transition-colors text-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Changelog
+                    {t("changelog")}
                   </Link>
                   <Link
                     href="/support/faq"
                     className="text-gray-600 hover:text-brand-teal transition-colors text-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Help Center
+                    {t("helpCenter")}
                   </Link>
                   <Link
                     href="/legal"
                     className="text-gray-600 hover:text-brand-teal transition-colors text-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Legal Hub
+                    {t("legalHub")}
                   </Link>
                   <Link
                     href="/resources/case-studies/techflow"
                     className="text-gray-600 hover:text-brand-teal transition-colors text-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Case Studies
+                    {t("caseStudies")}
                   </Link>
                   <Link
                     href="/sitemap"
                     className="text-gray-600 hover:text-brand-teal transition-colors text-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sitemap
+                    {t("sitemap")}
                   </Link>
                 </div>
               </div>
@@ -249,41 +248,37 @@ export default function LandingHeader() {
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Pricing
+                {t("pricing")}
               </Link>
               <Link
                 href="/careers"
                 className="text-gray-700 hover:text-brand-teal transition-colors px-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Careers
+                {t("careers")}
               </Link>
               <div className="border-t border-gray-200 pt-4 mt-2">
-                {isLoaded && (
-                  <>
-                    <SignedIn>
-                      <div className="px-2">
-                        <UserButtonWrapper />
-                      </div>
-                    </SignedIn>
-                    <SignedOut>
-                      <Link
-                        href="/sign-in"
-                        className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Log in
-                      </Link>
-                      <Button
-                        asChild
-                        className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Link href="/sign-up">Schedule Demo</Link>
-                      </Button>
-                    </SignedOut>
-                  </>
-                )}
+                <SignedIn>
+                  <div className="px-2">
+                    <UserButtonWrapper />
+                  </div>
+                </SignedIn>
+                <SignedOut>
+                  <Link
+                    href="/sign-in"
+                    className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {t("logIn")}
+                  </Link>
+                  <Button
+                    asChild
+                    className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link href="/sign-up">{t("scheduleDemo")}</Link>
+                  </Button>
+                </SignedOut>
               </div>
             </nav>
           </div>

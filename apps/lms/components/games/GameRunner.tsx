@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useTranslations } from "next-intl";
 import GamePlayLayout from './GamePlayLayout';
 import { useLocalStorage } from "@skill-learn/lib/hooks/useLocalStorage";
 
@@ -16,6 +17,7 @@ const DEFAULT_LEADERBOARD = [
 ];
 
 const GameRunner = ({ gameConfig, GameComponent }) => {
+  const t = useTranslations("games");
   const [round, setRound] = useLocalStorage("round", 1);
   const [score, setScore] = useLocalStorage("score", 0);
   const [isPaused, setIsPaused] = useState(false);
@@ -54,12 +56,12 @@ const GameRunner = ({ gameConfig, GameComponent }) => {
       {isPaused && (
         <div className="absolute inset-0 flex items-center justify-center z-50">
           <div className="bg-white/90 backdrop-blur-md p-8 rounded-4xl shadow-2xl text-center">
-            <h3 className="text-2xl font-black text-slate-800 mb-4">GAME PAUSED</h3>
+            <h3 className="text-2xl font-black text-slate-800 mb-4">{t("gamePaused")}</h3>
             <button
               onClick={() => setIsPaused(false)}
               className="px-8 py-3 bg-cyan-400 text-white font-bold rounded-xl shadow-lg hover:bg-cyan-500 transition-all"
             >
-              RESUME PLAY
+              {t("resumePlay")}
             </button>
           </div>
         </div>
