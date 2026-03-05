@@ -74,6 +74,7 @@ export default function TrainingPage() {
   const [courseProgressById, setCourseProgressById] = useState<Record<string, CourseProgressSummary>>({})
   const [quizProgressById, setQuizProgressById] = useState<Record<string, QuizProgressSummary>>({})
   const [contentMessage, setContentMessage] = useState<string | null>(null) // e.g. "Complete onboarding" when 400
+  const [showOnboardingLink, setShowOnboardingLink] = useState(false)
 
   useEffect(() => {
     fetchCategories(false, locale)
@@ -87,16 +88,27 @@ export default function TrainingPage() {
       setCoursesLoading(true)
       try {
         setContentMessage(null)
+        setShowOnboardingLink(false)
         const response = await api.get(`/courses?locale=${encodeURIComponent(locale)}`)
         const result = response.data
 
         // Treat 2xx as success
         const isSuccess = response.status >= 200 && response.status < 300
         if (!isSuccess || result?.success === false || result?.error) {
-          if (response.status === 400 && result?.message) setContentMessage(result.message)
+          if (response.status === 400 && result?.message) {
+            setContentMessage(result.message)
+            setShowOnboardingLink(result?.message?.toLowerCase?.().includes("onboarding") ?? false)
+          }
           if (response.status === 401) {
             setCoursesLoading(false)
             return // interceptor will redirect
+          }
+          if (response.status === 404 && (result?.error === "User not found" || result?.message?.toLowerCase?.().includes("user not found"))) {
+            setContentMessage(t("completeOnboardingToAccess"))
+            setShowOnboardingLink(true)
+            setRawCourses([])
+            setCoursesLoading(false)
+            return
           }
           console.error("Failed to fetch courses:", response.status, result)
           throw new Error(result?.error || result?.message || `Failed to fetch courses: ${response.status}`)
@@ -230,7 +242,14 @@ export default function TrainingPage() {
 
         const isSuccess = response.status >= 200 && response.status < 300
         if (!isSuccess || result?.success === false || result?.error) {
-          if (response.status === 400 && result?.message) setContentMessage(result.message)
+          if (response.status === 400 && result?.message) {
+            setContentMessage(result.message)
+            setShowOnboardingLink(result?.message?.toLowerCase?.().includes("onboarding") ?? false)
+          }
+          if (response.status === 404 && (result?.error === "User not found" || result?.message?.toLowerCase?.().includes("user not found"))) {
+            setContentMessage(t("completeOnboardingToAccess"))
+            setShowOnboardingLink(true)
+          }
           setAllQuizzes([])
           return
         }
@@ -636,7 +655,7 @@ export default function TrainingPage() {
           {contentMessage && !coursesLoading && !quizzesLoading && (
             <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
               {contentMessage}
-              {contentMessage.includes("onboarding") && (
+              {showOnboardingLink && (
                 <Link href="/onboarding/workspace" className="ml-2 font-medium underline">{t("goToOnboarding")}</Link>
               )}
             </div>

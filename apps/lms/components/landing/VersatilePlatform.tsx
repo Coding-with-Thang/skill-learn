@@ -63,16 +63,22 @@ export default function VersatilePlatform() {
 
   const contentKey = activeTab.toLowerCase();
   const CONTENT = useMemo(() => {
-    const labels = t.raw(`${contentKey}.items`) as string[];
-    const icons = ITEM_ICONS[activeTab];
-    const colors = ITEM_COLORS[activeTab];
+    const rawItems = t.raw(`${contentKey}.items`);
+    const labels = Array.isArray(rawItems) ? (rawItems as string[]) : [];
+    const icons = ITEM_ICONS[activeTab] ?? ITEM_ICONS.Courses;
+    const colors = ITEM_COLORS[activeTab] ?? ITEM_COLORS.Courses;
+    const floating = FLOATING_CONFIG[activeTab] ?? FLOATING_CONFIG.Courses;
     return {
       badge: t(`${contentKey}.badge`),
       title: t(`${contentKey}.title`),
       titleAccent: t(`${contentKey}.titleAccent`),
       description: t(`${contentKey}.description`),
-      items: labels.map((label, idx) => ({ icon: icons[idx], label, color: colors[idx] })),
-      floating: FLOATING_CONFIG[activeTab],
+      items: labels.map((label, idx) => ({
+        icon: icons[idx] ?? icons[0],
+        label,
+        color: colors[idx] ?? colors[0],
+      })),
+      floating,
     };
   }, [activeTab, contentKey, t]);
 
@@ -150,14 +156,14 @@ export default function VersatilePlatform() {
               <div className="space-y-4">
                 <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {CONTENT.badge}
+                  {CONTENT?.badge ?? ""}
                 </span>
                 <h3 className="text-3xl md:text-4xl lg:text-brand-teal font-black text-slate-900 leading-[1.1] tracking-tight">
-                  {CONTENT.title} <br />
-                  <span className="text-indigo-600">{CONTENT.titleAccent}</span>
+                  {CONTENT?.title ?? ""} <br />
+                  <span className="text-indigo-600">{CONTENT?.titleAccent ?? ""}</span>
                 </h3>
                 <p className="text-sm md:text-base text-slate-500 leading-relaxed max-w-lg font-medium">
-                  {CONTENT.description}
+                  {CONTENT?.description ?? ""}
                 </p>
               </div>
 
@@ -178,15 +184,15 @@ export default function VersatilePlatform() {
               <div className="bg-white rounded-[2.5rem] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group max-w-md mx-auto">
                 {/* Platform Frame UI */}
                 <div className="bg-slate-50/50 rounded-4xl p-6 lg:p-8 min-h-[300px] flex flex-col justify-center gap-3">
-                  {CONTENT.items.map((item, idx) => {
-                    const ItemIcon = item.icon;
+                  {(CONTENT?.items ?? []).map((item, idx) => {
+                    const ItemIcon = item.icon ?? BookOpen;
                     return (
                       <motion.div
                         key={idx}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className={`flex items-center gap-4 p-4 rounded-[1.2rem] transition-all duration-300 text-sm ${item.color}`}
+                        className={`flex items-center gap-4 p-4 rounded-[1.2rem] transition-all duration-300 text-sm ${item.color ?? ""}`}
                       >
                         <div className={`p-2.5 rounded-lg ${idx === 2 ? 'bg-white/20' : 'bg-white/80'} shadow-sm`}>
                           <ItemIcon className="w-4 h-4" />
@@ -214,11 +220,11 @@ export default function VersatilePlatform() {
                     scale: { duration: 0.3 },
                     y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
                   }}
-                  className={`absolute ${CONTENT.floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
+                  className={`absolute ${CONTENT?.floating?.pos ?? ""} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
                 >
                   {(() => {
-                    const FloatingIcon = CONTENT.floating.icon;
-                    return <FloatingIcon className={`w-8 h-8 ${CONTENT.floating.color}`} />;
+                    const FloatingIcon = CONTENT?.floating?.icon;
+                    return FloatingIcon ? <FloatingIcon className={`w-8 h-8 ${CONTENT?.floating?.color ?? ""}`} /> : null;
                   })()}
                 </motion.div>
               </AnimatePresence>

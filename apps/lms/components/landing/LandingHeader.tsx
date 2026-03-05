@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { SignedIn, SignedOut, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Logo } from "@/components/shared/Logo";
 import { Button } from "@skill-learn/ui/components/button";
 import { UserButtonWrapper } from "@/components/auth/UserButtonWrapper";
@@ -12,7 +12,6 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 
 export default function LandingHeader() {
   const t = useTranslations("landing");
-  const { isLoaded } = useUser();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const resourcesRef = useRef<HTMLButtonElement | null>(null);
@@ -145,26 +144,22 @@ export default function LandingHeader() {
             </Link>
           </nav>
 
-          {/* Desktop Auth Buttons */}
+          {/* Desktop Auth Buttons - Always show login when not signed in (including before Clerk loads) */}
           <div className="hidden md:flex items-center gap-4">
-            {isLoaded && (
-              <>
-                <SignedIn>
-                  <UserButtonWrapper />
-                </SignedIn>
-                <SignedOut>
-                  <Link href="/sign-in" className="text-gray-700 hover:text-brand-teal transition-colors">
-                    {t("logIn")}
-                  </Link>
-                  <Button
-                    asChild
-                    className="bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg px-6"
-                  >
-                    <Link href="/sign-up">{t("scheduleDemo")}</Link>
-                  </Button>
-                </SignedOut>
-              </>
-            )}
+            <SignedIn>
+              <UserButtonWrapper />
+            </SignedIn>
+            <SignedOut>
+              <Link href="/sign-in" className="text-gray-700 hover:text-brand-teal transition-colors">
+                {t("logIn")}
+              </Link>
+              <Button
+                asChild
+                className="bg-brand-teal hover:bg-brand-teal-dark text-white rounded-lg px-6"
+              >
+                <Link href="/sign-up">{t("scheduleDemo")}</Link>
+              </Button>
+            </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
@@ -263,31 +258,27 @@ export default function LandingHeader() {
                 {t("careers")}
               </Link>
               <div className="border-t border-gray-200 pt-4 mt-2">
-                {isLoaded && (
-                  <>
-                    <SignedIn>
-                      <div className="px-2">
-                        <UserButtonWrapper />
-                      </div>
-                    </SignedIn>
-                    <SignedOut>
-                      <Link
-                        href="/sign-in"
-                        className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {t("logIn")}
-                      </Link>
-                      <Button
-                        asChild
-                        className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        <Link href="/sign-up">{t("scheduleDemo")}</Link>
-                      </Button>
-                    </SignedOut>
-                  </>
-                )}
+                <SignedIn>
+                  <div className="px-2">
+                    <UserButtonWrapper />
+                  </div>
+                </SignedIn>
+                <SignedOut>
+                  <Link
+                    href="/sign-in"
+                    className="block text-gray-700 hover:text-brand-teal transition-colors px-2 py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {t("logIn")}
+                  </Link>
+                  <Button
+                    asChild
+                    className="w-full mt-2 bg-brand-teal hover:bg-brand-teal-dark text-white"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link href="/sign-up">{t("scheduleDemo")}</Link>
+                  </Button>
+                </SignedOut>
               </div>
             </nav>
           </div>

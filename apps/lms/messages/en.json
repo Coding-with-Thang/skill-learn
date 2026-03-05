@@ -760,6 +760,7 @@
   "footer": {
     "copyright": "Copyright © 2025 - All rights reserved by Skill-Learn.ca",
     "legalHub": "Legal Hub",
+    "faqHub": "FAQ Hub",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "sitemap": "Sitemap"
@@ -783,9 +784,6 @@
     "acceptAll": "Accept All",
     "privacy": "Privacy",
     "terms": "Terms"
-  },
-  "search": {
-    "dialogTitle": "Search Knowledge Base"
   },
   "contact": {
     "supportHub": "Support Hub",
@@ -965,6 +963,7 @@
     "pricing": "Pricing",
     "sitemap": "Sitemap",
     "legalHub": "Legal Hub",
+    "faqHub": "FAQ Hub",
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service"
   },
@@ -983,6 +982,7 @@
     "whySkillLearn": "Why Skill-Learn",
     "helpCenter": "Help Center",
     "legalHub": "Legal Hub",
+    "faqHub": "FAQ Hub",
     "caseStudies": "Case Studies",
     "sitemap": "Sitemap",
     "changelog": "Changelog",
@@ -1018,6 +1018,7 @@
     "completed": "Completed",
     "clearFilters": "Clear Filters",
     "goToOnboarding": "Go to onboarding",
+    "completeOnboardingToAccess": "Please complete onboarding to access training.",
     "loadingCourses": "Loading courses...",
     "loadingCourse": "Loading course...",
     "backToTraining": "Back to Training",
@@ -1275,6 +1276,7 @@
     "changelogDesc": "Stay updated with the latest features, improvements, and fixes.",
     "helpCenter": "Help Center",
     "helpCenterDesc": "Find answers to common questions and get support.",
+    "faqHub": "FAQ Hub",
     "legalHub": "Legal Hub",
     "legalHubDesc": "Access privacy policies, terms, compliance, and legal documentation.",
     "caseStudies": "Case Studies",
@@ -1372,7 +1374,8 @@
     "cantFindWhat": "Can't find what you're looking for?",
     "supportAvailable": "Our support team is available 24/7 to help you navigate our platform and find the resources you need.",
     "chatWithSupport": "Chat with Support",
-    "faqHub": "FAQ Hub"
+    "faqHub": "FAQ Hub",
+    "legalHub": "Legal Hub"
   },
   "videoAd": {
     "employeeTrainingBoring": "Employee training is boring.",
