@@ -110,14 +110,14 @@ export default function LegalHubPage() {
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32" />
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="max-w-xl text-center md:text-left">
-                <h3 className="text-3xl font-bold mb-4">Have questions about our terms?</h3>
-                <p className="text-white/70 text-lg">Our legal team is here to help you understand our policies and how they apply to your organization.</p>
+                <h3 className="text-3xl font-bold mb-4">{t("contactSectionTitle")}</h3>
+                <p className="text-white/70 text-lg">{t("contactSectionDescription")}</p>
               </div>
               <Link
                 href="mailto:legal@skill-learn.ca"
                 className="px-8 py-4 bg-brand-teal text-white font-bold rounded-4xl hover:bg-brand-teal-dark transition-all shadow-lg hover:shadow-brand-teal/20"
               >
-                Contact Legal Support
+                {t("contactLegalSupport")}
               </Link>
             </div>
           </div>

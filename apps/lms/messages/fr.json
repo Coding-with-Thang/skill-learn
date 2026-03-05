@@ -703,7 +703,10 @@
     "accessibilityDesc": "Notre engagement à rendre l'apprentissage accessible à tous.",
     "securityCompliance": "Sécurité et conformité",
     "securityComplianceDesc": "Protection des données et certifications de niveau entreprise.",
-    "readDocumentation": "Lire la documentation"
+    "readDocumentation": "Lire la documentation",
+    "contactSectionTitle": "Des questions sur nos conditions ?",
+    "contactSectionDescription": "Notre équipe juridique est là pour vous aider à comprendre nos politiques et comment elles s'appliquent à votre organisation.",
+    "contactLegalSupport": "Contacter le support juridique"
   },
   "admin": {
     "overview": "Aperçu",

@@ -714,7 +714,10 @@
     "accessibilityDesc": "Our commitment to making learning accessible to everyone.",
     "securityCompliance": "Security & Compliance",
     "securityComplianceDesc": "Enterprise-grade data protection and certifications.",
-    "readDocumentation": "Read Documentation"
+    "readDocumentation": "Read Documentation",
+    "contactSectionTitle": "Have questions about our terms?",
+    "contactSectionDescription": "Our legal team is here to help you understand our policies and how they apply to your organization.",
+    "contactLegalSupport": "Contact Legal Support"
   },
   "admin": {
     "overview": "Overview",
