@@ -150,14 +150,14 @@ export default function VersatilePlatform() {
               <div className="space-y-4">
                 <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  {CONTENT[activeTab].badge}
+                  {CONTENT.badge}
                 </span>
                 <h3 className="text-3xl md:text-4xl lg:text-brand-teal font-black text-slate-900 leading-[1.1] tracking-tight">
-                  {CONTENT[activeTab].title} <br />
-                  <span className="text-indigo-600">{CONTENT[activeTab].titleAccent}</span>
+                  {CONTENT.title} <br />
+                  <span className="text-indigo-600">{CONTENT.titleAccent}</span>
                 </h3>
                 <p className="text-sm md:text-base text-slate-500 leading-relaxed max-w-lg font-medium">
-                  {CONTENT[activeTab].description}
+                  {CONTENT.description}
                 </p>
               </div>
 
@@ -178,7 +178,7 @@ export default function VersatilePlatform() {
               <div className="bg-white rounded-[2.5rem] p-3 shadow-[0_30px_80px_rgba(0,0,0,0.05)] border border-slate-50 relative overflow-hidden group max-w-md mx-auto">
                 {/* Platform Frame UI */}
                 <div className="bg-slate-50/50 rounded-4xl p-6 lg:p-8 min-h-[300px] flex flex-col justify-center gap-3">
-                  {CONTENT[activeTab].items.map((item, idx) => {
+                  {CONTENT.items.map((item, idx) => {
                     const ItemIcon = item.icon;
                     return (
                       <motion.div
@@ -214,11 +214,11 @@ export default function VersatilePlatform() {
                     scale: { duration: 0.3 },
                     y: { repeat: Infinity, duration: 4, ease: "easeInOut" }
                   }}
-                  className={`absolute ${CONTENT[activeTab].floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
+                  className={`absolute ${CONTENT.floating.pos} w-16 h-16 bg-white rounded-full shadow-2xl flex items-center justify-center border border-slate-50 z-2000`}
                 >
                   {(() => {
-                    const FloatingIcon = CONTENT[activeTab].floating.icon;
-                    return <FloatingIcon className={`w-8 h-8 ${CONTENT[activeTab].floating.color}`} />;
+                    const FloatingIcon = CONTENT.floating.icon;
+                    return <FloatingIcon className={`w-8 h-8 ${CONTENT.floating.color}`} />;
                   })()}
                 </motion.div>
               </AnimatePresence>
