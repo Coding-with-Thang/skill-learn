@@ -23,7 +23,7 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "fast-xml-parser": "^5.3.5",
+    "fast-xml-parser": "^5.4.2",
     "next": "16.1.6"
   },
   "engines": {
