@@ -4,6 +4,8 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
 import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
+import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { validateRequest, validateRequestBody } from "@skill-learn/lib/utils/validateRequest";
 import { userCreateSchema } from "@/lib/zodSchemas";
@@ -271,6 +273,26 @@ export async function POST(request: NextRequest) {
         // Don't fail the request, user was created successfully
       }
     }
+
+    await logSecurityEvent({
+      actorUserId: currentUser.id,
+      actorClerkId: userId,
+      tenantId: tenantId || undefined,
+      eventType: SECURITY_EVENT_TYPES.USER_CREATED,
+      category: SECURITY_EVENT_CATEGORIES.USER_MANAGEMENT,
+      action: "create",
+      resource: "user",
+      resourceId: newUser.id,
+      severity: "high",
+      message: `Created user: ${newUser.username}`,
+      details: {
+        createdUserId: newUser.id,
+        createdClerkId: newUser.clerkId,
+        assignedTenantRoleId: targetTenantRoleId || null,
+        reportsToUserId: reportsToId || null,
+      },
+      request,
+    });
 
     return successResponse({ user: newUser });
   } catch (error) {
