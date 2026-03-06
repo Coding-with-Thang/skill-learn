@@ -1166,7 +1166,7 @@
     "annual": "Annual",
     "save17": "Save 17%",
     "perUserMonth": "/user/month",
-    "saveYear": "Save ${amount}/year",
+    "saveYear": "Save {amount}/year",
     "usersUpTo5": "Up to 5 users",
     "usersUpTo10": "Up to 10 users",
     "usersUpTo100": "Up to 100 users",

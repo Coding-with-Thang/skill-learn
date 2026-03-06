@@ -63,15 +63,16 @@ function isPublicDirectoryRoute(pathname: string) {
   return publicDirectoryPatterns.some((pattern) => pattern.test(pathname));
 }
 
-const proxy = clerkMiddleware(async (auth, req) => {
-  try {
-    // Run next-intl first (locale redirects, e.g. / -> /en)
-    const intlResponse = await intlMiddleware(req);
-    if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
-      return intlResponse;
-    }
+const proxy = clerkMiddleware(
+  async (auth, req) => {
+    try {
+      // Run next-intl first (locale redirects, e.g. / -> /en)
+      const intlResponse = await intlMiddleware(req);
+      if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
+        return intlResponse;
+      }
 
-    const { userId } = await auth();
+      const { userId } = await auth();
     const { pathname } = req.nextUrl;
     const pathWithoutLocale = getPathnameWithoutLocale(pathname);
     const locale = getLocaleFromPathname(pathname);
@@ -151,9 +152,14 @@ const proxy = clerkMiddleware(async (auth, req) => {
     // can still render. Route handlers and client-side Clerk handle auth
     // independently, so returning a 500 body here is never needed — it would
     // cause Next.js to show the not-found page instead of the real page.
-    return NextResponse.next();
+      return NextResponse.next();
+    }
+  },
+  {
+    // Proxy Clerk Frontend API through our domain to avoid ad blockers blocking clerk.accounts.dev
+    frontendApiProxy: { enabled: true },
   }
-});
+);
 
 // Note: withAudit function has been moved to src/utils/withAudit.js
 // It cannot run in proxy because it uses Prisma (Node.js runtime only)
@@ -166,6 +172,6 @@ export const config = {
     //Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
     //Always run for API routes
-    "/(api|trpc)(.*)",
+    "/(api|trpc|__clerk)(.*)",
   ],
 };

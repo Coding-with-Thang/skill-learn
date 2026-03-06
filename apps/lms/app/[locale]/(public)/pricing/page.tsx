@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "@/i18n/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -60,7 +60,6 @@ const pricingTiers = [
       { name: "Email support", included: true },
       { name: "Standard analytics", included: false },
       { name: "Custom branding", included: false },
-      { name: "Custom branding", included: false },
       { name: "SSO integration", included: false },
       { name: "Priority support", included: false },
       { name: "Advanced security", included: false },
@@ -78,9 +77,9 @@ const pricingTiers = [
     description: "Perfect for small teams getting started with learning management",
     price: { monthly: 15, annually: 12 },
     icon: Users,
-    color: "from-brand-teal to-blue-600",
-    bgColor: "bg-brand-teal/5",
-    borderColor: "border-brand-teal",
+    color: "from-blue-500 to-indigo-600",
+    bgColor: "bg-blue-50/50",
+    borderColor: "border-blue-100",
     usersKey: "usersUpTo10",
     users: "Up to 10 users",
     storage: "10 GB storage",
@@ -98,7 +97,7 @@ const pricingTiers = [
       { name: "Advanced security", included: false },
     ],
     cta: "Start 14-Day Trial",
-    ctaVariant: "default",
+    ctaVariant: "outline",
     popular: false,
   },
   {
@@ -358,12 +357,12 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
       )}
     >
       {badgeLabel && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full flex justify-center">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
           <span className={cn(
-            "inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-sm font-bold text-white shadow-lg",
+            "inline-flex items-center gap-1.5 px-6 py-2 rounded-full text-sm font-bold text-white shadow-xl whitespace-nowrap",
             "bg-linear-to-r", tier.color
           )}>
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 fill-white/20" />
             {badgeLabel}
           </span>
         </div>
@@ -389,8 +388,8 @@ function PricingCard({ tier, isAnnual, onSubscribe, isLoading, loadingPlan }) {
             <span className="text-gray-600">{t("perUserMonth")}</span>
           </div>
         )}
-        {!isCustom && isAnnual && (
-          <p className="text-sm text-green-600 mt-2">
+        {!isCustom && isAnnual && (tier.price.monthly - tier.price.annually) > 0 && (
+          <p className="text-sm font-semibold text-green-600 mt-2">
             {t("saveYear", { amount: (tier.price.monthly - tier.price.annually) * 12 })}
           </p>
         )}
@@ -475,11 +474,11 @@ function FeatureComparison() {
   };
 
   return (
-    <div className="mt-20">
-      <h2 className="text-3xl font-bold text-center text-gray-900 mb-4">
+    <div className="mt-24">
+      <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-6">
         {t("compareAllFeatures")}
       </h2>
-      <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+      <p className="text-center text-gray-600 mb-16 max-w-2xl mx-auto text-lg">
         {t("compareDescription")}
       </p>
 
@@ -527,14 +526,17 @@ function FeatureComparison() {
                   onClick={() => toggleCategory(category.nameKey)}
                   className="w-full grid grid-cols-5 gap-4 items-center py-4 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-5 h-5 text-gray-600" />
-                    <span className="font-semibold text-gray-900">{categoryName}</span>
+                  <div className="flex items-center gap-3 col-span-1">
+                    <div className="p-2 bg-white rounded-lg shadow-sm border border-gray-100">
+                      <Icon className="w-5 h-5 text-brand-teal" />
+                    </div>
+                    <span className="font-bold text-gray-900">{categoryName}</span>
                     <ChevronDown className={cn(
-                      "w-4 h-4 text-gray-400 transition-transform",
+                      "w-4 h-4 text-brand-teal transition-transform",
                       isExpanded && "rotate-180"
                     )} />
                   </div>
+                  <div className="col-span-4" />
                 </button>
 
                 {/* Features */}
@@ -545,7 +547,7 @@ function FeatureComparison() {
                       return (
                       <div
                         key={idx}
-                        className="grid grid-cols-5 gap-4 items-center py-3 px-4 hover:bg-gray-50 rounded-4xl-lg"
+                        className="grid grid-cols-5 gap-4 items-center py-4 px-4 hover:bg-brand-teal/5 transition-colors border-b border-gray-50 last:border-0"
                       >
                         <div className="text-sm text-gray-600 pl-4">{featureName}</div>
                         <div className="text-center">{renderValue(feature.free, feature.freeKey)}</div>
@@ -585,23 +587,37 @@ function FAQSection() {
         {faqs.map((faq, idx) => (
           <div
             key={idx}
-            className="border border-gray-200 rounded-xl overflow-hidden"
+            className="group border border-gray-200 rounded-2xl overflow-hidden bg-white hover:border-brand-teal/30 transition-all duration-300 shadow-sm hover:shadow-md"
           >
             <button
               onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
-              className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between p-6 text-left hover:bg-brand-teal/[0.02] transition-colors"
             >
-              <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
-              <ChevronDown className={cn(
-                "w-5 h-5 text-gray-400 shrink-0 transition-transform",
-                openIndex === idx && "rotate-180"
-              )} />
-            </button>
-            {openIndex === idx && (
-              <div className="px-6 pb-6 text-gray-600">
-                {faq.answer}
+              <span className="font-bold text-gray-900 pr-4 text-lg">{faq.question}</span>
+              <div className={cn(
+                "w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center transition-all",
+                openIndex === idx && "bg-brand-teal/10"
+              )}>
+                <ChevronDown className={cn(
+                  "w-5 h-5 text-gray-400 shrink-0 transition-transform duration-300",
+                  openIndex === idx && "rotate-180 text-brand-teal"
+                )} />
               </div>
-            )}
+            </button>
+            <AnimatePresence>
+              {openIndex === idx && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="px-6 pb-6 text-gray-600 leading-relaxed border-t border-gray-50 pt-4 mt-1">
+                    {faq.answer}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ))}
       </div>
@@ -705,7 +721,7 @@ export default function PricingPage() {
               <Gift className="w-4 h-4" />
               {t("freeTrialBadge")}
             </span>
-            <h1 className="text-4xl md:text-brand-teal font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
               {t("heroTitle")}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
@@ -805,35 +821,40 @@ export default function PricingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-linear-to-r from-brand-teal to-blue-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-brand-teal via-brand-teal to-blue-700" />
+        <div className="absolute inset-0 bg-[url('/grid-white.svg')] opacity-10" />
+        <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-b from-white to-transparent" />
+        
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
+            className="space-y-8"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
               {t("readyToTransform")}
             </h2>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
               {t("joinThousands")}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
               <Button
                 size="lg"
                 onClick={() => handleSubscribe("pro", isAnnual ? "annually" : "monthly")}
                 disabled={isLoading}
-                className="bg-white text-brand-teal hover:bg-gray-100 px-8 py-6 text-lg font-semibold"
+                className="bg-white text-brand-teal hover:bg-gray-50 px-10 py-8 text-xl font-bold rounded-2xl shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1"
               >
                 {isLoading && loadingPlan === "pro" ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    <Loader2 className="w-6 h-6 mr-3 animate-spin" />
                     {t("processing")}
                   </>
                 ) : (
                   <>
                     {t("startFreeTrial")}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    <ArrowRight className="w-6 h-6 ml-3" />
                   </>
                 )}
               </Button>
@@ -841,15 +862,18 @@ export default function PricingPage() {
                 size="lg"
                 variant="outline"
                 onClick={() => window.location.href = "mailto:sales@skill-learn.com?subject=Enterprise Plan Inquiry"}
-                className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg font-semibold"
+                className="border-2 border-white/30 text-white hover:bg-white/10 px-10 py-8 text-xl font-bold rounded-2xl backdrop-blur-sm shadow-lg transition-all"
               >
-                <MessageSquare className="w-5 h-5 mr-2" />
+                <MessageSquare className="w-6 h-6 mr-3" />
                 {t("talkToSales")}
               </Button>
             </div>
-            <p className="text-white/70 text-sm mt-6">
-              {t("noCreditCardRequired")}
-            </p>
+            <div className="flex items-center justify-center gap-6 pt-8">
+              <span className="flex items-center gap-2 text-white/80 text-sm">
+                <Check className="w-4 h-4 text-brand-teal bg-white rounded-full p-0.5" />
+                {t("noCreditCardRequired")}
+              </span>
+            </div>
           </motion.div>
         </div>
       </section>

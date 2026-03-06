@@ -1155,7 +1155,7 @@
     "annual": "Annuel",
     "save17": "Économisez 17 %",
     "perUserMonth": "/utilisateur/mois",
-    "saveYear": "Économisez ${amount}/an",
+    "saveYear": "Économisez {amount}/an",
     "compareAllFeatures": "Comparer toutes les fonctionnalités",
     "compareDescription": "Vous ne savez pas quelle offre choisir ? Comparez toutes les fonctionnalités côte à côte.",
     "features": "Fonctionnalités",

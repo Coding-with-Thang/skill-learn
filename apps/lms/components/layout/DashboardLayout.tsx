@@ -18,7 +18,7 @@ function DashboardContent({ children, isOperations }) {
       <Sidebar isOperations={isOperations} />
 
       <div className={cn(
-        "flex-1 flex flex-col transition-all duration-300 min-w-0 pt-20",
+        "flex-1 flex flex-col transition-all duration-300 min-w-0",
         isCollapsed ? "md:ml-20" : "md:ml-64"
       )}>
         <TopBar />
@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }) {
     'users.update',
     'roles.assign'
   ]);
-  const isAdminRoute = isOperations && pathname?.startsWith('/dashboard');
+  const isAdminRoute = pathname?.startsWith("/dashboard");
 
   if (isAdminRoute) {
     return <>{children}</>;

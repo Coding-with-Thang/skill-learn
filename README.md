@@ -278,6 +278,10 @@ MONGODB_URI=mongodb+srv://your-connection-string
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 CLERK_WEBHOOK_SECRET=whsec_...
+# Optional: Proxy Clerk API through your domain (helps avoid ad blockers).
+# Set to your app URL + /__clerk, e.g. https://skill-learn.com/__clerk
+# Also enable "Proxy" in Clerk Dashboard → Domains.
+# NEXT_PUBLIC_CLERK_PROXY_URL=https://your-domain.com/__clerk
 
 # ============================================
 # Firebase Storage

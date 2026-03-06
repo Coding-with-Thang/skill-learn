@@ -12,6 +12,8 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useState } from "react";
 import { Logo } from "@/components/shared/Logo";
 
+import { SidebarTrigger } from "@skill-learn/ui/components/sidebar";
+
 export default function TopBar({ adminMode = false }: { adminMode?: boolean } = {}) {
   const t = useTranslations("common");
   const { user } = useUser();
@@ -21,10 +23,19 @@ export default function TopBar({ adminMode = false }: { adminMode?: boolean } = 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-2000 w-full bg-card border-b border-border px-4 md:px-8 py-5 md:py-6 flex items-center justify-between transition-all gap-4">
+    <header className="sticky top-0 z-40 w-full bg-card/80 backdrop-blur-md border-b border-border px-4 md:px-8 py-4 flex items-center justify-between transition-all gap-4">
       <div className="flex items-center gap-4">
-        {!adminMode && <MobileSidebar />}
-        <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
+        {!adminMode ? (
+          <>
+            <MobileSidebar />
+            <Logo imageClassName="w-10 h-10" textClassName="text-xl" />
+          </>
+        ) : (
+          <div className="flex items-center gap-2 md:hidden">
+            <SidebarTrigger />
+            <Logo imageClassName="w-8 h-8" textClassName="text-lg" />
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-8">

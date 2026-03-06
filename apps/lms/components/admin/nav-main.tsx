@@ -39,11 +39,11 @@ export function NavMain({ label, items }) {
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title}>
-                    {item.icon && <item.icon />}
+                    {item.icon && <item.icon className="size-4 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity" />}
                     <span className="group-data-[collapsible=icon]:hidden transition-opacity duration-200">
                       {item.title}
                     </span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden opacity-50" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -67,7 +67,7 @@ export function NavMain({ label, items }) {
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild tooltip={item.title} isActive={item.isActive}>
                 <Link href={item.url}>
-                  {item.icon && <item.icon />}
+                  {item.icon && <item.icon className="size-4 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity" />}
                   <span className="group-data-[collapsible=icon]:hidden transition-opacity duration-200">
                     {item.title}
                   </span>

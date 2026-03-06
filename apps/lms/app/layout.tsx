@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Inter, JetBrains_Mono, Poppins } from "next/font/google";
+import { ClerkLoadErrorHandler } from "@/components/providers/ClerkLoadErrorHandler";
 import "./globals.css";
 
 const inter = Inter({
@@ -40,9 +41,19 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
+function getClerkProxyUrl(): string | undefined {
+  const explicit = process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
+  if (explicit) return explicit;
+  const base =
+    process.env.NEXT_PUBLIC_LMS_URL || process.env.NEXT_PUBLIC_APP_URL;
+  return base ? `${base.replace(/\/$/, "")}/__clerk` : undefined;
+}
+
 export default function RootLayout({ children }: RootLayoutProps): ReactNode {
+  const proxyUrl = getClerkProxyUrl();
+
   return (
-    <ClerkProvider>
+    <ClerkProvider {...(proxyUrl ? { proxyUrl } : {})}>
       <html suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -66,7 +77,7 @@ export default function RootLayout({ children }: RootLayoutProps): ReactNode {
         <body
           className={`${inter.variable} ${mono.variable} ${poppins.variable} font-sans antialiased flex flex-col min-h-screen`}
         >
-          {children}
+          <ClerkLoadErrorHandler>{children}</ClerkLoadErrorHandler>
         </body>
       </html>
     </ClerkProvider>

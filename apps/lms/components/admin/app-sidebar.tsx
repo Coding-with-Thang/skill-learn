@@ -168,7 +168,9 @@ export function AppSidebar({ ...props }) {
       className="h-svh flex flex-col bg-sidebar shrink-0"
       {...props}
     >
-      <SidebarHeader className="h-16 border-b border-border/10 flex items-center px-4"></SidebarHeader>
+      <SidebarHeader className="h-16 border-b border-border/10 flex items-center px-4">
+        <Logo imageClassName="w-10 h-10" textClassName="text-xl group-data-[collapsible=icon]:hidden" />
+      </SidebarHeader>
       <SidebarContent className="flex-1 pt-6 mt-6 overflow-y-auto min-h-0">
         {filteredNavGroups.map((group) => (
           <NavMain key={group.label} label={group.label} items={group.items} />
@@ -190,7 +192,7 @@ export function AppSidebar({ ...props }) {
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/20">
                   <LayoutGrid className="size-4" />
                 </div>
-                <div className="grid flex-1 self-end text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
+                <div className="flex flex-col flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden justify-center ml-2">
                   <span className="truncate font-semibold uppercase tracking-tight text-[11px]">
                     {tNav("backToHome")}
                   </span>

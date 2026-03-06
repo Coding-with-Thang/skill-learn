@@ -44,7 +44,7 @@ export default function FeaturesPage() {
         { labelKey: "gamificationH2", subKey: "gamificationH2Sub" },
         { labelKey: "gamificationH3", subKey: "gamificationH3Sub" },
       ],
-      image: "gamification_dashboard_ui_1768456006376.png",
+      image: "/gamification-feature.png",
       reverse: false,
       color: "bg-emerald-50 text-emerald-600",
     },
@@ -58,7 +58,7 @@ export default function FeaturesPage() {
         { labelKey: "quizBuilderH2", subKey: "quizBuilderH2Sub" },
         { labelKey: "quizBuilderH3", subKey: "quizBuilderH3Sub" },
       ],
-      image: "quiz_builder_interface_1768456021921.png",
+      image: "/quiz-builder-feature.png",
       reverse: true,
       color: "bg-blue-50 text-blue-600",
     },
@@ -72,7 +72,7 @@ export default function FeaturesPage() {
         { labelKey: "analyticsH2", subKey: "analyticsH2Sub" },
         { labelKey: "analyticsH3", subKey: "analyticsH3Sub" },
       ],
-      image: "analytics_dashboard_saas_1768456040846.png",
+      image: "/analytics-feature.png",
       reverse: false,
       color: "bg-brand-teal/10 text-brand-teal",
     },
@@ -161,11 +161,11 @@ export default function FeaturesPage() {
               >
                 <div className="relative rounded-[40px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.08)] bg-slate-100 group">
                   <Image
-                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2000&auto=format&fit=crop"
+                    src={feature.image}
                     alt={t(feature.titleKey)}
                     width={800}
                     height={600}
-                    className="w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {/* Note: I will replace the src with actual local paths if they were standard, but here I use the generated IDs as reference in comments */}
                   {/* Actual Image: feature.image */}
@@ -213,8 +213,13 @@ export default function FeaturesPage() {
                 </blockquote>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-slate-300 overflow-hidden">
-                    {/* Avatar placeholder */}
+                  <div className="w-14 h-14 rounded-full bg-slate-300 overflow-hidden relative shadow-md">
+                    <Image
+                      src="/cto-avatar.png"
+                      alt="Gavin Jenkins"
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                   <div>
                     <h5 className="font-bold text-slate-900">Gavin Jenkins</h5>
@@ -268,7 +273,7 @@ export default function FeaturesPage() {
           {...fadeInUp}
           className="max-w-6xl mx-auto bg-brand-dark-blue rounded-[56px] p-12 md:p-24 text-center relative overflow-hidden"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop')`,
+            backgroundImage: `url('/cta-background.png')`,
             backgroundPosition: "center",
             backgroundSize: "cover",
           }}
