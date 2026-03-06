@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
-import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
+import { requireAnyPermission, requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
 import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
@@ -25,8 +25,11 @@ export async function GET(_request: NextRequest, { params }: RouteContext<UserPa
         
         const { tenantId } = adminResult;
         
-        // Check for users.read permission
-        const permResult = await requirePermission('users.read', tenantId);
+        // Check for users.read or any user-management permission
+        const permResult = await requireAnyPermission(
+            ['users.read', 'users.create', 'users.update', 'users.delete', 'dashboard.admin', 'dashboard.manager'],
+            tenantId
+        );
         if (permResult instanceof NextResponse) {
             return permResult;
         }

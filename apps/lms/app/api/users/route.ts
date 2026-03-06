@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
-import { requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
+import { requireAnyPermission, requirePermission, hasPermission } from "@skill-learn/lib/utils/permissions";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
 import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
@@ -18,8 +18,11 @@ export async function GET(_request: NextRequest) {
     }
     const { userId, tenantId } = adminResult;
     
-    // Check for users.read permission
-    const permResult = await requirePermission('users.read', tenantId);
+    // Check for users.read or any user-management permission (admins who can manage users should be able to view the list)
+    const permResult = await requireAnyPermission(
+      ['users.read', 'users.create', 'users.update', 'users.delete', 'dashboard.admin', 'dashboard.manager'],
+      tenantId
+    );
     if (permResult instanceof NextResponse) {
       return permResult;
     }
