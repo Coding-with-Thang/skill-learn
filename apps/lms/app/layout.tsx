@@ -41,19 +41,9 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-function getClerkProxyUrl(): string | undefined {
-  const explicit = process.env.NEXT_PUBLIC_CLERK_PROXY_URL;
-  if (explicit) return explicit;
-  const base =
-    process.env.NEXT_PUBLIC_LMS_URL || process.env.NEXT_PUBLIC_APP_URL;
-  return base ? `${base.replace(/\/$/, "")}/__clerk` : undefined;
-}
-
 export default function RootLayout({ children }: RootLayoutProps): ReactNode {
-  const proxyUrl = getClerkProxyUrl();
-
   return (
-    <ClerkProvider {...(proxyUrl ? { proxyUrl } : {})}>
+    <ClerkProvider>
       <html suppressHydrationWarning>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1" />
