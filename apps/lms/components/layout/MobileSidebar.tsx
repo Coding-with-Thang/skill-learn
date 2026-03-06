@@ -18,6 +18,7 @@ import {
 import { cn } from "@skill-learn/lib/utils";
 import { useFeaturesStore } from "@skill-learn/lib/stores/featuresStore";
 import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { Logo } from "@/components/shared/Logo";
 import {
   Sheet,
@@ -31,10 +32,13 @@ export default function MobileSidebar() {
   const tCommon = useTranslations("common");
   const pathname = usePathname();
   const hasAnyPermission = usePermissionsStore((s) => s.hasAnyPermission);
+  const permissions = usePermissionsStore((s) => s.permissions);
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
   const isEnabled = useFeaturesStore((s) => s.isEnabled);
   const isLoading = useFeaturesStore((s) => s.isLoading);
   const fetchFeatures = useFeaturesStore((s) => s.fetchFeatures);
+  const { user } = useUser();
+  const { sessionClaims } = useAuth();
 
   useEffect(() => {
     fetchPermissions();
@@ -43,13 +47,17 @@ export default function MobileSidebar() {
     fetchFeatures();
   }, [fetchFeatures]);
 
-  const isOperations = hasAnyPermission([
+  const fromPermissions = hasAnyPermission([
     "dashboard.admin",
     "dashboard.manager",
     "users.create",
     "users.update",
     "roles.assign",
   ]);
+  const canAccessAdmin = (user?.publicMetadata as { canAccessAdminDashboard?: boolean })?.canAccessAdminDashboard === true;
+  const roleFromSession = (sessionClaims as { role?: string })?.role;
+  const fromClerk = canAccessAdmin || roleFromSession === "OPERATIONS" || roleFromSession === "MANAGER";
+  const isOperations = fromPermissions || (permissions.length === 0 && fromClerk);
 
   type NavItem = { label: string; href: string; icon: LucideIcon; feature?: string; special?: boolean };
 
@@ -75,7 +83,7 @@ export default function MobileSidebar() {
     { label: t("rewards"), href: "/rewards", icon: Trophy, feature: "rewards_store" },
   ];
 
-  const isAdminRoute = pathname?.startsWith('/dashboard');
+  const isAdminRoute = pathname?.includes("/dashboard");
   const baseItems = isAdminRoute ? adminNavItems : userNavItems;
 
   // Filter items based on feature availability (only filter if not loading)

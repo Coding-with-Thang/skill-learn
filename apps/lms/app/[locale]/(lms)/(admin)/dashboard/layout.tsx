@@ -135,22 +135,18 @@ export default function DashboardLayout({ children }) {
   }, [pathname, t]);
 
   return (
-    <div className="relative flex flex-col md:flex-row min-h-screen w-full">
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset className="min-w-0">
-          <div className="flex flex-col min-h-screen w-full min-w-0 bg-background relative overflow-x-hidden">
-            <TopBar adminMode={true} />
-            <main className="flex-1 flex flex-col p-4 sm:p-8 w-full min-w-0 gap-6 overflow-y-auto bg-background">
-              <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
-              <PageErrorBoundary pageName="Dashboard">
-                {children}
-              </PageErrorBoundary>
-            </main>
-            <Footer />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen bg-background">
+        <TopBar adminMode={true} />
+        <main className="flex-1 flex flex-col p-4 sm:p-8 w-full min-w-0 gap-6 overflow-y-auto">
+          <BreadCrumbCom crumbs={crumbs} endtrail={endtrail} />
+          <PageErrorBoundary pageName="Dashboard">
+            {children}
+          </PageErrorBoundary>
+        </main>
+        <Footer />
+      </div>
+    </SidebarProvider>
   );
 }
