@@ -1952,6 +1952,9 @@
     "topQuizPerformers": "Top Quiz Performers"
   },
   "auth": {
+    "loading": "Loading...",
+    "ifSignInFailsRefresh": "If sign-in doesn't work, try refreshing the page.",
+    "pleaseRefreshAndTryAgain": "Sign-in is still loading. Please refresh the page and try again.",
     "welcomeBack": "Welcome Back! 👋",
     "weMissedYou": "We missed you! Let's get back to learning.",
     "readyToLevelUp": "Ready to",

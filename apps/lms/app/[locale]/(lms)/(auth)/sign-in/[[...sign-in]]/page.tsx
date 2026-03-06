@@ -98,6 +98,15 @@ const SignInPage = () => {
   const [error, setError] = useState(''); // Error message for sign-in
   const [resetError, setResetError] = useState(''); // Error message for password reset
   const [twoFactorError, setTwoFactorError] = useState(''); // Error message for 2FA
+  const [showFormFallback, setShowFormFallback] = useState(false);
+
+  // Fallback: if Clerk signIn never loads within 2s, show form anyway (prevents infinite loader)
+  useEffect(() => {
+    const timer = setTimeout(() => setShowFormFallback(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const showSignInForm = signInLoaded || showFormFallback;
 
   // Redirect if already signed in
   useEffect(() => {
@@ -125,7 +134,10 @@ const SignInPage = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
 
-    if (!signInLoaded) return;
+    if (!signInLoaded) {
+      toast.error(t("pleaseRefreshAndTryAgain"));
+      return;
+    }
 
     try {
       setLoading(true);
@@ -614,9 +626,10 @@ const SignInPage = () => {
             variants={itemVariants}
             className="bg-white rounded-[2.5rem] p-10 shadow-[0_40px_100px_rgba(0,0,0,0.06)] border border-slate-100 mb-8"
           >
-            {!signInLoaded ? (
-              <div className="flex items-center justify-center py-12">
+            {!showSignInForm ? (
+              <div className="flex flex-col items-center justify-center py-12 gap-4">
                 <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                <p className="text-sm text-slate-500">{t("loading")}</p>
               </div>
             ) : mode === '2fa' ? (
               // Two-Factor Authentication Form
@@ -886,6 +899,11 @@ const SignInPage = () => {
               )
             ) : (
               <form onSubmit={handleSignIn} className="space-y-6">
+                {showFormFallback && !signInLoaded && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-4xl text-sm text-amber-800">
+                    {t("ifSignInFailsRefresh")}
+                  </div>
+                )}
                 {/* Social Sign In Button */}
                 <div className="space-y-3">
                   <button
@@ -990,7 +1008,8 @@ const SignInPage = () => {
                   onHoverEnd={() => setIsHovered(false)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  disabled={loading || !signInLoaded}
+                  disabled={loading || (!signInLoaded && !showFormFallback)}
+                  title={!signInLoaded && !showFormFallback ? t("loading") : undefined}
                   className="w-full h-14 bg-slate-900 hover:bg-black text-white rounded-4xl font-bold text-lg shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 group transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (

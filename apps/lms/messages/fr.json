@@ -1940,6 +1940,9 @@
     "topQuizPerformers": "Meilleurs performeurs de quiz"
   },
   "auth": {
+    "loading": "Chargement...",
+    "ifSignInFailsRefresh": "Si la connexion échoue, essayez d'actualiser la page.",
+    "pleaseRefreshAndTryAgain": "La connexion charge encore. Veuillez actualiser la page et réessayer.",
     "welcomeBack": "Bon retour ! 👋",
     "weMissedYou": "Vous nous avez manqué ! Reprenons l'apprentissage.",
     "readyToLevelUp": "Prêt à",
