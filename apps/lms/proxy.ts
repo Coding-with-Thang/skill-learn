@@ -65,14 +65,20 @@ function isPublicDirectoryRoute(pathname: string) {
 
 const proxy = clerkMiddleware(async (auth, req) => {
     try {
-      // Run next-intl first (locale redirects, e.g. / -> /en)
-      const intlResponse = await intlMiddleware(req);
-      if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
-        return intlResponse;
+      const { pathname } = req.nextUrl;
+
+      // Skip next-intl for API/trpc routes - they live at /api/* not /en/api/*
+      // next-intl would redirect /api/features -> /en/api/features (404)
+      const isApiOrTrpc = pathname.startsWith("/api") || pathname.startsWith("/trpc");
+      let intlResponse: Response | undefined;
+      if (!isApiOrTrpc) {
+        intlResponse = await intlMiddleware(req);
+        if (intlResponse && intlResponse.status >= 300 && intlResponse.status < 400) {
+          return intlResponse;
+        }
       }
 
       const { userId } = await auth();
-    const { pathname } = req.nextUrl;
     const pathWithoutLocale = getPathnameWithoutLocale(pathname);
     const locale = getLocaleFromPathname(pathname);
 
