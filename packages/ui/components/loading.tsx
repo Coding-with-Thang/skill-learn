@@ -4,7 +4,7 @@ import { Loader } from "./loader"
 import { Card, CardContent, CardHeader, CardTitle } from "./card"
 import { Skeleton } from "./skeleton"
 
-export function LoadingSpinner({ className, size = "default" }) {
+export function LoadingSpinner({ className, size = "default" }: { className?: string, size?: "small" | "default" | "large" }) {
   // Map old size names to new size names
   const sizeMap = {
     small: "sm",
@@ -23,8 +23,8 @@ export function LoadingSpinner({ className, size = "default" }) {
   )
 }
 
-export function LoadingPage() {
-  return <Loader variant="page" />
+export function LoadingPage({ translations }: { translations?: any }) {
+  return <Loader variant="page" translations={translations} />
 }
 
 export function LoadingCard() {

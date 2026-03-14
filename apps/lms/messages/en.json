@@ -587,6 +587,16 @@
       "noData": "No data available"
     }
   },
+  "loader": {
+    "brandName": "Skill-Learn",
+    "peopleFirst": "People-First",
+    "potentialUp": "Your potential is ",
+    "poweringUp": "powering up!",
+    "unlockingInsights": "Unlocking awesome insights just for you...",
+    "optimizingJourney": "OPTIMIZING YOUR LEARNING JOURNEY",
+    "footerTags": "AI-Enhanced • Human-Centered • Ready to Learn",
+    "footerBuilt": "Built for Humans • Powered by Imagination"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "training": "Training",

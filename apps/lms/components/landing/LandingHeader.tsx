@@ -52,18 +52,18 @@ export default function LandingHeader() {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-100 overflow-visible">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative overflow-visible">
-        <div className="flex items-center justify-between h-16 overflow-visible">
+        <div className="flex items-center justify-between gap-4 h-16 overflow-visible">
           {/* Logo */}
           <div className="flex items-center">
             <Logo />
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 overflow-visible">
+          <nav className="hidden md:flex items-center gap-2 lg:gap-4 xl:gap-8 overflow-visible">
             <LanguageSwitcher className="hidden md:flex" />
             <Link
               href="/features"
-              className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+              className="text-gray-700 hover:text-brand-teal px-3 py-2 whitespace-nowrap rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               {t("features")}
             </Link>
@@ -71,7 +71,7 @@ export default function LandingHeader() {
             <div className="relative flex items-center">
               <Link
                 href="/resources"
-                className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+                className="text-gray-700 hover:text-brand-teal px-3 py-2 whitespace-nowrap rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
               >
                 {t("resources")}
               </Link>
@@ -133,13 +133,13 @@ export default function LandingHeader() {
             </div>
             <Link
               href="/pricing"
-              className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+              className="text-gray-700 hover:text-brand-teal px-3 py-2 whitespace-nowrap rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               {t("pricing")}
             </Link>
             <Link
               href="#solutions"
-              className="text-gray-700 hover:text-brand-teal px-3 py-2 rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
+              className="text-gray-700 hover:text-brand-teal px-3 py-2 whitespace-nowrap rounded-full bg-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               {t("whySkillLearn")}
             </Link>

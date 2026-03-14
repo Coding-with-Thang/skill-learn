@@ -43,6 +43,16 @@ interface LoaderProps {
   size?: "sm" | "md" | "lg" | "xl" | "icon";
   className?: string;
   text?: string;
+  translations?: {
+    brandName?: string;
+    peopleFirst?: string;
+    potentialUp?: React.ReactNode;
+    poweringUp?: string;
+    unlockingInsights?: string;
+    optimizingJourney?: string;
+    footerTags?: string;
+    footerBuilt?: string;
+  };
 }
 
 export function Loader({
@@ -50,6 +60,7 @@ export function Loader({
   size = "md",
   className,
   text,
+  translations,
   ...props
 }: LoaderProps & React.HTMLAttributes<HTMLDivElement>) {
   // Default Spinner (optional custom text e.g. "Deleting...", "Saving...")
@@ -111,7 +122,7 @@ export function Loader({
 
   // Fullscreen / Page Loader (Animated & Premium)
   if (variant === "page" || variant === "fullscreen") {
-    return <FullScreenLoader {...(text !== undefined && { text })} {...(className !== undefined && { className })} />
+    return <FullScreenLoader {...(text !== undefined && { text })} {...(className !== undefined && { className })} translations={translations} />
   }
 
   // Fallback
@@ -134,7 +145,7 @@ import {
   Lightbulb,
 } from "lucide-react"
 
-const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }) => (
+const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }: { icon: React.ElementType, delay?: number, x: string, y: string, color: string, size?: number }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0 }}
     animate={{
@@ -158,9 +169,20 @@ const FloatingIcon = ({ icon: Icon, delay = 0, x, y, color, size = 6 }) => (
   </motion.div>
 );
 
-const FullScreenLoader = ({ text, className }: { text?: string; className?: string }) => {
+const FullScreenLoader = ({ text, className, translations = {} }: { text?: string; className?: string; translations?: LoaderProps["translations"] }) => {
+  const t = {
+    brandName: translations.brandName || "Skill-Learn",
+    peopleFirst: translations.peopleFirst || "People-First",
+    potentialUp: translations.potentialUp || "Your potential is ",
+    poweringUp: translations.poweringUp || "powering up!",
+    unlockingInsights: translations.unlockingInsights || text || "Unlocking awesome insights just for you...",
+    optimizingJourney: translations.optimizingJourney || "OPTIMIZING YOUR LEARNING JOURNEY",
+    footerTags: translations.footerTags || "AI-Enhanced • Human-Centered • Ready to Learn",
+    footerBuilt: translations.footerBuilt || "Built for Humans • Powered by Imagination",
+  };
+
   return (
-    <div className={cn("fixed inset-0 z-[9999] flex flex-col h-screen w-screen bg-slate-50 dark:bg-[#0F172A] overflow-hidden", className)}>
+    <div className={cn("fixed inset-0 z-[9999] flex flex-col h-screen w-screen bg-background overflow-hidden", className)}>
       {/* Background Gradients - pushed to back */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-200">
         <motion.div
@@ -214,7 +236,7 @@ const FullScreenLoader = ({ text, className }: { text?: string; className?: stri
               className="absolute -inset-4 rounded-full border border-dashed border-slate-300 dark:border-slate-700"
             />
 
-            <div className="w-24 h-24 bg-white dark:bg-[#1E293B] rounded-3xl shadow-2xl shadow-indigo-500/20 flex items-center justify-center relative z-10">
+            <div className="w-24 h-24 bg-card rounded-3xl shadow-2xl shadow-indigo-500/20 flex items-center justify-center relative z-10">
               <div className="absolute inset-0 bg-linear-to-br from-indigo-500/5 to-purple-500/5 rounded-3xl" />
               <motion.div
                 animate={{
@@ -242,18 +264,18 @@ const FullScreenLoader = ({ text, className }: { text?: string; className?: stri
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-2xl font-black text-slate-900 dark:text-white mb-1 tracking-tight"
+            className="text-2xl font-black text-foreground mb-1 tracking-tight"
           >
-            Skill-Learn<span className="text-orange-500">.</span>
+            {t.brandName}<span className="text-orange-500">.</span>
           </motion.h2>
 
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase mb-12"
+            className="text-[10px] font-bold tracking-[0.2em] text-slate-400 dark:text-slate-500 uppercase mb-12"
           >
-            People-First
+            {t.peopleFirst}
           </motion.p>
 
 
@@ -264,12 +286,12 @@ const FullScreenLoader = ({ text, className }: { text?: string; className?: stri
             transition={{ delay: 0.4 }}
             className="space-y-3 mb-10"
           >
-            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-tight">
-              Your potential is <br />
-              <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-400">powering up!</span>
+            <h1 className="text-3xl md:text-4xl font-black text-foreground leading-tight">
+              {t.potentialUp} <br />
+              <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-purple-600 dark:from-indigo-400 dark:to-purple-400">{t.poweringUp}</span>
             </h1>
             <p className="text-slate-500 dark:text-slate-400 text-lg font-medium">
-              {text || "Unlocking awesome insights just for you..."}
+              {t.unlockingInsights}
             </p>
           </motion.div>
 
@@ -309,7 +331,7 @@ const FullScreenLoader = ({ text, className }: { text?: string; className?: stri
           </div>
 
           <p className="text-[10px] font-bold tracking-[0.2em] text-orange-500 uppercase">
-            OPTIMIZING YOUR LEARNING JOURNEY
+            {t.optimizingJourney}
           </p>
         </div>
       </div>
@@ -323,12 +345,12 @@ const FullScreenLoader = ({ text, className }: { text?: string; className?: stri
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
           <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 tracking-wider uppercase">
-            AI-Enhanced • Human-Centered • Ready to Learn
+          <span className="text-[10px] font-bold text-foreground dark:text-slate-300 tracking-wider uppercase">
+            {t.footerTags}
           </span>
         </div>
-        <p className="text-[10px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">
-          Built for Humans • Powered by Imagination
+        <p className="text-[10px] font-bold text-slate-600 dark:text-slate-500 uppercase tracking-widest">
+          {t.footerBuilt}
         </p>
       </motion.div>
     </div>

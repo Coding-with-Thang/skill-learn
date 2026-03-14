@@ -9,6 +9,7 @@ import { SidebarProvider, useSidebar } from "@skill-learn/ui/components/sidebar"
 import { usePathname } from "@/i18n/navigation";
 import { cn } from "@skill-learn/lib/utils";
 import { useUser, useAuth } from "@clerk/nextjs";
+import { useTranslations } from "next-intl";
 
 /**
  * Check if user has admin/operations access.
@@ -62,13 +63,23 @@ export default function DashboardLayout({ children }) {
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
   const pathname = usePathname();
   const isOperations = useIsOperations();
+  const tLoader = useTranslations("loader");
 
   useEffect(() => {
     fetchPermissions();
   }, [fetchPermissions]);
 
   if (loading) {
-    return <LoadingPage />;
+    return <LoadingPage translations={{
+      brandName: tLoader("brandName"),
+      peopleFirst: tLoader("peopleFirst"),
+      potentialUp: tLoader("potentialUp"),
+      poweringUp: tLoader("poweringUp"),
+      unlockingInsights: tLoader("unlockingInsights"),
+      optimizingJourney: tLoader("optimizingJourney"),
+      footerTags: tLoader("footerTags"),
+      footerBuilt: tLoader("footerBuilt"),
+    }} />;
   }
 
   // Match /dashboard or /en/dashboard (locale-prefixed routes)

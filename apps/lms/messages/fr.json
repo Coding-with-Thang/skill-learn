@@ -576,6 +576,16 @@
       "noData": "Aucune donnée disponible"
     }
   },
+  "loader": {
+    "brandName": "Skill-Learn",
+    "peopleFirst": "Priorité-Humain",
+    "potentialUp": "Votre potentiel est ",
+    "poweringUp": "en pleine charge !",
+    "unlockingInsights": "Déblocage de superbes informations juste pour vous...",
+    "optimizingJourney": "OPTIMISATION DE VOTRE PARCOURS D'APPRENTISSAGE",
+    "footerTags": "Amélioré par IA • Centré sur l'Humain • Prêt à Apprendre",
+    "footerBuilt": "Conçu pour les Humains • Propulsé par l'Imagination"
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "training": "Formation",

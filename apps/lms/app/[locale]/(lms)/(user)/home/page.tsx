@@ -4,6 +4,7 @@ import { SignedIn, useUser } from '@clerk/nextjs'
 import { useEffect } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { LoadingPage } from "@skill-learn/ui/components/loading"
+import { useTranslations } from "next-intl";
 
 // New Widgets
 import WelcomeBanner from "@/components/user/WelcomeBanner";
@@ -18,6 +19,7 @@ export const dynamic = 'force-dynamic';
 export default function HomePage() {
   const { isLoaded, user } = useUser();
   const router = useRouter();
+  const tLoader = useTranslations("loader");
 
   // Client-side redirect fallback
   useEffect(() => {
@@ -27,7 +29,16 @@ export default function HomePage() {
   }, [isLoaded, user, router]);
 
   if (!isLoaded || !user) {
-    return <LoadingPage />;
+    return <LoadingPage translations={{
+      brandName: tLoader("brandName"),
+      peopleFirst: tLoader("peopleFirst"),
+      potentialUp: tLoader("potentialUp"),
+      poweringUp: tLoader("poweringUp"),
+      unlockingInsights: tLoader("unlockingInsights"),
+      optimizingJourney: tLoader("optimizingJourney"),
+      footerTags: tLoader("footerTags"),
+      footerBuilt: tLoader("footerBuilt"),
+    }} />;
   }
 
   return (

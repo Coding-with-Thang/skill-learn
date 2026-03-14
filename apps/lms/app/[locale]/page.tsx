@@ -19,6 +19,7 @@ import { ErrorCard, ErrorBoundary } from "@skill-learn/ui/components/error-bound
  */
 export default function LandingPage() {
   const t = useTranslations("landing");
+  const tLoader = useTranslations("loader");
   const { isLoaded, user } = useUser();
   const router = useRouter();
   const [error, setError] = useState(null);
@@ -34,12 +35,30 @@ export default function LandingPage() {
   // Don't show the global loading spinner when the client is still resolving
   // on the landing page root ("/") — avoid blocker UI flicker for public root.
   if (!isLoaded && pathname !== "/" && pathname !== "") {
-    return <LoadingPage />;
+    return <LoadingPage translations={{
+      brandName: tLoader("brandName"),
+      peopleFirst: tLoader("peopleFirst"),
+      potentialUp: tLoader("potentialUp"),
+      poweringUp: tLoader("poweringUp"),
+      unlockingInsights: tLoader("unlockingInsights"),
+      optimizingJourney: tLoader("optimizingJourney"),
+      footerTags: tLoader("footerTags"),
+      footerBuilt: tLoader("footerBuilt"),
+    }} />;
   }
 
   // Show loading while redirecting authenticated users
   if (user) {
-    return <LoadingPage />;
+    return <LoadingPage translations={{
+      brandName: tLoader("brandName"),
+      peopleFirst: tLoader("peopleFirst"),
+      potentialUp: tLoader("potentialUp"),
+      poweringUp: tLoader("poweringUp"),
+      unlockingInsights: tLoader("unlockingInsights"),
+      optimizingJourney: tLoader("optimizingJourney"),
+      footerTags: tLoader("footerTags"),
+      footerBuilt: tLoader("footerBuilt"),
+    }} />;
   }
 
   if (error) {
