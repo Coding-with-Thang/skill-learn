@@ -149,6 +149,7 @@ export default function AuditLogsPage() {
                   <SelectItem value="reward">{t("rewards")}</SelectItem>
                   <SelectItem value="user">{t("users")}</SelectItem>
                   <SelectItem value="points">{t("points")}</SelectItem>
+                  <SelectItem value="user_progress">{t("userProgress")}</SelectItem>
                   <SelectItem value="quiz">{t("quizzes")}</SelectItem>
                   <SelectItem value="quiz_attempt">{t("quizAttempts")}</SelectItem>
                 </SelectContent>

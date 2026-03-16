@@ -18,6 +18,10 @@ import {
 import { useUsersStore } from "@skill-learn/lib/stores/usersStore"
 import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore"
 import UserDetails from "@/components/user/UserDetails"
+import { useAdminUserProgressStore } from "@skill-learn/lib"
+import { Textarea } from "@skill-learn/ui/components/textarea"
+import { Input } from "@skill-learn/ui/components/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@skill-learn/ui/components/select"
 import UserForm from "@/components/user/UserForm"
 import { UserFilters } from "@/components/user/UserFilters"
 
@@ -47,6 +51,16 @@ export default function UsersPage() {
   const [sortBy, setSortBy] = useState('name')
   const [errorUsers, setErrorUsers] = useState<string | null>(null)
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
+  const [resetReason, setResetReason] = useState("")
+  const [resetModuleId, setResetModuleId] = useState("")
+  const [userToReset, setUserToReset] = useState<UserItem | null>(null)
+  const [resetPointsMode, setResetPointsMode] = useState<"none" | "total" | "logs">("none")
+
+  const {
+    resetUserProgress,
+    isLoading: isResetting,
+    error: resetError,
+  } = useAdminUserProgressStore()
 
   const filteredUsers = useMemo((): UserItem[] => {
     if (!users || !Array.isArray(users)) return [];
@@ -98,6 +112,28 @@ export default function UsersPage() {
 
   const handleDeleteClick = (user: UserItem) => {
     setUserToDelete(user)
+  }
+
+  const handleResetClick = (user: UserItem) => {
+    setUserToReset(user)
+    setResetReason("")
+    setResetModuleId("")
+    setResetPointsMode("none")
+  }
+
+  const handleConfirmReset = async () => {
+    if (!userToReset || !resetModuleId.trim()) return
+
+    await resetUserProgress({
+      userId: userToReset.id,
+      moduleId: resetModuleId.trim(),
+      reason: resetReason || t("defaultResetReason"),
+      resetPointsMode,
+    })
+    setUserToReset(null)
+    setResetReason("")
+    setResetModuleId("")
+    setResetPointsMode("none")
   }
 
   const handleDeleteConfirm = async (user: UserItem | null) => {
@@ -226,6 +262,13 @@ export default function UsersPage() {
                   <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
                     {t("edit")}
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleResetClick(user)}
+                  >
+                    {t("resetProgress")}
+                  </Button>
                   {canDeleteUsers && (
                     <Button type="button" onClick={() => handleDeleteClick(user)} variant="destructive">
                       {t("delete")}
@@ -253,6 +296,96 @@ export default function UsersPage() {
             </DialogTitle>
           </DialogHeader>
           {selectedUser && <UserDetails user={selectedUser} />}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={userToReset !== null} onOpenChange={(open) => {
+        if (!open) {
+          setUserToReset(null)
+          setResetReason("")
+          setResetModuleId("")
+          setResetPointsMode("none")
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("resetProgressTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {resetError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
+                {resetError}
+              </div>
+            )}
+            <p>
+              {userToReset
+                ? t("resetProgressDescription", {
+                    name: `${userToReset.firstName} ${userToReset.lastName} (${userToReset.username})`,
+                  })
+                : null}
+            </p>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                {t("resetReasonLabel")}
+              </label>
+              <Textarea
+                value={resetReason}
+                onChange={(e) => setResetReason(e.target.value)}
+                placeholder={t("resetReasonPlaceholder")}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                {t("resetModuleIdLabel")}
+              </label>
+              <Input
+                value={resetModuleId}
+                onChange={(e) => setResetModuleId(e.target.value)}
+                placeholder={t("resetModuleIdPlaceholder")}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">
+                {t("resetPointsModeLabel")}
+              </label>
+              <Select
+                value={resetPointsMode}
+                onValueChange={(value) =>
+                  setResetPointsMode(value as "none" | "total" | "logs")
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t("resetPointsModePlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("resetPointsModeNone")}</SelectItem>
+                  <SelectItem value="total">{t("resetPointsModeTotal")}</SelectItem>
+                  <SelectItem value="logs">{t("resetPointsModeLogs")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setUserToReset(null)
+                  setResetReason("")
+                }}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={isResetting || !resetReason.trim() || !resetModuleId.trim()}
+                onClick={handleConfirmReset}
+              >
+                {isResetting ? t("resetting") : t("confirmReset")}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

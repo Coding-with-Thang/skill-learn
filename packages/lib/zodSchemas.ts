@@ -71,6 +71,22 @@ export const addPointsSchema = z.object({
     .max(200, "Reason must be less than 200 characters"),
 });
 
+// Admin: reset user progress for a module
+export const resetProgressSchema = z.object({
+  userId: objectIdSchema,
+  moduleId: objectIdSchema,
+  reason: z
+    .string()
+    .min(1, "Reset reason is required")
+    .max(500, "Reason must be less than 500 characters"),
+  // How to handle points during reset:
+  // - "none": leave points unchanged
+  // - "total": reset user's current points balance to 0 (via compensating PointLog)
+  // - "logs": reverse specific point logs by id (advanced)
+  resetPointsMode: z.enum(["none", "total", "logs"]).default("none"),
+  pointLogIds: z.array(objectIdSchema).optional().default([]),
+});
+
 export const spendPointsSchema = z.object({
   amount: z
     .number()

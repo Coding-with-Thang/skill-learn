@@ -33,3 +33,4 @@ export * from './stores/store/rewardStore';
 export * from './stores/store/usersStore';
 export * from './stores/store/flashCardStudyStore';
 export * from './stores/store/flashCardDeckBuilderStore';
+export * from './stores/store/adminUserProgressStore';

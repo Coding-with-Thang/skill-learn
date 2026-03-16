@@ -231,6 +231,71 @@ export async function rewardUpdated(userId, rewardId, changes, options: AuditLog
   );
 }
 
+export async function userProgressReset(
+  adminClerkId: string,
+  targetUserId: string,
+  moduleId: string,
+  details: {
+    reason: string;
+    statusBefore: string;
+    statusAfter: string;
+    attemptBefore: number;
+    attemptAfter: number;
+    resetPointsMode: "none" | "total" | "logs";
+    pointsAdjustment?: { newPoints: number; delta: number } | null;
+  },
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "update",
+    "user_progress",
+    moduleId,
+    `Reset user progress for module ${moduleId}`,
+    {
+      eventType: "user_progress.reset",
+      category: SECURITY_EVENT_CATEGORIES.AUDIT,
+      severity: "high",
+      eventDetails: {
+        targetUserId,
+        moduleId,
+        ...details,
+      },
+      ...options,
+    }
+  );
+}
+
+export async function userPointsAdjustedForReset(
+  adminClerkId: string,
+  targetUserId: string,
+  adjustment: { newPoints: number; delta: number },
+  mode: "total" | "logs",
+  reason: string,
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "update",
+    "points",
+    targetUserId,
+    `Adjusted points (${mode}) by ${adjustment.delta} for reset: ${reason}`,
+    {
+      eventType: "points.reset_adjustment",
+      category: SECURITY_EVENT_CATEGORIES.POINTS,
+      severity: "high",
+      eventDetails: {
+        targetUserId,
+        mode,
+        reason,
+        delta: adjustment.delta,
+        newPoints: adjustment.newPoints,
+      },
+      ...options,
+    }
+  );
+}
+
 export async function quizCompleted(userId, quizId, score, passed, options: AuditLogOptions = {}) {
   await logAuditEvent(
     userId,
