@@ -296,6 +296,76 @@ export async function userPointsAdjustedForReset(
   );
 }
 
+export async function adminQuizProgressReset(
+  adminClerkId: string,
+  targetUserId: string,
+  quizId: string,
+  reason: string,
+  beforeState: { attempts: number; passedAttempts: number; bestScore?: number | null },
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "update",
+    "quiz",
+    quizId,
+    `Admin reset quiz progress for user: ${reason}`,
+    {
+      eventType: "quiz.progress_reset",
+      category: SECURITY_EVENT_CATEGORIES.AUDIT,
+      severity: "high",
+      eventDetails: { targetUserId, quizId, reason, beforeState },
+      ...options,
+    }
+  );
+}
+
+export async function adminCourseProgressReset(
+  adminClerkId: string,
+  targetUserId: string,
+  courseId: string,
+  reason: string,
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "update",
+    "course",
+    courseId,
+    `Admin reset course progress for user: ${reason}`,
+    {
+      eventType: "course.progress_reset",
+      category: SECURITY_EVENT_CATEGORIES.AUDIT,
+      severity: "high",
+      eventDetails: { targetUserId, courseId, reason },
+      ...options,
+    }
+  );
+}
+
+export async function adminResetAllProgress(
+  adminClerkId: string,
+  targetUserId: string,
+  reason: string,
+  summary: { quizzesReset: number; coursesReset: number; pointsReset: boolean },
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "update",
+    "user",
+    targetUserId,
+    `Admin reset all progress (quizzes, courses, points): ${reason}`,
+    {
+      eventType: "user.progress_reset_all",
+      category: SECURITY_EVENT_CATEGORIES.AUDIT,
+      severity: "high",
+      eventDetails: { targetUserId, reason, ...summary },
+      ...options,
+    }
+  );
+}
+
 export async function quizCompleted(userId, quizId, score, passed, options: AuditLogOptions = {}) {
   await logAuditEvent(
     userId,

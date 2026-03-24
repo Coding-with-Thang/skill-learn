@@ -71,21 +71,35 @@ export const addPointsSchema = z.object({
     .max(200, "Reason must be less than 200 characters"),
 });
 
-// Admin: reset user progress for a module
-export const resetProgressSchema = z.object({
-  userId: objectIdSchema,
-  moduleId: objectIdSchema,
-  reason: z
-    .string()
-    .min(1, "Reset reason is required")
-    .max(500, "Reason must be less than 500 characters"),
-  // How to handle points during reset:
-  // - "none": leave points unchanged
-  // - "total": reset user's current points balance to 0 (via compensating PointLog)
-  // - "logs": reverse specific point logs by id (advanced)
-  resetPointsMode: z.enum(["none", "total", "logs"]).default("none"),
-  pointLogIds: z.array(objectIdSchema).optional().default([]),
-});
+// Admin: reset user progress – scope: all | quiz | course | points
+export const resetProgressScopeEnum = z.enum(["all", "quiz", "course", "points"]);
+export const resetProgressSchema = z
+  .object({
+    userId: objectIdSchema,
+    reason: z
+      .string()
+      .min(1, "Reset reason is required")
+      .max(500, "Reason must be less than 500 characters"),
+    scope: resetProgressScopeEnum.default("quiz"),
+    quizId: objectIdSchema.optional(),
+    courseId: objectIdSchema.optional(),
+    resetPointsMode: z.enum(["none", "total", "logs"]).default("none"),
+    pointLogIds: z.array(objectIdSchema).optional().default([]),
+    // Legacy: optional moduleId for UserProgress (generic module) when scope not used
+    moduleId: objectIdSchema.optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.scope === "quiz") return !!data.quizId;
+      if (data.scope === "course") return !!data.courseId;
+      if (data.scope === "points") return data.resetPointsMode === "total" || (data.resetPointsMode === "logs" && (data.pointLogIds?.length ?? 0) > 0);
+      return true;
+    },
+    {
+      message: "quizId required when scope is quiz; courseId required when scope is course; points scope requires resetPointsMode total or logs (with pointLogIds).",
+      path: ["scope"],
+    }
+  );
 
 export const spendPointsSchema = z.object({
   amount: z

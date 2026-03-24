@@ -30,17 +30,18 @@ interface AdminUserProgressStore {
    */
   setUserProgress: (userId: string, progress: AdminUserProgress[]) => void;
   /**
-   * Reset a user's progress for a module.
-   * Calls POST /admin/reset-progress and updates the local list (if present)
-   * by archiving the previous attempt and adding the new one.
+   * Reset a user's progress by scope: all | quiz | course | points.
+   * Calls POST /admin/reset-progress.
    */
   resetUserProgress: (params: {
     userId: string;
-    moduleId: string;
     reason: string;
+    scope: "all" | "quiz" | "course" | "points";
+    quizId?: string;
+    courseId?: string;
     resetPointsMode?: "none" | "total" | "logs";
     pointLogIds?: string[];
-  }) => Promise<AdminUserProgress | null>;
+  }) => Promise<{ quizzesReset?: number; coursesReset?: number; pointsAdjustment?: { newPoints: number; delta: number } } | null>;
 }
 
 export const useAdminUserProgressStore = create<AdminUserProgressStore>((set, get) => ({
@@ -59,8 +60,10 @@ export const useAdminUserProgressStore = create<AdminUserProgressStore>((set, ge
 
   resetUserProgress: async ({
     userId,
-    moduleId,
     reason,
+    scope,
+    quizId,
+    courseId,
     resetPointsMode = "none",
     pointLogIds = [],
   }) => {
@@ -69,57 +72,35 @@ export const useAdminUserProgressStore = create<AdminUserProgressStore>((set, ge
     try {
       const response = await api.post("/admin/reset-progress", {
         userId,
-        moduleId,
         reason,
-        resetPointsMode,
-        pointLogIds,
+        scope,
+        quizId: scope === "quiz" ? quizId : undefined,
+        courseId: scope === "course" ? courseId : undefined,
+        resetPointsMode: scope === "points" ? (resetPointsMode === "none" ? "total" : resetPointsMode) : resetPointsMode,
+        pointLogIds: resetPointsMode === "logs" ? pointLogIds : [],
       });
 
       const data = parseApiResponse(response) as
         | {
             message?: string;
-            archived?: AdminUserProgress;
-            progress?: AdminUserProgress;
+            quizzesReset?: number;
+            coursesReset?: number;
             pointsAdjustment?: { newPoints: number; delta: number } | null;
           }
         | null;
 
-      const archived = data?.archived;
-      const newProgress = data?.progress;
-
-      if (!archived || !newProgress) {
-        // Response did not contain expected payload; leave state but surface error
-        const message =
-          (data as { message?: string } | null)?.message ??
-          "Reset progress response missing expected data";
-        set({ isLoading: false, error: message });
-        return null;
-      }
-
-      set((state) => {
-        const existing = state.progressByUser[userId] ?? [];
-        // Remove the old record by id (it is now archived and re-inserted)
-        const filtered = existing.filter((p) => p.id !== archived.id);
-        const updatedList = [...filtered, archived, newProgress].sort(
-          (a, b) => a.attempt - b.attempt
-        );
-
-        return {
-          ...state,
-          isLoading: false,
-          error: null,
-          progressByUser: {
-            ...state.progressByUser,
-            [userId]: updatedList,
-          },
-        };
-      });
-
-      return newProgress;
+      set({ isLoading: false, error: null });
+      return data
+        ? {
+            quizzesReset: data.quizzesReset,
+            coursesReset: data.coursesReset,
+            pointsAdjustment: data.pointsAdjustment ?? undefined,
+          }
+        : null;
     } catch (error) {
       set({
         isLoading: false,
-        error: parseApiError(error) || "Failed to reset user progress",
+        error: parseApiError(error) || "Failed to reset progress",
       });
       return null;
     }

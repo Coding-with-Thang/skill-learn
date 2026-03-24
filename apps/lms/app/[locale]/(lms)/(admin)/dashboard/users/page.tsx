@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslations } from "next-intl"
+import api from "@skill-learn/lib/utils/axios"
+import { parseApiResponse } from "@skill-learn/lib/utils/apiResponseParser"
 import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@skill-learn/ui/components/dialog"
@@ -20,10 +22,20 @@ import { usePermissionsStore } from "@skill-learn/lib/stores/permissionsStore"
 import UserDetails from "@/components/user/UserDetails"
 import { useAdminUserProgressStore } from "@skill-learn/lib"
 import { Textarea } from "@skill-learn/ui/components/textarea"
-import { Input } from "@skill-learn/ui/components/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@skill-learn/ui/components/select"
+import { Checkbox } from "@skill-learn/ui/components/checkbox"
 import UserForm from "@/components/user/UserForm"
 import { UserFilters } from "@/components/user/UserFilters"
+import { Link } from "@/i18n/navigation"
+
+type ProgressOptionQuiz = { id: string; title: string; attempts: number; passedAttempts: number; bestScore?: number | null }
+type ProgressOptionCourse = { id: string; title: string; completedAt: string | Date | null }
+type ProgressOptionPointLog = { id: string; amount: number; reason: string; createdAt: string }
+type ProgressOptions = {
+  quizzes: ProgressOptionQuiz[]
+  courses: ProgressOptionCourse[]
+  pointLogs: ProgressOptionPointLog[]
+}
 
 type UserItem = { id: string; firstName?: string; lastName?: string; username?: string; tenantRole?: string; createdAt?: string; reportsTo?: { firstName?: string; lastName?: string } };
 
@@ -52,15 +64,29 @@ export default function UsersPage() {
   const [errorUsers, setErrorUsers] = useState<string | null>(null)
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
   const [resetReason, setResetReason] = useState("")
-  const [resetModuleId, setResetModuleId] = useState("")
-  const [userToReset, setUserToReset] = useState<UserItem | null>(null)
+  const [resetScope, setResetScope] = useState<"all" | "quiz" | "course" | "points">("all")
+  const [resetQuizId, setResetQuizId] = useState("")
+  const [resetCourseId, setResetCourseId] = useState("")
   const [resetPointsMode, setResetPointsMode] = useState<"none" | "total" | "logs">("none")
+  const [selectedPointLogIds, setSelectedPointLogIds] = useState<string[]>([])
+  const [userToReset, setUserToReset] = useState<UserItem | null>(null)
+  const [progressOptions, setProgressOptions] = useState<ProgressOptions | null>(null)
+  const [progressOptionsLoading, setProgressOptionsLoading] = useState(false)
 
   const {
     resetUserProgress,
     isLoading: isResetting,
     error: resetError,
   } = useAdminUserProgressStore()
+
+  useEffect(() => {
+    if (!userToReset?.id) return
+    setProgressOptionsLoading(true)
+    api.get(`/admin/users/${userToReset.id}/progress-options`).then((res) => {
+      const data = parseApiResponse(res) as ProgressOptions | null
+      setProgressOptions(data ?? { quizzes: [], courses: [], pointLogs: [] })
+    }).catch(() => setProgressOptions({ quizzes: [], courses: [], pointLogs: [] })).finally(() => setProgressOptionsLoading(false))
+  }, [userToReset?.id])
 
   const filteredUsers = useMemo((): UserItem[] => {
     if (!users || !Array.isArray(users)) return [];
@@ -117,23 +143,39 @@ export default function UsersPage() {
   const handleResetClick = (user: UserItem) => {
     setUserToReset(user)
     setResetReason("")
-    setResetModuleId("")
+    setResetScope("all")
+    setResetQuizId("")
+    setResetCourseId("")
     setResetPointsMode("none")
+    setSelectedPointLogIds([])
   }
 
+  const canConfirmReset =
+    resetReason.trim().length > 0 &&
+    (resetScope === "all" ||
+      (resetScope === "quiz" && !!resetQuizId) ||
+      (resetScope === "course" && !!resetCourseId) ||
+      (resetScope === "points" && (resetPointsMode === "total" || (resetPointsMode === "logs" && selectedPointLogIds.length > 0))))
+
   const handleConfirmReset = async () => {
-    if (!userToReset || !resetModuleId.trim()) return
+    if (!userToReset || !canConfirmReset) return
 
     await resetUserProgress({
       userId: userToReset.id,
-      moduleId: resetModuleId.trim(),
-      reason: resetReason || t("defaultResetReason"),
-      resetPointsMode,
+      reason: resetReason.trim() || t("defaultResetReason"),
+      scope: resetScope,
+      quizId: resetScope === "quiz" ? resetQuizId : undefined,
+      courseId: resetScope === "course" ? resetCourseId : undefined,
+      resetPointsMode: resetScope === "all" || resetScope === "quiz" || resetScope === "course" ? resetPointsMode : resetScope === "points" ? (resetPointsMode === "none" ? "total" : resetPointsMode) : "none",
+      pointLogIds: resetPointsMode === "logs" ? selectedPointLogIds : [],
     })
     setUserToReset(null)
     setResetReason("")
-    setResetModuleId("")
+    setResetScope("all")
+    setResetQuizId("")
+    setResetCourseId("")
     setResetPointsMode("none")
+    setSelectedPointLogIds([])
   }
 
   const handleDeleteConfirm = async (user: UserItem | null) => {
@@ -262,6 +304,9 @@ export default function UsersPage() {
                   <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
                     {t("edit")}
                   </Button>
+                  <Button type="button" variant="outline" asChild>
+                    <Link href={`/dashboard/users/${user.id}`}>{t("viewProfile")}</Link>
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -303,11 +348,14 @@ export default function UsersPage() {
         if (!open) {
           setUserToReset(null)
           setResetReason("")
-          setResetModuleId("")
+          setResetScope("all")
+          setResetQuizId("")
+          setResetCourseId("")
           setResetPointsMode("none")
+          setSelectedPointLogIds([])
         }
       }}>
-        <DialogContent>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("resetProgressTitle")}</DialogTitle>
           </DialogHeader>
@@ -324,10 +372,135 @@ export default function UsersPage() {
                   })
                 : null}
             </p>
+
             <div className="space-y-1">
-              <label className="text-sm font-medium">
-                {t("resetReasonLabel")}
-              </label>
+              <label className="text-sm font-medium">{t("resetScopeLabel")}</label>
+              <Select
+                value={resetScope}
+                onValueChange={(v) => {
+                  setResetScope(v as "all" | "quiz" | "course" | "points")
+                  setResetQuizId("")
+                  setResetCourseId("")
+                  if (v !== "points") setResetPointsMode("none")
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("resetScopeAll")}</SelectItem>
+                  <SelectItem value="quiz">{t("resetScopeQuiz")}</SelectItem>
+                  <SelectItem value="course">{t("resetScopeCourse")}</SelectItem>
+                  <SelectItem value="points">{t("resetScopePoints")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {resetScope === "quiz" && (
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("resetQuizLabel")}</label>
+                <Select value={resetQuizId} onValueChange={setResetQuizId} disabled={progressOptionsLoading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={progressOptionsLoading ? t("loading") : t("resetQuizPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(progressOptions?.quizzes ?? []).map((q) => (
+                      <SelectItem key={q.id} value={q.id}>
+                        {q.title} (attempts: {q.attempts}, passed: {q.passedAttempts})
+                      </SelectItem>
+                    ))}
+                    {!progressOptionsLoading && (progressOptions?.quizzes?.length ?? 0) === 0 && (
+                      <SelectItem value="__none" disabled>{t("noQuizProgress")}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {resetScope === "course" && (
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("resetCourseLabel")}</label>
+                <Select value={resetCourseId} onValueChange={setResetCourseId} disabled={progressOptionsLoading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={progressOptionsLoading ? t("loading") : t("resetCoursePlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(progressOptions?.courses ?? []).map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title} {c.completedAt ? "✓" : ""}
+                      </SelectItem>
+                    ))}
+                    {!progressOptionsLoading && (progressOptions?.courses?.length ?? 0) === 0 && (
+                      <SelectItem value="__none" disabled>{t("noCourseProgress")}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {resetScope === "points" && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">{t("resetPointsModeLabel")}</label>
+                <Select
+                  value={resetPointsMode === "none" ? "total" : resetPointsMode}
+                  onValueChange={(v) => { setResetPointsMode(v as "total" | "logs"); if (v !== "logs") setSelectedPointLogIds([]) }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="total">{t("resetPointsModeTotal")}</SelectItem>
+                    <SelectItem value="logs">{t("resetPointsModeLogs")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {resetPointsMode === "logs" && (
+                  <div className="border rounded-md p-2 max-h-40 overflow-y-auto space-y-2">
+                    <p className="text-xs text-muted-foreground">{t("selectPointLogs")}</p>
+                    {(progressOptions?.pointLogs ?? []).map((log) => (
+                      <div key={log.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`log-${log.id}`}
+                          checked={selectedPointLogIds.includes(log.id)}
+                          onCheckedChange={(checked) =>
+                            setSelectedPointLogIds((prev) =>
+                              checked ? [...prev, log.id] : prev.filter((id) => id !== log.id)
+                            )
+                          }
+                        />
+                        <label htmlFor={`log-${log.id}`} className="text-sm cursor-pointer">
+                          {log.amount > 0 ? "+" : ""}{log.amount} — {log.reason} ({new Date(log.createdAt).toLocaleDateString()})
+                        </label>
+                      </div>
+                    ))}
+                    {(progressOptions?.pointLogs?.length ?? 0) === 0 && (
+                      <p className="text-sm text-muted-foreground">{t("noPointLogs")}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(resetScope === "all" || resetScope === "quiz" || resetScope === "course") && (
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("resetPointsModeLabel")}</label>
+                <Select
+                  value={resetPointsMode}
+                  onValueChange={(v) => setResetPointsMode(v as "none" | "total" | "logs")}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("resetPointsModePlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("resetPointsModeNone")}</SelectItem>
+                    <SelectItem value="total">{t("resetPointsModeTotal")}</SelectItem>
+                    <SelectItem value="logs">{t("resetPointsModeLogs")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-sm font-medium">{t("resetReasonLabel")}</label>
               <Textarea
                 value={resetReason}
                 onChange={(e) => setResetReason(e.target.value)}
@@ -335,51 +508,15 @@ export default function UsersPage() {
                 rows={3}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">
-                {t("resetModuleIdLabel")}
-              </label>
-              <Input
-                value={resetModuleId}
-                onChange={(e) => setResetModuleId(e.target.value)}
-                placeholder={t("resetModuleIdPlaceholder")}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">
-                {t("resetPointsModeLabel")}
-              </label>
-              <Select
-                value={resetPointsMode}
-                onValueChange={(value) =>
-                  setResetPointsMode(value as "none" | "total" | "logs")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={t("resetPointsModePlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("resetPointsModeNone")}</SelectItem>
-                  <SelectItem value="total">{t("resetPointsModeTotal")}</SelectItem>
-                  <SelectItem value="logs">{t("resetPointsModeLogs")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="flex justify-end gap-3 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setUserToReset(null)
-                  setResetReason("")
-                }}
-              >
+              <Button type="button" variant="outline" onClick={() => { setUserToReset(null); setResetReason("") }}>
                 {t("cancel")}
               </Button>
               <Button
                 type="button"
                 variant="destructive"
-                disabled={isResetting || !resetReason.trim() || !resetModuleId.trim()}
+                disabled={isResetting || !canConfirmReset}
                 onClick={handleConfirmReset}
               >
                 {isResetting ? t("resetting") : t("confirmReset")}
