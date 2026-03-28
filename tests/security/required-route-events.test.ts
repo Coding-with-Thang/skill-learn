@@ -1,8 +1,7 @@
-import assert from "node:assert/strict";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -83,17 +82,18 @@ const COVERAGE_CASES: RouteCoverageCase[] = [
   },
 ];
 
-test("critical LMS routes include required security event instrumentation", () => {
-  for (const coverageCase of COVERAGE_CASES) {
-    const absolutePath = path.join(repoRoot, coverageCase.file);
-    const fileContent = readFileSync(absolutePath, "utf8");
+describe("required route security events", () => {
+  it("critical LMS routes include required security event instrumentation", () => {
+    for (const coverageCase of COVERAGE_CASES) {
+      const absolutePath = path.join(repoRoot, coverageCase.file);
+      const fileContent = readFileSync(absolutePath, "utf8");
 
-    for (const snippet of coverageCase.requiredSnippets) {
-      assert.equal(
-        fileContent.includes(snippet),
-        true,
-        `Missing required snippet "${snippet}" in ${coverageCase.file}`
-      );
+      for (const snippet of coverageCase.requiredSnippets) {
+        expect(
+          fileContent.includes(snippet),
+          `Missing required snippet "${snippet}" in ${coverageCase.file}`,
+        ).toBe(true);
+      }
     }
-  }
+  });
 });

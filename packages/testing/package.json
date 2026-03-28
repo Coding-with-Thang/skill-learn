@@ -1,0 +1,11 @@
+{
+  "name": "@skill-learn/testing",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest run --config ../../vitest.config.ts"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}
