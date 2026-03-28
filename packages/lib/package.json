@@ -99,6 +99,8 @@
     "./utils/tenant.ts": "./utils/tenant.ts",
     "./utils/tenantDefaultRole": "./utils/tenantDefaultRole.ts",
     "./utils/tenantDefaultRole.ts": "./utils/tenantDefaultRole.ts",
+    "./utils/tenantUserActive": "./utils/tenantUserActive.ts",
+    "./utils/tenantUserActive.ts": "./utils/tenantUserActive.ts",
     "./utils/apiResponseParser": "./utils/apiResponseParser.ts",
     "./utils/apiResponseParser.ts": "./utils/apiResponseParser.ts",
     "./utils/greetingGenerator": "./utils/greetingGenerator.ts",
