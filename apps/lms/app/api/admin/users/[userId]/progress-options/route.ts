@@ -5,6 +5,14 @@ import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/erro
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
 import { objectIdSchema } from "@skill-learn/lib/zodSchemas";
 import { z } from "zod";
+import { buildTenantContentFilter } from "@skill-learn/lib/utils/tenant";
+import {
+  collectReferencedQuizAndCourseIdsFromReasons,
+  formatPointLogReasonDisplay,
+  mapsFromCatalog,
+  mergeTitleRowsIntoMaps,
+  normalizePointLogEntityId,
+} from "@/lib/pointLogReasonDisplay";
 
 type Params = { params: Promise<{ userId: string }> };
 
@@ -29,7 +37,10 @@ export async function GET(_request: NextRequest, { params }: Params) {
       throw new AppError("User not in your tenant", ErrorType.VALIDATION, { status: 403 });
     }
 
-    const [quizProgress, courseProgress, pointLogs] = await Promise.all([
+    const tenantQuizWhere = buildTenantContentFilter(user.tenantId, { isActive: true });
+    const tenantCourseWhere = buildTenantContentFilter(user.tenantId, { status: "Published" });
+
+    const [quizProgress, courseProgress, pointLogs, tenantQuizzes, tenantCourses] = await Promise.all([
       prisma.quizProgress.findMany({
         where: { userId },
         select: {
@@ -59,6 +70,14 @@ export async function GET(_request: NextRequest, { params }: Params) {
           createdAt: true,
         },
       }),
+      prisma.quiz.findMany({
+        where: tenantQuizWhere,
+        select: { id: true, title: true },
+      }),
+      prisma.course.findMany({
+        where: tenantCourseWhere,
+        select: { id: true, title: true },
+      }),
     ]);
 
     const quizzes = quizProgress.map((q) => ({
@@ -73,10 +92,47 @@ export async function GET(_request: NextRequest, { params }: Params) {
       title: c.course.title,
       completedAt: c.completedAt,
     }));
+    const basePointLogMaps = mapsFromCatalog(tenantQuizzes, tenantCourses);
+    const { quizIds: refQuizIds, courseIds: refCourseIds } = collectReferencedQuizAndCourseIdsFromReasons(
+      pointLogs.map((p) => p.reason)
+    );
+    const missingQuizIds = refQuizIds.filter(
+      (id) => !basePointLogMaps.quizTitleById.has(normalizePointLogEntityId(id))
+    );
+    const missingCourseIds = refCourseIds.filter(
+      (id) => !basePointLogMaps.courseTitleById.has(normalizePointLogEntityId(id))
+    );
+
+    let pointLogMaps = basePointLogMaps;
+    if (missingQuizIds.length > 0 || missingCourseIds.length > 0) {
+      const [extraQuizzes, extraCourses] = await Promise.all([
+        missingQuizIds.length > 0
+          ? prisma.quiz.findMany({
+              where: {
+                id: { in: missingQuizIds },
+                ...buildTenantContentFilter(user.tenantId, {}),
+              },
+              select: { id: true, title: true },
+            })
+          : Promise.resolve([]),
+        missingCourseIds.length > 0
+          ? prisma.course.findMany({
+              where: {
+                id: { in: missingCourseIds },
+                ...buildTenantContentFilter(user.tenantId, {}),
+              },
+              select: { id: true, title: true },
+            })
+          : Promise.resolve([]),
+      ]);
+      pointLogMaps = mergeTitleRowsIntoMaps(basePointLogMaps, extraQuizzes, extraCourses);
+    }
+
     const pointLogList = pointLogs.map((p) => ({
       id: p.id,
       amount: p.amount,
       reason: p.reason,
+      reasonDisplay: formatPointLogReasonDisplay(p.reason, pointLogMaps),
       createdAt: p.createdAt,
     }));
 

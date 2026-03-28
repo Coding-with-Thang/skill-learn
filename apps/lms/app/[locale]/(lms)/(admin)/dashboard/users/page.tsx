@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import api from "@skill-learn/lib/utils/axios"
 import { parseApiResponse } from "@skill-learn/lib/utils/apiResponseParser"
@@ -41,6 +42,9 @@ type UserItem = { id: string; firstName?: string; lastName?: string; username?: 
 
 export default function UsersPage() {
   const t = useTranslations("adminDashboardUsers");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { users, isLoading, error, fetchUsers } = useUsersStore();
   const hasPermission = usePermissionsStore((s) => s.hasPermission);
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
@@ -72,6 +76,24 @@ export default function UsersPage() {
   const [userToReset, setUserToReset] = useState<UserItem | null>(null)
   const [progressOptions, setProgressOptions] = useState<ProgressOptions | null>(null)
   const [progressOptionsLoading, setProgressOptionsLoading] = useState(false)
+
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (!editId || !users || !Array.isArray(users)) return;
+    const list = users as UserItem[];
+    const match = list.find((u) => u.id === editId);
+    if (!match) return;
+    setEditingUser(match);
+    setShowForm(true);
+  }, [searchParams, users]);
+
+  const stripEditQueryParam = useCallback(() => {
+    const next = new URLSearchParams(searchParams.toString());
+    if (!next.has("edit")) return;
+    next.delete("edit");
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  }, [pathname, router, searchParams]);
 
   const {
     resetUserProgress,
@@ -196,7 +218,17 @@ export default function UsersPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{t("title")}</h1>
         <div className="flex gap-3">
-          <Button type="button" onClick={() => { setEditingUser(null); setShowForm(true); }} variant="default">{t("addUser")}</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setEditingUser(null);
+              setShowForm(true);
+              stripEditQueryParam();
+            }}
+            variant="default"
+          >
+            {t("addUser")}
+          </Button>
         </div>
       </div>
 
@@ -210,9 +242,10 @@ export default function UsersPage() {
         open={showForm}
         onOpenChange={(open) => {
           if (!open) {
-            setShowForm(false)
-            setEditingUser(null)
-            setErrorUsers(null)
+            setShowForm(false);
+            setEditingUser(null);
+            setErrorUsers(null);
+            stripEditQueryParam();
           }
         }}
       >
@@ -226,9 +259,10 @@ export default function UsersPage() {
                 key={editingUser ? String(editingUser.id) : 'new'}
                 user={editingUser}
                 onSuccess={async () => {
-                  setShowForm(false)
-                  setEditingUser(null)
-                  await fetchUsers(true)
+                  setShowForm(false);
+                  setEditingUser(null);
+                  stripEditQueryParam();
+                  await fetchUsers(true);
                 }}
               />
             </>

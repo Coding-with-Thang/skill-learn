@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { format } from "date-fns";
-import { ArrowLeft, BookOpen, HelpCircle, Coins, User, Calendar, Pencil, RefreshCw, Trash2, Monitor, CheckCircle2, XCircle, Clock, Smartphone } from "lucide-react";
+import { ArrowLeft, BookOpen, HelpCircle, Coins, Calendar, Pencil, RefreshCw, Trash2, Monitor, CheckCircle2, Smartphone } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import api from "@skill-learn/lib/utils/axios";
 import { parseApiResponse, parseApiError } from "@skill-learn/lib/utils/apiResponseParser";
@@ -46,7 +46,13 @@ type ProgressOptionQuiz = {
   bestScore?: number | null;
 };
 type ProgressOptionCourse = { id: string; title: string; completedAt: string | Date | null };
-type ProgressOptionPointLog = { id: string; amount: number; reason: string; createdAt: string };
+type ProgressOptionPointLog = {
+  id: string;
+  amount: number;
+  reason: string;
+  reasonDisplay?: string;
+  createdAt: string;
+};
 type ProgressOptions = {
   quizzes: ProgressOptionQuiz[];
   courses: ProgressOptionCourse[];
@@ -61,6 +67,7 @@ type ProfilePayload = {
     username: string;
     firstName: string;
     lastName: string;
+    email?: string | null;
     imageUrl?: string | null;
     createdAt: string;
     tenantRole?: string | null;
@@ -78,6 +85,7 @@ type ProfilePayload = {
     totalLessons: number;
     progressPercent: number;
     completedAt: string | null;
+    coverImageUrl?: string | null;
   }>;
   quizzes: Array<{
     id: string;
@@ -87,8 +95,26 @@ type ProfilePayload = {
     passedAttempts: number;
     bestScore: number | null;
   }>;
-  pointLogs: Array<{ id: string; amount: number; reason: string; createdAt: string }>;
+  pointLogs: Array<{
+    id: string;
+    amount: number;
+    reason: string;
+    reasonDisplay?: string;
+    createdAt: string;
+  }>;
   pointLogsPagination: { page: number; limit: number; total: number; pages: number };
+  activityLog: Array<{
+    id: string;
+    occurredAt: string;
+    activityType: string;
+    details: string;
+    deviceLabel: string;
+    isMobile: boolean;
+    ipAddress: string | null;
+    action: string;
+    category: string;
+  }>;
+  activityWindow: { hours: number; limit: number; total: number };
 };
 
 function statusBadgeClass(status: ContentStatus) {
@@ -102,11 +128,39 @@ function statusBadgeClass(status: ContentStatus) {
   }
 }
 
+function pointLogCategoryLabel(reason: string, tr: (key: string) => string) {
+  const r = reason.toLowerCase();
+  if (r.startsWith("quiz_completed_") || r.startsWith("perfect_score_bonus_")) {
+    return tr("pointCategoryAcademic");
+  }
+  if (r.startsWith("progress_reset_")) return tr("pointCategoryAdmin");
+  if (r.startsWith("points_spent_")) return tr("pointCategoryRedemption");
+  if (r.includes("course")) return tr("pointCategoryCourse");
+  if (r.includes("quiz")) return tr("pointCategoryAcademic");
+  return tr("pointCategoryGeneral");
+}
+
+function securityActivityBadgeClass(action: string, category: string) {
+  const a = (action || "").toLowerCase();
+  const c = (category || "").toLowerCase();
+  if (c === "auth" || a === "login" || a === "logout") {
+    return "bg-[#ecfdf5] text-[#059669] hover:bg-[#d1fae5] border-0";
+  }
+  if (a.includes("attempt") || a.includes("quiz")) {
+    return "bg-[#e0e7ff] text-[#4338ca] hover:bg-[#c7d2fe] border-0";
+  }
+  if (a === "delete" || c.includes("rbac")) {
+    return "bg-rose-100 text-rose-800 hover:bg-rose-200 border-0";
+  }
+  return "bg-slate-100 text-slate-600 hover:bg-slate-200 border-0";
+}
+
 export default function AdminUserProfilePage() {
   const params = useParams();
   const userId = typeof params?.userId === "string" ? params.userId : "";
   const t = useTranslations("adminUserProfile");
   const tu = useTranslations("adminDashboardUsers");
+  const tAudit = useTranslations("adminAuditLogs");
 
   const [data, setData] = useState<ProfilePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +178,12 @@ export default function AdminUserProfilePage() {
   const [progressOptions, setProgressOptions] = useState<ProgressOptions | null>(null);
   const [progressOptionsLoading, setProgressOptionsLoading] = useState(false);
 
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [logToArchive, setLogToArchive] = useState<ProfilePayload["pointLogs"][number] | null>(null);
+  const [archiveReason, setArchiveReason] = useState("");
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+  const [archivingLogId, setArchivingLogId] = useState<string | null>(null);
+
   const {
     resetUserProgress,
     isLoading: isResetting,
@@ -134,6 +194,14 @@ export default function AdminUserProfilePage() {
     if (!data) return "";
     const n = [data.user.firstName, data.user.lastName].filter(Boolean).join(" ");
     return n || data.user.username;
+  }, [data]);
+
+  const avatarInitials = useMemo(() => {
+    if (!data) return "";
+    const a = data.user.firstName?.[0] ?? "";
+    const b = data.user.lastName?.[0] ?? "";
+    if (a || b) return `${a}${b}`;
+    return (data.user.username?.slice(0, 2) ?? "?").toUpperCase();
   }, [data]);
 
   const mergedQuizOptions = useMemo((): ProgressOptionQuiz[] => {
@@ -217,10 +285,18 @@ export default function AdminUserProfilePage() {
     setError(null);
     try {
       const res = await api.get(
-        `/admin/users/${userId}/profile?pointsPage=${pointsPage}&pointsLimit=${pointsLimit}`
+        `/admin/users/${userId}/profile?pointsPage=${pointsPage}&pointsLimit=${pointsLimit}&activityHours=24&activityLimit=30`
       );
       const payload = parseApiResponse(res) as ProfilePayload | null;
-      setData(payload);
+      setData(
+        payload
+          ? {
+              ...payload,
+              activityLog: payload.activityLog ?? [],
+              activityWindow: payload.activityWindow ?? { hours: 24, limit: 30, total: 0 },
+            }
+          : null
+      );
     } catch (e) {
       setError(parseApiError(e));
       setData(null);
@@ -240,6 +316,37 @@ export default function AdminUserProfilePage() {
       (resetScope === "course" && !!resetCourseId) ||
       (resetScope === "points" &&
         (resetPointsMode === "total" || (resetPointsMode === "logs" && selectedPointLogIds.length > 0))));
+
+  const openArchiveDialog = useCallback((log: ProfilePayload["pointLogs"][number]) => {
+    setLogToArchive(log);
+    setArchiveReason("");
+    setArchiveError(null);
+    setArchiveDialogOpen(true);
+  }, []);
+
+  const closeArchiveDialog = useCallback(() => {
+    setArchiveDialogOpen(false);
+    setLogToArchive(null);
+    setArchiveReason("");
+    setArchiveError(null);
+  }, []);
+
+  const handleConfirmArchivePointLog = async () => {
+    if (!userId || !logToArchive || archiveReason.trim().length === 0) return;
+    setArchiveError(null);
+    setArchivingLogId(logToArchive.id);
+    try {
+      await api.post(`/admin/users/${userId}/point-logs/${logToArchive.id}/archive`, {
+        reason: archiveReason.trim(),
+      });
+      closeArchiveDialog();
+      await load();
+    } catch (e) {
+      setArchiveError(parseApiError(e));
+    } finally {
+      setArchivingLogId(null);
+    }
+  };
 
   const handleConfirmReset = async () => {
     if (!userId || !data || !canConfirmReset) return;
@@ -308,35 +415,55 @@ export default function AdminUserProfilePage() {
                     <AvatarImage src={data.user.imageUrl} className="object-cover" />
                   ) : null}
                   <AvatarFallback className="rounded-none text-3xl font-semibold text-slate-400 bg-transparent flex items-center justify-center w-full h-full">
-                    {data.user.firstName?.[0]}
-                    {data.user.lastName?.[0]}
+                    {avatarInitials}
                   </AvatarFallback>
                 </Avatar>
-                <Badge className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#008761] hover:bg-[#008761] text-white border-white border-[3px] px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md uppercase shadow-sm">
-                  ACTIVE
+                <Badge
+                  className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-[#008761] hover:bg-[#008761] text-white border-white border-[3px] px-2.5 py-0.5 text-[10px] font-bold tracking-wider rounded-md uppercase shadow-sm max-w-[90%] truncate"
+                  title={data.user.tenantRole ?? undefined}
+                >
+                  {(data.user.tenantRole ?? "").replace(/_/g, " ") || t("roleMember")}
                 </Badge>
               </div>
               <div className="space-y-1.5 pt-1">
                 <h2 className="text-[28px] font-bold text-[#2A313C] leading-none">
                   {[data.user.firstName, data.user.lastName].filter(Boolean).join(" ") || data.user.username}
                 </h2>
-                <div className="flex items-center gap-1.5 text-[13px] text-slate-500 font-medium">
+                <div className="flex flex-wrap items-center gap-1.5 text-[13px] text-slate-500 font-medium">
                   <span>@{data.user.username}</span>
                   <span className="text-slate-300">•</span>
-                  <span>User ID: #{data.user.id.slice(0, 5)}</span>
+                  <span className="font-mono text-[12px]" title={data.user.id}>
+                    {t("userIdLabel")}: {data.user.id.slice(-8)}
+                  </span>
                 </div>
+                {data.user.email ? (
+                  <div className="text-[12px] text-slate-500" title={t("userEmailHint")}>
+                    {data.user.email}
+                  </div>
+                ) : null}
                 <div className="flex items-center gap-1.5 text-[12px] text-slate-400 mt-2 font-medium">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Member since {format(new Date(data.user.createdAt), "MMMM d, yyyy")}</span>
+                  <span>
+                    {t("memberSince")} {format(new Date(data.user.createdAt), "MMMM d, yyyy")}
+                  </span>
                 </div>
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-6 sm:mt-0 w-full sm:w-auto">
-              <Button onClick={() => openResetDialog({ scope: "all" })} className="bg-[#008761] hover:bg-[#007050] text-white rounded-xl h-[42px] px-5 flex gap-2 font-bold shadow-sm transition-all w-full sm:w-auto">
-                <RefreshCw className="h-4 w-4" /> Reset progress
+              <Button
+                onClick={() => openResetDialog({ scope: "all" })}
+                className="bg-[#008761] hover:bg-[#007050] text-white rounded-xl h-[42px] px-5 flex gap-2 font-bold shadow-sm transition-all w-full sm:w-auto"
+              >
+                <RefreshCw className="h-4 w-4" /> {tu("resetProgress")}
               </Button>
-              <Button variant="secondary" className="bg-[#F3F6F9] hover:bg-[#E2E8F0] text-[#475569] rounded-xl h-[42px] px-5 flex gap-2 font-bold transition-all w-full sm:w-auto border border-slate-100">
-                <Pencil className="h-4 w-4" /> Edit Profile
+              <Button
+                variant="secondary"
+                className="bg-[#F3F6F9] hover:bg-[#E2E8F0] text-[#475569] rounded-xl h-[42px] px-5 flex gap-2 font-bold transition-all w-full sm:w-auto border border-slate-100"
+                asChild
+              >
+                <Link href={`/dashboard/users?edit=${encodeURIComponent(data.user.id)}`}>
+                  <Pencil className="h-4 w-4" /> {t("editProfile")}
+                </Link>
               </Button>
             </div>
           </Card>
@@ -346,7 +473,9 @@ export default function AdminUserProfilePage() {
             <Card className="border-0 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] rounded-2xl p-7 bg-white relative overflow-hidden group">
               <div className="relative z-10 flex justify-between items-start">
                 <div className="space-y-2">
-                  <p className="text-[11px] font-bold text-slate-500 tracking-[0.1em]">CURRENT POINTS BALANCE</p>
+                  <p className="text-[11px] font-bold text-slate-500 tracking-[0.1em] uppercase">
+                    {t("currentPoints")}
+                  </p>
                   <p className="text-[40px] font-bold text-[#1a56db] leading-none tracking-tight">{data.points.current.toLocaleString()}</p>
                 </div>
                 <div className="h-14 w-14 rounded-2xl bg-[#eff6ff] flex items-center justify-center text-[#2563eb] shadow-sm transform transition-transform group-hover:scale-105">
@@ -357,7 +486,9 @@ export default function AdminUserProfilePage() {
             <Card className="border-0 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] rounded-2xl p-7 bg-white relative overflow-hidden group">
               <div className="relative z-10 flex justify-between items-start">
                 <div className="space-y-2">
-                  <p className="text-[11px] font-bold text-slate-500 tracking-[0.1em]">LIFETIME POINTS EARNED</p>
+                  <p className="text-[11px] font-bold text-slate-500 tracking-[0.1em] uppercase">
+                    {t("lifetimePoints")}
+                  </p>
                   <p className="text-[40px] font-bold text-[#008761] leading-none tracking-tight">{data.points.lifetimeEarned.toLocaleString()}</p>
                 </div>
                 <div className="h-14 w-14 rounded-2xl bg-[#effaf6] flex items-center justify-center text-[#008761] shadow-sm transform transition-transform group-hover:scale-105">
@@ -371,39 +502,48 @@ export default function AdminUserProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="border-0 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] rounded-2xl p-7 bg-white">
               <div className="flex items-center gap-2 mb-6 text-[17px] font-bold text-[#1E293B]">
-                <BookOpen className="h-[22px] w-[22px] text-[#008761]" /> Courses Summary
+                <BookOpen className="h-[22px] w-[22px] text-[#008761]" /> {t("coursesSummary")}
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
                   <span className="text-[28px] font-bold text-[#008761] leading-none">{data.contentSummary.courses.completed}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">Completed</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("completed")}</span>
                 </div>
                 <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
                   <span className="text-[28px] font-bold text-[#3B82F6] leading-none">{data.contentSummary.courses.inProgress}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">In Progress</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("inProgress")}</span>
                 </div>
                 <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
                   <span className="text-[28px] font-bold text-[#94A3B8] leading-none">{data.contentSummary.courses.notStarted}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">Not Started</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("notStarted")}</span>
                 </div>
               </div>
             </Card>
             <Card className="border-0 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] rounded-2xl p-7 bg-white">
               <div className="flex items-center gap-2 mb-6 text-[17px] font-bold text-[#1E293B]">
-                <HelpCircle className="h-[22px] w-[22px] text-[#6366F1]" /> Quizzes Summary
+                <HelpCircle className="h-[22px] w-[22px] text-[#6366F1]" /> {t("quizzesSummary")}
               </div>
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
+                <div
+                  className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50"
+                  title={t("quizSummaryPassedDescription")}
+                >
                   <span className="text-[28px] font-bold text-[#008761] leading-none">{data.contentSummary.quizzes.completed}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">Passed</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("passed")}</span>
                 </div>
-                <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
-                  <span className="text-[28px] font-bold text-[#EF4444] leading-none">{data.contentSummary.quizzes.notStarted}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">Failed</span>
+                <div
+                  className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50"
+                  title={t("quizSummaryNotStartedDescription")}
+                >
+                  <span className="text-[28px] font-bold text-[#94A3B8] leading-none">{data.contentSummary.quizzes.notStarted}</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("notStarted")}</span>
                 </div>
-                <div className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50">
+                <div
+                  className="bg-[#F8FAFC] rounded-2xl py-5 px-2 flex flex-col items-center justify-center gap-1.5 border border-slate-50"
+                  title={t("quizSummaryInProgressDescription")}
+                >
                   <span className="text-[28px] font-bold text-[#3B82F6] leading-none">{data.contentSummary.quizzes.inProgress}</span>
-                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1">Pending</span>
+                  <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest mt-1 text-center">{t("inProgress")}</span>
                 </div>
               </div>
             </Card>
@@ -411,27 +551,37 @@ export default function AdminUserProfilePage() {
 
           {/* Course Progress */}
           <div className="space-y-5 pt-3">
-            <h3 className="text-xl font-bold text-[#1E293B]">Course Progress</h3>
+            <h3 className="text-xl font-bold text-[#1E293B]">{t("coursesTitle")}</h3>
             <div className="space-y-4">
               {data.courses.length === 0 ? (
-                <div className="text-sm text-slate-500 py-4 bg-white rounded-2xl p-6 shadow-sm border-0">No course progress available.</div>
+                <div className="text-sm text-slate-500 py-4 bg-white rounded-2xl p-6 shadow-sm border-0">
+                  {t("noCourseProgressDetail")}
+                </div>
               ) : (
                 data.courses.map((c, i) => (
                   <Card key={c.id} className="border-0 shadow-sm hover:shadow-md transition-shadow rounded-[20px] p-5 flex items-center gap-6 bg-white overflow-hidden relative">
-                    {/* Fake mockup images by index */}
-                    <div className="h-[72px] w-[108px] rounded-xl flex-shrink-0 bg-cover bg-center" style={{ 
-                      backgroundImage: i % 2 === 0 ? "linear-gradient(135deg, #81D4C6 0%, #68BBAE 100%)" : "linear-gradient(135deg, #F9F1EB 0%, #EFE1D6 100%)" 
-                    }}>
-                      {i % 2 !== 0 && (
-                        <div className="w-full h-full flex items-center justify-center opacity-60 bg-white/20">
-                           <div className="w-4 h-6 border-2 border-[#b09e8d] rounded-sm mx-1"></div>
-                           <div className="w-4 h-6 border-2 border-[#b09e8d] rounded-sm mx-1 mt-1"></div>
-                           <div className="w-4 h-6 border-2 border-[#b09e8d] rounded-sm mx-1 -mt-1"></div>
-                        </div>
-                      )}
-                    </div>
+                    <div
+                      className="h-[72px] w-[108px] rounded-xl shrink-0 bg-slate-100 bg-cover bg-center border border-slate-100"
+                      style={
+                        c.coverImageUrl
+                          ? { backgroundImage: `url(${c.coverImageUrl})` }
+                          : {
+                              backgroundImage:
+                                i % 2 === 0
+                                  ? "linear-gradient(135deg, #81D4C6 0%, #68BBAE 100%)"
+                                  : "linear-gradient(135deg, #F9F1EB 0%, #EFE1D6 100%)",
+                            }
+                      }
+                      aria-hidden
+                    />
                     <div className="flex-1 min-w-0 pr-8">
                       <h4 className="font-bold text-[#1E293B] text-[16px] truncate">{c.title}</h4>
+                      <p className="text-[12px] text-slate-500 mt-1">
+                        {t("lessonsProgressLine", {
+                          completed: c.completedLessons,
+                          total: c.totalLessons,
+                        })}
+                      </p>
                       <div className="flex items-center gap-4 mt-3">
                         <div className="h-2 flex-1 bg-[#F1F5F9] rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${c.status === 'completed' ? 'bg-[#008761]' : 'bg-[#3B82F6]'}`} style={{ width: `${c.progressPercent}%` }} />
@@ -445,7 +595,7 @@ export default function AdminUserProfilePage() {
                         c.status === 'in_progress' ? 'bg-[#dbeafe] text-[#1d4ed8] hover:bg-[#bfdbfe] border-0' :
                         'bg-slate-100 text-slate-600 hover:bg-slate-200 border-0'
                       }`}>
-                        {c.status.replace('_', ' ')}
+                        {t(`status.${c.status}`)}
                       </Badge>
                       <Button variant="ghost" size="icon" className="text-[#94A3B8] hover:text-[#0f766e] hover:bg-[#ccfbf1]/50 h-9 w-9 rounded-full" onClick={() => openResetDialog({ scope: "course", courseId: c.id })}>
                         <RefreshCw className="h-[18px] w-[18px]" />
@@ -459,22 +609,34 @@ export default function AdminUserProfilePage() {
 
           {/* Quiz Progress */}
           <div className="space-y-4 pt-3">
-            <h3 className="text-xl font-bold text-[#1E293B]">Quiz Progress</h3>
+            <h3 className="text-xl font-bold text-[#1E293B]">{t("quizzesTitle")}</h3>
             <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
               <Table>
                 <TableHeader className="bg-[#F8FAFC]">
                   <TableRow className="border-b border-white hover:bg-transparent">
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6">Quiz Name</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[160px]">Status</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-center w-[120px]">Attempts</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-center w-[120px]">Best Score</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-right pr-8 w-[100px]">Action</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6">
+                      {t("titleCol")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[160px]">
+                      {t("statusCol")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-center w-[120px]">
+                      {t("attempts")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-center w-[120px]">
+                      {t("bestScore")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-right pr-8 w-[100px]">
+                      {t("actionsCol")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.quizzes.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-slate-500 py-8">No quiz progress available.</TableCell>
+                      <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                        {t("noQuizProgressDetail")}
+                      </TableCell>
                     </TableRow>
                   ) : (
                     data.quizzes.map(q => (
@@ -486,7 +648,7 @@ export default function AdminUserProfilePage() {
                             q.status === 'in_progress' ? 'bg-[#e0e7ff] text-[#4338ca] hover:bg-[#c7d2fe] border-0' :
                             'bg-slate-100 text-slate-600 hover:bg-slate-200 border-0'
                           }`}>
-                            {q.status === 'completed' ? 'PASSED' : q.status.replace('_', ' ')}
+                            {q.status === "completed" ? t("passed") : t(`status.${q.status}`)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-[#475569] text-center text-[14px] font-medium">{q.attempts}</TableCell>
@@ -506,26 +668,39 @@ export default function AdminUserProfilePage() {
 
           {/* Point Allocations */}
           <div className="space-y-4 pt-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-[#1E293B]">Point Allocations</h3>
-              <Button variant="ghost" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-[13px] font-bold flex gap-2 h-9 px-4 rounded-xl" onClick={() => openResetDialog({ scope: "points", resetPointsMode: "total" })}>
-                <RefreshCw className="h-[14px] w-[14px]" /> Reset points
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-[#1E293B]">{t("pointAllocationsTitle")}</h3>
+                {data.pointLogsPagination.total > 0 ? (
+                  <p className="text-[12px] text-slate-500 mt-1">
+                    {t("pointAllocationsDescription", {
+                      showing: data.pointLogs.length,
+                      total: data.pointLogsPagination.total,
+                    })}
+                  </p>
+                ) : null}
+              </div>
+              <Button variant="ghost" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 text-[13px] font-bold flex gap-2 h-9 px-4 rounded-xl w-fit" onClick={() => openResetDialog({ scope: "points", resetPointsMode: "total" })}>
+                <RefreshCw className="h-[14px] w-[14px]" /> {t("resetPointsFromProfile")}
               </Button>
             </div>
             <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white">
               <Table>
                 <TableHeader className="bg-[#F8FAFC]">
                   <TableRow className="border-b border-white hover:bg-transparent">
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6 w-[20%]">Date</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[15%]">Amount</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[45%]">Reason</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[20%]">Category</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6 w-[20%]">{t("dateCol")}</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[15%]">{t("amountCol")}</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[40%]">{t("reasonCol")}</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 w-[15%]">{t("categoryCol")}</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 text-right pr-8 w-[100px]">{t("actionCol")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.pointLogs.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-slate-500 py-8">No point logs found.</TableCell>
+                      <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                        {t("noPointLogs")}
+                      </TableCell>
                     </TableRow>
                   ) : (
                     data.pointLogs.map(log => (
@@ -536,94 +711,153 @@ export default function AdminUserProfilePage() {
                         <TableCell className={`font-bold text-[15px] ${log.amount >= 0 ? "text-[#008761]" : "text-rose-600"}`}>
                           {log.amount > 0 ? "+" : ""}{log.amount.toLocaleString()}
                         </TableCell>
-                        <TableCell className="text-[14px] text-[#334155] font-medium">{log.reason}</TableCell>
+                        <TableCell className="text-[14px] text-[#334155] font-medium">
+                          {log.reasonDisplay ?? log.reason}
+                        </TableCell>
                         <TableCell>
                           <span className="text-[9px] font-bold text-[#94A3B8] uppercase tracking-widest">
-                            {log.reason.toLowerCase().includes('quiz') ? 'ACADEMIC' : 
-                             log.reason.toLowerCase().includes('course') ? 'COURSE_BONUS' : 
-                             'ENGAGEMENT'}
+                            {pointLogCategoryLabel(log.reason, t)}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-[#94A3B8] hover:text-white hover:bg-rose-500 h-[34px] w-[34px] rounded-lg transition-colors"
+                            disabled={archivingLogId !== null}
+                            aria-label={t("removePointLog")}
+                            onClick={() => openArchiveDialog(log)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
+              {data.pointLogsPagination.pages > 1 ? (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-3 border-t border-[#F1F5F9]">
+                  <span className="text-[12px] text-slate-500">
+                    {t("pageOf", {
+                      page: data.pointLogsPagination.page,
+                      pages: data.pointLogsPagination.pages,
+                    })}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={pointsPage <= 1 || loading}
+                      onClick={() => setPointsPage((p) => Math.max(1, p - 1))}
+                    >
+                      {t("previous")}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={pointsPage >= data.pointLogsPagination.pages || loading}
+                      onClick={() => setPointsPage((p) => p + 1)}
+                    >
+                      {t("next")}
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </Card>
           </div>
 
           {/* User Activity Log */}
           <div className="space-y-4 pt-4 pb-8">
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-[#1E293B]">User Activity Log</h3>
-              <div className="flex items-center gap-2 text-[10px] font-bold text-[#008761] uppercase tracking-widest cursor-pointer hover:opacity-80 transition-opacity bg-teal-50 px-3 py-1.5 rounded-full">
-                LAST 24 HOURS <div className="h-1.5 w-1.5 rounded-full bg-[#008761]" />
+              <h3 className="text-xl font-bold text-[#1E293B]">{t("activityLogTitle")}</h3>
+              <div
+                className="flex items-center gap-2 text-[10px] font-bold text-[#008761] uppercase tracking-widest bg-teal-50 px-3 py-1.5 rounded-full"
+                title={t("activityWindowHint", { hours: data.activityWindow?.hours ?? 24 })}
+              >
+                {t("activityLastHours", { hours: data.activityWindow?.hours ?? 24 })}{" "}
+                <div className="h-1.5 w-1.5 rounded-full bg-[#008761]" />
               </div>
             </div>
             <Card className="border-0 shadow-sm rounded-2xl overflow-hidden bg-white p-0 pb-4">
               <Table>
                 <TableHeader className="bg-transparent">
                   <TableRow className="border-b border-[#F1F5F9] hover:bg-transparent">
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6 border-b-0 w-[20%]">Date & Time</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[20%]">Activity Type</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[40%]">Details</TableHead>
-                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[20%]">Device / IP</TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 pl-6 border-b-0 w-[20%]">
+                      {t("activityDateTimeCol")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[20%]">
+                      {t("activityTypeCol")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[40%]">
+                      {t("activityDetailsCol")}
+                    </TableHead>
+                    <TableHead className="text-[10px] font-bold text-[#64748B] uppercase tracking-widest h-14 border-b-0 w-[20%]">
+                      {t("activityDeviceCol")}
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition-colors">
-                    <TableCell className="py-4 pl-6">
-                      <div className="text-[13px] font-medium text-[#334155]">Mar 15, 2024</div>
-                      <div className="text-[11px] text-[#94A3B8] mt-1">02:30 PM</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="bg-[#ecfdf5] text-[#059669] hover:bg-[#d1fae5] border-0 text-[10px] font-bold uppercase tracking-[0.05em] px-2.5 py-1 whitespace-nowrap rounded-[6px]">LESSON_COMPLETED</Badge>
-                    </TableCell>
-                    <TableCell className="text-[13px] font-medium text-[#475569]">Completed 'Digital Marketing' lesson</TableCell>
-                    <TableCell>
-                      <div className="text-[12px] font-medium text-[#64748B] flex items-center gap-2">
-                        <Monitor className="h-4 w-4 text-[#94A3B8]" /> Chrome on Windows
-                      </div>
-                      <div className="text-[10px] text-[#CBD5E1] ml-6 mt-1 tracking-wider">192.168.1.1</div>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition-colors">
-                    <TableCell className="py-4 pl-6">
-                      <div className="text-[13px] font-medium text-[#334155]">Mar 15, 2024</div>
-                      <div className="text-[11px] text-[#94A3B8] mt-1">11:15 AM</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="bg-[#e0e7ff] text-[#4338ca] hover:bg-[#c7d2fe] border-0 text-[10px] font-bold uppercase tracking-[0.05em] px-2.5 py-1 whitespace-nowrap rounded-[6px]">QUIZ_ATTEMPTED</Badge>
-                    </TableCell>
-                    <TableCell className="text-[13px] font-medium text-[#475569]">Attempted 'SEO Strategies' quiz</TableCell>
-                    <TableCell>
-                      <div className="text-[12px] font-medium text-[#64748B] flex items-center gap-2">
-                        <Smartphone className="h-4 w-4 text-[#94A3B8]" /> Safari on iOS
-                      </div>
-                      <div className="text-[10px] text-[#CBD5E1] ml-6 mt-1 tracking-wider">172.16.254.1</div>
-                    </TableCell>
-                  </TableRow>
-                  <TableRow className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition-colors">
-                    <TableCell className="py-4 pl-6">
-                      <div className="text-[13px] font-medium text-[#334155]">Mar 14, 2024</div>
-                      <div className="text-[11px] text-[#94A3B8] mt-1">09:00 AM</div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="bg-[#ecfdf5] text-[#059669] hover:bg-[#d1fae5] border-0 text-[10px] font-bold uppercase tracking-[0.05em] px-2.5 py-1 whitespace-nowrap rounded-[6px]">USER_LOGIN</Badge>
-                    </TableCell>
-                    <TableCell className="text-[13px] font-medium text-[#475569]">Signed into LMS Dashboard</TableCell>
-                    <TableCell>
-                      <div className="text-[12px] font-medium text-[#64748B] flex items-center gap-2">
-                        <Monitor className="h-4 w-4 text-[#94A3B8]" /> Chrome on Windows
-                      </div>
-                      <div className="text-[10px] text-[#CBD5E1] ml-6 mt-1 tracking-wider">192.168.1.1</div>
-                    </TableCell>
-                  </TableRow>
+                  {(data.activityLog?.length ?? 0) === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-slate-500 py-10">
+                        {t("activityEmpty")}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data.activityLog.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="border-b border-[#F1F5F9] hover:bg-[#F8FAFC] transition-colors"
+                      >
+                        <TableCell className="py-4 pl-6">
+                          <div className="text-[13px] font-medium text-[#334155]">
+                            {format(new Date(row.occurredAt), "MMM d, yyyy")}
+                          </div>
+                          <div className="text-[11px] text-[#94A3B8] mt-1">
+                            {format(new Date(row.occurredAt), "h:mm a")}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`${securityActivityBadgeClass(row.action, row.category)} text-[10px] font-bold uppercase tracking-[0.05em] px-2.5 py-1 whitespace-nowrap rounded-[6px] max-w-[200px] truncate inline-block`}
+                            title={row.activityType}
+                          >
+                            {row.activityType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-[13px] font-medium text-[#475569] max-w-md">
+                          <span className="line-clamp-3">{row.details}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-[12px] font-medium text-[#64748B] flex items-center gap-2">
+                            {row.isMobile ? (
+                              <Smartphone className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                            ) : (
+                              <Monitor className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                            )}
+                            {row.deviceLabel}
+                          </div>
+                          {row.ipAddress ? (
+                            <div className="text-[10px] text-[#CBD5E1] ml-6 mt-1 tracking-wider font-mono">
+                              {row.ipAddress}
+                            </div>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
               <div className="mt-5 text-center">
-                <Link href="#" className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#008761] uppercase tracking-[0.1em] hover:text-[#007050] transition-colors">
-                  VIEW ALL ACTIVITY
+                <Link
+                  href="/dashboard/audit-logs"
+                  className="flex items-center justify-center gap-2 text-[11px] font-bold text-[#008761] uppercase tracking-[0.1em] hover:text-[#007050] transition-colors"
+                >
+                  {tAudit("viewAllAuditLogs")}
                 </Link>
               </div>
             </Card>
@@ -777,7 +1011,8 @@ export default function AdminUserProfilePage() {
                         />
                         <label htmlFor={`profile-log-${log.id}`} className="text-sm cursor-pointer">
                           {log.amount > 0 ? "+" : ""}
-                          {log.amount} — {log.reason} ({new Date(log.createdAt).toLocaleDateString()})
+                          {log.amount} — {log.reasonDisplay ?? log.reason}{" "}
+                          ({new Date(log.createdAt).toLocaleDateString()})
                         </label>
                       </div>
                     ))}
@@ -829,6 +1064,58 @@ export default function AdminUserProfilePage() {
                 onClick={() => void handleConfirmReset()}
               >
                 {isResetting ? tu("resetting") : tu("confirmReset")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={archiveDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) closeArchiveDialog();
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("removePointLogTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">{t("removePointLogDescription")}</p>
+            {logToArchive && (
+              <p className="text-sm font-medium text-[#334155]">
+                {t("removePointLogConfirmHint", {
+                  amount:
+                    (logToArchive.amount > 0 ? "+" : "") + logToArchive.amount.toLocaleString(),
+                  date: format(new Date(logToArchive.createdAt), "MMM d, yyyy"),
+                })}
+              </p>
+            )}
+            {archiveError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded text-sm">
+                {archiveError}
+              </div>
+            )}
+            <div className="space-y-1">
+              <label className="text-sm font-medium">{t("archiveReasonLabel")}</label>
+              <Textarea
+                value={archiveReason}
+                onChange={(e) => setArchiveReason(e.target.value)}
+                placeholder={t("archiveReasonPlaceholder")}
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" onClick={closeArchiveDialog}>
+                {tu("cancel")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={archivingLogId !== null || archiveReason.trim().length === 0}
+                onClick={() => void handleConfirmArchivePointLog()}
+              >
+                {archivingLogId ? t("archivingPointLog") : t("archivePointLog")}
               </Button>
             </div>
           </div>

@@ -37,6 +37,7 @@ model User {
   points          Int             @default(0)
   lifetimePoints  Int             @default(0)
   pointLogs       PointLog[]
+  pointLogArchives PointLogArchive[]
   rewardsRedeemed RewardLog[]
   quizProgress    QuizProgress[]
   quizAttempts    QuizAttempt[]
@@ -251,6 +252,25 @@ model PointLog {
   @@index([reason, createdAt(sort: Desc)]) // Recent activity by reason
   @@index([userId, reason]) // User's points by reason
   @@map("point_logs")
+}
+
+/// Point log rows removed from active history by an admin; original row is deleted from PointLog.
+model PointLogArchive {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String   @db.ObjectId
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalLogId       String
+  amount              Int
+  reason              String
+  logCreatedAt        DateTime
+  archivedAt          DateTime @default(now())
+  archivedByClerkId   String
+  adminReason         String
+
+  @@index([userId])
+  @@index([userId, archivedAt(sort: Desc)])
+  @@index([originalLogId])
+  @@map("point_log_archives")
 }
 
 model Reward {

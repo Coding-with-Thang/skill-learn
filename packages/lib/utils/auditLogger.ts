@@ -296,6 +296,39 @@ export async function userPointsAdjustedForReset(
   );
 }
 
+export async function adminPointLogArchived(
+  adminClerkId: string,
+  targetUserDbId: string,
+  details: {
+    archiveId: string;
+    originalLogId: string;
+    amount: number;
+    logReason: string;
+    adminReason: string;
+    newPoints: number;
+    newLifetimePoints: number;
+  },
+  options: AuditLogOptions = {}
+) {
+  await logAuditEvent(
+    adminClerkId,
+    "delete",
+    "points",
+    details.originalLogId,
+    `Archived point log (${details.amount}) for user; balances updated`,
+    {
+      eventType: "points.log_archived",
+      category: SECURITY_EVENT_CATEGORIES.POINTS,
+      severity: "high",
+      eventDetails: {
+        targetUserId: targetUserDbId,
+        ...details,
+      },
+      ...options,
+    }
+  );
+}
+
 export async function adminQuizProgressReset(
   adminClerkId: string,
   targetUserId: string,
