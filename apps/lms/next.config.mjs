@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import createNextIntlPlugin from "next-intl/plugin";
+import { getSecurityHeaderRouteRules } from "../../scripts/next-security-headers.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,9 +85,9 @@ const nextConfig = {
       },
     ],
   },
-  // Add caching headers
   async headers() {
     return [
+      ...getSecurityHeaderRouteRules(),
       {
         source: "/api/categories",
         headers: [

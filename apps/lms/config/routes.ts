@@ -62,6 +62,11 @@ export const rateLimits = {
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 200, // 200 requests per window
   },
+  /** Unauthenticated webhooks — tighter cap to limit signature-verify abuse */
+  webhook: {
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+  },
   protected: {
     windowMs: 60 * 1000, // 1 minute
     max: 120, // 120 requests per window

@@ -106,8 +106,14 @@ const proxy = clerkMiddleware(async (auth, req) => {
     const isProtected = !isPublic;
 
     // Apply rate limiting based on route type
-    // Protected routes are strictly rate limited, public routes are more lenient
-    const rateLimit = isProtected ? rateLimits.protected : rateLimits.public;
+    const isWebhookPath =
+      pathWithoutLocale.startsWith("/api/webhooks") ||
+      pathWithoutLocale.startsWith("/api/stripe/webhook");
+    const rateLimit = isWebhookPath
+      ? rateLimits.webhook
+      : isProtected
+        ? rateLimits.protected
+        : rateLimits.public;
     const rateLimitResult = await rateLimiter(ip, rateLimit);
 
     if (!rateLimitResult.success) {

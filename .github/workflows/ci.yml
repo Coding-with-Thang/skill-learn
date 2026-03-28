@@ -24,6 +24,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit production dependencies (critical only)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Report high severity issues (informational)
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
       - name: Validate Prisma schema
         run: npx prisma validate --schema=packages/database/prisma/schema.prisma
 

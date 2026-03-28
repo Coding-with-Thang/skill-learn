@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "../../../../packages/lib/utils/security/eventTypes";
 
@@ -138,6 +139,46 @@ describe("tenant user-roles route integration", () => {
       tenantRoleId: "507f1f77bcf86cd799439031",
       roleAlias: "Manager",
     });
+  });
+
+  it("POST does not log security event when tenant context is denied", async () => {
+    mocks.requireTenantContext.mockResolvedValue(
+      NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    );
+
+    const request = new Request("http://localhost/api/tenant/user-roles", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        userId: "clerk_user_1",
+        tenantRoleId: "507f1f77bcf86cd799439031",
+      }),
+    });
+
+    const response = await routeModule.POST(request as never);
+
+    expect(response.status).toBe(401);
+    expect(mocks.logSecurityEvent).not.toHaveBeenCalled();
+  });
+
+  it("POST does not log security event when permission check fails", async () => {
+    mocks.requirePermission.mockResolvedValue(
+      NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    );
+
+    const request = new Request("http://localhost/api/tenant/user-roles", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        userId: "clerk_user_1",
+        tenantRoleId: "507f1f77bcf86cd799439031",
+      }),
+    });
+
+    const response = await routeModule.POST(request as never);
+
+    expect(response.status).toBe(403);
+    expect(mocks.logSecurityEvent).not.toHaveBeenCalled();
   });
 
   it("DELETE removes assignment and emits RBAC_ROLE_UNASSIGNED payload", async () => {

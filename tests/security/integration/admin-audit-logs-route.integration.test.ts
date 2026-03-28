@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "../../../../packages/lib/utils/security/eventTypes";
 
@@ -84,6 +85,27 @@ describe("admin audit-logs route integration", () => {
         outcome: "success",
       })
     );
+  });
+
+  it("POST does not log security event when admin check fails", async () => {
+    mocks.requireAdmin.mockResolvedValue(
+      NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    );
+
+    const request = new Request("http://localhost/api/admin/audit-logs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        action: "create",
+        resource: "reward",
+        resourceId: "507f1f77bcf86cd799439012",
+      }),
+    });
+
+    const response = await routeModule.POST(request as never);
+
+    expect(response.status).toBe(403);
+    expect(mocks.logSecurityEvent).not.toHaveBeenCalled();
   });
 
   it("POST forwards explicit event classification fields", async () => {
