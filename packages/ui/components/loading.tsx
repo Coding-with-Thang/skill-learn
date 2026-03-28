@@ -6,18 +6,18 @@ import { Skeleton } from "./skeleton"
 
 export function LoadingSpinner({ className, size = "default" }: { className?: string, size?: "small" | "default" | "large" }) {
   // Map old size names to new size names
-  const sizeMap = {
+  const sizeMap: Record<typeof size, "sm" | "md" | "lg"> = {
     small: "sm",
     default: "md",
-    large: "lg"
-  }
+    large: "lg",
+  };
 
   return (
     <div className="flex justify-center items-center w-full p-4">
       <Loader
         variant="spinner"
-        size={sizeMap[size] || size}
-        className={className}
+        size={sizeMap[size]}
+        {...(className ? { className } : {})}
       />
     </div>
   )

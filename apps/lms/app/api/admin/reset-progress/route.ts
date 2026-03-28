@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         results.coursesReset = courseRows.length;
 
         const pointsResult = await applyPointsReset(tx, userId, reason, resetPointsMode, pointLogIds ?? []);
-        results.pointsAdjustment = pointsResult ?? undefined;
+        results.pointsAdjustment = pointsResult;
 
         await adminResetAllProgress(
           adminClerkId,
@@ -193,7 +193,7 @@ export async function POST(req: NextRequest) {
         }
         results.quizId = quizId;
         const pointsResult = await applyPointsReset(tx, userId, reason, resetPointsMode, pointLogIds ?? []);
-        results.pointsAdjustment = pointsResult ?? undefined;
+        results.pointsAdjustment = pointsResult;
 
         await adminQuizProgressReset(adminClerkId, userId, quizId, reason, beforeState, {
           tenantId: tenantId ?? undefined,
@@ -235,7 +235,7 @@ export async function POST(req: NextRequest) {
         }
         results.courseId = courseId;
         const pointsResult = await applyPointsReset(tx, userId, reason, resetPointsMode, pointLogIds ?? []);
-        results.pointsAdjustment = pointsResult ?? undefined;
+        results.pointsAdjustment = pointsResult;
 
         await adminCourseProgressReset(adminClerkId, userId, courseId, reason, {
           tenantId: tenantId ?? undefined,
@@ -255,7 +255,7 @@ export async function POST(req: NextRequest) {
 
       if (scope === "points") {
         const pointsResult = await applyPointsReset(tx, userId, reason, resetPointsMode, pointLogIds ?? []);
-        results.pointsAdjustment = pointsResult ?? undefined;
+        results.pointsAdjustment = pointsResult;
         if (results.pointsAdjustment) {
           await userPointsAdjustedForReset(
             adminClerkId,

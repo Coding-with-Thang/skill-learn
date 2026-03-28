@@ -209,7 +209,9 @@ export async function GET(request: NextRequest, { params }: Params) {
       ]);
 
     const lessonDoneSet = new Set(lessonProgressRows.map((l) => l.lessonId));
-    const courseProgressByCourseId = new Map(courseProgressRows.map((r) => [r.courseId, r]));
+    const courseProgressByCourseId = new Map(
+      courseProgressRows.map((r) => [r.courseId, r] as const)
+    );
 
     const courseItems = courses.map((course) => {
       const lessonIds = course.chapters.flatMap((ch) => ch.lessons.map((l) => l.id));
@@ -251,7 +253,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       })
     );
 
-    const qpByQuiz = new Map(qpRows.map((r) => [r.quizId, r]));
+    const qpByQuiz = new Map(qpRows.map((r) => [r.quizId, r] as const));
     const quizItems = quizzesCatalog.map((quiz) => {
       const qp = qpByQuiz.get(quiz.id);
       const attempts = qp?.attempts ?? 0;

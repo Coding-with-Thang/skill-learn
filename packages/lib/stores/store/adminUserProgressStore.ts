@@ -70,15 +70,26 @@ export const useAdminUserProgressStore = create<AdminUserProgressStore>((set, ge
     set({ isLoading: true, error: null });
 
     try {
-      const response = await api.post("/admin/reset-progress", {
+      const payload: {
+        userId: string;
+        reason: string;
+        scope: "all" | "quiz" | "course" | "points";
+        quizId?: string;
+        courseId?: string;
+        resetPointsMode: "none" | "total" | "logs";
+        pointLogIds: string[];
+      } = {
         userId,
         reason,
         scope,
-        quizId: scope === "quiz" ? quizId : undefined,
-        courseId: scope === "course" ? courseId : undefined,
-        resetPointsMode: scope === "points" ? (resetPointsMode === "none" ? "total" : resetPointsMode) : resetPointsMode,
+        resetPointsMode:
+          scope === "points" ? (resetPointsMode === "none" ? "total" : resetPointsMode) : resetPointsMode,
         pointLogIds: resetPointsMode === "logs" ? pointLogIds : [],
-      });
+      };
+      if (scope === "quiz" && quizId) payload.quizId = quizId;
+      if (scope === "course" && courseId) payload.courseId = courseId;
+
+      const response = await api.post("/admin/reset-progress", payload);
 
       const data = parseApiResponse(response) as
         | {
@@ -90,13 +101,16 @@ export const useAdminUserProgressStore = create<AdminUserProgressStore>((set, ge
         | null;
 
       set({ isLoading: false, error: null });
-      return data
-        ? {
-            quizzesReset: data.quizzesReset,
-            coursesReset: data.coursesReset,
-            pointsAdjustment: data.pointsAdjustment ?? undefined,
-          }
-        : null;
+      if (!data) return null;
+      const out: {
+        quizzesReset?: number;
+        coursesReset?: number;
+        pointsAdjustment?: { newPoints: number; delta: number };
+      } = {};
+      if (data.quizzesReset !== undefined) out.quizzesReset = data.quizzesReset;
+      if (data.coursesReset !== undefined) out.coursesReset = data.coursesReset;
+      if (data.pointsAdjustment != null) out.pointsAdjustment = data.pointsAdjustment;
+      return out;
     } catch (error) {
       set({
         isLoading: false,

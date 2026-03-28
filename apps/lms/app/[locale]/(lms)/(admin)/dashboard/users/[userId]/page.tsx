@@ -354,8 +354,8 @@ export default function AdminUserProfilePage() {
       userId,
       reason: resetReason.trim() || tu("defaultResetReason"),
       scope: resetScope,
-      quizId: resetScope === "quiz" ? resetQuizId : undefined,
-      courseId: resetScope === "course" ? resetCourseId : undefined,
+      ...(resetScope === "quiz" && resetQuizId ? { quizId: resetQuizId } : {}),
+      ...(resetScope === "course" && resetCourseId ? { courseId: resetCourseId } : {}),
       resetPointsMode:
         resetScope === "all" || resetScope === "quiz" || resetScope === "course"
           ? resetPointsMode

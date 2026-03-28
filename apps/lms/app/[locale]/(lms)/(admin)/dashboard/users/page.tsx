@@ -186,9 +186,16 @@ export default function UsersPage() {
       userId: userToReset.id,
       reason: resetReason.trim() || t("defaultResetReason"),
       scope: resetScope,
-      quizId: resetScope === "quiz" ? resetQuizId : undefined,
-      courseId: resetScope === "course" ? resetCourseId : undefined,
-      resetPointsMode: resetScope === "all" || resetScope === "quiz" || resetScope === "course" ? resetPointsMode : resetScope === "points" ? (resetPointsMode === "none" ? "total" : resetPointsMode) : "none",
+      ...(resetScope === "quiz" && resetQuizId ? { quizId: resetQuizId } : {}),
+      ...(resetScope === "course" && resetCourseId ? { courseId: resetCourseId } : {}),
+      resetPointsMode:
+        resetScope === "all" || resetScope === "quiz" || resetScope === "course"
+          ? resetPointsMode
+          : resetScope === "points"
+            ? resetPointsMode === "none"
+              ? "total"
+              : resetPointsMode
+            : "none",
       pointLogIds: resetPointsMode === "logs" ? selectedPointLogIds : [],
     })
     setUserToReset(null)
