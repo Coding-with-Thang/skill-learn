@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from "@skill-learn/database";
 import { ensureUserHasDefaultRole } from './tenantDefaultRole';
+import { isUserRecordActive } from "./tenantUserActive";
 
 /**
  * Tenant context utilities for multi-tenant applications
@@ -31,6 +32,7 @@ export async function getTenantContext() {
       id: true,
       tenantId: true,
       role: true,
+      isActive: true,
       tenant: {
         select: {
           id: true,
@@ -47,6 +49,18 @@ export async function getTenantContext() {
     return NextResponse.json(
       { error: "User not found" },
       { status: 404 }
+    );
+  }
+
+  if (!isUserRecordActive(user.isActive)) {
+    return NextResponse.json(
+      {
+        error: "Account deactivated",
+        code: "ACCOUNT_DEACTIVATED",
+        message:
+          "Your account has been deactivated. Contact your organization administrator.",
+      },
+      { status: 403 }
     );
   }
 
@@ -99,6 +113,7 @@ export async function getTenantContextForAction() {
       id: true,
       tenantId: true,
       role: true,
+      isActive: true,
       tenant: {
         select: {
           id: true,
@@ -113,6 +128,10 @@ export async function getTenantContextForAction() {
 
   if (!user) {
     throw new Error("User not found");
+  }
+
+  if (!isUserRecordActive(user.isActive)) {
+    throw new Error("Account deactivated");
   }
 
   if (!user.tenantId) {

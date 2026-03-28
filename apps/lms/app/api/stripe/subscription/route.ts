@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 import {
   stripe,
   getSubscription,
@@ -23,6 +24,11 @@ export async function GET(_request: NextRequest) {
     
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+
+    const inactiveGet = await rejectIfAccountInactive(userId);
+    if (inactiveGet) {
+      return inactiveGet;
     }
     
     // Get user's tenant
@@ -134,6 +140,11 @@ export async function PATCH(request: NextRequest) {
     
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+
+    const inactivePatch = await rejectIfAccountInactive(userId);
+    if (inactivePatch) {
+      return inactivePatch;
     }
     
     const { action, newPlanId, interval } = await request.json();

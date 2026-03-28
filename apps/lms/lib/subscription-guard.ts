@@ -1,4 +1,5 @@
 import { prisma } from "@skill-learn/database";
+import { isUserRecordActive } from "@skill-learn/lib/utils/tenantUserActive";
 
 /**
  * Subscription status types
@@ -48,6 +49,7 @@ export async function checkSubscriptionAccess(clerkUserId) {
         id: true,
         tenantId: true,
         role: true,
+        isActive: true,
         tenant: {
           select: {
             id: true,
@@ -72,6 +74,17 @@ export async function checkSubscriptionAccess(clerkUserId) {
         tenant: null,
         message: "Please complete onboarding",
         redirectTo: "/onboarding/workspace",
+      };
+    }
+
+    if (!isUserRecordActive(user.isActive)) {
+      return {
+        status: SUBSCRIPTION_STATUS.NONE,
+        accessLevel: ACCESS_LEVEL.BLOCKED,
+        tenant: user.tenant ?? null,
+        message:
+          "Your account has been deactivated. Contact your organization administrator.",
+        accountDeactivated: true,
       };
     }
 
@@ -207,7 +220,7 @@ export function canPerformAction(accessLevel, action) {
  */
 export async function getSubscriptionStatus(clerkUserId) {
   const access = await checkSubscriptionAccess(clerkUserId);
-  
+
   return {
     isActive: [ACCESS_LEVEL.FULL, ACCESS_LEVEL.LIMITED].includes(access.accessLevel),
     isTrialing: access.status === SUBSCRIPTION_STATUS.TRIALING,
@@ -221,5 +234,8 @@ export async function getSubscriptionStatus(clerkUserId) {
     message: access.message,
     redirectTo: access.redirectTo,
     showWarning: access.showWarning,
+    accountDeactivated: Boolean(
+      (access as { accountDeactivated?: boolean }).accountDeactivated
+    ),
   };
 }

@@ -3,6 +3,10 @@ import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { requireSuperAdmin } from "@skill-learn/lib/utils/auth";
 import { syncUserMetadataToClerk } from "@skill-learn/lib/utils/clerkSync";
+import {
+  countActiveTenantUsers,
+  isUserRecordActive,
+} from "@skill-learn/lib/utils/tenantUserActive";
 import type { RouteContext } from "@/types";
 
 type TenantUserParams = { tenantId: string; userId: string };
@@ -131,6 +135,95 @@ export async function PUT(
     console.error("Error updating tenant user:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to update user. Please try again." },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * PATCH /api/tenants/[tenantId]/users/[userId]
+ * Toggle LMS access: body `{ isActive: boolean }`. [userId] is Clerk ID.
+ * Enforces at least one active user per tenant.
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteContext<TenantUserParams>
+) {
+  try {
+    const adminResult = await requireSuperAdmin();
+    if (adminResult instanceof NextResponse) {
+      return adminResult;
+    }
+
+    const { tenantId, userId: clerkId } = await params;
+    let body: { isActive?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    }
+
+    if (typeof body.isActive !== "boolean") {
+      return NextResponse.json(
+        { error: "isActive (boolean) is required." },
+        { status: 400 }
+      );
+    }
+
+    const { isActive } = body;
+
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { id: true },
+    });
+    if (!tenant) {
+      return NextResponse.json({ error: "Tenant not found." }, { status: 404 });
+    }
+
+    const dbUser = await prisma.user.findFirst({
+      where: { clerkId, tenantId },
+      select: { id: true, isActive: true },
+    });
+    if (!dbUser) {
+      return NextResponse.json(
+        { error: "User not found in this tenant." },
+        { status: 404 }
+      );
+    }
+
+    if (isActive === false && isUserRecordActive(dbUser.isActive)) {
+      const others = await countActiveTenantUsers(tenantId, {
+        excludeUserId: dbUser.id,
+      });
+      if (others < 1) {
+        return NextResponse.json(
+          {
+            error:
+              "Each organization must keep at least one active user. Activate another user first or add a new user.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: dbUser.id },
+      data: { isActive },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: isActive ? "User reactivated." : "User deactivated.",
+    });
+  } catch (error) {
+    console.error("Error updating user activation:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to update user. Please try again.",
+      },
       { status: 500 }
     );
   }

@@ -2933,7 +2933,18 @@
     "resetPointsModeLogs": "Inverser des journaux de points spécifiques",
     "defaultResetReason": "Réinitialisation de la progression par un administrateur",
     "resetting": "Réinitialisation...",
-    "confirmReset": "Confirmer la réinitialisation"
+    "confirmReset": "Confirmer la réinitialisation",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "deactivate": "Désactiver",
+    "reactivate": "Réactiver",
+    "deactivateConfirmTitle": "Désactiver l'utilisateur ?",
+    "deactivateConfirmDescription": "Désactiver {name} ? Il ne pourra pas se connecter tant qu'il n'est pas réactivé.",
+    "reactivateConfirmTitle": "Réactiver l'utilisateur ?",
+    "reactivateConfirmDescription": "Rétablir l'accès pour {name} ?",
+    "cannotDeactivateLastUser": "Votre organisation doit conserver au moins un utilisateur actif.",
+    "toggleActiveError": "Impossible de mettre à jour le statut de l'utilisateur"
   },
   "adminUserProfile": {
     "backToUsers": "Retour aux utilisateurs",

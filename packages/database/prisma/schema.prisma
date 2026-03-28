@@ -46,6 +46,8 @@ model User {
   longestStreak   Int             @default(0)
   lastStreakDate  DateTime?
   streakUpdatedAt DateTime?       @default(now())
+  /// When false, the user cannot access the LMS. Each tenant must keep at least one active user.
+  isActive        Boolean         @default(true)
   systemSettings  SystemSetting[]
   quizzes         Quiz[]
   courses         Course[]
@@ -69,6 +71,7 @@ model User {
   @@index([firstName, lastName]) // Full name search
   @@index([username, firstName, lastName]) // Comprehensive user search
   @@index([tenantId, reportsToUserId]) // Reporting hierarchy per tenant
+  @@index([tenantId, isActive])
   @@map("users")
 }
 

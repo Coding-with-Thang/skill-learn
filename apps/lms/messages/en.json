@@ -3024,7 +3024,18 @@
     "resetPointsModeLogs": "Reverse specific point logs",
     "defaultResetReason": "Admin reset of user progress",
     "resetting": "Resetting...",
-    "confirmReset": "Confirm reset"
+    "confirmReset": "Confirm reset",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "deactivateConfirmTitle": "Deactivate user?",
+    "deactivateConfirmDescription": "Deactivate {name}? They will not be able to sign in until reactivated.",
+    "reactivateConfirmTitle": "Reactivate user?",
+    "reactivateConfirmDescription": "Restore access for {name}?",
+    "cannotDeactivateLastUser": "Your organization must keep at least one active user.",
+    "toggleActiveError": "Could not update user status"
   },
   "adminUserProfile": {
     "backToUsers": "Back to users",

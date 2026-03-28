@@ -38,7 +38,16 @@ type ProgressOptions = {
   pointLogs: ProgressOptionPointLog[]
 }
 
-type UserItem = { id: string; firstName?: string; lastName?: string; username?: string; tenantRole?: string; createdAt?: string; reportsTo?: { firstName?: string; lastName?: string } };
+type UserItem = {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  tenantRole?: string;
+  createdAt?: string;
+  isActive?: boolean;
+  reportsTo?: { firstName?: string; lastName?: string };
+};
 
 export default function UsersPage() {
   const t = useTranslations("adminDashboardUsers");
@@ -50,6 +59,7 @@ export default function UsersPage() {
   const fetchPermissions = usePermissionsStore((s) => s.fetchPermissions);
 
   const canDeleteUsers = hasPermission("users.delete");
+  const canUpdateUsers = hasPermission("users.update");
 
   useEffect(() => {
     fetchUsers();
@@ -67,6 +77,10 @@ export default function UsersPage() {
   const [sortBy, setSortBy] = useState('name')
   const [errorUsers, setErrorUsers] = useState<string | null>(null)
   const [userToDelete, setUserToDelete] = useState<UserItem | null>(null)
+  const [userToToggleActive, setUserToToggleActive] = useState<{
+    user: UserItem;
+    activate: boolean;
+  } | null>(null)
   const [resetReason, setResetReason] = useState("")
   const [resetScope, setResetScope] = useState<"all" | "quiz" | "course" | "points">("all")
   const [resetQuizId, setResetQuizId] = useState("")
@@ -109,6 +123,16 @@ export default function UsersPage() {
       setProgressOptions(data ?? { quizzes: [], courses: [], pointLogs: [] })
     }).catch(() => setProgressOptions({ quizzes: [], courses: [], pointLogs: [] })).finally(() => setProgressOptionsLoading(false))
   }, [userToReset?.id])
+
+  const activeUserCount = useMemo(() => {
+    if (!users || !Array.isArray(users)) return 0;
+    return (users as UserItem[]).filter((u) => u.isActive !== false).length;
+  }, [users]);
+
+  const cannotDeactivateUser = useCallback(
+    (user: UserItem) => user.isActive !== false && activeUserCount <= 1,
+    [activeUserCount]
+  );
 
   const filteredUsers = useMemo((): UserItem[] => {
     if (!users || !Array.isArray(users)) return [];
@@ -207,6 +231,20 @@ export default function UsersPage() {
     setSelectedPointLogIds([])
   }
 
+  const handleToggleActiveConfirm = async () => {
+    if (!userToToggleActive) return;
+    const { user, activate } = userToToggleActive;
+    try {
+      await useUsersStore.getState().updateUser(user.id, { isActive: activate });
+      setUserToToggleActive(null);
+      await fetchUsers(true);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } } };
+      setErrorUsers(e.response?.data?.error || t("toggleActiveError"));
+      setUserToToggleActive(null);
+    }
+  };
+
   const handleDeleteConfirm = async (user: UserItem | null) => {
     if (!user) return
     try {
@@ -277,6 +315,47 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
+      <AlertDialog
+        open={userToToggleActive !== null}
+        onOpenChange={(open) => !open && setUserToToggleActive(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {userToToggleActive?.activate
+                ? t("reactivateConfirmTitle")
+                : t("deactivateConfirmTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {userToToggleActive?.activate
+                ? t("reactivateConfirmDescription", {
+                    name: userToToggleActive
+                      ? `${userToToggleActive.user.firstName} ${userToToggleActive.user.lastName} (${userToToggleActive.user.username})`
+                      : "",
+                  })
+                : t("deactivateConfirmDescription", {
+                    name: userToToggleActive
+                      ? `${userToToggleActive.user.firstName} ${userToToggleActive.user.lastName} (${userToToggleActive.user.username})`
+                      : "",
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row justify-center sm:justify-center">
+            <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleToggleActiveConfirm()}
+              className={
+                userToToggleActive?.activate
+                  ? ""
+                  : "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              }
+            >
+              {userToToggleActive?.activate ? t("reactivate") : t("deactivate")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <AlertDialog open={userToDelete !== null} onOpenChange={(open) => !open && setUserToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -326,6 +405,7 @@ export default function UsersPage() {
               <th className="p-4 text-left">{t("lastName")}</th>
               <th className="p-4 text-left">{t("reportsTo")}</th>
               <th className="p-4 text-left">{t("role")}</th>
+              <th className="p-4 text-left">{t("status")}</th>
               <th className="p-4 text-left">{t("actions")}</th>
             </tr>
           </thead>
@@ -341,6 +421,13 @@ export default function UsersPage() {
                     : "—"}
                 </td>
                 <td className="p-4">{user.tenantRole || t("noRole")}</td>
+                <td className="p-4">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${user.isActive === false ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
+                  >
+                    {user.isActive === false ? t("inactive") : t("active")}
+                  </span>
+                </td>
                 <td className="p-4 space-x-4">
                   <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
                     {t("edit")}
@@ -355,6 +442,28 @@ export default function UsersPage() {
                   >
                     {t("resetProgress")}
                   </Button>
+                  {canUpdateUsers && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={
+                        user.isActive !== false ? cannotDeactivateUser(user) : false
+                      }
+                      title={
+                        user.isActive !== false && cannotDeactivateUser(user)
+                          ? t("cannotDeactivateLastUser")
+                          : undefined
+                      }
+                      onClick={() =>
+                        setUserToToggleActive({
+                          user,
+                          activate: user.isActive === false,
+                        })
+                      }
+                    >
+                      {user.isActive === false ? t("reactivate") : t("deactivate")}
+                    </Button>
+                  )}
                   {canDeleteUsers && (
                     <Button type="button" onClick={() => handleDeleteClick(user)} variant="destructive">
                       {t("delete")}
@@ -365,7 +474,7 @@ export default function UsersPage() {
             ))}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center py-4">
+                <td colSpan={7} className="text-center py-4">
                   {t("noUsersFound")}
                 </td>
               </tr>

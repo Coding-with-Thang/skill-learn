@@ -3,6 +3,24 @@ import { prisma } from "@skill-learn/database";
 import { clerkClient } from "@clerk/nextjs/server";
 import { handleApiError } from "@skill-learn/lib/utils/errorHandler";
 import { successResponse } from "@skill-learn/lib/utils/apiWrapper";
+import { isUserRecordActive } from "@skill-learn/lib/utils/tenantUserActive";
+
+async function ensureLookupUserActive(clerkId: string) {
+  const row = await prisma.user.findUnique({
+    where: { clerkId },
+    select: { isActive: true },
+  });
+  if (row && !isUserRecordActive(row.isActive)) {
+    return NextResponse.json(
+      {
+        error: "This account has been deactivated.",
+        code: "ACCOUNT_DEACTIVATED",
+      },
+      { status: 403 }
+    );
+  }
+  return null;
+}
 
 /**
  * GET /api/users/lookup
@@ -42,6 +60,10 @@ export async function GET(request: NextRequest) {
       
       if (clerkUsers && clerkUsers.data && clerkUsers.data.length > 0) {
         const clerkUser = clerkUsers.data[0]!;
+        const blocked = await ensureLookupUserActive(clerkUser.id);
+        if (blocked) {
+          return blocked;
+        }
         const email = clerkUser.emailAddresses?.[0]?.emailAddress;
         const phoneNumber = clerkUser.phoneNumbers?.[0]?.phoneNumber;
         
@@ -128,6 +150,10 @@ export async function GET(request: NextRequest) {
       });
       
       if (user && user.clerkId) {
+        const blockedDb = await ensureLookupUserActive(user.clerkId);
+        if (blockedDb) {
+          return blockedDb;
+        }
         try {
           const client = await clerkClient();
           const clerkUser = await client.users.getUser(user.clerkId);

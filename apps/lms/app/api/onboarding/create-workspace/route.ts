@@ -3,6 +3,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { slugify } from "@skill-learn/lib/utils/utils";
 import { ensureTenantHasGuestRole } from "@skill-learn/lib/utils/tenantDefaultRole";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 
 /**
  * POST /api/onboarding/create-workspace
@@ -17,6 +18,11 @@ export async function POST(request: NextRequest) {
         { error: "Unauthorized" },
         { status: 401 }
       );
+    }
+
+    const inactive = await rejectIfAccountInactive(userId);
+    if (inactive) {
+      return inactive;
     }
 
     const user = await currentUser();

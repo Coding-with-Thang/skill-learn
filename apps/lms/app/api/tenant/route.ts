@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
 import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissions";
+import { isUserRecordActive } from "@skill-learn/lib/utils/tenantUserActive";
 
 /**
  * GET /api/tenant
@@ -45,6 +46,10 @@ export async function GET(_request: NextRequest) {
 
     if (!user) {
       throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
+    }
+
+    if (!isUserRecordActive(user.isActive)) {
+      throw new AppError("Account deactivated", ErrorType.FORBIDDEN, { status: 403 });
     }
 
     if (!user.tenant) {
@@ -99,10 +104,13 @@ export async function PATCH(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { clerkId: userId },
-      select: { id: true, tenantId: true },
+      select: { id: true, tenantId: true, isActive: true },
     });
     if (!user?.tenantId) {
       throw new AppError("No tenant assigned", ErrorType.VALIDATION, { status: 400 });
+    }
+    if (!isUserRecordActive(user.isActive)) {
+      throw new AppError("Account deactivated", ErrorType.FORBIDDEN, { status: 403 });
     }
 
     const body = await request.json().catch(() => ({}));

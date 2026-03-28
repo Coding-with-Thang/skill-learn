@@ -6,6 +6,7 @@ import { requirePermission, PERMISSIONS } from "@skill-learn/lib/utils/permissio
 import { logSecurityEvent } from "@skill-learn/lib/utils/security/logger";
 import { SECURITY_EVENT_CATEGORIES, SECURITY_EVENT_TYPES } from "@skill-learn/lib/utils/security/eventTypes";
 import { syncTenantUsersMetadata } from "@skill-learn/lib/utils/clerkSync";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 import type { RouteContext } from "@/types";
 
 const MAX_TX_RETRIES = 3;
@@ -29,6 +30,10 @@ export async function GET(
     const { userId } = await auth();
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+    const inactiveGet = await rejectIfAccountInactive(userId);
+    if (inactiveGet) {
+      return inactiveGet;
     }
     const { roleId } = await params;
     const user = await prisma.user.findUnique({
@@ -110,6 +115,10 @@ export async function PUT(
     const { userId } = await auth();
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+    const inactivePutRole = await rejectIfAccountInactive(userId);
+    if (inactivePutRole) {
+      return inactivePutRole;
     }
     const { roleId } = await params;
     const user = await prisma.user.findUnique({
@@ -265,6 +274,10 @@ export async function DELETE(
     const { userId } = await auth();
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+    const inactiveDel = await rejectIfAccountInactive(userId);
+    if (inactiveDel) {
+      return inactiveDel;
     }
     const { roleId } = await params;
     const user = await prisma.user.findUnique({

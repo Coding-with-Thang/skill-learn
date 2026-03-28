@@ -50,6 +50,7 @@ export async function GET(_request: NextRequest) {
         lifetimePoints: true,
         createdAt: true,
         reportsToUserId: true,
+        isActive: true,
         reportsTo: {
           select: {
             id: true,

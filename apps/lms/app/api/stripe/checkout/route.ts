@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 import {
   stripe,
   PRICING_PLANS,
@@ -75,6 +76,10 @@ export async function POST(request: NextRequest) {
     
     // If user is authenticated, get their info
     if (userId) {
+      const inactive = await rejectIfAccountInactive(userId);
+      if (inactive) {
+        return inactive;
+      }
       const user = await currentUser();
       customerEmail = user?.emailAddresses[0]?.emailAddress;
       

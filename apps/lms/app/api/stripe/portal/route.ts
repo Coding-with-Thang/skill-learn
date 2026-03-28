@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
 import { handleApiError, AppError, ErrorType } from "@skill-learn/lib/utils/errorHandler";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 import { createPortalSession } from "@/lib/stripe";
 
 /**
@@ -14,6 +15,11 @@ export async function POST(request: NextRequest) {
     
     if (!userId) {
       throw new AppError("Unauthorized", ErrorType.AUTH, { status: 401 });
+    }
+
+    const inactive = await rejectIfAccountInactive(userId);
+    if (inactive) {
+      return inactive;
     }
     
     // Get user's tenant

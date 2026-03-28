@@ -278,6 +278,8 @@ export const userUpdateSchemaBase = z.object({
   confirmPassword: z.string().optional(),
   tenantRoleId: objectIdSchema.optional(),
   reportsToUserId: objectIdSchema.optional().nullable(),
+  /** When false, user cannot sign in to the LMS (tenant must keep ≥1 active user). */
+  isActive: z.boolean().optional(),
 });
 
 export const userUpdateSchema = userUpdateSchemaBase.refine(

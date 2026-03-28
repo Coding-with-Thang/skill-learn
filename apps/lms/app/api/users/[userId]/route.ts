@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
 import { prisma } from '@skill-learn/database';
 import { updateClerkUser, deleteClerkUser } from "@skill-learn/lib/utils/clerk";
 import { requireAdmin } from "@skill-learn/lib/utils/auth";
@@ -12,6 +11,10 @@ import { validateRequestBody, validateRequestParams } from "@skill-learn/lib/uti
 import { userUpdateSchema, objectIdSchema } from "@/lib/zodSchemas";
 import { z } from "zod";
 import type { RouteContext } from "@/types";
+import {
+  countActiveTenantUsers,
+  isUserRecordActive,
+} from "@skill-learn/lib/utils/tenantUserActive";
 
 type UserParams = { userId: string };
 
@@ -62,6 +65,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext<UserPa
                 createdAt: true,
                 tenantId: true,
                 reportsToUserId: true,
+                isActive: true,
                 reportsTo: {
                     select: {
                         id: true,
@@ -111,7 +115,8 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
         }
         
         const validated = await validateRequestBody(request, userUpdateSchema);
-        const { username, firstName, lastName, tenantRoleId, reportsToUserId } = validated;
+        const { username, firstName, lastName, tenantRoleId, reportsToUserId, isActive } =
+            validated;
 
         const { userId } = await validateRequestParams(
             z.object({ userId: objectIdSchema }),
@@ -133,6 +138,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
                 clerkId: true,
                 tenantId: true,
                 reportsToUserId: true,
+                isActive: true,
             },
         });
 
@@ -189,10 +195,17 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
             if (newReportsTo !== null) {
                 const managerUser = await prisma.user.findUnique({
                     where: { id: newReportsTo },
-                    select: { id: true, tenantId: true, reportsToUserId: true },
+                    select: { id: true, tenantId: true, reportsToUserId: true, isActive: true },
                 });
                 if (!managerUser || managerUser.tenantId !== tenantId) {
                     throw new AppError("Reports-to must be a user in the same organization", ErrorType.VALIDATION, { status: 400 });
+                }
+                if (!isUserRecordActive(managerUser.isActive)) {
+                    throw new AppError(
+                        "Reports-to must be an active user in the organization",
+                        ErrorType.VALIDATION,
+                        { status: 400 }
+                    );
                 }
                 // Cycle check: walking up from manager must not reach the user being updated
                 let currentId = managerUser.reportsToUserId;
@@ -209,22 +222,60 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
             }
         }
 
-        // Build user update payload (profile + reportsTo) for Prisma (unchecked = scalar fields)
+        if (isActive === false && isUserRecordActive(userToUpdate.isActive)) {
+            const otherActive = await countActiveTenantUsers(tenantId, {
+                excludeUserId: userId,
+            });
+            if (otherActive < 1) {
+                throw new AppError(
+                    "Each organization must keep at least one active user. Activate another user first or add a new user.",
+                    ErrorType.VALIDATION,
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Build user update payload (profile + reportsTo + activation) for Prisma
         const updateData: {
             username?: string;
             firstName?: string;
             lastName?: string;
             reportsToUserId?: string | null;
+            isActive?: boolean;
         } = {};
         if (username !== undefined) updateData.username = username;
         if (firstName !== undefined) updateData.firstName = firstName;
         if (lastName !== undefined) updateData.lastName = lastName;
         if (newReportsTo !== undefined) updateData.reportsToUserId = newReportsTo ?? null;
+        if (isActive !== undefined) updateData.isActive = isActive;
 
         if (Object.keys(updateData).length > 0) {
             await prisma.user.update({
                 where: { id: userId },
                 data: updateData,
+            });
+        }
+
+        if (
+            isActive !== undefined &&
+            isUserRecordActive(userToUpdate.isActive) !== isActive
+        ) {
+            await logSecurityEvent({
+                actorUserId: currentUser.id,
+                actorClerkId: currentUserId,
+                tenantId,
+                eventType: SECURITY_EVENT_TYPES.USER_ACTIVATION_CHANGED,
+                category: SECURITY_EVENT_CATEGORIES.USER_MANAGEMENT,
+                action: "update",
+                resource: "user",
+                resourceId: userId,
+                severity: "high",
+                message: isActive ? "Reactivated tenant user" : "Deactivated tenant user",
+                details: {
+                    userId,
+                    isActive,
+                },
+                request,
             });
         }
 
@@ -286,6 +337,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
                     lastName: lastName !== undefined,
                     reportsToUserId: newReportsTo !== undefined,
                     tenantRoleId: tenantRoleId !== undefined,
+                    isActive: isActive !== undefined,
                 },
                 tenantRoleId: tenantRoleId ?? null,
                 reportsToUserId: newReportsTo ?? null,
@@ -307,6 +359,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext<UserPar
                 createdAt: true,
                 tenantId: true,
                 reportsToUserId: true,
+                isActive: true,
                 reportsTo: {
                     select: {
                         id: true,

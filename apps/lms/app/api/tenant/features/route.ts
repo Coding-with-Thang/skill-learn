@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { isUserRecordActive } from "@skill-learn/lib/utils/tenantUserActive";
 import {
   handleApiError,
   AppError,
@@ -37,6 +38,10 @@ async function requireFeaturesAccess() {
 
   if (!user) {
     throw new AppError("User not found", ErrorType.NOT_FOUND, { status: 404 });
+  }
+
+  if (!isUserRecordActive(user.isActive)) {
+    throw new AppError("Account deactivated", ErrorType.FORBIDDEN, { status: 403 });
   }
 
   if (!user.tenant) {

@@ -49,6 +49,7 @@ export async function GET(
         role: true,
         points: true,
         createdAt: true,
+        isActive: true,
       },
       orderBy: {
         createdAt: 'desc',

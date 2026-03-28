@@ -44,6 +44,13 @@ export const CRITICAL_EVENT_GUARDRAILS: Record<string, GuardrailRule> = {
     requiredTopLevelFields: ["resource", "resourceId"],
     requiredDetailPaths: ["deletedUserId"],
   },
+  [SECURITY_EVENT_TYPES.USER_ACTIVATION_CHANGED]: {
+    requireActor: true,
+    requireTenant: true,
+    requiredTopLevelFields: ["resource", "resourceId"],
+    requiredDetailPaths: ["userId", "isActive"],
+  },
+
   [SECURITY_EVENT_TYPES.USER_REPORTS_TO_CHANGED]: {
     requireActor: true,
     requireTenant: true,

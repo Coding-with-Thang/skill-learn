@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { getAuth } from "@clerk/nextjs/server"; // Change import
+import { isUserRecordActive } from "@skill-learn/lib/utils/tenantUserActive";
 import { updateStreak } from "./streak";
 import { getSystemSetting } from "./actions/settings";
 
@@ -31,6 +32,10 @@ export async function getDailyPointStatus(request) {
     });
 
     if (!user) {
+      return { user: null, todaysPoints: 0, canEarnPoints: false, lifetimePoints: 0, todaysLogs: [], dailyLimit };
+    }
+
+    if (!isUserRecordActive(user.isActive)) {
       return { user: null, todaysPoints: 0, canEarnPoints: false, lifetimePoints: 0, todaysLogs: [], dailyLimit };
     }
 
@@ -99,6 +104,14 @@ export async function awardPoints(amount: number, reason: string, request?: Next
     userId = authUserId;
   }
 
+  const inactiveRow = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { isActive: true },
+  });
+  if (inactiveRow && !isUserRecordActive(inactiveRow.isActive)) {
+    throw new Error("Account deactivated");
+  }
+
   // Check daily limit status - need to create a mock request if not provided
   let status;
   if (request) {
@@ -121,6 +134,10 @@ export async function awardPoints(amount: number, reason: string, request?: Next
 
     if (!user) {
       throw new Error("User not found");
+    }
+
+    if (!isUserRecordActive(user.isActive)) {
+      throw new Error("Account deactivated");
     }
 
     const todaysPoints = user.pointLogs
@@ -154,11 +171,15 @@ export async function awardPoints(amount: number, reason: string, request?: Next
       // First, verify user exists and get current points
       const user = await tx.user.findUnique({
         where: { clerkId: userId },
-        select: { id: true, points: true, lifetimePoints: true },
+        select: { id: true, points: true, lifetimePoints: true, isActive: true },
       });
 
       if (!user) {
         throw new Error("User not found");
+      }
+
+      if (!isUserRecordActive(user.isActive)) {
+        throw new Error("Account deactivated");
       }
 
       // Create point log entry

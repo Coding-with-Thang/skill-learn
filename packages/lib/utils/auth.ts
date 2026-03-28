@@ -2,6 +2,32 @@ import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { prisma } from '@skill-learn/database';
 import { hasAnyPermission, getUserPermissions, isUserInTenant } from './permissions';
+import { isUserRecordActive } from "./tenantUserActive";
+
+/**
+ * If the Clerk user exists in the database and is deactivated, return a 403 response.
+ * Users not yet synced to the database are allowed (onboarding and first request).
+ */
+export async function rejectIfAccountInactive(
+  clerkId: string
+): Promise<NextResponse | null> {
+  const row = await prisma.user.findUnique({
+    where: { clerkId },
+    select: { isActive: true },
+  });
+  if (row && !isUserRecordActive(row.isActive)) {
+    return NextResponse.json(
+      {
+        error: "Account deactivated",
+        code: "ACCOUNT_DEACTIVATED",
+        message:
+          "Your account has been deactivated. Contact your organization administrator.",
+      },
+      { status: 403 }
+    );
+  }
+  return null;
+}
 
 /**
  * Require authentication for API routes
@@ -13,6 +39,11 @@ export async function requireAuth() {
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const inactive = await rejectIfAccountInactive(userId);
+  if (inactive) {
+    return inactive;
   }
 
   return userId;
@@ -146,6 +177,11 @@ export async function requireAdminForAction(tenantId = null) {
 
   if (!userId) {
     throw new Error("Authentication required");
+  }
+
+  const inactive = await rejectIfAccountInactive(userId);
+  if (inactive) {
+    throw new Error("Account deactivated");
   }
 
   const user = await prisma.user.findUnique({

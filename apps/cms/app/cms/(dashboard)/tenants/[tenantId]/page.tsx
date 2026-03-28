@@ -457,6 +457,40 @@ export default function TenantDetailPage() {
     }
   }
 
+  const activeUsersCount = users.filter((u) => u.isActive !== false).length
+  const cannotDeactivateCmsUser = (u) => u.isActive !== false && activeUsersCount <= 1
+
+  const handleToggleUserActive = async (user, isActive: boolean) => {
+    if (!user.clerkId) return
+    if (!isActive && cannotDeactivateCmsUser(user)) {
+      toast.error(
+        'Each organization must keep at least one active user. Activate another user first or add a new user.'
+      )
+      return
+    }
+    setFormLoading(true)
+    setFormError(null)
+    try {
+      const response = await api.patch(`/tenants/${tenantId}/users/${user.clerkId}`, {
+        isActive,
+      })
+      if (response.data?.error) {
+        throw new Error(response.data.error || 'Failed to update user')
+      }
+      toast.success(isActive ? 'User reactivated.' : 'User deactivated.')
+      await fetchUsers(tenantId, true)
+    } catch (err: unknown) {
+      const e = err as AxiosErr
+      const msg =
+        e.response?.data?.error ||
+        (err instanceof Error ? err.message : String(err)) ||
+        'Failed to update user status'
+      toast.error(msg)
+    } finally {
+      setFormLoading(false)
+    }
+  }
+
   const handleDeleteUser = async () => {
     if (!selectedUserForDelete?.clerkId) return
     setFormLoading(true)
@@ -954,18 +988,25 @@ export default function TenantDetailPage() {
                         @{user.username}
                       </p>
                     </div>
-                    {(() => {
-                      const userRole = getUserRole(user)
-                      return userRole ? (
-                        <Badge variant="outline">
-                          {userRole}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {(() => {
+                        const userRole = getUserRole(user)
+                        return userRole ? (
+                          <Badge variant="outline">
+                            {userRole}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            No role
+                          </Badge>
+                        )
+                      })()}
+                      {user.isActive === false ? (
+                        <Badge variant="outline" className="border-amber-700/50 text-amber-800 dark:text-amber-400">
+                          Inactive
                         </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">
-                          No role
-                        </Badge>
-                      )
-                    })()}
+                      ) : null}
+                    </div>
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
@@ -974,6 +1015,30 @@ export default function TenantDetailPage() {
                         title="Edit user"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={
+                          formLoading ||
+                          (user.isActive !== false && cannotDeactivateCmsUser(user))
+                        }
+                        onClick={() =>
+                          handleToggleUserActive(user, !(user.isActive !== false))
+                        }
+                        title={
+                          user.isActive !== false && cannotDeactivateCmsUser(user)
+                            ? 'At least one active user is required per organization'
+                            : user.isActive === false
+                              ? 'Reactivate user'
+                              : 'Deactivate user (blocks LMS access)'
+                        }
+                      >
+                        {user.isActive === false ? (
+                          <Unlock className="h-4 w-4" />
+                        ) : (
+                          <Lock className="h-4 w-4" />
+                        )}
                       </Button>
                       <Button
                         variant="ghost"

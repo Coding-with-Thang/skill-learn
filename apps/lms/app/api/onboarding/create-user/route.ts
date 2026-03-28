@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@skill-learn/database";
+import { rejectIfAccountInactive } from "@skill-learn/lib/utils/auth";
 
 /**
  * POST /api/onboarding/create-user
@@ -16,6 +17,11 @@ export async function POST(request: NextRequest) {
         { error: "Unauthorized" },
         { status: 401 }
       );
+    }
+
+    const inactive = await rejectIfAccountInactive(clerkUserId);
+    if (inactive) {
+      return inactive;
     }
 
     const body = await request.json();

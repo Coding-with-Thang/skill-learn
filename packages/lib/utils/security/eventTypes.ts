@@ -24,6 +24,7 @@ export const SECURITY_EVENT_TYPES = {
   USER_UPDATED: "user.updated",
   USER_DELETED: "user.deleted",
   USER_REPORTS_TO_CHANGED: "user.reports_to_changed",
+  USER_ACTIVATION_CHANGED: "user.activation_changed",
 
   RBAC_ROLE_CREATED: "rbac.role.created",
   RBAC_ROLE_UPDATED: "rbac.role.updated",
