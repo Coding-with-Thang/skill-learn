@@ -4,15 +4,18 @@ import Link from "next/link";
 import { Button } from "./button";
 import { Home, Search } from "lucide-react";
 
+export type NotFoundProps = {
+  homeHref?: string;
+  homeLabel?: string;
+  title?: string;
+  description?: string;
+  /** When set, shows a second button linking to `searchHref`. */
+  searchLabel?: string;
+  searchHref?: string;
+};
+
 /**
  * Shared NotFound component for 404 pages
- * @param {Object} props
- * @param {string} props.homeHref - The href to navigate home (default: "/")
- * @param {string} props.homeLabel - The label for the home button (default: "Go back home")
- * @param {string} props.title - Custom title (default: "Oops! Page not found.")
- * @param {string} props.description - Custom description
- * @param {string} props.searchLabel - Optional label for search button
- * @param {string} props.searchHref - Optional href for search button
  */
 export function NotFound({
   homeHref = "/",
@@ -20,8 +23,8 @@ export function NotFound({
   title = "Oops! Page not found.",
   description = "Sorry, we couldn't find the page you're looking for.",
   searchLabel,
-  searchHref = "/courses"
-}) {
+  searchHref = "/courses",
+}: NotFoundProps) {
   const parts = title.split("learning break");
 
   return (
