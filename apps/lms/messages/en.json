@@ -3035,7 +3035,28 @@
     "reactivateConfirmTitle": "Reactivate user?",
     "reactivateConfirmDescription": "Restore access for {name}?",
     "cannotDeactivateLastUser": "Your organization must keep at least one active user.",
-    "toggleActiveError": "Could not update user status"
+    "toggleActiveError": "Could not update user status",
+    "sendSecureRecovery": "Send secure link",
+    "oobRecoveryTitle": "Send secure sign-in link",
+    "oobRecoveryDescription": "We’ll email or text a one-time sign-in link to {name} using their verified contact in Clerk. The link expires after a short time. They will set a new private password after signing in—no one else sees it.",
+    "oobRecoveryHint": "Requires Resend (email) or Twilio (SMS). The user must have a verified primary email or phone. Nothing is shown to you except success or failure.",
+    "oobRecoverySuccess": "Secure link sent. The user can sign in from that link and must choose a new password.",
+    "oobRecoveryError": "Could not send secure link. Check delivery configuration and the user’s verified email or phone.",
+    "oobRecoverySend": "Send link",
+    "close": "Close"
+  },
+  "forcePasswordChange": {
+    "title": "Choose a new password",
+    "description": "You signed in with a secure recovery link. Pick a new private password to continue. It is not shared with administrators.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "submit": "Update password",
+    "submitting": "Saving…",
+    "loading": "Loading…",
+    "success": "Password updated. Redirecting…",
+    "passwordMin": "Password must be at least 8 characters.",
+    "passwordsMismatch": "Passwords do not match.",
+    "updateError": "Could not update password. Try again or request a new sign-in link."
   },
   "adminUserProfile": {
     "backToUsers": "Back to users",

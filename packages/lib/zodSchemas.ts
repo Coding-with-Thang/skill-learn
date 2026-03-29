@@ -291,6 +291,22 @@ export const userUpdateSchema = userUpdateSchemaBase.refine(
   { message: "Passwords do not match", path: ["confirmPassword"] }
 );
 
+/** Admin initiates OOB recovery (empty body). */
+export const adminInitiatePasswordRecoverySchema = z.object({});
+
+export const forcedPasswordCompletionSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password must be at most 128 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 // Reward schemas
 export const rewardRedeemSchema = z.object({
   rewardId: objectIdSchema,

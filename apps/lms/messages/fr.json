@@ -2944,7 +2944,28 @@
     "reactivateConfirmTitle": "Réactiver l'utilisateur ?",
     "reactivateConfirmDescription": "Rétablir l'accès pour {name} ?",
     "cannotDeactivateLastUser": "Votre organisation doit conserver au moins un utilisateur actif.",
-    "toggleActiveError": "Impossible de mettre à jour le statut de l'utilisateur"
+    "toggleActiveError": "Impossible de mettre à jour le statut de l'utilisateur",
+    "sendSecureRecovery": "Envoyer le lien sécurisé",
+    "oobRecoveryTitle": "Envoyer un lien de connexion sécurisé",
+    "oobRecoveryDescription": "Un lien de connexion à usage limité sera envoyé à {name} (e-mail ou SMS vérifié dans Clerk). Il expire après un court délai. Après la connexion, la personne choisira un nouveau mot de passe privé—personne d'autre ne le verra.",
+    "oobRecoveryHint": "Nécessite Resend (e-mail) ou Twilio (SMS). L'utilisateur doit avoir un e-mail ou un téléphone principal vérifié. Aucun secret ne vous est montré.",
+    "oobRecoverySuccess": "Lien sécurisé envoyé. L'utilisateur peut se connecter via ce lien et doit choisir un nouveau mot de passe.",
+    "oobRecoveryError": "Impossible d'envoyer le lien. Vérifiez la configuration d'envoi et le contact vérifié de l'utilisateur.",
+    "oobRecoverySend": "Envoyer le lien",
+    "close": "Fermer"
+  },
+  "forcePasswordChange": {
+    "title": "Choisissez un nouveau mot de passe",
+    "description": "Vous vous êtes connecté avec un lien de récupération sécurisé. Choisissez un nouveau mot de passe privé pour continuer. Il n'est pas partagé avec les administrateurs.",
+    "newPassword": "Nouveau mot de passe",
+    "confirmPassword": "Confirmer le nouveau mot de passe",
+    "submit": "Mettre à jour le mot de passe",
+    "submitting": "Enregistrement…",
+    "loading": "Chargement…",
+    "success": "Mot de passe mis à jour. Redirection…",
+    "passwordMin": "Le mot de passe doit contenir au moins 8 caractères.",
+    "passwordsMismatch": "Les mots de passe ne correspondent pas.",
+    "updateError": "Impossible de mettre à jour le mot de passe. Réessayez ou demandez un nouveau lien."
   },
   "adminUserProfile": {
     "backToUsers": "Retour aux utilisateurs",

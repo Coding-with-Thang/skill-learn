@@ -41,6 +41,31 @@ const proxy = clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(signInUrl);
       }
 
+      const publicMetaEarly = (sessionClaims as Record<string, unknown> | undefined)
+        ?.publicMetadata as Record<string, unknown> | undefined;
+      const mustChangePassword =
+        publicMetaEarly?.mustChangePassword === true;
+      const isForcePasswordPage = pathname.startsWith("/cms/force-password-change");
+      const isCompleteForcedPasswordApi =
+        pathname === "/api/user/complete-forced-password-reset";
+
+      if (mustChangePassword && !isForcePasswordPage && !isCompleteForcedPasswordApi) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            {
+              error: "You must set a new password before continuing.",
+              code: "MUST_CHANGE_PASSWORD",
+            },
+            { status: 403 }
+          );
+        }
+        return NextResponse.redirect(new URL("/cms/force-password-change", req.url));
+      }
+
+      if (isForcePasswordPage) {
+        return NextResponse.next();
+      }
+
       // Check super admin role from Clerk metadata
       // Note: If custom session token claims are configured in Clerk Dashboard,
       // the role will be available directly in sessionClaims.role or sessionClaims.appRole

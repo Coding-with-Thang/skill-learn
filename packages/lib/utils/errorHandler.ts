@@ -8,6 +8,7 @@ export const ErrorType = {
   VALIDATION: "validation",
   NETWORK: "network",
   NOT_FOUND: "not_found",
+  FORBIDDEN: "forbidden",
   UNKNOWN: "unknown",
 };
 

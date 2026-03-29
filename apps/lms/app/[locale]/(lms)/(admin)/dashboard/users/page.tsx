@@ -7,7 +7,16 @@ import api from "@skill-learn/lib/utils/axios"
 import { parseApiResponse } from "@skill-learn/lib/utils/apiResponseParser"
 import { Button } from "@skill-learn/ui/components/button"
 import { Table } from "@skill-learn/ui/components/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@skill-learn/ui/components/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@skill-learn/ui/components/dialog"
+import { Input } from "@skill-learn/ui/components/input"
+import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,6 +99,10 @@ export default function UsersPage() {
   const [userToReset, setUserToReset] = useState<UserItem | null>(null)
   const [progressOptions, setProgressOptions] = useState<ProgressOptions | null>(null)
   const [progressOptionsLoading, setProgressOptionsLoading] = useState(false)
+  const [oobRecoveryDialogOpen, setOobRecoveryDialogOpen] = useState(false)
+  const [userForOobRecovery, setUserForOobRecovery] = useState<UserItem | null>(null)
+  const [oobRecoverySubmitting, setOobRecoverySubmitting] = useState(false)
+  const [oobRecoveryError, setOobRecoveryError] = useState<string | null>(null)
 
   useEffect(() => {
     const editId = searchParams.get("edit");
@@ -446,6 +459,19 @@ export default function UsersPage() {
                     <Button
                       type="button"
                       variant="outline"
+                      onClick={() => {
+                        setUserForOobRecovery(user);
+                        setOobRecoveryError(null);
+                        setOobRecoveryDialogOpen(true);
+                      }}
+                    >
+                      {t("sendSecureRecovery")}
+                    </Button>
+                  )}
+                  {canUpdateUsers && (
+                    <Button
+                      type="button"
+                      variant="outline"
                       disabled={
                         user.isActive !== false ? cannotDeactivateUser(user) : false
                       }
@@ -673,6 +699,68 @@ export default function UsersPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={oobRecoveryDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUserForOobRecovery(null);
+            setOobRecoveryError(null);
+          }
+          setOobRecoveryDialogOpen(open);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("oobRecoveryTitle")}</DialogTitle>
+            <DialogDescription>
+              {userForOobRecovery
+                ? t("oobRecoveryDescription", {
+                    name: `${userForOobRecovery.firstName ?? ""} ${userForOobRecovery.lastName ?? ""} (@${userForOobRecovery.username ?? ""})`.trim(),
+                  })
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">{t("oobRecoveryHint")}</p>
+            {oobRecoveryError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {oobRecoveryError}
+              </p>
+            ) : null}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setOobRecoveryDialogOpen(false)}>
+              {t("cancel")}
+            </Button>
+            <Button
+              type="button"
+              disabled={oobRecoverySubmitting || !userForOobRecovery?.id}
+              onClick={async () => {
+                if (!userForOobRecovery?.id) return;
+                setOobRecoverySubmitting(true);
+                setOobRecoveryError(null);
+                try {
+                  const res = await api.post(`/admin/users/${userForOobRecovery.id}/reset-password`, {});
+                  const inner = (res.data?.data ?? res.data) as { message?: string };
+                  toast.success(inner?.message || t("oobRecoverySuccess"));
+                  setOobRecoveryDialogOpen(false);
+                } catch (err: unknown) {
+                  const ax = err as { response?: { data?: { error?: string } }; message?: string };
+                  setOobRecoveryError(
+                    ax.response?.data?.error ||
+                      (err instanceof Error ? err.message : t("oobRecoveryError"))
+                  );
+                } finally {
+                  setOobRecoverySubmitting(false);
+                }
+              }}
+            >
+              {oobRecoverySubmitting ? t("loadingSubmit") : t("oobRecoverySend")}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

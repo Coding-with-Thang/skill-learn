@@ -13,7 +13,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@skill-learn/ui/components/dialog'
-import { Plus, Search, Shield, Mail, ShieldCheck, Loader2, AlertCircle } from 'lucide-react'
+import api from '@skill-learn/lib/utils/axios'
+import { toast } from 'sonner'
+import { Plus, Search, Shield, Mail, ShieldCheck, Loader2, AlertCircle, KeyRound } from 'lucide-react'
 
 export default function AdminUsersPage() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -24,6 +26,10 @@ export default function AdminUsersPage() {
   const [addLoading, setAddLoading] = useState(false)
   const [addError, setAddError] = useState('')
   const [addSuccess, setAddSuccess] = useState('')
+  const [resetPwOpen, setResetPwOpen] = useState(false)
+  const [adminForPwReset, setAdminForPwReset] = useState(null)
+  const [resetPwLoading, setResetPwLoading] = useState(false)
+  const [resetPwError, setResetPwError] = useState('')
 
   const fetchSuperAdmins = async () => {
     try {
@@ -131,12 +137,13 @@ export default function AdminUsersPage() {
                   <tr className="border-b text-sm text-muted-foreground">
                     <th className="pb-3 text-left font-medium">User</th>
                     <th className="pb-3 text-left font-medium">Email</th>
+                    <th className="pb-3 text-right font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
                   {filteredAdmins.length === 0 ? (
                     <tr>
-                      <td colSpan={2} className="py-8 text-center text-muted-foreground">
+                      <td colSpan={3} className="py-8 text-center text-muted-foreground">
                         No super admins found.
                       </td>
                     </tr>
@@ -165,6 +172,22 @@ export default function AdminUsersPage() {
                             {admin.email || '—'}
                           </p>
                         </td>
+                        <td className="py-4 text-right">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => {
+                              setAdminForPwReset(admin)
+                              setResetPwError('')
+                              setResetPwOpen(true)
+                            }}
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                            Secure link
+                          </Button>
+                        </td>
                       </tr>
                     ))
                   )}
@@ -189,6 +212,70 @@ export default function AdminUsersPage() {
           </p>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={resetPwOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAdminForPwReset(null)
+            setResetPwError('')
+          }
+          setResetPwOpen(open)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send secure sign-in link</DialogTitle>
+            <DialogDescription>
+              {adminForPwReset
+                ? `A one-time sign-in link will be sent to ${adminForPwReset.fullName || adminForPwReset.email} via their verified email or SMS (Resend / Twilio). The link expires after a short time. After sign-in they must choose a new password. You will not see any password or link.`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {resetPwError ? (
+              <p className="text-sm text-destructive" role="alert">{resetPwError}</p>
+            ) : null}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={() => setResetPwOpen(false)}>
+              Cancel
+            </Button>
+            {adminForPwReset ? (
+              <Button
+                type="button"
+                disabled={resetPwLoading}
+                onClick={async () => {
+                  setResetPwLoading(true)
+                  setResetPwError('')
+                  try {
+                    const res = await api.post(
+                      `/admin/super-admins/${adminForPwReset.id}/reset-password`,
+                      {}
+                    )
+                    if (res.data?.error) {
+                      throw new Error(res.data.error)
+                    }
+                    toast.success(res.data?.message || 'Secure link sent.')
+                    setResetPwOpen(false)
+                  } catch (err: unknown) {
+                    const ax = err as { response?: { data?: { error?: string } }; message?: string }
+                    const msg =
+                      ax.response?.data?.error ||
+                      (err instanceof Error ? err.message : 'Failed to send secure link')
+                    setResetPwError(msg)
+                  } finally {
+                    setResetPwLoading(false)
+                  }
+                }}
+              >
+                {resetPwLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Send link
+              </Button>
+            ) : null}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Super Admin Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={(open) => {

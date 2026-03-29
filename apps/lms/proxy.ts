@@ -78,9 +78,31 @@ const proxy = clerkMiddleware(async (auth, req) => {
         }
       }
 
-      const { userId } = await auth();
+      const { userId, sessionClaims } = await auth();
     const pathWithoutLocale = getPathnameWithoutLocale(pathname);
     const locale = getLocaleFromPathname(pathname);
+
+    const publicMeta = (sessionClaims as Record<string, unknown> | undefined)
+      ?.publicMetadata as Record<string, unknown> | undefined;
+    const mustChangePassword = publicMeta?.mustChangePassword === true;
+    const isForcePasswordPage = pathWithoutLocale === "/force-password-change";
+    const isCompleteForcedPasswordApi =
+      pathname === "/api/user/complete-forced-password-reset";
+
+    if (userId && mustChangePassword && !isForcePasswordPage && !isCompleteForcedPasswordApi) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "You must set a new password before continuing.",
+            code: "MUST_CHANGE_PASSWORD",
+          },
+          { status: 403 }
+        );
+      }
+      const forceUrl = new URL(`/${locale}/force-password-change`, req.url);
+      return NextResponse.redirect(forceUrl);
+    }
 
     // Handle redirects for landing page and home page (locale-aware)
     if (userId && (pathWithoutLocale === "/" || pathWithoutLocale === "")) {

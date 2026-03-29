@@ -62,6 +62,7 @@ import {
   ToggleRight,
   Lock,
   Unlock,
+  KeyRound,
 } from 'lucide-react'
 
 type AxiosErr = { response?: { data?: { error?: string; fieldErrors?: Record<string, string> } }; message?: string }
@@ -188,6 +189,8 @@ export default function TenantDetailPage() {
   const [deleteUserDialogOpen, setDeleteUserDialogOpen] = useState(false)
   const [selectedUserForEdit, setSelectedUserForEdit] = useState(null)
   const [selectedUserForDelete, setSelectedUserForDelete] = useState(null)
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false)
+  const [userForPasswordReset, setUserForPasswordReset] = useState(null)
 
   const createUserForm = useForm({
     defaultValues: createUserDefaultValues,
@@ -1015,6 +1018,18 @@ export default function TenantDetailPage() {
                         title="Edit user"
                       >
                         <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setUserForPasswordReset(user)
+                          setFormError(null)
+                          setResetPasswordDialogOpen(true)
+                        }}
+                        title="Send secure sign-in link — user sets a new private password after opening the link"
+                      >
+                        <KeyRound className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -2172,6 +2187,76 @@ export default function TenantDetailPage() {
             <Button variant="destructive" onClick={handleDeleteUser} disabled={formLoading}>
               {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Delete user
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={resetPasswordDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUserForPasswordReset(null)
+            setFormError(null)
+          }
+          setResetPasswordDialogOpen(open)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send secure sign-in link</DialogTitle>
+            <DialogDescription>
+              {userForPasswordReset
+                ? `For ${userForPasswordReset.firstName} ${userForPasswordReset.lastName} (@${userForPasswordReset.username}). A one-time link is sent to their verified email or SMS. It expires after a short time. You will not see the link or any password.`
+                : null}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {formError && (
+              <div className="rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 text-sm">
+                {formError}
+              </div>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setResetPasswordDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={formLoading || !userForPasswordReset?.clerkId}
+              onClick={async () => {
+                if (!userForPasswordReset?.clerkId) return
+                setFormLoading(true)
+                setFormError(null)
+                try {
+                  const response = await api.post(
+                    `/tenants/${tenantId}/users/${userForPasswordReset.clerkId}/reset-password`,
+                    {}
+                  )
+                  if (response.data?.error) {
+                    throw new Error(response.data.error)
+                  }
+                  toast.success(response.data?.message || 'Secure link sent.')
+                  setResetPasswordDialogOpen(false)
+                } catch (err: unknown) {
+                  const e = err as AxiosErr
+                  setFormError(
+                    e.response?.data?.error ||
+                      (err instanceof Error ? err.message : String(err)) ||
+                      'Failed to send secure link'
+                  )
+                } finally {
+                  setFormLoading(false)
+                }
+              }}
+            >
+              {formLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Send link
             </Button>
           </DialogFooter>
         </DialogContent>
