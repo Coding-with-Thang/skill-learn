@@ -33,6 +33,13 @@ import UserDetails from "@/components/user/UserDetails"
 import { useAdminUserProgressStore } from "@skill-learn/lib"
 import { Textarea } from "@skill-learn/ui/components/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@skill-learn/ui/components/select"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@skill-learn/ui/components/dropdown-menu"
 import { Checkbox } from "@skill-learn/ui/components/checkbox"
 import UserForm from "@/components/user/UserForm"
 import { UserFilters } from "@/components/user/UserFilters"
@@ -414,8 +421,7 @@ export default function UsersPage() {
           <thead>
             <tr className="bg-gray-200">
               <th className="p-4 text-left">{t("username")}</th>
-              <th className="p-4 text-left">{t("firstName")}</th>
-              <th className="p-4 text-left">{t("lastName")}</th>
+              <th className="p-4 text-left">{t("name")}</th>
               <th className="p-4 text-left">{t("reportsTo")}</th>
               <th className="p-4 text-left">{t("role")}</th>
               <th className="p-4 text-left">{t("status")}</th>
@@ -426,8 +432,16 @@ export default function UsersPage() {
             {filteredUsers.map((user) => (
               <tr key={user.id} className="border-b">
                 <td className="p-4">{user.username}</td>
-                <td className="p-4">{user.firstName}</td>
-                <td className="p-4">{user.lastName}</td>
+                <td className="p-4">
+                  <Link
+                    href={`/dashboard/users/${user.id}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {[user.firstName, user.lastName].filter(Boolean).join(" ") ||
+                      user.username ||
+                      "—"}
+                  </Link>
+                </td>
                 <td className="p-4">
                   {user.reportsTo
                     ? `${user.reportsTo.firstName} ${user.reportsTo.lastName}`
@@ -441,66 +455,80 @@ export default function UsersPage() {
                     {user.isActive === false ? t("inactive") : t("active")}
                   </span>
                 </td>
-                <td className="p-4 space-x-4">
-                  <Button type="button" onClick={() => handleEdit(user)} variant="secondary">
-                    {t("edit")}
-                  </Button>
-                  <Button type="button" variant="outline" asChild>
-                    <Link href={`/dashboard/users/${user.id}`}>{t("viewProfile")}</Link>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleResetClick(user)}
-                  >
-                    {t("resetProgress")}
-                  </Button>
-                  {canUpdateUsers && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setUserForOobRecovery(user);
-                        setOobRecoveryError(null);
-                        setOobRecoveryDialogOpen(true);
-                      }}
-                    >
-                      {t("sendSecureRecovery")}
-                    </Button>
-                  )}
-                  {canUpdateUsers && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={
-                        user.isActive !== false ? cannotDeactivateUser(user) : false
-                      }
-                      title={
-                        user.isActive !== false && cannotDeactivateUser(user)
-                          ? t("cannotDeactivateLastUser")
-                          : undefined
-                      }
-                      onClick={() =>
-                        setUserToToggleActive({
-                          user,
-                          activate: user.isActive === false,
-                        })
-                      }
-                    >
-                      {user.isActive === false ? t("reactivate") : t("deactivate")}
-                    </Button>
-                  )}
-                  {canDeleteUsers && (
-                    <Button type="button" onClick={() => handleDeleteClick(user)} variant="destructive">
-                      {t("delete")}
-                    </Button>
-                  )}
+                <td className="p-4">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-9 px-0 font-medium"
+                        aria-label={t("actions")}
+                      >
+                        ...
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52">
+                      <DropdownMenuItem onClick={() => handleEdit(user)}>
+                        {t("edit")}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href={`/dashboard/users/${user.id}`}>{t("viewProfile")}</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleResetClick(user)}>
+                        {t("resetProgress")}
+                      </DropdownMenuItem>
+                      {canUpdateUsers ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setUserForOobRecovery(user);
+                              setOobRecoveryError(null);
+                              setOobRecoveryDialogOpen(true);
+                            }}
+                          >
+                            {t("sendSecureRecovery")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={
+                              user.isActive !== false ? cannotDeactivateUser(user) : false
+                            }
+                            title={
+                              user.isActive !== false && cannotDeactivateUser(user)
+                                ? t("cannotDeactivateLastUser")
+                                : undefined
+                            }
+                            onClick={() =>
+                              setUserToToggleActive({
+                                user,
+                                activate: user.isActive === false,
+                              })
+                            }
+                          >
+                            {user.isActive === false ? t("reactivate") : t("deactivate")}
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
+                      {canDeleteUsers ? (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDeleteClick(user)}
+                          >
+                            {t("delete")}
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             ))}
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-4">
+                <td colSpan={6} className="text-center py-4">
                   {t("noUsersFound")}
                 </td>
               </tr>

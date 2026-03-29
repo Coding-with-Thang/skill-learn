@@ -2969,6 +2969,7 @@
     "delete": "Delete",
     "loading": "Loading user...",
     "username": "Username",
+    "name": "Name",
     "firstName": "First Name",
     "lastName": "Last Name",
     "reportsTo": "Reports to",

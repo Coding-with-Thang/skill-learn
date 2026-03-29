@@ -2878,6 +2878,7 @@
     "delete": "Supprimer",
     "loading": "Chargement des utilisateurs...",
     "username": "Nom d'utilisateur",
+    "name": "Nom complet",
     "firstName": "Prénom",
     "lastName": "Nom",
     "reportsTo": "Rapporte à",
